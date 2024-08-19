@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"platnm/routes"
 
 	"github.com/gofiber/fiber/v2"
@@ -16,5 +17,7 @@ func main() {
 	// Routes
 	routes.HelloRoutes(app)
 
-	app.Listen(":8080")
+	if err := app.Listen(":8080"); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }
