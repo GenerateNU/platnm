@@ -1,0 +1,7 @@
+.task/
+
+.env
+
+.vscode/
+
+.DS_STORE
