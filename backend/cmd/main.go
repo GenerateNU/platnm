@@ -2,54 +2,38 @@ package main
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
 	"log"
-	"os"
-	sqlc "platnm/database/sqlc"
 
+	"platnm/config"
+	"platnm/database"
 	"platnm/routes"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
+	"github.com/sethvargo/go-envconfig"
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
 	app := fiber.New()
 
 	// Middleware
 	app.Use(logger.New())
 
-	host := os.Getenv("DB_HOST")
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	port := os.Getenv("DB_PORT")
-	name := os.Getenv("DB_NAME")
-
-	connStr := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=require", host, user, password, name, port)
-	db, err := sql.Open("postgres", connStr)
-	if err != nil {
-		log.Fatal("Failed to initialize the database: ", err)
+	// Load environment variables
+	var config config.Config
+	if err := envconfig.Process(context.Background(), &config); err != nil {
+		log.Fatalln("Error processing .env file: ", err)
 	}
 
-	queries := sqlc.New(db)
-	ctx := context.Background()
+	// Connect to database
+	conn := database.ConnectDatabase(config.DbHost, config.DbUser, config.DbPassword, config.DbName, config.DbPort)
 
-	// list all authors
-	testData, err := queries.GetTestData(ctx)
-	if err != nil {
-		fmt.Println(err)
-	}
-	log.Println(testData)
+	defer conn.Close()
 
 	// Routes
 	routes.HelloRoutes(app)
+	// routes.UserRoutes(app, conn)
 
 	if err := app.Listen(":8080"); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
