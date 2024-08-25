@@ -12,13 +12,7 @@ tasks:
     summary: Watch for changes to the backend server and rebuild. (Make sure watchexec is installed)
     cmds:
       - watchexec -r -e go -- task run
-  generate:
-    summary: Generates auto-gen code (sqlc)
-    cmds:
-      - sqlc generate
   build:
-    deps:
-      - generate
     summary: Build backend executables
     sources:
       - ./**/*.go
@@ -36,8 +30,6 @@ tasks:
     cmds:
       - go test ./...
   lint:
-    deps:
-      - generate
     summary: Run lint checks
     cmds:
       - golangci-lint run ./...
