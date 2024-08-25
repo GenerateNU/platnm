@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"platnm/handler"
+	"platnm/internal/handler"
 
 	"github.com/gofiber/fiber/v2"
 )
