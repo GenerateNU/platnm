@@ -1,18 +1,16 @@
 package routes
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"platnm/handler"
+
+	"github.com/gofiber/fiber/v2"
+)
 
 func HelloRoutes(a *fiber.App) {
 	route := a.Group("/hello")
 
-	route.Get("/", helloWorld)
-	route.Get("/:name", helloName)
-}
+	handler := handler.NewHelloHandler()
 
-func helloWorld(c *fiber.Ctx) error {
-	return c.SendString("Hello, world!")
-}
-
-func helloName(c *fiber.Ctx) error {
-	return c.SendString("Hello, " + c.Params("name") + "!")
+	route.Get("/", handler.GetHello)
+	route.Get("/:name", handler.GetHelloName)
 }
