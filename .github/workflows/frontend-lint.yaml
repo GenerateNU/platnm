@@ -1,0 +1,42 @@
+name: frontend-lint
+
+on:
+  push:
+    branches:
+      - "**"
+    paths:
+      - "frontend/**"
+  pull_request:
+    branches:
+      - "**"
+    paths:
+      - "frontend/**"
+
+jobs:
+  frontend-lint:
+    name: frontend-lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Lint Frontend
+        run: |
+          cd frontend
+          npm install
+          npm run lint
+          npm install prettier
+          npx prettier --check .
+
+  frontend-tests:
+    name: Run frontend-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test Frontend
+        run: |
+          cd frontend
+          npm install
+          npm run test
