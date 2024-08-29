@@ -8,6 +8,13 @@ Platnm is the one stop shop for all musical discourse providing a space for you 
 - The database is PostgreSQL, specifically one hosted by Supabase.
 - The front end is React Native written with TypeScript using Expo as a build tool to support both iOS and Android users
 
-# Environment setup
+# Environment Setup
 
-coming soon :)
+1. [Install Nix](https://zero-to-nix.com/start/install)
+2. Activate the development environment by running the following:
+
+<!-- markdownlint-disable MD013 -->
+   ```sh
+   nix develop --impure
+   ```
+<!-- markdownlint-enable MD013 -->
