@@ -20,7 +20,7 @@ tasks:
       - server
     cmds:
       - go mod download
-      - go build -o server ./cmd
+      - go build -o server ./cmd/server
   clean:
     summary: Delete build files
     cmds:
