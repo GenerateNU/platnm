@@ -1,10 +1,11 @@
-package database
+package supabase
 
 import (
 	"context"
-	"log"
-
 	"fmt"
+	"log"
+	"platnm/internal/storage"
+	user "platnm/internal/storage/supabase/schema"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -35,4 +36,10 @@ func ConnectDatabase(host, user, password, dbname, port string) *pgxpool.Pool {
 	log.Print("Connected to database!")
 
 	return conn
+}
+
+func NewRepository(db *pgxpool.Pool) *storage.Repository {
+	return &storage.Repository{
+		User: user.NewUserRepository(db),
+	}
 }

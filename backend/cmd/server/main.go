@@ -5,8 +5,8 @@ import (
 	"log"
 
 	"platnm/internal/config"
-	"platnm/internal/database"
 	"platnm/internal/service"
+	"platnm/internal/storage/supabase"
 
 	_ "github.com/lib/pq"
 	"github.com/sethvargo/go-envconfig"
@@ -20,7 +20,7 @@ func main() {
 	}
 
 	// Connect to database
-	conn := database.ConnectDatabase(config.DbHost, config.DbUser, config.DbPassword, config.DbName, config.DbPort)
+	conn := supabase.ConnectDatabase(config.DbHost, config.DbUser, config.DbPassword, config.DbName, config.DbPort)
 	app := service.InitApp(service.Params{Conn: conn})
 
 	defer conn.Close()
