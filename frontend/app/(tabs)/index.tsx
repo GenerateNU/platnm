@@ -5,6 +5,7 @@ import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 type User = {
   email: string;
@@ -17,23 +18,19 @@ type User = {
 export default function HomeScreen() {
   const [isLoading, setLoading] = useState(true);
   const [users, setUsers] = useState<User[]>([]);
+  const baseUrl = 'http://localhost:8080';
 
   const getUsers = async () => {
-    try {
-      const response = await fetch('http://localhost:8080/users');
-      const users_res = await response.json();
-      setUsers(users_res);
-      console.log(users_res);
+    axios.get(`${baseUrl}/users`).then((response) => {
+      setUsers(response.data);
+      console.log(response.data);
       console.log(users);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   useEffect(() => {
     getUsers();
+    console.log(users);
   }, []);
   return (
     <ParallaxScrollView

@@ -15,6 +15,7 @@ import (
 func main() {
 	// Load environment variables
 	var config config.Config
+
 	if err := envconfig.Process(context.Background(), &config); err != nil {
 		log.Fatalln("Error processing .env file: ", err)
 	}
