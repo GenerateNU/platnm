@@ -1,11 +1,11 @@
-package supabase
+package postgres
 
 import (
 	"context"
 	"fmt"
 	"log"
 	"platnm/internal/storage"
-	user "platnm/internal/storage/supabase/schema"
+	user "platnm/internal/storage/postgres/schema"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"

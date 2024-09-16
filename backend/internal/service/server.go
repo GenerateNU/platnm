@@ -2,7 +2,7 @@ package service
 
 import (
 	"platnm/internal/service/handler"
-	"platnm/internal/storage/supabase"
+	"platnm/internal/storage/postgres"
 
 	go_json "github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
@@ -30,7 +30,7 @@ func setupRoutes(app *fiber.App, conn *pgxpool.Pool) {
 		return c.SendStatus(fiber.StatusOK)
 	})
 
-	repository := supabase.NewRepository(conn)
+	repository := postgres.NewRepository(conn)
 	userHandler := handler.NewUserHandler(repository.User)
 	app.Route("/users", func(r fiber.Router) {
 		r.Get("/", userHandler.GetUsers)

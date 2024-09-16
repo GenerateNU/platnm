@@ -6,7 +6,7 @@ import (
 
 	"platnm/internal/config"
 	"platnm/internal/service"
-	"platnm/internal/storage/supabase"
+	"platnm/internal/storage/postgres"
 
 	_ "github.com/lib/pq"
 	"github.com/sethvargo/go-envconfig"
@@ -20,7 +20,7 @@ func main() {
 	}
 
 	// Connect to database
-	conn := supabase.ConnectDatabase(config.DbHost, config.DbUser, config.DbPassword, config.DbName, config.DbPort)
+	conn := postgres.ConnectDatabase(config.DbHost, config.DbUser, config.DbPassword, config.DbName, config.DbPort)
 	app := service.InitApp(service.Params{Conn: conn})
 
 	defer conn.Close()
