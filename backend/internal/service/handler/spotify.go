@@ -24,7 +24,7 @@ import (
 )
 
 var (
-	redirectURI       = "http://localhost:8080/spotify/callback"
+	redirectURI       = "http://localhost:8080/callback"
 	auth              = spotifyauth.New(spotifyauth.WithRedirectURL(redirectURI), spotifyauth.WithScopes(spotifyauth.ScopeUserReadPrivate))
 	ch                = make(chan *spotify.Client)
 	state             = "abc123"
@@ -108,6 +108,8 @@ func configurePKCE() spotify.Client {
 
 	// wait for auth to complete
 	client := <-ch
+	// /callback?code=AQDS_gNUxSbt5vMweZKrafGpw-xj1ZCEWvplmdzSpZoQTsshJ7dG1svBCsTw3KaKKfJGjXHm2-SzGhLCtv32YmqoswwHdHmXX5mqN5jNLV-FdWJ2ELG5T-9SUyLL2V9qnNyn6g9EllF2yBAeUAzfKvPX-NR-SLH_F2nIHl9cdCClOjvarT0BailMZMbC3FAgt71cbkRmMoXX04J5Hcx45afy_XFq7RqvehVC_AqIIYYYJm8MBh2apUjMiodz-k9QfFzefpA4CFFoIC5E2L91yCDFm9SuSQVLeXyNOT7Nd7qLfmBtYI1wnDs1dAJDtEVQiAPK&state=abc123
+
 	return *client
 }
 
