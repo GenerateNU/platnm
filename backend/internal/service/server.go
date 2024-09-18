@@ -36,6 +36,12 @@ func setupRoutes(app *fiber.App, conn *pgxpool.Pool) {
 		r.Get("/", userHandler.GetUsers)
 		r.Get("/:id", userHandler.GetUserById)
 	})
+
+	authHandler := handler.NewAuthHandler()
+	app.Route("/auth", func(r fiber.Router) {
+		r.Get("/spotify", authHandler.SpotifyRedirect)
+		r.Get("/spotify/callback", authHandler.SpotifyCallback)
+	})
 }
 
 func setupApp() *fiber.App {
