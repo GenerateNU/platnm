@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -35,47 +36,17 @@ type TokenResponse struct {
 type CodeVerifierStore struct {
 	CodeVerifierMap map[string]string
 	Mu              sync.Mutex
-	Expire          chan string
 }
 
 type AuthHandler struct {
 	CodeVerifierStore *CodeVerifierStore
 }
 
-// maybe context should be used here?
-func (s *CodeVerifierStore) Start() {
-	limit := 1 * time.Minute
-	ticker := time.NewTicker(30 * time.Second)
-	times := make(map[string]time.Time)
-
-	for {
-		select {
-		case state := <-s.Expire:
-			times[state] = time.Now()
-		case <-ticker.C:
-			for state, t := range times {
-				if time.Since(t) > limit {
-					fmt.Printf("expired: %s\n", state)
-					s.Mu.Lock()
-					delete(s.CodeVerifierMap, state)
-					s.Mu.Unlock()
-					delete(times, state)
-				}
-			}
-		}
-	}
-}
-
 func NewAuthHandler() *AuthHandler {
-	store := &CodeVerifierStore{
-		CodeVerifierMap: make(map[string]string),
-		Expire:          make(chan string),
-	}
-
-	go store.Start()
-
 	return &AuthHandler{
-		CodeVerifierStore: store,
+		CodeVerifierStore: &CodeVerifierStore{
+			CodeVerifierMap: make(map[string]string),
+		},
 	}
 }
 
@@ -86,10 +57,22 @@ func (h *AuthHandler) SpotifyRedirect(c *fiber.Ctx) error {
 	// store state as uuid for now
 	state := uuid.NewString()
 
+	ctx, cancel := context.WithTimeout(context.TODO(), 1*time.Minute)
+
 	h.CodeVerifierStore.Mu.Lock()
 	h.CodeVerifierStore.CodeVerifierMap[state] = verifier
-	h.CodeVerifierStore.Expire <- state
 	h.CodeVerifierStore.Mu.Unlock()
+
+	go func() {
+		select {
+		case <-ctx.Done():
+			h.CodeVerifierStore.Mu.Lock()
+			delete(h.CodeVerifierStore.CodeVerifierMap, state)
+			h.CodeVerifierStore.Mu.Unlock()
+			cancel()
+			fmt.Printf("state %s has been deleted\n", state)
+		}
+	}()
 
 	params := url.Values{}
 	params.Add("client_id", os.Getenv("SPOTIFY_CLIENT_ID"))
@@ -122,12 +105,7 @@ func (h *AuthHandler) SpotifyCallback(c *fiber.Ctx) error {
 	code := c.Query("code")
 	state := c.Query("state")
 
-	h.CodeVerifierStore.Mu.Lock()
 	verifier, ok := h.CodeVerifierStore.CodeVerifierMap[state]
-	// state will no longer be needed
-	delete(h.CodeVerifierStore.CodeVerifierMap, state)
-	h.CodeVerifierStore.Mu.Unlock()
-
 	if !ok {
 		// indicates that state is different from what was originally stored
 		return errs.Unauthorized()
