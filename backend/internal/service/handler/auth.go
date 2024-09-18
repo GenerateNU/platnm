@@ -9,6 +9,7 @@ import (
 	"os"
 	"platnm/internal/errs"
 	"sync"
+	"time"
 
 	"net/http"
 
@@ -34,18 +35,47 @@ type TokenResponse struct {
 type CodeVerifierStore struct {
 	CodeVerifierMap map[string]string
 	Mu              sync.Mutex
+	Expire          chan string
 }
 
 type AuthHandler struct {
 	CodeVerifierStore *CodeVerifierStore
 }
 
+// maybe context should be used here?
+func (s *CodeVerifierStore) Start() {
+	limit := 1 * time.Minute
+	ticker := time.NewTicker(30 * time.Second)
+	times := make(map[string]time.Time)
+
+	for {
+		select {
+		case state := <-s.Expire:
+			times[state] = time.Now()
+		case <-ticker.C:
+			for state, t := range times {
+				if time.Since(t) > limit {
+					fmt.Printf("expired: %s\n", state)
+					s.Mu.Lock()
+					delete(s.CodeVerifierMap, state)
+					s.Mu.Unlock()
+					delete(times, state)
+				}
+			}
+		}
+	}
+}
+
 func NewAuthHandler() *AuthHandler {
+	store := &CodeVerifierStore{
+		CodeVerifierMap: make(map[string]string),
+		Expire:          make(chan string),
+	}
+
+	go store.Start()
+
 	return &AuthHandler{
-		CodeVerifierStore: &CodeVerifierStore{
-			CodeVerifierMap: make(map[string]string),
-			Mu:              sync.Mutex{},
-		},
+		CodeVerifierStore: store,
 	}
 }
 
@@ -58,6 +88,7 @@ func (h *AuthHandler) SpotifyRedirect(c *fiber.Ctx) error {
 
 	h.CodeVerifierStore.Mu.Lock()
 	h.CodeVerifierStore.CodeVerifierMap[state] = verifier
+	h.CodeVerifierStore.Expire <- state
 	h.CodeVerifierStore.Mu.Unlock()
 
 	params := url.Values{}
@@ -93,6 +124,8 @@ func (h *AuthHandler) SpotifyCallback(c *fiber.Ctx) error {
 
 	h.CodeVerifierStore.Mu.Lock()
 	verifier, ok := h.CodeVerifierStore.CodeVerifierMap[state]
+	// state will no longer be needed
+	delete(h.CodeVerifierStore.CodeVerifierMap, state)
 	h.CodeVerifierStore.Mu.Unlock()
 
 	if !ok {
