@@ -64,14 +64,12 @@ func (h *AuthHandler) SpotifyRedirect(c *fiber.Ctx) error {
 	h.CodeVerifierStore.Mu.Unlock()
 
 	go func() {
-		select {
-		case <-ctx.Done():
-			h.CodeVerifierStore.Mu.Lock()
-			delete(h.CodeVerifierStore.CodeVerifierMap, state)
-			h.CodeVerifierStore.Mu.Unlock()
-			cancel()
-			fmt.Printf("state %s has been deleted\n", state)
-		}
+		<-ctx.Done()
+		h.CodeVerifierStore.Mu.Lock()
+		delete(h.CodeVerifierStore.CodeVerifierMap, state)
+		h.CodeVerifierStore.Mu.Unlock()
+		cancel()
+		fmt.Printf("state %s has been deleted\n", state)
 	}()
 
 	params := url.Values{}
