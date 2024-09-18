@@ -37,6 +37,7 @@ func setupRoutes(app *fiber.App, conn *pgxpool.Pool) {
 	})
 	app.Route("/spotify", func(r fiber.Router) {
 		r.Get("/", handler.GetPlatnmPlaylist)
+		r.Get("/callback", handler.CompleteAuth)
 	})
 }
 

@@ -12,6 +12,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/valyala/fasthttp"
+	"github.com/valyala/fasthttp/fasthttpadaptor"
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
 
 	"platnm/internal/config"
@@ -24,7 +26,7 @@ import (
 )
 
 var (
-	redirectURI       = "http://localhost:8080/callback"
+	redirectURI       = "http://localhost:8080/spotify/callback"
 	auth              = spotifyauth.New(spotifyauth.WithRedirectURL(redirectURI), spotifyauth.WithScopes(spotifyauth.ScopeUserReadPrivate))
 	ch                = make(chan *spotify.Client)
 	state             = "abc123"
@@ -34,14 +36,17 @@ var (
 func generateRandomString(length int) (string, error) {
 	const possible = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	result := make([]byte, length)
+	fmt.Printf("length: %v", length)
 
 	for i := range length {
+		fmt.Printf("i: %v", i)
 		index, err := rand.Int(rand.Reader, big.NewInt(int64(len(possible))))
 		if err != nil {
 			return "", err
 		}
 		result[i] = possible[index.Int64()]
 	}
+
 	return string(result), nil
 }
 
@@ -62,22 +67,33 @@ func base64Encode(input []byte) string {
 	str = strings.ReplaceAll(str, "/", "_")
 	return str
 }
+func convertToHTTPRequest(ctx *fasthttp.RequestCtx) *http.Request {
+	req := new(http.Request)
+	err := fasthttpadaptor.ConvertRequest(ctx, req, true)
+	if err != nil {
+		return nil
+	}
+	return req
+}
 
-func completeAuth(w http.ResponseWriter, r *http.Request) {
-	tok, err := auth.Token(r.Context(), state, r,
+func CompleteAuth(c *fiber.Ctx) error {
+	tok, err := auth.Token(c.Context(), state, convertToHTTPRequest(c.Context()),
 		oauth2.SetAuthURLParam("code_verifier", codeVerifier))
 	if err != nil {
-		http.Error(w, "Couldn't get token", http.StatusForbidden)
+		c.Status(fiber.StatusForbidden).SendString("Couldn't get token")
 		log.Fatal(err)
 	}
-	if st := r.FormValue("state"); st != state {
-		http.NotFound(w, r)
+
+	if st := c.FormValue("state"); st != state {
+		c.Status(fiber.StatusNotFound).SendString("State mismatch")
 		log.Fatalf("State mismatch: %s != %s\n", st, state)
 	}
+
 	// use the token to get an authenticated client
-	client := spotify.New(auth.Client(r.Context(), tok))
-	fmt.Fprintf(w, "Login Completed!")
+	client := spotify.New(auth.Client(c.Context(), tok))
+	c.SendString("Login Completed!")
 	ch <- client
+	return c.Status(fiber.StatusOK).JSON(ch)
 }
 
 func configurePKCE() spotify.Client {
@@ -93,12 +109,6 @@ func configurePKCE() spotify.Client {
 	}
 
 	codeChallenge = base64Encode([]byte(codeChallenge))
-	http.HandleFunc("/callback", completeAuth)
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		log.Println("Got request for:", r.URL.String())
-	})
-	go http.ListenAndServe(":8080", nil)
-
 	url := auth.AuthURL(state,
 		oauth2.SetAuthURLParam("client_id", config.SpClientKey),
 		oauth2.SetAuthURLParam("code_challenge_method", "S256"),
