@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"platnm/internal/storage"
-	user "platnm/internal/storage/postgres/schema"
+	"platnm/internal/storage/postgres/schema"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -40,6 +40,7 @@ func ConnectDatabase(host, user, password, dbname, port string) *pgxpool.Pool {
 
 func NewRepository(db *pgxpool.Pool) *storage.Repository {
 	return &storage.Repository{
-		User: user.NewUserRepository(db),
+		User:   schema.NewUserRepository(db),
+		Review: schema.NewReviewRepository(db),
 	}
 }

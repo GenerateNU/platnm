@@ -10,7 +10,12 @@ type UserRepository interface {
 	GetUserByID(id string, ctx context.Context) (*models.User, error)
 }
 
+type ReviewRepository interface {
+	CreateReview(ctx context.Context, review *models.Review) (*models.Review, error)
+}
+
 // Repository storage of all repositories.
 type Repository struct {
-	User UserRepository
+	User   UserRepository
+	Review ReviewRepository
 }
