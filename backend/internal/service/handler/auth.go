@@ -2,10 +2,12 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
 	"os"
+	"platnm/internal/errs"
 	"sync"
 
 	"net/http"
@@ -28,6 +30,7 @@ type TokenResponse struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+// this is used to keep track of associated code verifier for each state since code verifier will be needed again to get token
 type CodeVerifierStore struct {
 	CodeVerifierMap map[string]string
 	Mu              sync.Mutex
@@ -49,6 +52,8 @@ func NewAuthHandler() *AuthHandler {
 func (h *AuthHandler) SpotifyRedirect(c *fiber.Ctx) error {
 	verifier := oauth2.GenerateVerifier()
 	challenge := oauth2.S256ChallengeFromVerifier(verifier)
+
+	// store state as uuid for now
 	state := uuid.NewString()
 
 	h.CodeVerifierStore.Mu.Lock()
@@ -66,17 +71,23 @@ func (h *AuthHandler) SpotifyRedirect(c *fiber.Ctx) error {
 
 	u, err := url.Parse(SpotifyAuthURL)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return errs.InternalServerError()
 	}
 
 	u.RawQuery = params.Encode()
 
+	// remove in future
 	fmt.Printf("%s\n", u.String())
 
 	return c.Redirect(u.String())
 }
 
 func (h *AuthHandler) SpotifyCallback(c *fiber.Ctx) error {
+	if err := c.Query("error"); err != "" {
+		// indicates that user denied access
+		return errs.Unauthorized()
+	}
+
 	code := c.Query("code")
 	state := c.Query("state")
 
@@ -85,7 +96,8 @@ func (h *AuthHandler) SpotifyCallback(c *fiber.Ctx) error {
 	h.CodeVerifierStore.Mu.Unlock()
 
 	if !ok {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "state not found"})
+		// indicates that state is different from what was originally stored
+		return errs.Unauthorized()
 	}
 
 	params := url.Values{}
@@ -97,34 +109,34 @@ func (h *AuthHandler) SpotifyCallback(c *fiber.Ctx) error {
 
 	req, err := http.NewRequest("POST", SpotifyTokenURL, nil)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return errs.InternalServerError()
 	}
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
 	req.URL.RawQuery = params.Encode()
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return errs.InternalServerError()
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get token"})
+		return errs.NewHTTPError(500, errors.New("failed to get token"))
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return errs.InternalServerError()
 	}
 
 	var tokenResponse TokenResponse
 	if err := json.Unmarshal(body, &tokenResponse); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return errs.InternalServerError()
 	}
 
+	// remove in future
 	fmt.Printf("%+v\n", tokenResponse)
 
 	// do something with tokenResponse
