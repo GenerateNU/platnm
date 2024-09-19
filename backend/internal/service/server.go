@@ -1,6 +1,7 @@
 package service
 
 import (
+	"platnm/internal/errs"
 	"platnm/internal/service/handler"
 	"platnm/internal/storage/postgres"
 
@@ -40,9 +41,9 @@ func setupRoutes(app *fiber.App, conn *pgxpool.Pool) {
 
 func setupApp() *fiber.App {
 	app := fiber.New(fiber.Config{
-		JSONEncoder: go_json.Marshal,
-		JSONDecoder: go_json.Unmarshal,
-		// ErrorHandler: errs.ErrorHandler,
+		JSONEncoder:  go_json.Marshal,
+		JSONDecoder:  go_json.Unmarshal,
+		ErrorHandler: errs.ErrorHandler,
 	})
 	app.Use(recover.New())
 	app.Use(requestid.New())
