@@ -37,6 +37,10 @@ func setupRoutes(app *fiber.App, conn *pgxpool.Pool) {
 		r.Get("/", userHandler.GetUsers)
 		r.Get("/:id", userHandler.GetUserById)
 	})
+	app.Route("/reviews", func(r fiber.Router) {
+		reviewHandler := handler.NewReviewHandler(repository.Review)
+		r.Get("/", reviewHandler.GetReviewsByUserID)
+	})
 }
 
 func setupApp() *fiber.App {
