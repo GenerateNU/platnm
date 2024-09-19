@@ -1,12 +1,14 @@
 package service
 
 import (
+	"platnm/internal/errs"
 	"platnm/internal/service/handler"
 	"platnm/internal/storage/postgres"
 
 	go_json "github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
+	"github.com/gofiber/fiber/v2/middleware/favicon"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
@@ -44,15 +46,17 @@ func setupRoutes(app *fiber.App, conn *pgxpool.Pool) {
 
 func setupApp() *fiber.App {
 	app := fiber.New(fiber.Config{
-		JSONEncoder: go_json.Marshal,
-		JSONDecoder: go_json.Unmarshal,
-		// ErrorHandler: errs.ErrorHandler,
+		JSONEncoder:  go_json.Marshal,
+		JSONDecoder:  go_json.Unmarshal,
+		ErrorHandler: errs.ErrorHandler,
 	})
 	app.Use(recover.New())
 	app.Use(requestid.New())
 	app.Use(logger.New(logger.Config{
 		Format: "[${time}] ${ip}:${port} ${pid} ${locals:requestid} ${status} - ${latency} ${method} ${path}\n",
 	}))
+	app.Use(favicon.New())
+
 	app.Use(compress.New(compress.Config{
 		Level: compress.LevelBestSpeed,
 	}))
