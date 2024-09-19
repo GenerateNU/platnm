@@ -30,7 +30,9 @@ func (h *Handler) Begin(c *fiber.Ctx) error {
 		return err
 	}
 
-	h.store.Set(state, stateValue, constants.StateExpiresAfter)
+	if err := h.store.Set(state, stateValue, constants.StateExpiresAfter); err != nil {
+		return err
+	}
 
 	c.Set(constants.HeaderRedirect, url)
 	return c.SendStatus(http.StatusFound)
