@@ -14,14 +14,14 @@ const (
 var ErrInvalidStateValueLength = errors.New("invalid state value length")
 
 type stateValue struct {
-	Verifier  string
-	Challenge string
+	verifier  string
+	challenge string
 }
 
 func (sv *stateValue) MarshalBinary() ([]byte, error) {
 	buffer := getBuffer()
-	copy(buffer.data[:verifierLen], sv.Verifier)
-	copy(buffer.data[verifierLen:], sv.Challenge)
+	copy(buffer.data[:verifierLen], sv.verifier)
+	copy(buffer.data[verifierLen:], sv.challenge)
 	return buffer.data, nil
 }
 
@@ -32,8 +32,8 @@ func (sv *stateValue) UnmarshalBinary(data []byte) error {
 	if len(data) != bufferSize {
 		return ErrInvalidStateValueLength
 	}
-	sv.Verifier = string(data[:verifierLen])
-	sv.Challenge = string(data[verifierLen:])
+	sv.verifier = string(data[:verifierLen])
+	sv.challenge = string(data[verifierLen:])
 	putBuffer(&buffer{data: data})
 	return nil
 }

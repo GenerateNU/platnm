@@ -21,8 +21,8 @@ func (h *Handler) Begin(c *fiber.Ctx) error {
 	)
 
 	sv := stateValue{
-		Verifier:  verifier,
-		Challenge: challenge,
+		verifier:  verifier,
+		challenge: challenge,
 	}
 
 	stateValue, err := sv.MarshalBinary()

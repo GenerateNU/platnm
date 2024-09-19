@@ -28,7 +28,7 @@ func (h *Handler) Callback(c *fiber.Ctx) error {
 		return err
 	}
 
-	token, err := h.authenticator.Token(c.Context(), state, req, oauth2.SetAuthURLParam("code_verifier", stateValue.Verifier))
+	token, err := h.authenticator.Token(c.Context(), state, req, oauth2.SetAuthURLParam("code_verifier", stateValue.verifier))
 	if err != nil {
 		slog.Error("Failed to get token", "error", err)
 		return c.SendStatus(http.StatusInternalServerError)
