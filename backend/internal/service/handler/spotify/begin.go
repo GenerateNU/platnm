@@ -11,20 +11,18 @@ import (
 
 func (h *Handler) Begin(c *fiber.Ctx) error {
 	// uuid as state for now
-	verifier := oauth2.GenerateVerifier()
-	challenge := oauth2.S256ChallengeFromVerifier(verifier)
-	state := uuid.NewString()
+	var (
+		verifier  = oauth2.GenerateVerifier()
+		challenge = oauth2.S256ChallengeFromVerifier(verifier)
+		state     = uuid.NewString()
+	)
 
 	url := h.authenticator.AuthURL(state,
 		oauth2.SetAuthURLParam("code_challenge_method", "S256"),
 		oauth2.SetAuthURLParam("code_challenge", challenge),
 	)
 
-	sv := stateValue{
-		verifier:  verifier,
-		challenge: challenge,
-	}
-
+	sv := stateValue{verifier: verifier}
 	stateValue, err := sv.MarshalBinary()
 	if err != nil {
 		return err

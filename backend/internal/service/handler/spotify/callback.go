@@ -12,10 +12,22 @@ import (
 
 func (h *Handler) Callback(c *fiber.Ctx) error {
 	state := c.Query("state")
+	if state == "" {
+		return c.SendStatus(http.StatusBadRequest)
+	}
 
 	sv, err := h.store.Get(state)
+	if sv == nil && err == nil {
+		return c.SendStatus(http.StatusBadRequest)
+	}
 	if err != nil {
 		return err
+	}
+
+	if err := h.store.Delete(state); err != nil {
+		slog.Error("failed to delete state", "err", err)
+		// continue since this is non-critical and the state
+		// will expire after constants.StateExpiresAfter
 	}
 
 	var stateValue stateValue
