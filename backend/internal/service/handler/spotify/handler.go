@@ -10,7 +10,7 @@ import (
 )
 
 type Handler struct {
-	session       *session.Store
+	store         *session.Store
 	authenticator *spotifyauth.Authenticator
 }
 
@@ -27,7 +27,7 @@ func NewHandler(store storage.Storage, config config.Spotify) *Handler {
 
 	session.RegisterType(sessionValue{})
 	return &Handler{
-		session:       session,
+		store:         session,
 		authenticator: authenticator,
 	}
 }

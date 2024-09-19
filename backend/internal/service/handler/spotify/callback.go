@@ -23,8 +23,7 @@ func (h *Handler) Callback(c *fiber.Ctx) error {
 
 	token, err := h.authenticator.Token(c.Context(), v.State, req, oauth2.SetAuthURLParam("code_verifier", v.Verifier))
 	if err != nil {
-		slog.Error("Failed to get token", "error", err)
-		return c.SendStatus(http.StatusInternalServerError)
+		return err
 	}
 
 	slog.Info("Access token:", "token", token.AccessToken)

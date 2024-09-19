@@ -8,11 +8,6 @@ import (
 	"sync"
 )
 
-type sessionValue struct {
-	State    string
-	Verifier string
-}
-
 const (
 	stateLen   = 64
 	bufferSize = stateLen

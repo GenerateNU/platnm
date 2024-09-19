@@ -6,8 +6,13 @@ import (
 
 const valueKey = "value"
 
+type sessionValue struct {
+	State    string
+	Verifier string
+}
+
 func (h *Handler) sessionSetValue(c *fiber.Ctx, value sessionValue) error {
-	sess, err := h.session.Get(c)
+	sess, err := h.store.Get(c)
 	if err != nil {
 		return err
 	}
@@ -19,7 +24,7 @@ func (h *Handler) sessionSetValue(c *fiber.Ctx, value sessionValue) error {
 }
 
 func (h *Handler) sessionGetValue(c *fiber.Ctx) (sessionValue, error) {
-	sess, err := h.session.Get(c)
+	sess, err := h.store.Get(c)
 	if err != nil {
 		return sessionValue{}, err
 	}
