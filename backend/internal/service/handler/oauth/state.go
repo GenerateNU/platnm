@@ -1,4 +1,4 @@
-package spotify
+package oauth
 
 import (
 	"crypto/rand"
@@ -13,7 +13,7 @@ const (
 	bufferSize = stateLen
 )
 
-func generateState() (string, error) {
+func GenerateState() (string, error) {
 	nonceBytes := getBuffer()
 	defer putBuffer(nonceBytes)
 	if _, err := io.ReadFull(rand.Reader, nonceBytes.data); err != nil {

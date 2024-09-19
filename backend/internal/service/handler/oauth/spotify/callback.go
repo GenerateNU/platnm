@@ -11,7 +11,7 @@ import (
 )
 
 func (h *Handler) Callback(c *fiber.Ctx) error {
-	v, err := h.sessionGetValue(c)
+	v, err := h.store.SessionGetValue(c)
 	if err != nil {
 		return err
 	}

@@ -3,6 +3,7 @@ package spotify
 import (
 	"net/http"
 	"platnm/internal/constants"
+	"platnm/internal/service/handler/oauth"
 
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/oauth2"
@@ -14,7 +15,7 @@ func (h *Handler) Begin(c *fiber.Ctx) error {
 		challenge = oauth2.S256ChallengeFromVerifier(verifier)
 	)
 
-	state, err := generateState()
+	state, err := oauth.GenerateState()
 	if err != nil {
 		return err
 	}
@@ -24,7 +25,7 @@ func (h *Handler) Begin(c *fiber.Ctx) error {
 		oauth2.SetAuthURLParam("code_challenge", challenge),
 	)
 
-	if err := h.sessionSetValue(c, sessionValue{State: state, Verifier: verifier}); err != nil {
+	if err := h.store.SessionSetValue(c, oauth.SessionValue{State: state, Verifier: verifier}); err != nil {
 		return err
 	}
 
