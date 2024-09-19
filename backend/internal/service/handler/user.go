@@ -27,7 +27,7 @@ func (h *UserHandler) GetUsers(c *fiber.Ctx) error {
 
 func (h *UserHandler) GetUserById(c *fiber.Ctx) error {
 	id := c.Params("id")
-	user, err := h.userRepository.GetUserByID(id, c.Context())
+	user, err := h.userRepository.GetUserByID(c.Context(), id)
 
 	if err != nil {
 		print(err.Error(), "from transactions err ")

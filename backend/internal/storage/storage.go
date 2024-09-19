@@ -7,7 +7,7 @@ import (
 
 type UserRepository interface {
 	GetUsers(ctx context.Context) ([]*models.User, error)
-	GetUserByID(id string, ctx context.Context) (*models.User, error)
+	GetUserByID(ctx context.Context, id string) (*models.User, error)
 }
 
 type ReviewRepository interface {
