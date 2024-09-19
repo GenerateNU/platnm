@@ -1,7 +1,6 @@
 package spotify
 
 import (
-	"log/slog"
 	"net/http"
 	"platnm/internal/constants"
 
@@ -16,28 +15,22 @@ func (h *Handler) Begin(c *fiber.Ctx) error {
 	challenge := oauth2.S256ChallengeFromVerifier(verifier)
 	state := uuid.NewString()
 
-	sess, err := h.CodeVerifierStateStore.Get(c)
-	if err != nil {
-		slog.Error("Failed to get session", "error", err)
-		return c.SendStatus(http.StatusInternalServerError)
-	}
-
-	sess.Set("code_verifier_state", codeVerifierState{
-		CodeVerifier: verifier,
-		State:        state,
-	})
-
-	if err := sess.Save(); err != nil {
-		slog.Error("Failed to save session", "error", err)
-		return c.SendStatus(http.StatusInternalServerError)
-	}
-
 	url := h.authenticator.AuthURL(state,
 		oauth2.SetAuthURLParam("code_challenge_method", "S256"),
 		oauth2.SetAuthURLParam("code_challenge", challenge),
 	)
 
-	slog.Info("Auth URL:", "url", url)
+	sv := stateValue{
+		Verifier:  verifier,
+		Challenge: challenge,
+	}
+
+	stateValue, err := sv.MarshalBinary()
+	if err != nil {
+		return err
+	}
+
+	h.store.Set(state, stateValue, constants.StateExpiresAfter)
 
 	c.Set(constants.HeaderRedirect, url)
 	return c.SendStatus(http.StatusFound)

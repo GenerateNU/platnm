@@ -3,35 +3,22 @@ package spotify
 import (
 	"platnm/internal/config"
 
-	"time"
-
-	"github.com/gofiber/fiber/v2/middleware/session"
+	"github.com/gofiber/storage"
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
 )
 
 type Handler struct {
-	CodeVerifierStateStore *session.Store
-	authenticator          *spotifyauth.Authenticator
+	store         storage.Storage
+	authenticator *spotifyauth.Authenticator
 }
 
-type codeVerifierState struct {
-	CodeVerifier string
-	State        string
-}
-
-func NewHandler(config config.Spotify) *Handler {
-	store := session.New(
-		session.Config{
-			Expiration: 10 * time.Minute,
-		},
+func NewHandler(store storage.Storage, config config.Spotify) *Handler {
+	authenticator := spotifyauth.New(
+		spotifyauth.WithRedirectURL(config.RedirectURI),
+		spotifyauth.WithScopes(spotifyauth.ScopeUserReadPrivate),
 	)
-
-	store.RegisterType(codeVerifierState{})
-
-	authenticator := spotifyauth.New(spotifyauth.WithRedirectURL(config.RedirectURI), spotifyauth.WithScopes(spotifyauth.ScopeUserReadPrivate))
-
 	return &Handler{
-		CodeVerifierStateStore: store,
-		authenticator:          authenticator,
+		store:         store,
+		authenticator: authenticator,
 	}
 }

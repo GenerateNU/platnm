@@ -13,6 +13,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/gofiber/storage/memory"
 )
 
 func InitApp(config config.Config) *fiber.App {
@@ -37,7 +38,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 
 	app.Route("/auth", func(r fiber.Router) {
 		r.Route("/spotify", func(r fiber.Router) {
-			h := spotify.NewHandler(config.Spotify)
+			h := spotify.NewHandler(memory.New(), config.Spotify)
 			r.Get("/begin", h.Begin)
 			r.Get("/callback", h.Callback)
 		})

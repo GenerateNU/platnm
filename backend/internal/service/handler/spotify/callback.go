@@ -11,23 +11,24 @@ import (
 )
 
 func (h *Handler) Callback(c *fiber.Ctx) error {
-	sess, err := h.CodeVerifierStateStore.Get(c)
+	state := c.Query("state")
+
+	sv, err := h.store.Get(state)
 	if err != nil {
-		slog.Error("Failed to get session", "error", err)
-		return c.SendStatus(http.StatusInternalServerError)
+		return err
 	}
 
-	cvs, ok := sess.Get("code_verifier_state").(codeVerifierState)
-	if !ok {
-		slog.Error("Failed to get code verifier state")
-		return c.SendStatus(http.StatusInternalServerError)
+	var stateValue stateValue
+	if err := stateValue.UnmarshalBinary(sv); err != nil {
+		return err
 	}
 
 	req, err := adaptor.ConvertRequest(c, false)
 	if err != nil {
 		return err
 	}
-	token, err := h.authenticator.Token(c.Context(), cvs.State, req, oauth2.SetAuthURLParam("code_verifier", cvs.CodeVerifier))
+
+	token, err := h.authenticator.Token(c.Context(), state, req, oauth2.SetAuthURLParam("code_verifier", stateValue.Verifier))
 	if err != nil {
 		slog.Error("Failed to get token", "error", err)
 		return c.SendStatus(http.StatusInternalServerError)
