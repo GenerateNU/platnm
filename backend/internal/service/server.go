@@ -3,6 +3,7 @@ package service
 import (
 	"net/http"
 	"platnm/internal/config"
+	"platnm/internal/errs"
 	"platnm/internal/service/handler"
 	"platnm/internal/service/handler/spotify"
 	"platnm/internal/storage/postgres"
@@ -47,9 +48,9 @@ func setupRoutes(app *fiber.App, config config.Config) {
 
 func setupApp() *fiber.App {
 	app := fiber.New(fiber.Config{
-		JSONEncoder: go_json.Marshal,
-		JSONDecoder: go_json.Unmarshal,
-		// ErrorHandler: errs.ErrorHandler,
+		JSONEncoder:  go_json.Marshal,
+		JSONDecoder:  go_json.Unmarshal,
+		ErrorHandler: errs.ErrorHandler,
 	})
 	app.Use(recover.New())
 	app.Use(requestid.New())
