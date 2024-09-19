@@ -44,7 +44,7 @@ type buffer struct {
 
 var bufferPool = sync.Pool{
 	New: func() interface{} {
-		return make([]byte, 0, bufferSize)
+		return make([]byte, bufferSize)
 	},
 }
 
