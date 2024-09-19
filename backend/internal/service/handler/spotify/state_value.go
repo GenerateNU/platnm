@@ -20,9 +20,9 @@ type stateValue struct {
 
 func (sv *stateValue) MarshalBinary() ([]byte, error) {
 	buffer := getBuffer()
-	copy(buffer[:verifierLen], sv.Verifier)
-	copy(buffer[verifierLen:], sv.Challenge)
-	return buffer, nil
+	copy(buffer.data[:verifierLen], sv.Verifier)
+	copy(buffer.data[verifierLen:], sv.Challenge)
+	return buffer.data, nil
 }
 
 // UnmarshalBinary decodes the state value from binary data.
@@ -34,20 +34,24 @@ func (sv *stateValue) UnmarshalBinary(data []byte) error {
 	}
 	sv.Verifier = string(data[:verifierLen])
 	sv.Challenge = string(data[verifierLen:])
-	putBuffer(data)
+	putBuffer(&buffer{data: data})
 	return nil
+}
+
+type buffer struct {
+	data []byte
 }
 
 var bufferPool = sync.Pool{
 	New: func() interface{} {
-		return make([]byte, bufferSize)
+		return make([]byte, 0, bufferSize)
 	},
 }
 
-func getBuffer() []byte {
-	return bufferPool.Get().([]byte)
+func getBuffer() *buffer {
+	return bufferPool.Get().(*buffer)
 }
 
-func putBuffer(buffer []byte) {
+func putBuffer(buffer *buffer) {
 	bufferPool.Put(buffer)
 }
