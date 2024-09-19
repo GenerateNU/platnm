@@ -11,27 +11,8 @@ import (
 )
 
 func (h *Handler) Callback(c *fiber.Ctx) error {
-	state := c.Query("state")
-	if state == "" {
-		return c.SendStatus(http.StatusBadRequest)
-	}
-
-	sv, err := h.store.Get(state)
-	if sv == nil && err == nil {
-		return c.SendStatus(http.StatusBadRequest)
-	}
+	v, err := h.sessionGetValue(c)
 	if err != nil {
-		return err
-	}
-
-	if err := h.store.Delete(state); err != nil {
-		slog.Error("failed to delete state", "err", err)
-		// continue since this is non-critical and the state
-		// will expire after constants.StateExpiresAfter
-	}
-
-	var stateValue stateValue
-	if err := stateValue.UnmarshalBinary(sv); err != nil {
 		return err
 	}
 
@@ -40,7 +21,7 @@ func (h *Handler) Callback(c *fiber.Ctx) error {
 		return err
 	}
 
-	token, err := h.authenticator.Token(c.Context(), state, req, oauth2.SetAuthURLParam("code_verifier", stateValue.verifier))
+	token, err := h.authenticator.Token(c.Context(), v.State, req, oauth2.SetAuthURLParam("code_verifier", v.Verifier))
 	if err != nil {
 		slog.Error("Failed to get token", "error", err)
 		return c.SendStatus(http.StatusInternalServerError)

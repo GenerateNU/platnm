@@ -5,30 +5,26 @@ import (
 	"platnm/internal/constants"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 	"golang.org/x/oauth2"
 )
 
 func (h *Handler) Begin(c *fiber.Ctx) error {
-	// uuid as state for now
 	var (
 		verifier  = oauth2.GenerateVerifier()
 		challenge = oauth2.S256ChallengeFromVerifier(verifier)
-		state     = uuid.NewString()
 	)
+
+	state, err := generateState()
+	if err != nil {
+		return err
+	}
 
 	url := h.authenticator.AuthURL(state,
 		oauth2.SetAuthURLParam("code_challenge_method", "S256"),
 		oauth2.SetAuthURLParam("code_challenge", challenge),
 	)
 
-	sv := stateValue{verifier: verifier}
-	stateValue, err := sv.MarshalBinary()
-	if err != nil {
-		return err
-	}
-
-	if err := h.store.Set(state, stateValue, constants.StateExpiresAfter); err != nil {
+	if err := h.sessionSetValue(c, sessionValue{State: state, Verifier: verifier}); err != nil {
 		return err
 	}
 
