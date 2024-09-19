@@ -13,9 +13,9 @@ type ReviewRepository struct {
 	db *pgxpool.Pool
 }
 
-func (r *ReviewRepository) GetReviewsByUserID(id string, ctx context.Context) ([]*models.Review, error) {
+func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error) {
 
-	rows, err := r.db.Query(context.Background(), "SELECT * FROM review WHERE user_id = $1", id)
+	rows, err := r.db.Query(ctx, "SELECT * FROM review WHERE user_id = $1", id)
 	if err != nil {
 		print(err.Error(), "from transactions err ")
 		return []*models.Review{}, err
@@ -27,8 +27,7 @@ func (r *ReviewRepository) GetReviewsByUserID(id string, ctx context.Context) ([
 
 		var review models.Review
 
-		var ID, mediaType, comment *string
-		var userID, mediaID, rating *int
+		var mediaType, comment, userID, mediaID, rating *string
 		var createdAt, updatedAt *time.Time
 
 		if err := rows.Scan(&review.ID, &userID, &mediaID, &mediaType, &rating, &comment, &createdAt, &updatedAt); err != nil {
@@ -36,7 +35,8 @@ func (r *ReviewRepository) GetReviewsByUserID(id string, ctx context.Context) ([
 			return reviews, err
 		}
 
-		review.ID = *ID
+		print("are we here plsssss")
+
 		review.UserID = *userID
 		review.MediaID = *mediaID
 		review.MediaType = *mediaType
@@ -44,6 +44,8 @@ func (r *ReviewRepository) GetReviewsByUserID(id string, ctx context.Context) ([
 		review.Rating = *rating
 		review.CreatedAt = *createdAt
 		review.UpdatedAt = *updatedAt
+
+		print("chekc2 check2")
 
 		reviews = append(reviews, &review)
 	}

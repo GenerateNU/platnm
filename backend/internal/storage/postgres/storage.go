@@ -40,6 +40,7 @@ func ConnectDatabase(host, user, password, dbname, port string) *pgxpool.Pool {
 
 func NewRepository(db *pgxpool.Pool) *storage.Repository {
 	return &storage.Repository{
-		User: user.NewUserRepository(db),
+		User:   user.NewUserRepository(db),
+		Review: user.NewReviewRepository(db),
 	}
 }
