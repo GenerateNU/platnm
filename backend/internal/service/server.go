@@ -8,6 +8,7 @@ import (
 	go_json "github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
+	"github.com/gofiber/fiber/v2/middleware/favicon"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
@@ -50,6 +51,8 @@ func setupApp() *fiber.App {
 	app.Use(logger.New(logger.Config{
 		Format: "[${time}] ${ip}:${port} ${pid} ${locals:requestid} ${status} - ${latency} ${method} ${path}\n",
 	}))
+	app.Use(favicon.New())
+
 	app.Use(compress.New(compress.Config{
 		Level: compress.LevelBestSpeed,
 	}))
