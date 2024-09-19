@@ -49,5 +49,5 @@ func getBuffer() []byte {
 }
 
 func putBuffer(buffer []byte) {
-	bufferPool.Put(buffer[:0])
+	bufferPool.Put(buffer)
 }
