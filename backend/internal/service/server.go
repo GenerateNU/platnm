@@ -39,11 +39,9 @@ func setupRoutes(app *fiber.App, conn *pgxpool.Pool) {
 
 	reviewHandler := handler.NewReviewHandler(repository.Review)
 	app.Route("/reviews", func(r fiber.Router) {
-		r.Get("/album", reviewHandler.GetReviews)
 		r.Get("/album/:albumID", func(c *fiber.Ctx) error {
 			return reviewHandler.GetReviewById(c, "album")
 		})
-		r.Get("/track", reviewHandler.GetReviews)
 		r.Get("/track/:trackID", func(c *fiber.Ctx) error {
 			return reviewHandler.GetReviewById(c, "track")
 		})

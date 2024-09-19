@@ -28,37 +28,19 @@ func (h *ReviewHandler) GetReviews(c *fiber.Ctx) error {
 }
 
 func (h *ReviewHandler) GetReviewById(c *fiber.Ctx, mediaType string) error {
-	id := c.Params("id")
-	offsetstr := c.Query("offset", "0")
-	limitstr := c.Query("limit", "10")
-	//limitParam := r.URL.Query().Get("limit")
-	//offsetParam := r.URL.Query().Get("offset")
-	//review, err := h.reviewRepository.GetReviewsByID(id, mediaType, c.Context())
+	var (
+		id     = c.Params("id")
+		offset = c.QueryInt("page", 1)
+		limit  = c.QueryInt("limit", 10)
+	)
 
-	var offset int
-	if offsetstr == "" {
-		offset = 0 // Default to 0 if no offset is provided
-	} else {
-		var err error
-		offset, err = strconv.Atoi(offsetstr)
-		if err != nil || offset < 0 {
-			offset = 0 // Ensure offset is non-negative
-		}
+	if offset < 0 {
+		offset = 0 // Ensure offset is non-negative
 	}
 
-	// Check if limitstr is empty, then default to 10
-	var limit int
-	if limitstr == "" {
-		limit = 10 // Default to 10 if no limit is provided
-	} else {
-		var err error
-		limit, err = strconv.Atoi(limitstr)
-		if err != nil || limit <= 0 {
-			limit = 10 // Ensure limit is positive
-		}
+	if limit <= 0 {
+		limit = 10 // Ensure limit is positive
 	}
-
-	print("running?")
 
 	// Fetch the review based on ID and media type
 	review, err := h.reviewRepository.GetReviewsByID(c.Context(), id, mediaType)
@@ -70,25 +52,16 @@ func (h *ReviewHandler) GetReviewById(c *fiber.Ctx, mediaType string) error {
 		})
 	}
 
-	// If no review is found, return a 404 status
-	if len(review) == 0 {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"message": "No reviews found",
-		})
-	}
+	var scores []float64
 
-	// Calculate average rating
-	var avgRating float64
 	for _, r := range review {
 		rating, err := strconv.ParseFloat(r.Rating, 64)
-		if err != nil {
-			avgRating += rating
+		if err == nil { // Only append if conversion succeeds
+			scores = append(scores, rating)
 		}
+	}
 
-	}
-	if len(review) > 0 {
-		avgRating /= float64(len(review))
-	}
+	var avgRating = getAve(scores)
 
 	var end = offset*limit - 1
 	var start = end - limit
@@ -101,4 +74,16 @@ func (h *ReviewHandler) GetReviewById(c *fiber.Ctx, mediaType string) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(response)
+}
+
+func getAve(review []float64) float64 {
+	var avgRating float64
+	for _, r := range review {
+		avgRating += r
+	}
+
+	if len(review) > 0 {
+		avgRating /= float64(len(review))
+	}
+	return avgRating
 }
