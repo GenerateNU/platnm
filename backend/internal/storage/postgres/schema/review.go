@@ -1,59 +1,55 @@
 package user
 
-import (
-	"context"
-	"platnm/internal/models"
+ import (
+ 	"context"
+ 	"platnm/internal/models"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-)
+ 	"time"
 
-type ReviewRepository struct {
-	db *pgxpool.Pool
-}
+ 	"github.com/jackc/pgx/v5/pgxpool"
+ )
 
-func (r *ReviewRepository) GetReviews(ctx context.Context) ([]*models.Review, error) {
-	rows, err := r.db.Query(context.Background(), "SELECT user_id, media_id, media_type, desc, rating, CreatedAt, UpdatedAt FROM review")
-	if err != nil {
-		print(err.Error(), "from transactions err ")
-		return []*models.Review{}, err
-	}
-	defer rows.Close()
-}
+ type ReviewRepository struct {
+ 	db *pgxpool.Pool
+ }
 
-func (r *ReviewRepository) GetReviewByID(id string, media_type string, ctx context.Context) (*models.Review, error) {
-	var review models.Review
+ func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string) ([]*models.Review, error) {
+
 	if (media_type == "album") {
-		rows, err := r.db.QueryRow(context.Background(), "SELECT user_id, media_id, media_type, desc, rating, CreatedAt, UpdatedAt FROM review WHERE media_id = $1 and media_type = 'album'", id)
+		rows, err := r.db.Query(ctx, "SELECT * FROM review WHERE media_id = $1 and media_type = 'album'", id)
 	} else if (media_type == "track") {
-		rows, err := r.db.QueryRow(context.Background(), "SELECT user_id, media_id, media_type, desc, rating, CreatedAt, UpdatedAt FROM review WHERE media_id = $1 and media_type = 'track'", id)
+		rows, err := r.db.Query(ctx, "SELECT * FROM review WHERE media_id = $1 and media_type = 'track'", id)
 	}
-
-	defer rows.Close()
+ 	if err != nil {
+ 		print(err.Error(), "from transactions err ")
+ 		return []*models.Review{}, err
+ 	}
+ 	defer rows.Close()
 
  	var reviews []*models.Review
  	for rows.Next() {
 
  		var review models.Review
 
- 		var mediaType, comment, userID, mediaID, rating *string
+ 		var mediaType, desc, userID, mediaID, rating *string
  		var createdAt, updatedAt *time.Time
 
- 		if err := rows.Scan(&review.ID, &userID, &mediaID, &mediaType, &rating, &comment, &createdAt, &updatedAt); err != nil {
+ 		if err := rows.Scan(&review.reviewID, &userID, &mediaID, &mediaType, &rating, &desc, &createdAt, &updatedAt); err != nil {
  			print(err.Error(), "from transactions err ")
  			return reviews, err
  		}
 
- 		print("are we here plsssss")
+ 		print("working?")
 
  		review.UserID = *userID
  		review.MediaID = *mediaID
  		review.MediaType = *mediaType
- 		review.Comment = *comment
+ 		review.Desc = *desc
  		review.Rating = *rating
  		review.CreatedAt = *createdAt
  		review.UpdatedAt = *updatedAt
 
- 		print("chekc2 check2")
+ 		print("check2")
 
  		reviews = append(reviews, &review)
  	}
@@ -64,10 +60,11 @@ func (r *ReviewRepository) GetReviewByID(id string, media_type string, ctx conte
  	}
 
  	return reviews, nil
-}
 
-func NewReviewRepository(db *pgxpool.Pool) *ReviewRepository {
-	return &ReviewRepository{
-		db: db,
-	}
-}
+ }
+
+ func NewReviewRepository(db *pgxpool.Pool) *ReviewRepository {
+ 	return &ReviewRepository{
+ 		db: db,
+ 	}
+ }

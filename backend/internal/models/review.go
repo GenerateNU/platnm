@@ -3,6 +3,7 @@ package models
 import "time"
 
 type Review struct {
+	reviewID 			 string  `json:"review_id"`
 	UserID         string  `json:"user_id"`
 	MediaType      string  `json:"media_type"`
 	MediaID        string  `json:"media_id"`
