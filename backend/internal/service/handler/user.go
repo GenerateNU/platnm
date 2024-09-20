@@ -27,8 +27,6 @@ func (h *UserHandler) GetUsers(c *fiber.Ctx) error {
 
 func (h *UserHandler) GetUserById(c *fiber.Ctx) error {
 	id := c.Params("id")
-	limitParam := r.URL.Query().Get("limit")
-	offsetParam := r.URL.Query().Get("offset")
 	user, err := h.userRepository.GetUserByID(id, c.Context())
 
 	if err != nil {

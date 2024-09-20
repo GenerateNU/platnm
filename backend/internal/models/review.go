@@ -6,5 +6,6 @@ type Review struct {
 	MediaID        string  `json:"media_id"`
 	Rating         string  `json:"rating"`
 	Desc          *string `json:"desc,omitempty"`
-	DateTime 			 string `json:"date_time"`
+	CreatedAt time.Time `json:"created_at"`
+ 	UpdatedAt time.Time `json:"updated_at"`
 }
