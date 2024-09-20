@@ -36,12 +36,11 @@ func (h *ReviewHandler) GetReviewById(c *fiber.Ctx, mediaType string) error {
 
 	
 	// Parse offset and limit as integers
-	offset, err := strconv.Atoi(offsetStr)
+	
 	if err != nil || int(offset) < 0 {
 		offset = 0 // Ensure offset is non-negative
 	}
 
-	limit, err := strconv.Atoi(limitStr)
 	if err != nil || int(limit) <= 0 {
 		limit = 10 // Ensure limit is positive
 	}
