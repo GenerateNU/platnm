@@ -13,6 +13,43 @@ package user
  	db *pgxpool.Pool
  }
 
+ func (r *ReviewRepository) GetReviews(ctx context.Context) ([]*models.Review, error) {
+	rows, err := r.db.Query(context.Background(), "SELECT user_id, media_id, media_type, desc, rating, CreatedAt, UpdatedAt FROM review")
+	if err != nil {
+		print(err.Error(), "from transactions err ")
+		return []*models.Review{}, err
+	}
+	defer rows.Close()
+
+	var reviews []*models.Review
+	for rows.Next() {
+		var review models.Review
+		var userId, mediaId, mediaType, desc, rating, CreatedAt, UpdatedAt *string
+
+		if err := rows.Scan(&review.UserID, &mediaID, &mediaType, &desc, &rating, &CreatedAt &UpdatedAt); err != nil {
+			print(err.Error(), "from transactions err ")
+			return review, err
+		}
+
+		review.UserID = *userID
+		review.MediaID = *mediaID
+		review.MediaType = *mediaType
+		review.Desc = desc
+		review.Rating = *rating
+		review.CreatedAt = *CreatedAt
+		review.UpdatedAt = *UpdatedAt
+
+		reviews = append(reviews, &review)
+	}
+
+	if err := rows.Err(); err != nil {
+		print(err.Error(), "from transactions err ")
+		return []*models.Review{}, err
+	}
+
+	return reviews, nil
+}
+
  func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string) ([]*models.Review, error) {
 
 	if (media_type == "album") {
@@ -39,8 +76,6 @@ package user
  			return reviews, err
  		}
 
- 		print("working?")
-
  		review.UserID = *userID
  		review.MediaID = *mediaID
  		review.MediaType = *mediaType
@@ -48,8 +83,6 @@ package user
  		review.Rating = *rating
  		review.CreatedAt = *createdAt
  		review.UpdatedAt = *updatedAt
-
- 		print("check2")
 
  		reviews = append(reviews, &review)
  	}
