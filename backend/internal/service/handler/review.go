@@ -1,8 +1,9 @@
 package handler
-import "strconv"
 
 import (
+	"fmt"
 	"platnm/internal/storage"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -28,25 +29,25 @@ func (h *ReviewHandler) GetReviews(c *fiber.Ctx) error {
 
 func (h *ReviewHandler) GetReviewById(c *fiber.Ctx, mediaType string) error {
 	id := c.Params("id")
-	offset := c.Query("offset", "0")
-	limit := c.Query("limit", "10")
+	offsetstr := c.Query("offset", "0")
+	limitstr := c.Query("limit", "10")
 	//limitParam := r.URL.Query().Get("limit")
 	//offsetParam := r.URL.Query().Get("offset")
-	review, err := h.reviewRepository.GetReviewsByID(id, mediaType, c.Context())
+	//review, err := h.reviewRepository.GetReviewsByID(id, mediaType, c.Context())
 
-	
 	// Parse offset and limit as integers
-	
+	offset, err := strconv.Atoi(offsetstr)
 	if err != nil || int(offset) < 0 {
 		offset = 0 // Ensure offset is non-negative
 	}
 
+	limit, err := strconv.Atoi(limitstr)
 	if err != nil || int(limit) <= 0 {
 		limit = 10 // Ensure limit is positive
 	}
 
 	// Fetch the review based on ID and media type
-	review, err := h.reviewRepository.GetReviewByID(id, mediaType, c.Context(), offset, limit)
+	review, err := h.reviewRepository.GetReviewsByID(c.Context(), id, mediaType)
 	if err != nil {
 		// If error, log it and return 500
 		fmt.Println(err.Error(), "from transactions err ")
@@ -65,7 +66,11 @@ func (h *ReviewHandler) GetReviewById(c *fiber.Ctx, mediaType string) error {
 	// Calculate average rating
 	var avgRating float64
 	for _, r := range review {
-		avgRating += r.Rating
+		rating, err := strconv.ParseFloat(r.Rating, 64)
+		if err != nil {
+			avgRating += rating
+		}
+
 	}
 	if len(review) > 0 {
 		avgRating /= float64(len(review))
