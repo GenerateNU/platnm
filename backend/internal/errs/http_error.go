@@ -25,8 +25,8 @@ func NewHTTPError(code int, err error) HTTPError {
 	}
 }
 
-func BadRequest(err error) HTTPError {
-	return NewHTTPError(http.StatusBadRequest, err)
+func BadRequest(msg string) HTTPError {
+	return NewHTTPError(http.StatusBadRequest, errors.New(msg))
 }
 
 func Unauthorized() HTTPError {

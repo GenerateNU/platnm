@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"platnm/internal/errs"
 	"platnm/internal/models"
 	"platnm/internal/storage"
 
@@ -19,17 +20,16 @@ func NewReviewHandler(reviewRepository storage.ReviewRepository) *ReviewHandler 
 
 func (h *ReviewHandler) CreateReview(c *fiber.Ctx) error {
 	var review models.Review
-	// bind request body to review
 	if err := c.BodyParser(&review); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return errs.BadRequest("failed to parse request body")
 	}
 
-	if errs := review.Validate(); len(errs) > 0 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"errors": errs})
+	if errMap := review.Validate(); len(errMap) > 0 {
+		return errs.InvalidRequestData(errMap)
 	}
 
 	if _, err := h.reviewRepository.CreateReview(c.Context(), &review); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return err
 	}
 
 	// return review in response
