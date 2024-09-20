@@ -48,7 +48,7 @@ package user
 	return reviews, nil
 }
 
- func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaType, string) ([]*models.Review, error) {
+ func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaType string) ([]*models.Review, error) {
 	rows, err = null
 
 	if (mediaType == "album") {
