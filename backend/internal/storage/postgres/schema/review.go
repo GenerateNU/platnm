@@ -25,7 +25,7 @@ package user
 	for rows.Next() {
 		var review models.Review
 		var userID, mediaID, mediaType, desc, rating *string
-		var CreatedAt, UpdatedAt *Time.time
+		var CreatedAt, UpdatedAt *time.Time
 
 		if err := rows.Scan(&userID, &mediaID, &mediaType, &desc, &rating, &UpdatedAt, &CreatedAt); err != nil {
 			print(err.Error(), "from transactions err ")
@@ -35,7 +35,7 @@ package user
 		review.UserID = *userID
 		review.MediaID = *mediaID
 		review.MediaType = *mediaType
-		review.Desc = *desc
+		review.Desc = desc
 		review.Rating = *rating
 		review.UpdatedAt = *UpdatedAt
 		review.CreatedAt = *CreatedAt
@@ -76,7 +76,7 @@ package user
  		review.UserID = *userID
  		review.MediaID = *mediaID
  		review.MediaType = *mediaType
- 		review.Desc = *desc
+ 		review.Desc = desc
  		review.Rating = *rating
  		review.CreatedAt = *createdAt
  		review.UpdatedAt = *updatedAt
