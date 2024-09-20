@@ -1,8 +1,13 @@
 package service
 
 import (
+	"net/http"
+	"platnm/internal/config"
+	"platnm/internal/constants"
 	"platnm/internal/errs"
-	"platnm/internal/service/handler"
+	"platnm/internal/service/handler/oauth"
+	"platnm/internal/service/handler/oauth/spotify"
+	"platnm/internal/service/handler/users"
 	"platnm/internal/storage/postgres"
 
 	go_json "github.com/goccy/go-json"
@@ -12,31 +17,44 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/gofiber/fiber/v2/middleware/session"
+	"github.com/gofiber/storage/memory"
 )
 
-type Params struct {
-	Conn *pgxpool.Pool
-}
-
-func InitApp(params Params) *fiber.App {
+func InitApp(config config.Config) *fiber.App {
 	app := setupApp()
 
-	setupRoutes(app, params.Conn)
+	setupRoutes(app, config)
 
 	return app
 }
 
-func setupRoutes(app *fiber.App, conn *pgxpool.Pool) {
+func setupRoutes(app *fiber.App, config config.Config) {
 	app.Get("/health", func(c *fiber.Ctx) error {
-		return c.SendStatus(fiber.StatusOK)
+		return c.SendStatus(http.StatusOK)
 	})
 
-	repository := postgres.NewRepository(conn)
-	userHandler := handler.NewUserHandler(repository.User)
+	repository := postgres.NewRepository(config.DB)
+	userHandler := users.NewUserHandler(repository.User)
 	app.Route("/users", func(r fiber.Router) {
 		r.Get("/", userHandler.GetUsers)
 		r.Get("/:id", userHandler.GetUserById)
+	})
+
+	// this store can be passed to other oauth handlers that need to manage state/verifier values
+	store := oauth.NewSessionValueStore(session.Config{
+		Storage:    memory.New(),
+		Expiration: constants.SessionDuration,
+		KeyLookup:  "header:" + constants.HeaderSession,
+	})
+
+	// change to /oauth once its changed in spotify dashboard
+	app.Route("/auth", func(r fiber.Router) {
+		r.Route("/spotify", func(r fiber.Router) {
+			h := spotify.NewHandler(store, config.Spotify)
+			r.Get("/begin", h.Begin)
+			r.Get("/callback", h.Callback)
+		})
 	})
 }
 
