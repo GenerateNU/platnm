@@ -24,9 +24,9 @@ package user
 	var reviews []*models.Review
 	for rows.Next() {
 		var review models.Review
-		var userId, mediaId, mediaType, desc, rating, CreatedAt, UpdatedAt *string
+		var userID, mediaID, mediaType, desc, rating, CreatedAt, UpdatedAt *string
 
-		if err := rows.Scan(&review.userId, &mediaId, &mediaType, &desc, &rating, &*CreatedAt &*UpdatedAt); err != nil {
+		if err := rows.Scan(&review.userID, &mediaID, &mediaType, &desc, &rating, &*CreatedAt &*UpdatedAt); err != nil {
 			print(err.Error(), "from transactions err ")
 			return reviews, err
 		}
@@ -36,8 +36,6 @@ package user
 		review.MediaType = *mediaType
 		review.Desc = desc
 		review.Rating = *rating
-		review.CreatedAt = CreatedAt
-		review.UpdatedAt = UpdatedAt
 
 		reviews = append(reviews, &review)
 	}
@@ -50,11 +48,12 @@ package user
 	return reviews, nil
 }
 
- func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string) ([]*models.Review, error) {
+ func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaType, string) ([]*models.Review, error) {
+	rows, err = null
 
-	if (MediaType == "album") {
+	if (mediaType == "album") {
 		rows, err := r.db.Query(ctx, "SELECT * FROM review WHERE media_id = $1 and MediaType = 'album'", id)
-	} else if (MediaType == "track") {
+	} else if (mediaType == "track") {
 		rows, err := r.db.Query(ctx, "SELECT * FROM review WHERE media_id = $1 and MediaType = 'track'", id)
 	}
  	if err != nil {

@@ -32,7 +32,7 @@ func (h *ReviewHandler) GetReviewById(c *fiber.Ctx, mediaType string) error {
 	limit := c.Query("limit", 10)
 	//limitParam := r.URL.Query().Get("limit")
 	//offsetParam := r.URL.Query().Get("offset")
-	review, err := h.reviewRepository.GetReviewByID(id, mediaType, c.Context())
+	review, err := h.reviewRepository.GetReviewsByID(id, mediaType, c.Context())
 
 	/*
 	// Parse offset and limit as integers
