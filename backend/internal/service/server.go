@@ -2,7 +2,8 @@ package service
 
 import (
 	"platnm/internal/errs"
-	"platnm/internal/service/handler"
+	"platnm/internal/service/handlers/reviews"
+	"platnm/internal/service/handlers/users"
 	"platnm/internal/storage/postgres"
 
 	go_json "github.com/goccy/go-json"
@@ -33,13 +34,13 @@ func setupRoutes(app *fiber.App, conn *pgxpool.Pool) {
 	})
 
 	repository := postgres.NewRepository(conn)
-	userHandler := handler.NewUserHandler(repository.User)
+	userHandler := users.NewHandler(repository.User)
 	app.Route("/users", func(r fiber.Router) {
 		r.Get("/", userHandler.GetUsers)
 		r.Get("/:id", userHandler.GetUserById)
 	})
 	app.Route("/reviews", func(r fiber.Router) {
-		reviewHandler := handler.NewReviewHandler(repository.Review)
+		reviewHandler := reviews.NewHandler(repository.Review)
 		r.Post("/", reviewHandler.CreateReview)
 	})
 }

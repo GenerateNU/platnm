@@ -17,19 +17,6 @@ type Review struct {
 type MediaType string
 
 const (
-	track MediaType = "track"
-	album MediaType = "album"
+	Track MediaType = "track"
+	Album MediaType = "album"
 )
-
-func (r *Review) Validate() map[string]string {
-	var errs = make(map[string]string)
-
-	if r.Rating < 1 || r.Rating > 10 {
-		errs["rating"] = "rating must be between 1 and 10"
-	}
-
-	if r.MediaType != track && r.MediaType != album {
-		errs["media_type"] = "media_type must be either track or album"
-	}
-	return errs
-}
