@@ -76,10 +76,14 @@ func (h *ReviewHandler) GetReviewById(c *fiber.Ctx, mediaType string) error {
 		avgRating /= float64(len(review))
 	}
 
+	var end = offset*limit - 1
+	var start = end - limit
+	var paginatedReview = review[start:end]
+
 	// Return the reviews and average rating
 	response := fiber.Map{
 		"avgRating": avgRating,
-		"reviews":   review,
+		"reviews":   paginatedReview,
 	}
 
 	return c.Status(fiber.StatusOK).JSON(response)
