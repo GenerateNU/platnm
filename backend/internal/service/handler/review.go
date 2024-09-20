@@ -35,16 +35,30 @@ func (h *ReviewHandler) GetReviewById(c *fiber.Ctx, mediaType string) error {
 	//offsetParam := r.URL.Query().Get("offset")
 	//review, err := h.reviewRepository.GetReviewsByID(id, mediaType, c.Context())
 
-	// Parse offset and limit as integers
-	offset, err := strconv.Atoi(offsetstr)
-	if err != nil || int(offset) < 0 {
-		offset = 0 // Ensure offset is non-negative
+	var offset int
+	if offsetstr == "" {
+		offset = 0 // Default to 0 if no offset is provided
+	} else {
+		var err error
+		offset, err = strconv.Atoi(offsetstr)
+		if err != nil || offset < 0 {
+			offset = 0 // Ensure offset is non-negative
+		}
 	}
 
-	limit, err := strconv.Atoi(limitstr)
-	if err != nil || int(limit) <= 0 {
-		limit = 10 // Ensure limit is positive
+	// Check if limitstr is empty, then default to 10
+	var limit int
+	if limitstr == "" {
+		limit = 10 // Default to 10 if no limit is provided
+	} else {
+		var err error
+		limit, err = strconv.Atoi(limitstr)
+		if err != nil || limit <= 0 {
+			limit = 10 // Ensure limit is positive
+		}
 	}
+
+	print("running?")
 
 	// Fetch the review based on ID and media type
 	review, err := h.reviewRepository.GetReviewsByID(c.Context(), id, mediaType)

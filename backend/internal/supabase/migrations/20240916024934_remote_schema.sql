@@ -42,6 +42,17 @@ CREATE TABLE IF NOT EXISTS "public"."users" (
     "push_notification_enabled" boolean DEFAULT false
 );
 
+CREATE TABLE review (
+    user_id VARCHAR(255) NOT NULL,
+    media_type VARCHAR(50) NOT NULL,
+    media_id VARCHAR(255) NOT NULL,
+    rating VARCHAR(10) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, media_id, media_type) -- Assuming a composite key
+);
+
 ALTER TABLE "public"."users" OWNER TO "postgres";
 
 ALTER TABLE ONLY "public"."users"
