@@ -26,7 +26,7 @@ package user
 		var review models.Review
 		var userID, mediaID, mediaType, desc, rating, CreatedAt, UpdatedAt *string
 
-		if err := rows.Scan(&review.userID, &mediaID, &mediaType, &desc, &rating, &*CreatedAt &*UpdatedAt); err != nil {
+		if err := rows.Scan(&userID, &mediaID, &mediaType, &desc, &rating); err != nil {
 			print(err.Error(), "from transactions err ")
 			return reviews, err
 		}
@@ -49,13 +49,8 @@ package user
 }
 
  func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaType string) ([]*models.Review, error) {
-	rows, err = null
-
-	if (mediaType == "album") {
-		rows, err := r.db.Query(ctx, "SELECT * FROM review WHERE media_id = $1 and MediaType = 'album'", id)
-	} else if (mediaType == "track") {
-		rows, err := r.db.Query(ctx, "SELECT * FROM review WHERE media_id = $1 and MediaType = 'track'", id)
-	}
+	rows, err := r.db.Query(ctx, "SELECT * FROM review WHERE media_id = $1 and MediaType = $2'", id, mediaType)
+	
  	if err != nil {
  		print(err.Error(), "from transactions err ")
  		return []*models.Review{}, err
