@@ -12,6 +12,7 @@ type ReviewRepository struct {
 }
 
 func (r *ReviewRepository) GetReviews(ctx context.Context) ([]*models.Review, error) {
+	var review models.Review
 	rows, err := r.db.Query(context.Background(), "SELECT user_id, media_id, media_type, desc, rating, CreatedAt, UpdatedAt FROM review")
 	if err != nil {
 		print(err.Error(), "from transactions err ")
@@ -19,33 +20,7 @@ func (r *ReviewRepository) GetReviews(ctx context.Context) ([]*models.Review, er
 	}
 	defer rows.Close()
 
-	var reviews []*models.Review
-	for rows.Next() {
-		var review models.Review
-		var userId, mediaId, mediaType, desc, rating, CreatedAt, UpdatedAt *string
-
-		if err := rows.Scan(&review.UserID, &mediaID, &mediaType, &desc, &rating, &CreatedAt &UpdatedAt); err != nil {
-			print(err.Error(), "from transactions err ")
-			return review, err
-		}
-
-		review.UserID = *userID
-		review.MediaID = *mediaID
-		review.MediaType = *mediaType
-		review.Desc = *desc
-		review.Rating = *rating
-		review.CreatedAt = * CreatedAt
-		review.UpdatedAt = * UpdatedAt
-
-		reviews = append(reviews, &review)
-	}
-
-	if err := rows.Err(); err != nil {
-		print(err.Error(), "from transactions err ")
-		return []*models.Review{}, err
-	}
-
-	return reviews, nil
+	return &reviews, nil
 }
 
 func (r *ReviewRepository) GetReviewByID(id string, media_type string, ctx context.Context) (*models.Review, error) {
