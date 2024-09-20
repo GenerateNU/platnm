@@ -57,7 +57,7 @@ func (h *ReviewHandler) GetReviewById(c *fiber.Ctx, mediaType string) error {
 	}
 
 	// If no review is found, return a 404 status
-	if review == nil || len(review) == 0 {
+	if len(review) == 0 {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"message": "No reviews found",
 		})
@@ -83,11 +83,4 @@ func (h *ReviewHandler) GetReviewById(c *fiber.Ctx, mediaType string) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(response)
-
-	if err != nil {
-		print(err.Error(), "from transactions err ")
-		return err
-	}
-
-	return c.Status(fiber.StatusOK).JSON(review)
 }
