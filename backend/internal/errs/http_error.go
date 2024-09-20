@@ -34,7 +34,7 @@ func Unauthorized() HTTPError {
 }
 
 func NotFound(title string, withKey string, withValue any) HTTPError {
-	return NewHTTPError(http.StatusNotFound, fmt.Errorf("%s with %s='%s' not found", title, withKey, withValue))
+	return NewHTTPError(http.StatusNotFound, fmt.Errorf("%s with %s='%v' not found", title, withKey, withValue))
 }
 
 func Conflict(title string, withKey string, withValue any) HTTPError {

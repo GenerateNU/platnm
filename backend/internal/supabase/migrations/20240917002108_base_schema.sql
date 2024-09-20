@@ -60,5 +60,6 @@ create table if not exists review (
     comment text,
     created_at timestamp with time zone default now(),
     updated_at timestamp with time zone default now()
-    add constraint unique_user_media unique (user_id, media_id);
+    -- btw if query fails due to unique constraint, id will still be incremented
+    add constraint unique_user_media unique (user_id, media_id, media_type);
 );

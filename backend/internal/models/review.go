@@ -3,14 +3,14 @@ package models
 import "time"
 
 type Review struct {
-	ReviewID  int       `json:"id"`
+	ID        int       `json:"id"`
 	UserID    string    `json:"user_id"`
-	MediaID   int       `json:"media_id"`
 	MediaType MediaType `json:"media_type"`
+	MediaID   int       `json:"media_id"`
 	Rating    int       `json:"rating"`
+	Comment   string    `json:"comment"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-	Comment   string    `json:"comment"`
 }
 
 // mediatype can be either track or album

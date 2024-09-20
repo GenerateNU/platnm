@@ -7,12 +7,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type CreateReviewRequest struct {
+type createReviewRequest struct {
 	models.Review
 }
 
 func (h *Handler) CreateReview(c *fiber.Ctx) error {
-	var req CreateReviewRequest
+	var req createReviewRequest
 	if err := c.BodyParser(&req); err != nil {
 		return errs.BadRequest("failed to parse request body")
 	}
@@ -29,7 +29,7 @@ func (h *Handler) CreateReview(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(review)
 }
 
-func (r *CreateReviewRequest) validate() map[string]string {
+func (r *createReviewRequest) validate() map[string]string {
 	var errs = make(map[string]string)
 
 	if r.Rating < 1 || r.Rating > 10 {
