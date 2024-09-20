@@ -24,9 +24,10 @@ package user
 	var reviews []*models.Review
 	for rows.Next() {
 		var review models.Review
-		var userID, mediaID, mediaType, desc, rating, CreatedAt, UpdatedAt *string
+		var userID, mediaID, mediaType, desc, rating *string
+		var CreatedAt, UpdatedAt *Time.time
 
-		if err := rows.Scan(&userID, &mediaID, &mediaType, &desc, &rating); err != nil {
+		if err := rows.Scan(&userID, &mediaID, &mediaType, &desc, &rating, &UpdatedAt, &CreatedAt); err != nil {
 			print(err.Error(), "from transactions err ")
 			return reviews, err
 		}
@@ -34,8 +35,10 @@ package user
 		review.UserID = *userID
 		review.MediaID = *mediaID
 		review.MediaType = *mediaType
-		review.Desc = desc
+		review.Desc = *desc
 		review.Rating = *rating
+		review.UpdatedAt = *UpdatedAt
+		review.CreatedAt = *CreatedAt
 
 		reviews = append(reviews, &review)
 	}
@@ -50,7 +53,7 @@ package user
 
  func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaType string) ([]*models.Review, error) {
 	rows, err := r.db.Query(ctx, "SELECT * FROM review WHERE media_id = $1 and MediaType = $2'", id, mediaType)
-	
+
  	if err != nil {
  		print(err.Error(), "from transactions err ")
  		return []*models.Review{}, err
@@ -65,7 +68,7 @@ package user
  		var mediaType, desc, userID, mediaID, rating *string
  		var createdAt, updatedAt *time.Time
 
- 		if err := rows.Scan(&review.reviewID, &userID, &mediaID, &mediaType, &rating, &desc, &createdAt, &updatedAt); err != nil {
+ 		if err := rows.Scan(&userID, &mediaID, &mediaType, &rating, &desc, &createdAt, &updatedAt); err != nil {
  			print(err.Error(), "from transactions err ")
  			return reviews, err
  		}
