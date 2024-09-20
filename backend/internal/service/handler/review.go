@@ -1,4 +1,5 @@
 package handler
+import "strconv"
 
 import (
 	"platnm/internal/storage"
@@ -27,8 +28,8 @@ func (h *ReviewHandler) GetReviews(c *fiber.Ctx) error {
 
 func (h *ReviewHandler) GetReviewById(c *fiber.Ctx, mediaType string) error {
 	id := c.Params("id")
-	offset := c.Query("offset", "0")
-	limit := c.Query("limit", "10")
+	offset := c.Query("offset", 0)
+	limit := c.Query("limit", 10)
 	//limitParam := r.URL.Query().Get("limit")
 	//offsetParam := r.URL.Query().Get("offset")
 	review, err := h.reviewRepository.GetReviewByID(id, mediaType, c.Context())

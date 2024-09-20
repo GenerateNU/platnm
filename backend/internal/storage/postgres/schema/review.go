@@ -12,7 +12,7 @@ type ReviewRepository struct {
 }
 
 func (r *ReviewRepository) GetReviews(ctx context.Context) ([]*models.Review, error) {
-	rows, err := r.db.Query(context.Background(), "SELECT user_id, media_id, media_type, desc, rating, date_time FROM review")
+	rows, err := r.db.Query(context.Background(), "SELECT user_id, media_id, media_type, desc, rating, CreatedAt, UpdatedAt FROM review")
 	if err != nil {
 		print(err.Error(), "from transactions err ")
 		return []*models.Review{}, err
@@ -22,9 +22,9 @@ func (r *ReviewRepository) GetReviews(ctx context.Context) ([]*models.Review, er
 	var reviews []*models.Review
 	for rows.Next() {
 		var review models.Review
-		var user_id, media_id, media_type, desc, rating, date_time *string
+		var user_id, media_id, media_type, desc, rating, CreatedAt, UpdatedAt *string
 
-		if err := rows.Scan(&review.UserID, &mediaID, &mediaType, &desc, &rating, &dateTime); err != nil {
+		if err := rows.Scan(&review.UserID, &mediaID, &mediaType, &desc, &rating, &CreatedAt &UpdatedAt); err != nil {
 			print(err.Error(), "from transactions err ")
 			return review, err
 		}
@@ -34,7 +34,8 @@ func (r *ReviewRepository) GetReviews(ctx context.Context) ([]*models.Review, er
 		review.MediaType = *mediaType
 		review.Desc = *desc
 		review.Rating = *rating
-		review.DateTime = *dateTime
+		review.CreatedAt = * CreatedAt
+		review.UpdatedAt = * UpdatedAt
 
 		reviews = append(reviews, &review)
 	}
@@ -49,10 +50,10 @@ func (r *ReviewRepository) GetReviews(ctx context.Context) ([]*models.Review, er
 
 func (r *ReviewRepository) GetReviewByID(id string, media_type string, ctx context.Context) (*models.Review, error) {
 	var review models.Review
-	if media_type = "album" {
-		err := r.db.QueryRow(context.Background(), "SELECT user_id, media_id, media_type, desc, rating, date_time FROM review WHERE media_id = $1 and media_type = 'album'", id).Scan(&review.UserID, &mediaID, &mediaType, &desc, &rating, &dateTime)
-	} else if media_type = "track" {
-		err := r.db.QueryRow(context.Background(), "SELECT user_id, media_id, media_type, desc, rating, date_time FROM review WHERE media_id = $1 and media_type = 'track'", id).Scan(&review.UserID, &mediaID, &mediaType, &desc, &rating, &dateTime)
+	if (media_type == "album") {
+		err := r.db.QueryRow(context.Background(), "SELECT user_id, media_id, media_type, desc, rating, CreatedAt, UpdatedAt FROM review WHERE media_id = $1 and media_type = 'album'", id).Scan(&review.UserID, &mediaID, &mediaType, &desc, &rating, &dateTime)
+	} else if (media_type == "track") {
+		err := r.db.QueryRow(context.Background(), "SELECT user_id, media_id, media_type, desc, rating, CreatedAt, UpdatedAt FROM review WHERE media_id = $1 and media_type = 'track'", id).Scan(&review.UserID, &mediaID, &mediaType, &desc, &rating, &dateTime)
 	}
 
 	if err != nil {
