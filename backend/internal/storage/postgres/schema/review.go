@@ -22,7 +22,7 @@ func (r *ReviewRepository) GetReviews(ctx context.Context) ([]*models.Review, er
 	var reviews []*models.Review
 	for rows.Next() {
 		var review models.Review
-		var user_id, media_id, media_type, desc, rating, CreatedAt, UpdatedAt *string
+		var userId, mediaId, mediaType, desc, rating, CreatedAt, UpdatedAt *string
 
 		if err := rows.Scan(&review.UserID, &mediaID, &mediaType, &desc, &rating, &CreatedAt &UpdatedAt); err != nil {
 			print(err.Error(), "from transactions err ")
