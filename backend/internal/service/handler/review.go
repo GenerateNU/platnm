@@ -22,10 +22,10 @@ func (h *ReviewHandler) GetReviews(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.Status(fiber.StatusOK).JSON(users)
+	return c.Status(fiber.StatusOK).JSON(review)
 }
 
-func (h *ReviewHandler) GetReviewById(c *fiber.Ctx, mediaType MediaType) error {
+func (h *ReviewHandler) GetReviewById(c *fiber.Ctx, mediaType string) error {
 	id := c.Params("id")
 	offset := c.Query("offset", "0")
 	limit := c.Query("limit", "10")
@@ -33,6 +33,7 @@ func (h *ReviewHandler) GetReviewById(c *fiber.Ctx, mediaType MediaType) error {
 	//offsetParam := r.URL.Query().Get("offset")
 	review, err := h.reviewRepository.GetReviewByID(id, mediaType, c.Context())
 
+	/*
 	// Parse offset and limit as integers
 	offset, err := strconv.Atoi(offsetStr)
 	if err != nil || offset < 0 {
@@ -82,6 +83,6 @@ func (h *ReviewHandler) GetReviewById(c *fiber.Ctx, mediaType MediaType) error {
 		print(err.Error(), "from transactions err ")
 		return err
 	}
-
+*/
 	return c.Status(fiber.StatusOK).JSON(review)
 }

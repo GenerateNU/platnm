@@ -40,13 +40,13 @@ func setupRoutes(app *fiber.App, conn *pgxpool.Pool) {
 	reviewHandler := handler.NewReviewHandler(repository.Review)
 	app.Route("/reviews", func(r fiber.Router) {
 		r.Get("/album", reviewHandler.GetReviews)
-		r.Get("/:albumID", reviewHandler.GetReviewsById(MediaType: "album"))
+		r.Get("/:albumID", reviewHandler.GetReviewsById("album"))
 	})
 
 	reviewHandler := handler.NewReviewHandler(repository.Review)
 	app.Route("/reviews", func(r fiber.Router) {
 		r.Get("/track", reviewHandler.GetReviews)
-		r.Get("/:trackID", reviewHandler.GetReviewsById(MediaType: "track"))
+		r.Get("/:trackID", reviewHandler.GetReviewsById("track"))
 	})
 }
 

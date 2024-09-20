@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type Review struct {
 	UserID         string  `json:"user_id"`
 	MediaType      string  `json:"media_type"`
