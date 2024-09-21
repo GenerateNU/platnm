@@ -69,7 +69,7 @@ create table if not exists follower (
 );
 
 create table if not exists playlist (
-    id serial primary key,
+    playlist_id serial primary key,
     title text not null,
     user_id uuid not null references "user"(id),
     bio text,
