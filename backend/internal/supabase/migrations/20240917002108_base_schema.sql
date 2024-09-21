@@ -1,6 +1,6 @@
 create table if not exists "user" (
     id uuid primary key default uuid_generate_v4(),
-    username text not null,
+    username text not null unique,
     display_name text not null,
     bio text,
     profile_picture text,

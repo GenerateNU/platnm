@@ -6,7 +6,6 @@ import (
 
 	"platnm/internal/config"
 	"platnm/internal/service"
-	"platnm/internal/storage/postgres"
 
 	_ "github.com/lib/pq"
 	"github.com/sethvargo/go-envconfig"
@@ -19,13 +18,9 @@ func main() {
 		log.Fatalln("Error processing .env file: ", err)
 	}
 
-	// Connect to database
-	conn := postgres.ConnectDatabase(config.DbHost, config.DbUser, config.DbPassword, config.DbName, config.DbPort)
-	app := service.InitApp(service.Params{Conn: conn})
+	app := service.InitApp(config)
 
-	defer conn.Close()
-
-	if err := app.Listen(":8080"); err != nil {
+	if err := app.Listen(":" + config.Application.Port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }
