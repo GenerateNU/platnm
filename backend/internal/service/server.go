@@ -7,7 +7,9 @@ import (
 	"platnm/internal/errs"
 	"platnm/internal/service/handler/oauth"
 	"platnm/internal/service/handler/oauth/spotify"
+	"platnm/internal/service/handler/spotistics"
 	"platnm/internal/service/handler/users"
+
 	"platnm/internal/storage/postgres"
 
 	go_json "github.com/goccy/go-json"
@@ -55,6 +57,11 @@ func setupRoutes(app *fiber.App, config config.Config) {
 			r.Get("/begin", h.Begin)
 			r.Get("/callback", h.Callback)
 		})
+	})
+
+	app.Route("/spotify", func(r fiber.Router) {
+		spotifyHandler := spotistics.NewHandler(repository.Spotify)
+		r.Get("/", spotifyHandler.GetPlatnmPlaylist)
 	})
 }
 
