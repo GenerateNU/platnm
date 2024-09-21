@@ -4,9 +4,6 @@
 <!--- Describe your changes in detail -->
 [Link to Ticket](insert the link to your ticket inside the parenthesis here)
 
-## Issue
-<!--- Link your ticket here -->
-
 ## How Has This Been Tested?
 <!--- Please describe in detail how you tested your changes. -->
 
