@@ -63,14 +63,14 @@
             description = "Lints frontend code.";
             exec = ''
               cd "$DEVENV_ROOT"/frontend
-              echo "TODO"
+              ${pkgs.nodejs}/bin/npm run lint
             '';
           };
           "frontend-run" = {
             description = "Runs the frontend server in development mode.";
             exec = ''
               cd "$DEVENV_ROOT"/frontend
-              echo "TODO"
+              ${pkgs.nodejs}/bin/npm run start
             '';
           };
         };
