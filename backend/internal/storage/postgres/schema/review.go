@@ -17,6 +17,10 @@ type ReviewRepository struct {
 	*pgxpool.Pool
 }
 
+const (
+	UserFKeyConstraint = "review_user_id_fkey"
+)
+
 func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Review) (*models.Review, error) {
 	query := `
 	WITH media_exists AS (
@@ -39,6 +43,9 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 		} else if pgErr, ok := err.(*pgconn.PgError); ok {
 			if pgErr.Code == pgerrcode.UniqueViolation {
 				return nil, errs.Conflict("review", "(user_id, media_id)", fmt.Sprintf("(%s, %d)", review.UserID, review.MediaID))
+			}
+			if pgErr.Code == pgerrcode.ForeignKeyViolation && pgErr.ConstraintName == UserFKeyConstraint {
+				return nil, errs.NotFound("user", "id", review.UserID)
 			}
 		}
 		return nil, err
