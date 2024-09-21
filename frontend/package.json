@@ -53,10 +53,7 @@
     "extends": [
       "eslint:recommended",
       "expo"
-    ],
-    "rules": {
-      "no-console": 1
-    }
+    ]
   },
   "private": true
 }
