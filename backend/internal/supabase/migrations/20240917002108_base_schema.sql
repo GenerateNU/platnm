@@ -69,7 +69,7 @@ create table if not exists follower (
 );
 
 create table if not exists playlist (
-    playlist_id serial primary key,
+    id serial primary key,
     title text not null,
     user_id uuid not null references "user"(id),
     bio text,
@@ -86,12 +86,12 @@ create table if not exists user_auth (
     id serial primary key,
     user_id uuid not null references "user"(id),
     refresh_token text not null,
-    access_token text not null,
-)
+    access_token text not null
+);
 
 create table if not exists user_review_vote (
     user_id uuid not null references "user"(id),
     review_id integer not null references review(id),
-    vote boolean not null,
+    upvote boolean not null,
     primary key (user_id, review_id)
 );
