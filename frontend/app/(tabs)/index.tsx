@@ -19,7 +19,7 @@ type User = {
 export default function HomeScreen() {
   const [users, setUsers] = useState<User[]>([]);
   useEffect(() => {
-    const getUsers = async () => {
+    async () => {
       axios.get(`${BASE_URL}/users`).then((response) => {
         setUsers(response.data);
       });
