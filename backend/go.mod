@@ -4,8 +4,11 @@ go 1.22.6
 
 require (
 	github.com/gofiber/fiber/v2 v2.52.5
+	github.com/gofiber/storage/memory v1.3.4
 	github.com/jackc/pgx/v5 v5.7.0
 	github.com/lib/pq v1.10.9
+	github.com/zmb3/spotify/v2 v2.4.2
+	golang.org/x/oauth2 v0.23.0
 )
 
 require (
