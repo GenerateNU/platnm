@@ -19,11 +19,9 @@ type User = {
 export default function HomeScreen() {
   const [users, setUsers] = useState<User[]>([]);
   useEffect(() => {
-    async () => {
-      axios.get(`${BASE_URL}/users`).then((response) => {
-        setUsers(response.data);
-      });
-    };
+    axios.get(`${BASE_URL}/users`).then((response) => {
+      setUsers(response.data);
+    });
   }, [users]);
   return (
     <ParallaxScrollView
