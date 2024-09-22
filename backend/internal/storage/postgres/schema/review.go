@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"fmt"
 )
 
 type ReviewRepository struct {
@@ -16,10 +18,17 @@ type ReviewRepository struct {
 func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error) {
 
 	rows, err := r.db.Query(ctx, "SELECT * FROM review WHERE user_id = $1", id)
+
+	if !rows.Next() {
+		fmt.Println("No rows found, likely an invalid user_id.")
+	}
+
 	if err != nil {
 		print(err.Error(), "from transactions err ")
+		print("id %s is not a valid id ", id)
 		return []*models.Review{}, err
 	}
+
 	defer rows.Close()
 
 	var reviews []*models.Review
@@ -35,8 +44,6 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 			return reviews, err
 		}
 
-		print("are we here plsssss")
-
 		review.UserID = *userID
 		review.MediaID = *mediaID
 		review.MediaType = *mediaType
@@ -44,8 +51,6 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 		review.Rating = *rating
 		review.CreatedAt = *createdAt
 		review.UpdatedAt = *updatedAt
-
-		print("chekc2 check2")
 
 		reviews = append(reviews, &review)
 	}

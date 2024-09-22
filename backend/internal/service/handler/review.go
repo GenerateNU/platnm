@@ -18,10 +18,9 @@ func NewReviewHandler(reviewRepository storage.ReviewRepository) *ReviewHandler 
 
 func (h *ReviewHandler) GetReviewsByUserID(c *fiber.Ctx) error {
 	id := c.Params("id")
-	review, err := h.reviewRepository.GetReviewsByUserID(c.Context(), id)
+	review,err := h.reviewRepository.GetReviewsByUserID(c.Context(), id)
 
 	if err != nil {
-		print(err.Error(), "from transactions err ")
 		return err
 	}
 
