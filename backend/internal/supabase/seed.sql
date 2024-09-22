@@ -60,7 +60,7 @@ VALUES
   ('2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e', '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d'),
   ('3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f', '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d');
 
-INSERT INTO playlist (playlist_id, title, user_id, bio, cover_photo)
+INSERT INTO playlist (id, title, user_id, bio, cover_photo)
 VALUES
   (1, '2024', '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 'Playlist for 2024', 'https://upload.wikimedia.org/wikipedia/commons/0/0a/Nils_B%C3%A4ckstr%C3%B6m_Rubin_Tyumen.jpg'),
   (2, 'Movie Music', '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 'Cinematic soundtracks and epic scores that bring the magic of movies to life.', 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Anolis_marmoratus%28fight%29.jpg/1280px-Anolis_marmoratus%28fight%29.jpg'),
@@ -82,7 +82,7 @@ VALUES
   (4, '4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9d', 'refresh_token_jkl012', 'access_token_opq012'),
   (5, '5e6f7a8b-9c0d-1e2f-3a4b-5c6d7e8f9d0e', 'refresh_token_mno345', 'access_token_lmn345');
 
-INSERT INTO user_review_vote (user_id, review_id, vote)
+INSERT INTO user_review_vote (user_id, review_id, upvote)
 VALUES
   ('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 1, true),
   ('2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e', 2, false),
