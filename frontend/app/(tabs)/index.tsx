@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { Image, StyleSheet } from 'react-native';
 
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
@@ -17,22 +17,16 @@ type User = {
 };
 
 export default function HomeScreen() {
-  const [isLoading, setLoading] = useState(true);
   const [users, setUsers] = useState<User[]>([]);
-
-  console.log(BASE_URL);
   const getUsers = async () => {
     axios.get(`${BASE_URL}/users`).then((response) => {
       setUsers(response.data);
-      console.log(response.data);
-      console.log(users);
     });
   };
 
   useEffect(() => {
     getUsers();
-    console.log(users);
-  }, []);
+  }, [getUsers, users]);
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
