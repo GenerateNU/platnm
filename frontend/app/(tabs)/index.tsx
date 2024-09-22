@@ -18,15 +18,13 @@ type User = {
 
 export default function HomeScreen() {
   const [users, setUsers] = useState<User[]>([]);
-  const getUsers = async () => {
-    axios.get(`${BASE_URL}/users`).then((response) => {
-      setUsers(response.data);
-    });
-  };
-
   useEffect(() => {
-    getUsers();
-  }, [getUsers, users]);
+    const getUsers = async () => {
+      axios.get(`${BASE_URL}/users`).then((response) => {
+        setUsers(response.data);
+      });
+    };
+  }, [users]);
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
