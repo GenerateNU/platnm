@@ -2,12 +2,15 @@
 
 ## Description
 <!--- Describe your changes in detail -->
-
-## Issue
-<!--- Link your ticket here -->
+[Link to Ticket](insert the link to your ticket inside the parenthesis here)
 
 ## How Has This Been Tested?
 <!--- Please describe in detail how you tested your changes. -->
+
+## Checklist:
+- [ ] I have performed a self-review of my code
+- [ ] I have commented my code, particularly in hard-to-understand areas
+- [ ] Some tests are included that test my code
 
 ## Screenshots:
 <!--- If working on a backend ticket, screenshots or a walkthrough of successful API calls are included. -->

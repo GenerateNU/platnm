@@ -2,8 +2,8 @@ package postgres
 
 import (
 	"context"
-	"fmt"
 	"log"
+	"platnm/internal/config"
 	"platnm/internal/storage"
 	user "platnm/internal/storage/postgres/schema"
 
@@ -11,10 +11,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func ConnectDatabase(host, user, password, dbname, port string) *pgxpool.Pool {
-	connStr := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=require statement_cache_mode=describe pgbouncer=true", host, user, password, dbname, port)
-
-	dbConfig, err := pgxpool.ParseConfig(connStr)
+func ConnectDatabase(config config.DB) *pgxpool.Pool {
+	dbConfig, err := pgxpool.ParseConfig(config.Connection())
 	if err != nil {
 		log.Fatal("Failed to create a config, error: ", err)
 	}
@@ -38,7 +36,9 @@ func ConnectDatabase(host, user, password, dbname, port string) *pgxpool.Pool {
 	return conn
 }
 
-func NewRepository(db *pgxpool.Pool) *storage.Repository {
+func NewRepository(config config.DB) *storage.Repository {
+	db := ConnectDatabase(config)
+
 	return &storage.Repository{
 		User:   user.NewUserRepository(db),
 		Review: user.NewReviewRepository(db),
