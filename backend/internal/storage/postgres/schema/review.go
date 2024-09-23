@@ -8,7 +8,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"fmt"
+	"platnm/internal/errs"
 )
 
 type ReviewRepository struct {
@@ -20,7 +20,8 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 	rows, err := r.db.Query(ctx, "SELECT * FROM review WHERE user_id = $1", id)
 
 	if !rows.Next() {
-		fmt.Println("No rows found, likely an invalid user_id.")
+		print("No reviews found for valid user %s.", id)
+		return []*models.Review{}, errs.NotFound("Review", "valid user_id", id)
 	}
 
 	if err != nil {

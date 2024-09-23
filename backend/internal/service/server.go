@@ -41,7 +41,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Get("/:id", userHandler.GetUserById)
 	})
 
-	reviewHandler := users.NewReviewHandler(repository.Review)
+	reviewHandler := users.NewReviewHandler(repository.Review, repository.User)
 	app.Route("/reviews", func(r fiber.Router) {
 		r.Get("/:id", reviewHandler.GetReviewsByUserID)
 	})
