@@ -1,4 +1,4 @@
-package user
+package schema
 
 import (
 	"context"
@@ -56,6 +56,21 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id string) (*models.Us
 	}
 
 	return &user, nil
+}
+
+func (r *UserRepository) UserExists(ctx context.Context, id string) (bool, error) {
+
+	rows, err := r.db.Query(ctx, `SELECT * FROM "user" WHERE id = $1`, id)
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 func NewUserRepository(db *pgxpool.Pool) *UserRepository {

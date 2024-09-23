@@ -1,4 +1,4 @@
-package user
+package schema
 
 import (
 	"context"
@@ -12,21 +12,6 @@ import (
 
 type ReviewRepository struct {
 	db *pgxpool.Pool
-}
-
-func (r *ReviewRepository) UserExists(ctx context.Context, id string) (bool, error) {
-
-	rows, err := r.db.Query(ctx, `SELECT * FROM "user" WHERE id = $1`, id)
-	if err != nil {
-		return false, err
-	}
-	defer rows.Close()
-
-	if rows.Next() {
-		return true, nil
-	}
-
-	return false, nil
 }
 
 func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error) {

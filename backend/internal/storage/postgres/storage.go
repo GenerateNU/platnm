@@ -6,7 +6,7 @@ import (
 	"platnm/internal/config"
 	"platnm/internal/storage"
 	user "platnm/internal/storage/postgres/schema"
-
+	review "platnm/internal/storage/postgres/schema"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -41,6 +41,6 @@ func NewRepository(config config.DB) *storage.Repository {
 
 	return &storage.Repository{
 		User:   user.NewUserRepository(db),
-		Review: user.NewReviewRepository(db),
+		Review: review.NewReviewRepository(db),
 	}
 }

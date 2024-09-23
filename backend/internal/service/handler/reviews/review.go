@@ -10,7 +10,7 @@ func (h *ReviewHandler) GetReviewsByUserID(c *fiber.Ctx) error {
 
 	id := c.Params("id")
 
-	exists, err := h.reviewRepository.UserExists(c.Context(), id)
+	exists, err := h.userRepository.UserExists(c.Context(), id)
 
 	if err != nil {
 		return err

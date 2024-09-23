@@ -8,11 +8,11 @@ import (
 type UserRepository interface {
 	GetUsers(ctx context.Context) ([]*models.User, error)
 	GetUserByID(ctx context.Context, id string) (*models.User, error)
+	UserExists(ctx context.Context, id string) (bool, error)
 }
 
 type ReviewRepository interface {
 	GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error)
-	UserExists(ctx context.Context, id string) (bool, error)
 }
 
 // Repository storage of all repositories.
