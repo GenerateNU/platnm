@@ -7,6 +7,7 @@ import (
 	"platnm/internal/errs"
 	"platnm/internal/service/handler/oauth"
 	"platnm/internal/service/handler/oauth/spotify"
+	"platnm/internal/service/handler/reviews"
 	"platnm/internal/service/handler/users"
 	"platnm/internal/service/handler/reviews"
 	"platnm/internal/storage/postgres"
@@ -36,14 +37,15 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	})
 
 	repository := postgres.NewRepository(config.DB)
-	userHandler := users.NewUserHandler(repository.User)
+	userHandler := users.NewHandler(repository.User)
 	app.Route("/users", func(r fiber.Router) {
 		r.Get("/", userHandler.GetUsers)
 		r.Get("/:id", userHandler.GetUserById)
 	})
 
-	reviewHandler := reviews.NewReviewHandler(repository.Review, repository.User)
 	app.Route("/reviews", func(r fiber.Router) {
+		reviewHandler := reviews.NewReviewHandler(repository.Review, repository.User)
+		r.Post("/", reviewHandler.CreateReview)
 		r.Get("/:id", reviewHandler.GetReviewsByUserID)
 	})
 

@@ -25,8 +25,8 @@ func NewHTTPError(code int, err error) HTTPError {
 	}
 }
 
-func BadRequest(err error) HTTPError {
-	return NewHTTPError(http.StatusBadRequest, err)
+func BadRequest(msg string) HTTPError {
+	return NewHTTPError(http.StatusBadRequest, errors.New(msg))
 }
 
 func Unauthorized() HTTPError {
@@ -34,7 +34,7 @@ func Unauthorized() HTTPError {
 }
 
 func NotFound(title string, withKey string, withValue any) HTTPError {
-	return NewHTTPError(http.StatusNotFound, fmt.Errorf("%s with %s='%s' not found", title, withKey, withValue))
+	return NewHTTPError(http.StatusNotFound, fmt.Errorf("%s with %s='%v' not found", title, withKey, withValue))
 }
 
 func Conflict(title string, withKey string, withValue any) HTTPError {
