@@ -1,4 +1,4 @@
-package users
+package reviews
 
 import (
 	"platnm/internal/storage"

@@ -8,6 +8,7 @@ import (
 	"platnm/internal/service/handler/oauth"
 	"platnm/internal/service/handler/oauth/spotify"
 	"platnm/internal/service/handler/users"
+	"platnm/internal/service/handler/reviews"
 	"platnm/internal/storage/postgres"
 
 	go_json "github.com/goccy/go-json"
@@ -41,7 +42,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Get("/:id", userHandler.GetUserById)
 	})
 
-	reviewHandler := users.NewReviewHandler(repository.Review, repository.User)
+	reviewHandler := reviews.NewReviewHandler(repository.Review, repository.User)
 	app.Route("/reviews", func(r fiber.Router) {
 		r.Get("/:id", reviewHandler.GetReviewsByUserID)
 	})
