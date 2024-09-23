@@ -34,7 +34,7 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 	rows, err := r.db.Query(ctx, "SELECT * FROM review WHERE user_id = $1", id)
 
 	if !rows.Next() {
-		return []*models.Review{}, errs.NotFound("Review", "valid user_id", id)
+		return []*models.Review{}, errs.NotFound("Review", "valid id", id)
 	}
 
 	if err != nil {
