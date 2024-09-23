@@ -7,11 +7,11 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/adaptor"
-	"golang.org/x/oauth2"
 )
 
 func (h *Handler) Callback(c *fiber.Ctx) error {
-	v, err := h.store.SessionGetValue(c)
+
+	state, err := h.store.GetState(c)
 	if err != nil {
 		return err
 	}
@@ -21,7 +21,7 @@ func (h *Handler) Callback(c *fiber.Ctx) error {
 		return err
 	}
 
-	token, err := h.authenticator.Token(c.Context(), v.State, req, oauth2.SetAuthURLParam("code_verifier", v.Verifier))
+	token, err := h.authenticator.Token(c.Context(), state, req)
 	if err != nil {
 		return err
 	}

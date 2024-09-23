@@ -5,42 +5,37 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/session"
 )
 
-const valueKey = "value"
+const valueKey = "state"
 
-type SessionValue struct {
-	State    string
-	Verifier string
-}
-
-type SessionValueStore struct {
+type StateStore struct {
 	*session.Store
 }
 
-func NewSessionValueStore(config session.Config) *SessionValueStore {
-	store := &SessionValueStore{
+func NewSessionValueStore(config session.Config) *StateStore {
+	store := &StateStore{
 		session.New(config),
 	}
 
-	store.RegisterType(SessionValue{})
 	return store
 }
 
-func (s *SessionValueStore) SessionSetValue(c *fiber.Ctx, value SessionValue) error {
+func (s *StateStore) SetState(c *fiber.Ctx, state string) error {
 	sess, err := s.Get(c)
 	if err != nil {
 		return err
 	}
-	sess.Set(valueKey, value)
+
+	sess.Set(valueKey, state)
 	if err := sess.Save(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *SessionValueStore) SessionGetValue(c *fiber.Ctx) (SessionValue, error) {
+func (s *StateStore) GetState(c *fiber.Ctx) (string, error) {
 	sess, err := s.Get(c)
 	if err != nil {
-		return SessionValue{}, err
+		return "", err
 	}
-	return sess.Get(valueKey).(SessionValue), nil
+	return sess.Get(valueKey).(string), nil
 }
