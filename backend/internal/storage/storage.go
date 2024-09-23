@@ -11,7 +11,7 @@ type UserRepository interface {
 }
 
 type SpotifyRepository interface {
-	GetPlatnmPlaylist(ctx context.Context) ([]*models.User, error)
+	GetPlatnmPlaylist(ctx context.Context) ([]models.User, error)
 }
 
 // Repository storage of all repositories.
