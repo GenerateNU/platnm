@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-
-	"platnm/internal/errs"
 )
 
 type ReviewRepository struct {
@@ -19,7 +17,7 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 	rows, err := r.db.Query(ctx, "SELECT * FROM review WHERE user_id = $1", id)
 
 	if !rows.Next() {
-		return []*models.Review{}, errs.NotFound("Review", "valid id", id)
+		return []*models.Review{}, nil
 	}
 
 	if err != nil {
