@@ -6,7 +6,7 @@ import (
 	"platnm/internal/errs"
 )
 
-func (h *ReviewHandler) GetReviewsByUserID(c *fiber.Ctx) error {
+func (h *Handler) GetReviewsByUserID(c *fiber.Ctx) error {
 
 	id := c.Params("id")
 

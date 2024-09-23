@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"platnm/internal/models"
-	"time"
 
 	"platnm/internal/errs"
 
@@ -56,7 +55,7 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 
 func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error) {
 
-	rows, err := r.db.Query(ctx, "SELECT * FROM review WHERE user_id = $1", id)
+	rows, err := r.Query(ctx, "SELECT * FROM review WHERE user_id = $1", id)
 
 	if !rows.Next() {
 		return []*models.Review{}, nil
@@ -70,24 +69,19 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 
 	var reviews []*models.Review
 	for rows.Next() {
-
 		var review models.Review
-
-		var mediaType, comment, userID, mediaID, rating *string
-		var createdAt, updatedAt *time.Time
-
-		if err := rows.Scan(&review.ID, &userID, &mediaID, &mediaType, &rating, &comment, &createdAt, &updatedAt); err != nil {
-			return reviews, err
+		if err := rows.Scan(
+			&review.ID,
+			&review.UserID,
+			&review.MediaID,
+			&review.MediaType,
+			&review.Rating,
+			&review.Comment,
+			&review.CreatedAt,
+			&review.UpdatedAt,
+		); err != nil {
+			return nil, err
 		}
-
-		review.UserID = *userID
-		review.MediaID = *mediaID
-		review.MediaType = *mediaType
-		review.Comment = *comment
-		review.Rating = *rating
-		review.CreatedAt = *createdAt
-		review.UpdatedAt = *updatedAt
-
 		reviews = append(reviews, &review)
 	}
 
