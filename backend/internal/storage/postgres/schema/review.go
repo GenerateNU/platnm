@@ -3,7 +3,6 @@ package user
 import (
 	"context"
 	"platnm/internal/models"
-
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -15,18 +14,30 @@ type ReviewRepository struct {
 	db *pgxpool.Pool
 }
 
+func (r *ReviewRepository) UserExists(ctx context.Context, id string) (bool, error) {
+
+	rows, err := r.db.Query(ctx, `SELECT * FROM "user" WHERE id = $1`, id)
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		return true, nil
+	}
+
+	return false, nil
+}
+
 func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error) {
 
 	rows, err := r.db.Query(ctx, "SELECT * FROM review WHERE user_id = $1", id)
 
 	if !rows.Next() {
-		print("No reviews found for valid user %s.", id)
 		return []*models.Review{}, errs.NotFound("Review", "valid user_id", id)
 	}
 
 	if err != nil {
-		print(err.Error(), "from transactions err ")
-		print("id %s is not a valid id ", id)
 		return []*models.Review{}, err
 	}
 
@@ -41,7 +52,6 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 		var createdAt, updatedAt *time.Time
 
 		if err := rows.Scan(&review.ID, &userID, &mediaID, &mediaType, &rating, &comment, &createdAt, &updatedAt); err != nil {
-			print(err.Error(), "from transactions err ")
 			return reviews, err
 		}
 
@@ -57,7 +67,6 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 	}
 
 	if err := rows.Err(); err != nil {
-		print(err.Error(), "from transactions err ")
 		return []*models.Review{}, err
 	}
 
