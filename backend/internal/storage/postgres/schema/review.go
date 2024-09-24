@@ -79,14 +79,6 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 			return reviews, err
 		}
 
-		review.UserID = *userID
-		review.MediaID = *mediaID
-		review.MediaType = *mediaType
-		review.Desc = desc
-		review.Rating = *rating
-		review.UpdatedAt = *UpdatedAt
-		review.CreatedAt = *CreatedAt
-
 		if err := rows.Scan(
 			&review.ID,
 			&review.UserID,
@@ -112,8 +104,7 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 
 func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaType string) ([]*models.Review, error) {
 
-	rows, err := r.db.Query(ctx, "SELECT * FROM review WHERE media_id = $1 and Media_type = $2", id, mediaType)
-	print(rows)
+	rows, err := r.Query(ctx, "SELECT * FROM review WHERE media_id = $1 and Media_type = $2", id, mediaType)
 	if err != nil {
 		print(err.Error(), "from transactions err ")
 		return []*models.Review{}, err
@@ -123,29 +114,29 @@ func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaT
 	var reviews []*models.Review
 
 	for rows.Next() {
-		print("1")
 		var review models.Review
-		print("2")
 		var mediaType, comment, userID, mediaID, rating *string
 		var createdAt, updatedAt *time.Time
-		print("3")
 		if err := rows.Scan(&userID, &mediaID, &mediaType, &rating, &comment, &createdAt, &updatedAt); err != nil {
 			print(err.Error(), "from transactions err ")
 			return reviews, err
 		}
-		print("4")
-		review.UserID = *userID
-		review.MediaID = *mediaID
-		review.MediaType = *mediaType
-		review.Comment = comment
-		review.Rating = *rating
-		review.CreatedAt = *createdAt
-		review.UpdatedAt = *updatedAt
-		print("5")
+
+		if err := rows.Scan(
+			&review.ID,
+			&review.UserID,
+			&review.MediaID,
+			&review.MediaType,
+			&review.Rating,
+			&review.Comment,
+			&review.CreatedAt,
+			&review.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
 		reviews = append(reviews, &review)
 	}
 
-	print("second")
 	if err := rows.Err(); err != nil {
 		print(err.Error(), "this from transactions err ")
 		return []*models.Review{}, err
@@ -157,6 +148,6 @@ func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaT
 
 func NewReviewRepository(db *pgxpool.Pool) *ReviewRepository {
 	return &ReviewRepository{
-		db: db,
+		db,
 	}
 }

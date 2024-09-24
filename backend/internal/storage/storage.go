@@ -14,10 +14,6 @@ type UserRepository interface {
 type ReviewRepository interface {
 	GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error)
 	CreateReview(ctx context.Context, review *models.Review) (*models.Review, error)
-}
-
-type ReviewRepository interface {
-	GetReviews(ctx context.Context) ([]*models.Review, error)
 	GetReviewsByID(ctx context.Context, id string, media_type string) ([]*models.Review, error)
 }
 
@@ -26,5 +22,3 @@ type Repository struct {
 	User   UserRepository
 	Review ReviewRepository
 }
-
-

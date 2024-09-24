@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"platnm/internal/models"
 	"platnm/internal/storage"
-	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -47,7 +46,7 @@ func (h *ReviewHandler) GetReviewById(c *fiber.Ctx, mediaType string) error {
 	var scores []float64
 
 	for _, r := range review {
-		rating, err := strconv.ParseFloat(r.Rating, 64)
+		rating := float64(r.Rating)
 		if err == nil { // Only append if conversion succeeds
 			scores = append(scores, rating)
 		}
