@@ -6,4 +6,4 @@ RUN go build -o bin/platnm cmd/server/main.go
 FROM scratch
 COPY --from=builder /app/bin/platnm /platnm
 ENV APP_ENVIRONMENT production
-ENTRYPOINT [ “./platnm ]
+ENTRYPOINT [ "./platnm" ]
