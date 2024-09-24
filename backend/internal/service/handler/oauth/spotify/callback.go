@@ -10,7 +10,6 @@ import (
 )
 
 func (h *Handler) Callback(c *fiber.Ctx) error {
-
 	state, err := h.store.GetState(c)
 	if err != nil {
 		return err

@@ -48,7 +48,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	})
 
 	// this store can be passed to other oauth handlers that need to manage state/verifier values
-	store := oauth.NewSessionValueStore(session.Config{
+	store := oauth.NewStateStore(session.Config{
 		Storage:    memory.New(),
 		Expiration: constants.SessionDuration,
 		KeyLookup:  "header:" + constants.HeaderSession,

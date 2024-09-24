@@ -11,7 +11,7 @@ type StateStore struct {
 	*session.Store
 }
 
-func NewSessionValueStore(config session.Config) *StateStore {
+func NewStateStore(config session.Config) *StateStore {
 	store := &StateStore{
 		session.New(config),
 	}
