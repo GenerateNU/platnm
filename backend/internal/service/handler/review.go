@@ -79,6 +79,6 @@ func getAve(review []float64) float64 {
 }
 
 type Response struct {
-	AvgRating float64          `json:avgRating`
-	Reviews   []*models.Review `json:reviews`
+	AvgRating float64          `json:"avgRating"`
+	Reviews   []*models.Review `json:"reviews"`
 }
