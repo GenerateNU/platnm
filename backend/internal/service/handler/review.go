@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"platnm/internal/models"
 	"platnm/internal/storage"
 	"strconv"
 
@@ -16,15 +17,6 @@ func NewReviewHandler(reviewRepository storage.ReviewRepository) *ReviewHandler 
 	return &ReviewHandler{
 		reviewRepository,
 	}
-}
-
-func (h *ReviewHandler) GetReviews(c *fiber.Ctx) error {
-	review, err := h.reviewRepository.GetReviews(c.Context())
-	if err != nil {
-		return err
-	}
-
-	return c.Status(fiber.StatusOK).JSON(review)
 }
 
 func (h *ReviewHandler) GetReviewById(c *fiber.Ctx, mediaType string) error {
@@ -61,16 +53,15 @@ func (h *ReviewHandler) GetReviewById(c *fiber.Ctx, mediaType string) error {
 		}
 	}
 
-	var avgRating = getAve(scores)
+	var rating = getAve(scores)
 
 	var end = offset*limit - 1
 	var start = end - limit
 	var paginatedReview = review[start:end]
 
-	// Return the reviews and average rating
-	response := fiber.Map{
-		"avgRating": avgRating,
-		"reviews":   paginatedReview,
+	response := Response{
+		AvgRating: rating,
+		Reviews:   paginatedReview,
 	}
 
 	return c.Status(fiber.StatusOK).JSON(response)
@@ -86,4 +77,9 @@ func getAve(review []float64) float64 {
 		avgRating /= float64(len(review))
 	}
 	return avgRating
+}
+
+type Response struct {
+	AvgRating float64          `json:avgRating`
+	Reviews   []*models.Review `json:reviews`
 }
