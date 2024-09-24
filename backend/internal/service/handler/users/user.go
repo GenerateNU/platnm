@@ -1,4 +1,4 @@
-package handler
+package users
 
 import (
 	"platnm/internal/storage"
@@ -6,17 +6,17 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type UserHandler struct {
+type Handler struct {
 	userRepository storage.UserRepository
 }
 
-func NewUserHandler(userRepository storage.UserRepository) *UserHandler {
-	return &UserHandler{
+func NewHandler(userRepository storage.UserRepository) *Handler {
+	return &Handler{
 		userRepository,
 	}
 }
 
-func (h *UserHandler) GetUsers(c *fiber.Ctx) error {
+func (h *Handler) GetUsers(c *fiber.Ctx) error {
 	users, err := h.userRepository.GetUsers(c.Context())
 	if err != nil {
 		return err
@@ -25,9 +25,9 @@ func (h *UserHandler) GetUsers(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(users)
 }
 
-func (h *UserHandler) GetUserById(c *fiber.Ctx) error {
+func (h *Handler) GetUserById(c *fiber.Ctx) error {
 	id := c.Params("id")
-	user, err := h.userRepository.GetUserByID(id, c.Context())
+	user, err := h.userRepository.GetUserByID(c.Context(), id)
 
 	if err != nil {
 		print(err.Error(), "from transactions err ")
@@ -36,3 +36,4 @@ func (h *UserHandler) GetUserById(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(user)
 }
+

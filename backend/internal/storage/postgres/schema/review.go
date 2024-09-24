@@ -1,24 +1,71 @@
-package user
+package schema
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"platnm/internal/models"
-
 	"time"
 
+	"platnm/internal/errs"
+
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type ReviewRepository struct {
-	db *pgxpool.Pool
+	*pgxpool.Pool
 }
 
-func (r *ReviewRepository) GetReviews(ctx context.Context) ([]*models.Review, error) {
-	rows, err := r.db.Query(context.Background(), "SELECT user_id, media_id, media_type, desc, rating, CreatedAt, UpdatedAt FROM review")
+const (
+	userFKeyConstraint        = "review_user_id_fkey"
+	uniqueUserMediaConstraint = "unique_user_media"
+)
+
+func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Review) (*models.Review, error) {
+	query := `
+	WITH media_check AS (
+		SELECT 1
+		FROM track
+		WHERE id = $2 AND $3 = 'track'
+		UNION
+		SELECT 1
+		FROM album
+		WHERE id = $2 AND $3 = 'album'
+	)
+	INSERT INTO review (user_id, media_id, media_type, rating, comment)
+	SELECT $1, $2, $3::media_type, $4, $5
+	FROM media_check
+	RETURNING id;
+	`
+
+	if err := r.QueryRow(ctx, query, review.UserID, review.MediaID, review.MediaType, review.Rating, review.Comment).Scan(&review.ID); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, errs.NotFound(string(review.MediaType), "id", review.MediaID)
+		} else if errs.IsUniqueViolation(err, uniqueUserMediaConstraint) {
+			return nil, errs.Conflict("review", "(user_id, media_id)", fmt.Sprintf("(%s, %d)", review.UserID, review.MediaID))
+		} else if errs.IsForeignKeyViolation(err, userFKeyConstraint) {
+			return nil, errs.NotFound("user", "id", review.UserID)
+		}
+
+		return nil, err
+	}
+
+	return review, nil
+}
+
+func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error) {
+
+	rows, err := r.Query(ctx, "SELECT * FROM review WHERE user_id = $1", id)
+
+	if !rows.Next() {
+		return []*models.Review{}, nil
+	}
+
 	if err != nil {
-		print(err.Error(), "from transactions err ")
 		return []*models.Review{}, err
 	}
+
 	defer rows.Close()
 
 	var reviews []*models.Review
@@ -40,6 +87,18 @@ func (r *ReviewRepository) GetReviews(ctx context.Context) ([]*models.Review, er
 		review.UpdatedAt = *UpdatedAt
 		review.CreatedAt = *CreatedAt
 
+		if err := rows.Scan(
+			&review.ID,
+			&review.UserID,
+			&review.MediaID,
+			&review.MediaType,
+			&review.Rating,
+			&review.Comment,
+			&review.CreatedAt,
+			&review.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
 		reviews = append(reviews, &review)
 	}
 
@@ -67,10 +126,10 @@ func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaT
 		print("1")
 		var review models.Review
 		print("2")
-		var mediaType, desc, userID, mediaID, rating *string
+		var mediaType, comment, userID, mediaID, rating *string
 		var createdAt, updatedAt *time.Time
 		print("3")
-		if err := rows.Scan(&userID, &mediaID, &mediaType, &rating, &desc, &createdAt, &updatedAt); err != nil {
+		if err := rows.Scan(&userID, &mediaID, &mediaType, &rating, &comment, &createdAt, &updatedAt); err != nil {
 			print(err.Error(), "from transactions err ")
 			return reviews, err
 		}
@@ -78,7 +137,7 @@ func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaT
 		review.UserID = *userID
 		review.MediaID = *mediaID
 		review.MediaType = *mediaType
-		review.Desc = desc
+		review.Comment = comment
 		review.Rating = *rating
 		review.CreatedAt = *createdAt
 		review.UpdatedAt = *updatedAt

@@ -1,4 +1,4 @@
-package user
+package schema
 
 import (
 	"context"
@@ -12,7 +12,7 @@ type UserRepository struct {
 }
 
 func (r *UserRepository) GetUsers(ctx context.Context) ([]*models.User, error) {
-	rows, err := r.db.Query(context.Background(), "SELECT user_id, first_name, last_name, phone, email, address, profile_picture FROM users")
+	rows, err := r.db.Query(ctx, "SELECT user_id, first_name, last_name, phone, email, address, profile_picture FROM users")
 	if err != nil {
 		print(err.Error(), "from transactions err ")
 		return []*models.User{}, err
@@ -46,9 +46,9 @@ func (r *UserRepository) GetUsers(ctx context.Context) ([]*models.User, error) {
 	return users, nil
 }
 
-func (r *UserRepository) GetUserByID(id string, ctx context.Context) (*models.User, error) {
+func (r *UserRepository) GetUserByID(ctx context.Context, id string) (*models.User, error) {
 	var user models.User
-	err := r.db.QueryRow(context.Background(), "SELECT user_id, first_name, last_name, phone, email, profile_picture FROM users WHERE user_id = $1", id).Scan(&user.UserID, &user.FirstName, &user.LastName, &user.Phone, &user.Email, &user.ProfilePicture)
+	err := r.db.QueryRow(ctx, "SELECT user_id, first_name, last_name, phone, email, profile_picture FROM users WHERE user_id = $1", id).Scan(&user.UserID, &user.FirstName, &user.LastName, &user.Phone, &user.Email, &user.ProfilePicture)
 
 	if err != nil {
 		print(err.Error(), "from transactions err ")
@@ -56,6 +56,21 @@ func (r *UserRepository) GetUserByID(id string, ctx context.Context) (*models.Us
 	}
 
 	return &user, nil
+}
+
+func (r *UserRepository) UserExists(ctx context.Context, id string) (bool, error) {
+
+	rows, err := r.db.Query(ctx, `SELECT * FROM "user" WHERE id = $1`, id)
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 func NewUserRepository(db *pgxpool.Pool) *UserRepository {
