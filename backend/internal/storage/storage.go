@@ -16,10 +16,13 @@ type ReviewRepository interface {
 	CreateReview(ctx context.Context, review *models.Review) (*models.Review, error)
 }
 
+type MediaRepository interface {
+	GetMediaByName(ctx context.Context, name string) ([]*models.Media, error)
+}
+
 // Repository storage of all repositories.
 type Repository struct {
 	User   UserRepository
 	Review ReviewRepository
+	Media  MediaRepository
 }
-
-
