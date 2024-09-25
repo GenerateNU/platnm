@@ -53,3 +53,39 @@ VALUES
   ('3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f', 1, 'track', 3, 'This song is okay.'),
   ('4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9d', 3, 'track', 2, 'I don''t like this song.'),
   ('4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9d', 5, 'track', 2, 'This song is the best song ever');
+
+INSERT INTO follower (follower_id, followee_id)
+VALUES
+  ('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', '2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e'),
+  ('2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e', '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d'),
+  ('3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f', '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d');
+
+INSERT INTO playlist (id, title, user_id, bio, cover_photo)
+VALUES
+  (1, '2024', '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 'Playlist for 2024', 'https://upload.wikimedia.org/wikipedia/commons/0/0a/Nils_B%C3%A4ckstr%C3%B6m_Rubin_Tyumen.jpg'),
+  (2, 'Movie Music', '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 'Cinematic soundtracks and epic scores that bring the magic of movies to life.', 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Anolis_marmoratus%28fight%29.jpg/1280px-Anolis_marmoratus%28fight%29.jpg'),
+  (3, 'Chill Vibes', '2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e', 'High-energy tracks to power your workout sessions.', 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/FOS244.jpg/1280px-FOS244.jpg'),
+  (4, 'Workout Mix', '3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f', 'A collection of nostalgic hits from past decades.', 'https://upload.wikimedia.org/wikipedia/commons/b/be/High_Airmass_Spectra_%28AuxTel-Feb%29.jpg'),
+  (5, 'Platnm', '5e6f7a8b-9c0d-1e2f-3a4b-5c6d7e8f9d0e', 'Playlist for the Platnm Team', 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/BCJMPort2017.jpg/1920px-BCJMPort2017.jpg');
+
+INSERT INTO playlist_track (playlist_id, track_id)
+VALUES
+  (1, 1),
+  (2, 2),
+  (3, 3);
+
+INSERT INTO user_auth (id, user_id, refresh_token, access_token)
+VALUES
+  (1, '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 'refresh_token_abc123', 'access_token_xyz123'),
+  (2, '2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e', 'refresh_token_def456', 'access_token_uvw456'),
+  (3, '3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f', 'refresh_token_ghi789', 'access_token_rst789'),
+  (4, '4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9d', 'refresh_token_jkl012', 'access_token_opq012'),
+  (5, '5e6f7a8b-9c0d-1e2f-3a4b-5c6d7e8f9d0e', 'refresh_token_mno345', 'access_token_lmn345');
+
+INSERT INTO user_review_vote (user_id, review_id, upvote)
+VALUES
+  ('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 1, true),
+  ('2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e', 2, false),
+  ('3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f', 3, false),
+  ('4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9d', 4, false),
+  ('5e6f7a8b-9c0d-1e2f-3a4b-5c6d7e8f9d0e', 5, true);
