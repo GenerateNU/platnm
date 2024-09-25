@@ -17,7 +17,7 @@ func NewHandler(spotifyRepository storage.SpotifyRepository) *SpotifyHandler {
 }
 
 func (h *SpotifyHandler) GetPlatnmPlaylist(c *fiber.Ctx) error {
-	client := clientcreds()
+	client := WithSpotify()
 
 	playlist, err := client.GetPlaylist(c.Context(), "671uu0Y7jiAgX04Ou82Up9")
 

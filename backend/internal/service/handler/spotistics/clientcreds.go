@@ -11,11 +11,16 @@ import (
 	"golang.org/x/oauth2/clientcredentials"
 )
 
-func clientcreds() spotify.Client {
+type SpotifyCredentials struct {
+	ClientID     string
+	ClientSecret string
+}
+
+func (creds *SpotifyCredentials) getClient() spotify.Client {
 	ctx := context.Background()
 	config := &clientcredentials.Config{
-		ClientID:     os.Getenv("SPOTIFY_ID"),
-		ClientSecret: os.Getenv("SPOTIFY_SECRET"),
+		ClientID:     creds.ClientID,
+		ClientSecret: creds.ClientSecret,
 		TokenURL:     spotifyauth.TokenURL,
 	}
 
@@ -27,4 +32,13 @@ func clientcreds() spotify.Client {
 	httpClient := spotifyauth.New().Client(ctx, token)
 	client := spotify.New(httpClient)
 	return *client
+}
+
+func WithSpotify() spotify.Client {
+	creds := SpotifyCredentials{
+		ClientID:     os.Getenv("SPOTIFY_CLIENT_ID"),
+		ClientSecret: os.Getenv("SPOTIFY_CLIENT_SECRET"),
+	}
+
+	return creds.getClient()
 }
