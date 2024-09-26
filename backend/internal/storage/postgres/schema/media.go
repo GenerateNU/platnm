@@ -3,7 +3,6 @@ package schema
 import (
 	"context"
 	"platnm/internal/models"
-
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -14,8 +13,8 @@ type MediaRepository struct {
 func (r *MediaRepository) GetMediaByName(ctx context.Context, name string) ([]models.Media, error) {
 
 	// TODO: TWEAK THE SIMILARITY SCORE MAX HERE
-	var albumQuery = "SELECT * FROM album WHERE levenshtein(title, $1) <= 10 LIMIT 20;"
-	var trackQuery = "SELECT * FROM track WHERE levenshtein(title, $1) <= 10 LIMIT 20;"
+	var albumQuery = "SELECT * FROM album WHERE levenshtein(title, $1) <= 5 LIMIT 20;"
+	var trackQuery = "SELECT * FROM track WHERE levenshtein(title, $1) <= 5 LIMIT 20;"
 
 	albumRows, albumErr := r.Query(ctx, albumQuery, name)
 	trackRows, trackErr := r.Query(ctx, trackQuery, name)
@@ -48,8 +47,6 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string) ([]mo
 		medias = append(medias, &album)
 	}
 
-	// TODO: FIX FIX FIX
-	
 	for trackRows.Next() {
 		var track models.Track
 		if err := trackRows.Scan(
@@ -58,15 +55,12 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string) ([]mo
 			&track.Title,
 			&track.Duration,
 		); err != nil {
-			print("error interpreting 3")
 			return nil, err
 		}
 		track.Media = models.TrackMedia
 		medias = append(medias, &track)
 	}
 
-	print(medias)
-	print("medias nil")
 	return medias, nil
 }
 

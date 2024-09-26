@@ -26,11 +26,11 @@ type Album struct {
 }
 
 type Track struct {
-	Media     MediaType
-	ID        int       `json:"id"`
-	AlbumID   int       `json:"album_id"`
-	Title     string    `json:"title"`
-	Duration  time.Time `json:"duration_seconds"`
+	Media    MediaType
+	ID       int    `json:"id"`
+	AlbumID  int    `json:"album_id"`
+	Title    string `json:"title"`
+	Duration int    `json:"duration_seconds"`
 }
 
 func (a Album) GetID() int {
