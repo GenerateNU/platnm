@@ -1,15 +1,9 @@
-
 package schema
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"platnm/internal/models"
 
-	"platnm/internal/errs"
-
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -17,49 +11,67 @@ type MediaRepository struct {
 	*pgxpool.Pool
 }
 
-func (r *MediaRepository) GetMediaByName (ctx context.Context, id string) ([]*models.Media, error) {
+func (r *MediaRepository) GetMediaByName(ctx context.Context, name string) ([]models.Media, error) {
 
-	// TODO: FINISH UP THIS PART
+	// TODO: TWEAK THE SIMILARITY SCORE MAX HERE
+	var albumQuery = "SELECT * FROM album WHERE levenshtein(title, $1) <= 10 LIMIT 20;"
+	var trackQuery = "SELECT * FROM track WHERE levenshtein(title, $1) <= 10 LIMIT 20;"
+
+	albumRows, albumErr := r.Query(ctx, albumQuery, name)
+	trackRows, trackErr := r.Query(ctx, trackQuery, name)
+
+	if albumErr != nil {
+		return nil, albumErr
+	}
+	defer albumRows.Close()
+
+	if trackErr != nil {
+		return nil, trackErr
+	}
+	defer trackRows.Close()
+
+	var medias []models.Media
+
+	for albumRows.Next() {
+		var album models.Album
+		if err := albumRows.Scan(
+			&album.ID,
+			&album.Title,
+			&album.ReleaseDate,
+			&album.Cover,
+			&album.Country,
+			&album.GenreID,
+		); err != nil {
+			return nil, err
+		}
+		album.Media = models.AlbumMedia
+		medias = append(medias, &album)
+	}
+
+	// TODO: FIX FIX FIX
 	
-	// rows, err := r.Query(ctx, "SELECT * FROM review WHERE user_id = $1", id)
+	for trackRows.Next() {
+		var track models.Track
+		if err := trackRows.Scan(
+			&track.ID,
+			&track.AlbumID,
+			&track.Title,
+			&track.Duration,
+		); err != nil {
+			print("error interpreting 3")
+			return nil, err
+		}
+		track.Media = models.TrackMedia
+		medias = append(medias, &track)
+	}
 
-	// if !rows.Next() {
-	// 	return []*models.Review{}, nil
-	// }
-
-	// if err != nil {
-	// 	return []*models.Review{}, err
-	// }
-
-	// defer rows.Close()
-
-	// var reviews []*models.Review
-	// for rows.Next() {
-	// 	var review models.Review
-	// 	if err := rows.Scan(
-	// 		&review.ID,
-	// 		&review.UserID,
-	// 		&review.MediaID,
-	// 		&review.MediaType,
-	// 		&review.Rating,
-	// 		&review.Comment,
-	// 		&review.CreatedAt,
-	// 		&review.UpdatedAt,
-	// 	); err != nil {
-	// 		return nil, err
-	// 	}
-	// 	reviews = append(reviews, &review)
-	// }
-
-	// if err := rows.Err(); err != nil {
-	// 	return []*models.Review{}, err
-	// }
-
-	// return reviews, nil
+	print(medias)
+	print("medias nil")
+	return medias, nil
 }
 
-func NewReviewRepository(db *pgxpool.Pool) *ReviewRepository {
-	return &ReviewRepository{
+func NewMediaRepository(db *pgxpool.Pool) *MediaRepository {
+	return &MediaRepository{
 		db,
 	}
 }

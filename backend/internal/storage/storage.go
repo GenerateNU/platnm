@@ -17,7 +17,7 @@ type ReviewRepository interface {
 }
 
 type MediaRepository interface {
-	GetMediaByName(ctx context.Context, name string) ([]*models.Media, error)
+	GetMediaByName(ctx context.Context, name string) ([]models.Media, error)
 }
 
 // Repository storage of all repositories.
