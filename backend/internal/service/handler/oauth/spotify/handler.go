@@ -8,11 +8,11 @@ import (
 )
 
 type Handler struct {
-	store         *oauth.SessionValueStore
+	store         *oauth.StateStore
 	authenticator *spotifyauth.Authenticator
 }
 
-func NewHandler(store *oauth.SessionValueStore, config config.Spotify) *Handler {
+func NewHandler(store *oauth.StateStore, config config.Spotify) *Handler {
 	authenticator := spotifyauth.New(
 		spotifyauth.WithRedirectURL(config.RedirectURI),
 		spotifyauth.WithScopes(spotifyauth.ScopeUserReadPrivate),
