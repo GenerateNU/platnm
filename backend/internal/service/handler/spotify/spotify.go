@@ -1,19 +1,13 @@
 package spotify
 
 import (
-	"platnm/internal/storage"
-
 	"github.com/gofiber/fiber/v2"
 )
 
-type SpotifyHandler struct {
-	SpotifyRepository storage.SpotifyRepository
-}
+type SpotifyHandler struct{}
 
-func NewHandler(spotifyRepository storage.SpotifyRepository) *SpotifyHandler {
-	return &SpotifyHandler{
-		spotifyRepository,
-	}
+func NewHandler() *SpotifyHandler {
+	return &SpotifyHandler{}
 }
 
 func (h *SpotifyHandler) GetPlatnmPlaylist(c *fiber.Ctx) error {

@@ -61,7 +61,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	})
 
 	app.Route("/spotify", func(r fiber.Router) {
-		spotifyHandler := spotify_handler.NewHandler(repository.Spotify)
+		spotifyHandler := spotify_handler.NewHandler()
 		r.Use(spotify_handler.WithSpotify(config.Spotify))
 		r.Get("/", spotifyHandler.GetPlatnmPlaylist)
 	})
