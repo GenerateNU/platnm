@@ -1,10 +1,9 @@
-package spotistics
+package spotify
 
 import (
 	"platnm/internal/storage"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/zmb3/spotify/v2"
 )
 
 type SpotifyHandler struct {
@@ -18,9 +17,9 @@ func NewHandler(spotifyRepository storage.SpotifyRepository) *SpotifyHandler {
 }
 
 func (h *SpotifyHandler) GetPlatnmPlaylist(c *fiber.Ctx) error {
-	client, ok := c.Locals(SpotifyKey{}).(spotify.Client)
+	client, ok := getSpotifyCredentials(c)
 
-	if !ok {
+	if ok != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, "Spotify client not found in context")
 	}
 
