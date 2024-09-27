@@ -21,5 +21,3 @@ type Repository struct {
 	User   UserRepository
 	Review ReviewRepository
 }
-
-
