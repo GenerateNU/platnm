@@ -4,6 +4,7 @@ import (
 	"context"
 	"platnm/internal/models"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -62,6 +63,43 @@ func (r *UserRepository) UserExists(ctx context.Context, id string) (bool, error
 	}
 
 	return false, nil
+}
+
+func (r *UserRepository) FollowExists(ctx context.Context, follower uuid.UUID, following uuid.UUID) (bool, error) {
+
+	rows, err := r.db.Query(ctx, `SELECT * FROM follower WHERE follower_id = $1 AND followee_id = $2`, follower, following)
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func (r *UserRepository) Follow(ctx context.Context, follower uuid.UUID, following uuid.UUID) (bool, error) {
+
+	_, err := r.db.Exec(ctx, `INSERT INTO follower (follower_id, followee_id) VALUES ($1, $2)`, follower, following)
+	if err != nil {
+		return false, err
+	}
+
+	// Match found
+	return true, nil
+}
+
+func (r *UserRepository) UnFollow(ctx context.Context, follower uuid.UUID, following uuid.UUID) (bool, error) {
+
+	_, err := r.db.Exec(ctx, `DELETE FROM follower WHERE follower_id = $1 AND followee_id = $2`, follower, following)
+	if err != nil {
+		return false, err
+	}
+
+	// Match found
+	return true, nil
 }
 
 func NewUserRepository(db *pgxpool.Pool) *UserRepository {
