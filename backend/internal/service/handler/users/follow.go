@@ -24,12 +24,14 @@ func (h *Handler) FollowUnfollowUser(c *fiber.Ctx) error {
 
 	// Get the current user ID (inferred from session, authentication middleware)
 	// currentUserId := c.Locals("userId").(string)
-	follower, err := h.userRepository.GetUserByID(c.Context(), followerStr)
-	print(follower)
-	following, err := h.userRepository.GetUserByID(c.Context(), followingStr)
-	print(following)
-
-	if err != nil { //|| !follower || !following
+	follower, err := h.userRepository.UserExists(c.Context(), followerStr)
+	if err != nil || !follower {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "User Not found",
+		})
+	}
+	following, err := h.userRepository.UserExists(c.Context(), followingStr)
+	if err != nil || !following {
 
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": "User not found",
