@@ -6,8 +6,8 @@ import (
 )
 
 type FollowRequest struct {
-	FollowerId  string `json:"followerId"`
-	FollowingId string `json:"followingId"`
+	FollowerId  uuid.UUID `json:"followerId"`
+	FollowingId uuid.UUID `json:"followingId"`
 }
 
 func (h *Handler) FollowUnfollowUser(c *fiber.Ctx) error {
@@ -19,31 +19,14 @@ func (h *Handler) FollowUnfollowUser(c *fiber.Ctx) error {
 		})
 	}
 
-	followerUUID, err := uuid.Parse(body.FollowerId)
-	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"error": "Invalid UUID: %v",
-		})
-	}
-	followeeUUID, err := uuid.Parse(body.FollowingId)
-	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"error": "Invalid UUID: %v",
-		})
-	}
-
-	print("follower \n")
-	print(body.FollowerId)
-	print("\n following \n")
-	print(body.FollowingId)
+	followerStr := body.FollowerId.String()
+	followingStr := body.FollowingId.String()
 
 	// Get the current user ID (inferred from session, authentication middleware)
 	// currentUserId := c.Locals("userId").(string)
-	follower, err := h.userRepository.GetUserByID(c.Context(), body.FollowerId)
-	print("\n  FID \n")
+	follower, err := h.userRepository.GetUserByID(c.Context(), followerStr)
 	print(follower)
-	following, err := h.userRepository.GetUserByID(c.Context(), body.FollowingId)
-	print("\n FID2 \n")
+	following, err := h.userRepository.GetUserByID(c.Context(), followingStr)
 	print(following)
 
 	if err != nil { //|| !follower || !following
@@ -54,11 +37,11 @@ func (h *Handler) FollowUnfollowUser(c *fiber.Ctx) error {
 	}
 
 	// Check if the current user is already following the target user
-	isFollowing, err := h.userRepository.FollowExists(c.Context(), followerUUID, followeeUUID)
+	isFollowing, err := h.userRepository.FollowExists(c.Context(), body.FollowerId, body.FollowingId)
 
 	if isFollowing {
 		// Unfollow user
-		success, err := h.userRepository.UnFollow(c.Context(), followerUUID, followeeUUID)
+		success, err := h.userRepository.UnFollow(c.Context(), body.FollowerId, body.FollowingId)
 		if err != nil || !success {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "Failed to unfollow user",
@@ -69,7 +52,7 @@ func (h *Handler) FollowUnfollowUser(c *fiber.Ctx) error {
 		})
 	} else {
 		// Follow user
-		success, err := h.userRepository.Follow(c.Context(), followerUUID, followeeUUID)
+		success, err := h.userRepository.Follow(c.Context(), body.FollowerId, body.FollowingId)
 		if err != nil || !success {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "Failed to follow user",
