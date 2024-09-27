@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/gofiber/fiber/v2"
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
 
 	"github.com/zmb3/spotify/v2"
@@ -15,6 +16,8 @@ type SpotifyCredentials struct {
 	ClientID     string
 	ClientSecret string
 }
+
+type SpotifyKey struct{}
 
 func (creds *SpotifyCredentials) getClient() spotify.Client {
 	ctx := context.Background()
@@ -34,11 +37,12 @@ func (creds *SpotifyCredentials) getClient() spotify.Client {
 	return *client
 }
 
-func WithSpotify() spotify.Client {
+func WithSpotify(c *fiber.Ctx) error {
 	creds := SpotifyCredentials{
-		ClientID:     os.Getenv("SPOTIFY_CLIENT_ID"),
-		ClientSecret: os.Getenv("SPOTIFY_CLIENT_SECRET"),
+		ClientID:     os.Getenv("SPOTIFY_ID"),
+		ClientSecret: os.Getenv("SPOTIFY_SECRET"),
 	}
-
-	return creds.getClient()
+	client := creds.getClient()
+	c.Locals(SpotifyKey{}, client)
+	return c.Next()
 }
