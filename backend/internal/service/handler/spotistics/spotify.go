@@ -18,8 +18,6 @@ func NewHandler(spotifyRepository storage.SpotifyRepository) *SpotifyHandler {
 }
 
 func (h *SpotifyHandler) GetPlatnmPlaylist(c *fiber.Ctx) error {
-	WithSpotify(c)
-
 	client, ok := c.Locals(SpotifyKey{}).(spotify.Client)
 
 	if !ok {

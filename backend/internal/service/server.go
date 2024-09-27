@@ -54,6 +54,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	app.Route("/auth", func(r fiber.Router) {
 		r.Route("/spotify", func(r fiber.Router) {
 			h := spotify.NewHandler(store, config.Spotify)
+
 			r.Get("/begin", h.Begin)
 			r.Get("/callback", h.Callback)
 		})
@@ -81,6 +82,8 @@ func setupApp() *fiber.App {
 	app.Use(compress.New(compress.Config{
 		Level: compress.LevelBestSpeed,
 	}))
+
+	app.Use(spotistics.WithSpotify())
 
 	return app
 }

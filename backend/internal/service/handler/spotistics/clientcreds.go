@@ -37,12 +37,15 @@ func (creds *SpotifyCredentials) getClient() spotify.Client {
 	return *client
 }
 
-func WithSpotify(c *fiber.Ctx) error {
-	creds := SpotifyCredentials{
-		ClientID:     os.Getenv("SPOTIFY_ID"),
-		ClientSecret: os.Getenv("SPOTIFY_SECRET"),
+func WithSpotify() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		creds := &SpotifyCredentials{
+			ClientID:     os.Getenv("SPOTIFY_ID"),
+			ClientSecret: os.Getenv("SPOTIFY_SECRET"),
+		}
+		client := creds.getClient()
+
+		c.Locals(SpotifyKey{}, client)
+		return c.Next()
 	}
-	client := creds.getClient()
-	c.Locals(SpotifyKey{}, client)
-	return c.Next()
 }
