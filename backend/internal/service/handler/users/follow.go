@@ -40,6 +40,11 @@ func (h *Handler) FollowUnfollowUser(c *fiber.Ctx) error {
 
 	// Check if the current user is already following the target user
 	isFollowing, err := h.userRepository.FollowExists(c.Context(), body.FollowerId, body.FollowingId)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "Failed to check follow status",
+		})
+	}
 
 	if isFollowing {
 		// Unfollow user
