@@ -84,7 +84,6 @@ func (r *UserRepository) Follow(ctx context.Context, follower uuid.UUID, followi
 
 	_, err := r.db.Exec(ctx, `INSERT INTO follower (follower_id, followee_id) VALUES ($1, $2)`, follower, following)
 	if err != nil {
-		print(err.Error(), "from follow push err ")
 		return false, err
 	}
 

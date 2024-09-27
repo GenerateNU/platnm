@@ -1,13 +1,15 @@
 package users
 
 import (
+	"platnm/internal/errs"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
 
 type FollowRequest struct {
-	FollowerId  uuid.UUID `json:"followerId"`
-	FollowingId uuid.UUID `json:"followingId"`
+	FollowerId  uuid.UUID `json:"follower_id"`
+	FollowingId uuid.UUID `json:"following_id"`
 }
 
 func (h *Handler) FollowUnfollowUser(c *fiber.Ctx) error {
@@ -26,16 +28,12 @@ func (h *Handler) FollowUnfollowUser(c *fiber.Ctx) error {
 	// currentUserId := c.Locals("userId").(string)
 	follower, err := h.userRepository.UserExists(c.Context(), followerStr)
 	if err != nil || !follower {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "User Not found",
-		})
+		return errs.NotFound("Follower", "id", followerStr)
 	}
 	following, err := h.userRepository.UserExists(c.Context(), followingStr)
 	if err != nil || !following {
 
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"error": "User not found",
-		})
+		return errs.NotFound("Followee", "id", followingStr)
 	}
 
 	// Check if the current user is already following the target user
