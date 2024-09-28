@@ -23,7 +23,7 @@ export default function HomeScreen() {
   console.log(BASE_URL);
   useEffect(() => {
     axios
-      .get(`http://10.0.0.121:8080/users`)
+      .get(`${BASE_URL}/users`)
       .then((response) => {
         setUsers(response.data);
       })
