@@ -3,6 +3,7 @@ package spotify
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"net/http"
 	"platnm/internal/config"
 	"platnm/internal/service/ctxt"
@@ -22,17 +23,17 @@ type Middleware struct {
 }
 
 func NewMiddleware(config config.Spotify) (m *Middleware) {
-	cert, err := tls.LoadX509KeyPair("server.crt", "server.key")
-	if err != nil {
-		panic(err)
-	}
-
 	m = new(Middleware)
+
+	rootCAs, _ := x509.SystemCertPool()
+	if rootCAs == nil {
+		rootCAs = x509.NewCertPool()
+	}
 
 	m.httpClient = &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
-				Certificates: []tls.Certificate{cert},
+				RootCAs: rootCAs,
 			},
 		},
 	}
