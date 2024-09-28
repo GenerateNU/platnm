@@ -36,7 +36,7 @@ func (r *createReviewRequest) validate() map[string]string {
 		errs["rating"] = "rating must be between 1 and 10"
 	}
 
-	if r.MediaType != models.Track && r.MediaType != models.Album {
+	if r.MediaType != models.TrackMedia && r.MediaType != models.AlbumMedia {
 		errs["media_type"] = "media_type must be either track or album"
 	}
 	return errs
