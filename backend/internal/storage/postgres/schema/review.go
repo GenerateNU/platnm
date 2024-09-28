@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"platnm/internal/models"
-	"time"
 
 	"platnm/internal/errs"
 
@@ -36,10 +35,10 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 	INSERT INTO review (user_id, media_id, media_type, rating, comment)
 	SELECT $1, $2, $3::media_type, $4, $5
 	FROM media_check
-	RETURNING id;
+	RETURNING id, created_at, updated_at;
 	`
 
-	if err := r.QueryRow(ctx, query, review.UserID, review.MediaID, review.MediaType, review.Rating, review.Comment).Scan(&review.ID); err != nil {
+	if err := r.QueryRow(ctx, query, review.UserID, review.MediaID, review.MediaType, review.Rating, review.Comment).Scan(&review.ID, &review.CreatedAt, &review.UpdatedAt); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, errs.NotFound(string(review.MediaType), "id", review.MediaID)
 		} else if errs.IsUniqueViolation(err, uniqueUserMediaConstraint) {
@@ -71,14 +70,6 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 	var reviews []*models.Review
 	for rows.Next() {
 		var review models.Review
-		var userID, mediaID, mediaType, desc, rating *string
-		var CreatedAt, UpdatedAt *time.Time
-
-		if err := rows.Scan(&userID, &mediaID, &mediaType, &desc, &rating, &UpdatedAt, &CreatedAt); err != nil {
-			print(err.Error(), "from transactions err ")
-			return reviews, err
-		}
-
 		if err := rows.Scan(
 			&review.ID,
 			&review.UserID,
@@ -95,49 +86,10 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 	}
 
 	if err := rows.Err(); err != nil {
-		print(err.Error(), "from transactions err ")
 		return []*models.Review{}, err
 	}
 
 	return reviews, nil
-}
-
-func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaType string) ([]*models.Review, error) {
-
-	rows, err := r.Query(ctx, "SELECT id, user_id, media_id, media_type, rating, comment, created_at, updated_at FROM review WHERE media_id = $1 and media_type = $2", id, mediaType)
-
-	if err != nil {
-		return []*models.Review{}, err
-	}
-
-	defer rows.Close()
-
-	var reviews []*models.Review
-	for rows.Next() {
-		var review models.Review
-
-		if err := rows.Scan(
-			&review.ID,
-			&review.UserID,
-			&review.MediaID,
-			&review.MediaType,
-			&review.Rating,
-			&review.Comment,
-			&review.CreatedAt,
-			&review.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		reviews = append(reviews, &review)
-	}
-
-	if err := rows.Err(); err != nil {
-		print(err.Error(), "from transactions err ")
-		return []*models.Review{}, err
-	}
-
-	return reviews, nil
-
 }
 
 func NewReviewRepository(db *pgxpool.Pool) *ReviewRepository {
