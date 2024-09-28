@@ -32,20 +32,6 @@ func (h *Handler) GetReviewsById(c *fiber.Ctx, mediaType string) error {
 	if limit == 0 {
 		limit = 10
 	}
-	// var (
-	// 	id     = c.Params("id")
-	// 	offset = c.QueryInt("page", 0)
-	// 	limit  = c.QueryInt("limit", 10)
-	// )
-	fmt.Println(limit)
-
-	// if offset < 0 {
-	// 	offset = 0 // Ensure offset is non-negative
-	// }
-
-	// if limit <= 0 {
-	// 	limit = 10 // Ensure limit is positive
-	// }
 
 	// Fetch the review based on ID and media type
 	reviews, err := h.reviewRepository.GetReviewsByID(c.Context(), id, mediaType)
