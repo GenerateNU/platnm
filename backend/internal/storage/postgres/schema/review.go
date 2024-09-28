@@ -92,6 +92,44 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 	return reviews, nil
 }
 
+func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaType string) ([]*models.Review, error) {
+
+	rows, err := r.Query(ctx, "SELECT id, user_id, media_id, media_type, rating, comment, created_at, updated_at FROM review WHERE media_id = $1 and media_type = $2", id, mediaType)
+
+	if err != nil {
+		return []*models.Review{}, err
+	}
+
+	defer rows.Close()
+
+	var reviews []*models.Review
+	for rows.Next() {
+		var review models.Review
+
+		if err := rows.Scan(
+			&review.ID,
+			&review.UserID,
+			&review.MediaID,
+			&review.MediaType,
+			&review.Rating,
+			&review.Comment,
+			&review.CreatedAt,
+			&review.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		reviews = append(reviews, &review)
+	}
+
+	if err := rows.Err(); err != nil {
+		print(err.Error(), "from transactions err ")
+		return []*models.Review{}, err
+	}
+
+	return reviews, nil
+
+}
+
 func NewReviewRepository(db *pgxpool.Pool) *ReviewRepository {
 	return &ReviewRepository{
 		db,
