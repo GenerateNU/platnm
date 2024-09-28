@@ -1,29 +1,18 @@
-package handler
+package reviews
 
 import (
 	"fmt"
 	"platnm/internal/models"
-	"platnm/internal/storage"
 
 	"github.com/gofiber/fiber/v2"
 )
-
-type ReviewHandler struct {
-	reviewRepository storage.ReviewRepository
-}
-
-func NewReviewHandler(reviewRepository storage.ReviewRepository) *ReviewHandler {
-	return &ReviewHandler{
-		reviewRepository,
-	}
-}
 
 type PaginationRequest struct {
 	Page  int `json:"page"`
 	Limit int `json:"limit"`
 }
 
-func (h *ReviewHandler) GetReviewById(c *fiber.Ctx, mediaType string) error {
+func (h *Handler) GetReviewsById(c *fiber.Ctx, mediaType string) error {
 	var body PaginationRequest
 	var id = c.Params("id")
 
