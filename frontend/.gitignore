@@ -10,6 +10,8 @@ npm-debug.*
 *.orig.*
 web-build/
 
+frontend/ios_distribution.p12
+
 # macOS
 .DS_Store
 
