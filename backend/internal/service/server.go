@@ -5,11 +5,11 @@ import (
 	"platnm/internal/config"
 	"platnm/internal/constants"
 	"platnm/internal/errs"
+	"platnm/internal/service/handler/media"
 	"platnm/internal/service/handler/oauth"
 	"platnm/internal/service/handler/oauth/spotify"
 	"platnm/internal/service/handler/reviews"
 	"platnm/internal/service/handler/users"
-	"platnm/internal/service/handler/medias"
 	"platnm/internal/storage/postgres"
 
 	go_json "github.com/goccy/go-json"
@@ -25,7 +25,7 @@ import (
 
 func InitApp(config config.Config) *fiber.App {
 	app := setupApp()
-			
+
 	setupRoutes(app, config)
 
 	return app
@@ -49,8 +49,8 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Get("/:id", reviewHandler.GetReviewsByUserID)
 	})
 
-	mediaHandler := medias.NewHandler(repository.Media)
-	app.Route("/medias", func(r fiber.Router) {
+	mediaHandler := media.NewHandler(repository.Media)
+	app.Route("/media", func(r fiber.Router) {
 		r.Get("/:name", mediaHandler.GetMediaByName)
 	})
 

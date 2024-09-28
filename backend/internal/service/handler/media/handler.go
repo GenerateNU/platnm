@@ -1,4 +1,4 @@
-package medias
+package media
 
 import "platnm/internal/storage"
 

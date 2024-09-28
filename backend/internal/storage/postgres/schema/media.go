@@ -3,6 +3,7 @@ package schema
 import (
 	"context"
 	"platnm/internal/models"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -12,9 +13,9 @@ type MediaRepository struct {
 
 func (r *MediaRepository) GetMediaByName(ctx context.Context, name string) ([]models.Media, error) {
 
-	// TODO: TWEAK THE SIMILARITY SCORE MAX HERE
-	var albumQuery = "SELECT * FROM album WHERE levenshtein(title, $1) <= 5 LIMIT 20;"
-	var trackQuery = "SELECT * FROM track WHERE levenshtein(title, $1) <= 5 LIMIT 20;"
+	// select all rows where either the input string is in the title of the media, or if the string matches one of the titles fuzzily
+	var albumQuery = "SELECT * FROM album WHERE levenshtein(title, $1) <= 5 OR title ILIKE '%' || $1 || '%' LIMIT 20;"
+	var trackQuery = "SELECT * FROM track WHERE levenshtein(title, $1) <= 5 OR title ILIKE '%' || $1 || '%' LIMIT 20;"
 
 	albumRows, albumErr := r.Query(ctx, albumQuery, name)
 	trackRows, trackErr := r.Query(ctx, trackQuery, name)
