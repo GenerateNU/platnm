@@ -33,6 +33,7 @@ func (h *Handler) GetReviewsById(c *fiber.Ctx, mediaType string) error {
 		limit = 10
 	}
 
+	// Even though we are paginating the reviews we need to get all the reviews in order to calculate average rating
 	// Fetch the review based on ID and media type
 	reviews, err := h.reviewRepository.GetReviewsByID(c.Context(), id, mediaType)
 	if err != nil {
