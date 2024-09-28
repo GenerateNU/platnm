@@ -6,11 +6,6 @@ on:
       - "**"
     paths:
       - "frontend/**"
-  pull_request:
-    branches:
-      - "**"
-    paths:
-      - "frontend/**"
 
 jobs:
   frontend-lint:
