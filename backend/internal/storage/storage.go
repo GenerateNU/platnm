@@ -10,12 +10,7 @@ type UserRepository interface {
 	GetUserByID(id string, ctx context.Context) (*models.User, error)
 }
 
-type SpotifyRepository interface {
-	GetPlatnmPlaylist(ctx context.Context) ([]models.User, error)
-}
-
 // Repository storage of all repositories.
 type Repository struct {
-	User    UserRepository
-	Spotify SpotifyRepository
+	User UserRepository
 }

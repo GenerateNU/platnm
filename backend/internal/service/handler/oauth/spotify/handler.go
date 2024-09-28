@@ -16,6 +16,8 @@ func NewHandler(store *oauth.SessionValueStore, config config.Spotify) *Handler 
 	authenticator := spotifyauth.New(
 		spotifyauth.WithRedirectURL(config.RedirectURI),
 		spotifyauth.WithScopes(spotifyauth.ScopeUserReadPrivate),
+		spotifyauth.WithClientID(config.ClientID),
+		spotifyauth.WithClientSecret(config.ClientSecret),
 	)
 
 	return &Handler{

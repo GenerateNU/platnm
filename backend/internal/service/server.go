@@ -6,8 +6,10 @@ import (
 	"platnm/internal/constants"
 	"platnm/internal/errs"
 	"platnm/internal/service/handler/oauth"
-	"platnm/internal/service/handler/oauth/spotify"
-	"platnm/internal/service/handler/spotistics"
+	spotify_oauth_handler "platnm/internal/service/handler/oauth/spotify"
+	spotify_handler "platnm/internal/service/handler/spotify"
+	spotify_middleware "platnm/internal/service/middleware/spotify"
+
 	"platnm/internal/service/handler/users"
 
 	"platnm/internal/storage/postgres"
@@ -53,7 +55,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	// change to /oauth once its changed in spotify dashboard
 	app.Route("/auth", func(r fiber.Router) {
 		r.Route("/spotify", func(r fiber.Router) {
-			h := spotify.NewHandler(store, config.Spotify)
+			h := spotify_oauth_handler.NewHandler(store, config.Spotify)
 
 			r.Get("/begin", h.Begin)
 			r.Get("/callback", h.Callback)
@@ -61,8 +63,11 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	})
 
 	app.Route("/spotify", func(r fiber.Router) {
-		spotifyHandler := spotistics.NewHandler(repository.Spotify)
-		r.Get("/", spotifyHandler.GetPlatnmPlaylist)
+		h := spotify_handler.NewHandler()
+		m := spotify_middleware.NewMiddleware(config.Spotify)
+
+		r.Use(m.WithSpotifyClient())
+		r.Get("/", h.GetPlatnmPlaylist)
 	})
 }
 
@@ -82,8 +87,6 @@ func setupApp() *fiber.App {
 	app.Use(compress.New(compress.Config{
 		Level: compress.LevelBestSpeed,
 	}))
-
-	app.Use(spotistics.WithSpotify())
 
 	return app
 }

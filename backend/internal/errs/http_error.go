@@ -54,7 +54,6 @@ func InternalServerError() HTTPError {
 
 func ErrorHandler(c *fiber.Ctx, err error) error {
 	var httpErr HTTPError
-
 	if castedErr, ok := err.(HTTPError); ok {
 		httpErr = castedErr
 	} else {
