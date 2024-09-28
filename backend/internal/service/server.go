@@ -53,6 +53,12 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		reviewHandler := reviews.NewHandler(repository.Review, repository.User)
 		r.Post("/", reviewHandler.CreateReview)
 		r.Get("/:id", reviewHandler.GetReviewsByUserID)
+		r.Get("/album/:id", func(c *fiber.Ctx) error {
+			return reviewHandler.GetReviewsById(c, "album")
+		})
+		r.Get("/track/:id", func(c *fiber.Ctx) error {
+			return reviewHandler.GetReviewsById(c, "track")
+		})
 	})
 
 	mediaHandler := media.NewHandler(repository.Media)
@@ -105,7 +111,6 @@ func setupApp() *fiber.App {
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
 		AllowMethods: "GET,POST,PUT,DELETE",
-		AllowHeaders: "Authorization,Content-Type",
 	}))
 
 	return app
