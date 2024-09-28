@@ -54,6 +54,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	mediaHandler := media.NewHandler(repository.Media)
 	app.Route("/media", func(r fiber.Router) {
 		r.Get("/:name", mediaHandler.GetMediaByName)
+		r.Get("/recent", mediaHandler.GetMediaByDate)
 	})
 
 	// this store can be passed to other oauth handlers that need to manage state/verifier values
