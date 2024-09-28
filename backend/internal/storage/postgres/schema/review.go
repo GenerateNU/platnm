@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"platnm/internal/models"
+	"strconv"
 	"time"
 
 	"platnm/internal/errs"
@@ -103,21 +104,30 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 }
 
 func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaType string) ([]*models.Review, error) {
-
-	rows, err := r.Query(ctx, "SELECT * FROM review WHERE media_id = $1 and Media_type = $2", id, mediaType)
+	numID, err := strconv.Atoi(id)
 	if err != nil {
-		print(err.Error(), "from transactions err ")
+		fmt.Println("Error:", err)
+	}
+
+	rows, err := r.Query(ctx, "SELECT * FROM review WHERE media_id = $1 and Media_type = $2", numID, mediaType)
+
+	if !rows.Next() {
+		return []*models.Review{}, nil
+	}
+
+	if err != nil {
 		return []*models.Review{}, err
 	}
+
 	defer rows.Close()
 
 	var reviews []*models.Review
-
 	for rows.Next() {
 		var review models.Review
-		var mediaType, comment, userID, mediaID, rating *string
-		var createdAt, updatedAt *time.Time
-		if err := rows.Scan(&userID, &mediaID, &mediaType, &rating, &comment, &createdAt, &updatedAt); err != nil {
+		var userID, mediaID, mediaType, desc, rating *string
+		var CreatedAt, UpdatedAt *time.Time
+
+		if err := rows.Scan(&id, &userID, &mediaID, &mediaType, &desc, &rating, &UpdatedAt, &CreatedAt); err != nil {
 			print(err.Error(), "from transactions err ")
 			return reviews, err
 		}
@@ -138,7 +148,7 @@ func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaT
 	}
 
 	if err := rows.Err(); err != nil {
-		print(err.Error(), "this from transactions err ")
+		print(err.Error(), "from transactions err ")
 		return []*models.Review{}, err
 	}
 

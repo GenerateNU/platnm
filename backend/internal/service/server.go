@@ -45,10 +45,10 @@ func setupRoutes(app *fiber.App, config config.Config) {
 
 	reviewHandler := handler.NewReviewHandler(repository.Review)
 	app.Route("/reviews", func(r fiber.Router) {
-		r.Get("/album/:albumID", func(c *fiber.Ctx) error {
+		r.Get("/album/:id", func(c *fiber.Ctx) error {
 			return reviewHandler.GetReviewById(c, "album")
 		})
-		r.Get("/track/:trackID", func(c *fiber.Ctx) error {
+		r.Get("/track/:id", func(c *fiber.Ctx) error {
 			return reviewHandler.GetReviewById(c, "track")
 		})
 	})
