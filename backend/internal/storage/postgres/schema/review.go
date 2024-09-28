@@ -4,9 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"platnm/internal/models"
-
 	"platnm/internal/errs"
+	"platnm/internal/models"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -90,6 +89,41 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 	}
 
 	return reviews, nil
+}
+
+func (r *ReviewRepository) UpdateReview(ctx context.Context, review *models.Review) (*models.Review, error) {
+	query := `
+        UPDATE reviews 
+        SET comment = $1, rating = $2, updatedAt = $3 
+        WHERE id = $4 
+        RETURNING id, user_id, comment, rating, updatedAt`
+
+	var updatedReview models.Review
+
+	// Using QueryRowContext to execute the update and get the updated review
+	err := r.QueryRow(ctx, query, review.Comment, review.Rating, review.UpdatedAt, review.ID).
+		Scan(&updatedReview.ID, &updatedReview.UserID, &updatedReview.Comment, &updatedReview.Rating, &updatedReview.UpdatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &updatedReview, nil
+}
+
+func (r *ReviewRepository) ReviewExists(ctx context.Context, id string) (bool, error) {
+
+	rows, err := r.Query(ctx, `SELECT * FROM review WHERE id = $1`, id)
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 func NewReviewRepository(db *pgxpool.Pool) *ReviewRepository {

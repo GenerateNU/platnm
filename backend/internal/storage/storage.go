@@ -19,6 +19,8 @@ type UserRepository interface {
 type ReviewRepository interface {
 	GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error)
 	CreateReview(ctx context.Context, review *models.Review) (*models.Review, error)
+	UpdateReview(ctx context.Context, update *models.Review) (*models.Review, error)
+	ReviewExists(ctx context.Context, id string) (bool, error)
 }
 
 // Repository storage of all repositories.
