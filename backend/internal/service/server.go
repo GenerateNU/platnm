@@ -7,9 +7,13 @@ import (
 	"platnm/internal/errs"
 	"platnm/internal/service/handler/media"
 	"platnm/internal/service/handler/oauth"
-	"platnm/internal/service/handler/oauth/spotify"
+	spotify_oauth_handler "platnm/internal/service/handler/oauth/spotify"
+	spotify_handler "platnm/internal/service/handler/spotify"
+	spotify_middleware "platnm/internal/service/middleware/spotify"
+
 	"platnm/internal/service/handler/reviews"
 	"platnm/internal/service/handler/users"
+
 	"platnm/internal/storage/postgres"
 
 	go_json "github.com/goccy/go-json"
@@ -66,10 +70,19 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	// change to /oauth once its changed in spotify dashboard
 	app.Route("/auth", func(r fiber.Router) {
 		r.Route("/spotify", func(r fiber.Router) {
-			h := spotify.NewHandler(store, config.Spotify)
+			h := spotify_oauth_handler.NewHandler(store, config.Spotify)
+
 			r.Get("/begin", h.Begin)
 			r.Get("/callback", h.Callback)
 		})
+	})
+
+	app.Route("/spotify", func(r fiber.Router) {
+		h := spotify_handler.NewHandler()
+		m := spotify_middleware.NewMiddleware(config.Spotify)
+
+		r.Use(m.WithSpotifyClient())
+		r.Get("/", h.GetPlatnmPlaylist)
 	})
 }
 
