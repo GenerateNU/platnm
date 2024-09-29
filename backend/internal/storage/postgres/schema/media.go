@@ -25,7 +25,7 @@ func (r *MediaRepository) GetMediaByDate(ctx context.Context) ([]models.Media, e
 			-1 AS track_id,
 			0 AS duration_seconds,
 			'album' AS media_type,
-			1 AS media_priority        -- Albums have higher priority (0 is higher than 1)
+			1 AS media_priority        -- Albums have lower priority 
 		FROM album
 		UNION
 		(
@@ -40,7 +40,7 @@ func (r *MediaRepository) GetMediaByDate(ctx context.Context) ([]models.Media, e
 				track.id AS track_id,
 				track.duration_seconds,
 				'track' AS media_type,
-				0 AS media_priority        -- Tracks have lower priority (1 is lower than 0)
+				0 AS media_priority        -- Tracks have higher priority
 			FROM track
 			JOIN album ON album.id = track.album_id
 		)
@@ -52,7 +52,6 @@ func (r *MediaRepository) GetMediaByDate(ctx context.Context) ([]models.Media, e
 	}
 	defer mediaRows.Close()
 
-	fmt.Println("about to scan mediaRows")
 	var medias []models.Media
 	for mediaRows.Next() {
 		var mediaTitle, cover, country, mediaTypeStr string
@@ -69,14 +68,14 @@ func (r *MediaRepository) GetMediaByDate(ctx context.Context) ([]models.Media, e
 			&genreID,
 			&trackID,
 			&durationSecs,
-			&mediaTypeStr, // Scan as a string (track or album)
+			&mediaTypeStr,
 			&priority,
 		); err != nil {
 			fmt.Println(err)
 			return nil, err
 		}
 
-		// Convert mediaTypeStr into models.MediaType
+		// Cast mediaTypeStr into models.MediaType
 		mediaType := models.MediaType(mediaTypeStr)
 
 		// Switch based on mediaType to append either Album or Track
@@ -89,7 +88,7 @@ func (r *MediaRepository) GetMediaByDate(ctx context.Context) ([]models.Media, e
 				Cover:       cover,
 				Country:     country,
 				GenreID:     genreID,
-				Media:       models.AlbumMedia, // Set to album media type
+				Media:       models.AlbumMedia,
 			}
 			medias = append(medias, album)
 		case models.TrackMedia:
@@ -98,7 +97,7 @@ func (r *MediaRepository) GetMediaByDate(ctx context.Context) ([]models.Media, e
 				AlbumID:     albumID,
 				Title:       mediaTitle,
 				Duration:    durationSecs,
-				Media:       models.TrackMedia, // Set to track media type
+				Media:       models.TrackMedia,
 				Cover:       cover,
 				ReleaseDate: releaseDate,
 			}
@@ -108,20 +107,28 @@ func (r *MediaRepository) GetMediaByDate(ctx context.Context) ([]models.Media, e
 		}
 	}
 
-	fmt.Println("scan complete")
-
-	// Check for any row iteration errors
 	if err := mediaRows.Err(); err != nil {
 		return nil, err
 	}
-
 	return medias, nil
 }
 
 func (r *MediaRepository) GetMediaByName(ctx context.Context, name string) ([]models.Media, error) {
 	// select all rows where either the input string is in the title of the media, or if the string matches one of the titles fuzzily
 	var albumQuery = "SELECT * FROM album WHERE levenshtein(title, $1) <= 5 OR title ILIKE '%' || $1 || '%' LIMIT 20;"
-	var trackQuery = "SELECT * FROM track WHERE levenshtein(title, $1) <= 5 OR title ILIKE '%' || $1 || '%' LIMIT 20;"
+	var trackQuery = `
+	SELECT 
+		track.id AS track_id,
+		track.title AS track_title,
+		track.duration_seconds,
+		track.album_id as album_id,
+		album.release_date,
+		album.cover
+	FROM track
+	JOIN album ON track.album_id = album.id
+	WHERE levenshtein(track.title, $1) <= 5 OR track.title ILIKE '%' || $1 || '%'
+	LIMIT 20;
+`
 
 	albumRows, albumErr := r.Query(ctx, albumQuery, name)
 	trackRows, trackErr := r.Query(ctx, trackQuery, name)
@@ -158,9 +165,11 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string) ([]mo
 		var track models.Track
 		if err := trackRows.Scan(
 			&track.ID,
-			&track.AlbumID,
 			&track.Title,
 			&track.Duration,
+			&track.AlbumID,
+			&track.ReleaseDate,
+			&track.Cover,
 		); err != nil {
 			return nil, err
 		}

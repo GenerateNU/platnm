@@ -33,8 +33,8 @@ type Track struct {
 	AlbumID     int       `json:"album_id"`
 	Title       string    `json:"title"`
 	Duration    int       `json:"duration_seconds"`
-	ReleaseDate time.Time `json:"release_date"` // Add release_date field
-	Cover       string    `json:"cover"`        // Add cover field
+	ReleaseDate time.Time `json:"release_date"`
+	Cover       string    `json:"cover"`
 }
 
 func (a Album) GetMediaType() MediaType {
