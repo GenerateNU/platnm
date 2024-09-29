@@ -126,6 +126,22 @@ func (r *ReviewRepository) ReviewExists(ctx context.Context, id string) (bool, e
 	return false, nil
 }
 
+func (r *ReviewRepository) ReviewBelongsToUser(ctx context.Context, reviewID string, userID string) (bool, error) {
+	//println("userid: " + userID)
+	//println("reviewid: " + reviewID)
+	rows, err := r.Query(ctx, `SELECT * FROM review WHERE "id" = $1, user_id = $2`, reviewID, userID)
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		return true, nil
+	}
+
+	return false, nil
+}
+
 func NewReviewRepository(db *pgxpool.Pool) *ReviewRepository {
 	return &ReviewRepository{
 		db,
