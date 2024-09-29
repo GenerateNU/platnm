@@ -11,7 +11,7 @@ const (
 
 // A Media interface that both Album and Track must implement. T
 // The single class method is somewhat of a dummy method, since we only want the inheritance behavior but never use this method.
-// The inheritance behavior enables a search query to the media search endpoint to return a list of both albums and tracks. 
+// The inheritance behavior enables a search query to the media search endpoint to return a list of both albums and tracks.
 
 type Media interface {
 	GetMediaType() MediaType
@@ -20,6 +20,7 @@ type Media interface {
 type Album struct {
 	Media       MediaType
 	ID          int       `json:"id"`
+	SpotifyID   string    `json:"spotify_id"`
 	Title       string    `json:"title"`
 	ReleaseDate time.Time `json:"release_date"`
 	Cover       string    `json:"cover"`
