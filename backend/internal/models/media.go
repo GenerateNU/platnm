@@ -18,7 +18,7 @@ type Media interface {
 }
 
 type Album struct {
-	Media       MediaType
+	Media       MediaType `json:"media"`
 	ID          int       `json:"id"`
 	Title       string    `json:"title"`
 	ReleaseDate time.Time `json:"release_date"`
