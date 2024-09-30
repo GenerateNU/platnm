@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/jackc/pgx/v5"
 	"platnm/internal/errs"
 	"platnm/internal/models"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -91,18 +91,42 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 	return reviews, nil
 }
 
-func (r *ReviewRepository) UpdateReview(ctx context.Context, review *models.Review) (*models.Review, error) {
-	query := `
+func (r *ReviewRepository) UpdateReview(ctx context.Context, review *models.Review, updateComment bool, updateRating bool) (*models.Review, error) {
+
+	// Declare these variables first to allow for assignment inside if statement body
+	var query string
+	var err error
+	var updatedReview models.Review
+
+	if updateRating && updateComment {
+		query = `
         UPDATE review 
         SET comment = $1, rating = $2, updated_at = $3 
         WHERE id = $4 
         RETURNING id, user_id, comment, rating, updated_at`
+		// QueryRow with both rating and comment
+		err = r.QueryRow(ctx, query, review.Comment, review.Rating, review.UpdatedAt, review.ID).
+			Scan(&updatedReview.ID, &updatedReview.UserID, &updatedReview.Comment, &updatedReview.Rating, &updatedReview.UpdatedAt)
+	} else if updateRating && !updateComment {
+		query = `
+        UPDATE review 
+        SET rating = $1, updated_at = $2 
+        WHERE id = $3 
+        RETURNING id, user_id, comment, rating, updated_at`
+		// QueryRow without comment
+		err = r.QueryRow(ctx, query, review.Rating, review.UpdatedAt, review.ID).
+			Scan(&updatedReview.ID, &updatedReview.UserID, &updatedReview.Comment, &updatedReview.Rating, &updatedReview.UpdatedAt)
+	} else if !updateRating && updateComment {
+		query = `
+        UPDATE review 
+        SET comment = $1, updated_at = $2 
+        WHERE id = $3 
+        RETURNING id, user_id, comment, rating, updated_at`
+		// QueryRow without rating
+		err = r.QueryRow(ctx, query, review.Comment, review.UpdatedAt, review.ID).
+			Scan(&updatedReview.ID, &updatedReview.UserID, &updatedReview.Comment, &updatedReview.Rating, &updatedReview.UpdatedAt)
 
-	var updatedReview models.Review
-
-	// Using QueryRowContext to execute the update and get the updated review
-	err := r.QueryRow(ctx, query, review.Comment, review.Rating, review.UpdatedAt, review.ID).
-		Scan(&updatedReview.ID, &updatedReview.UserID, &updatedReview.Comment, &updatedReview.Rating, &updatedReview.UpdatedAt)
+	}
 
 	if err != nil {
 		return nil, err

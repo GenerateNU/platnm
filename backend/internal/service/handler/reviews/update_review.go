@@ -43,6 +43,11 @@ func (h *Handler) UpdateReviewByReviewID(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
 	}
 
+	// Ensure at least one field is being updated
+	if reviewUpdate.Comment == nil && reviewUpdate.Rating == nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Either 'comment' or 'rating' must be provided"})
+	}
+
 	userID := reviewUpdate.UserID
 	reviewIsOwnedByUser, err := h.reviewRepository.ReviewBelongsToUser(c.Context(), reviewIDStr, userID)
 
@@ -55,17 +60,39 @@ func (h *Handler) UpdateReviewByReviewID(c *fiber.Ctx) error {
 		return errs.BadRequest("This user does not own the specified review.")
 	}
 
-	// Create a new Review object with updated fields
-	updatedReview := models.Review{
-		ID:        reviewID,
-		UserID:    reviewUpdate.UserID,
-		Comment:   *reviewUpdate.Comment,
-		Rating:    *reviewUpdate.Rating,
-		UpdatedAt: time.Now(),
+	var updatedReview models.Review
+	updateRating := reviewUpdate.Rating != nil
+	updateComment := reviewUpdate.Comment != nil
+
+	if !updateRating {
+		updatedReview = models.Review{
+			ID:        reviewID,
+			UserID:    reviewUpdate.UserID,
+			Comment:   *reviewUpdate.Comment,
+			UpdatedAt: time.Now(),
+		}
+	} else if !updateComment {
+		if *reviewUpdate.Rating > 10 || *reviewUpdate.Rating < 0 {
+			return errs.BadRequest("Rating must be between 0 and 10")
+		}
+		updatedReview = models.Review{
+			ID:        reviewID,
+			UserID:    reviewUpdate.UserID,
+			Rating:    *reviewUpdate.Rating,
+			UpdatedAt: time.Now(),
+		}
+	} else {
+		updatedReview = models.Review{
+			ID:        reviewID,
+			UserID:    reviewUpdate.UserID,
+			Rating:    *reviewUpdate.Rating,
+			Comment:   *reviewUpdate.Comment,
+			UpdatedAt: time.Now(),
+		}
 	}
 
 	// Update the review in the database
-	returnedReview, err := h.reviewRepository.UpdateReview(c.Context(), &updatedReview)
+	returnedReview, err := h.reviewRepository.UpdateReview(c.Context(), &updatedReview, updateComment, updateRating)
 	if err != nil {
 		return err
 	}
