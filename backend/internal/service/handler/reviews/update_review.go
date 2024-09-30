@@ -10,11 +10,10 @@ import (
 )
 
 type ReviewUpdate struct {
-	ID        int       `json:"id"`
-	UserID    string    `json:"user_id"`
-	Rating    *int      `json:"rating"`
-	Comment   *string   `json:"comment"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID      int     `json:"id"`
+	UserID  string  `json:"user_id"`
+	Rating  *int    `json:"rating"`
+	Comment *string `json:"comment"`
 }
 
 func (h *Handler) UpdateReviewByReviewID(c *fiber.Ctx) error {

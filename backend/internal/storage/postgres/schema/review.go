@@ -101,29 +101,29 @@ func (r *ReviewRepository) UpdateReview(ctx context.Context, review *models.Revi
 	if updateRating && updateComment {
 		query = `
         UPDATE review 
-        SET comment = $1, rating = $2, updated_at = $3 
-        WHERE id = $4 
+        SET comment = $1, rating = $2, updated_at = now() 
+        WHERE id = $3 
         RETURNING id, user_id, comment, rating, updated_at`
 		// QueryRow with both rating and comment
-		err = r.QueryRow(ctx, query, review.Comment, review.Rating, review.UpdatedAt, review.ID).
+		err = r.QueryRow(ctx, query, review.Comment, review.Rating, review.ID).
 			Scan(&updatedReview.ID, &updatedReview.UserID, &updatedReview.Comment, &updatedReview.Rating, &updatedReview.UpdatedAt)
 	} else if updateRating && !updateComment {
 		query = `
         UPDATE review 
-        SET rating = $1, updated_at = $2 
-        WHERE id = $3 
+        SET rating = $1, updated_at = now() 
+        WHERE id = $2 
         RETURNING id, user_id, comment, rating, updated_at`
 		// QueryRow without comment
-		err = r.QueryRow(ctx, query, review.Rating, review.UpdatedAt, review.ID).
+		err = r.QueryRow(ctx, query, review.Rating, review.ID).
 			Scan(&updatedReview.ID, &updatedReview.UserID, &updatedReview.Comment, &updatedReview.Rating, &updatedReview.UpdatedAt)
 	} else if !updateRating && updateComment {
 		query = `
         UPDATE review 
-        SET comment = $1, updated_at = $2 
-        WHERE id = $3 
+        SET comment = $1, updated_at = now() 
+        WHERE id = $2 
         RETURNING id, user_id, comment, rating, updated_at`
 		// QueryRow without rating
-		err = r.QueryRow(ctx, query, review.Comment, review.UpdatedAt, review.ID).
+		err = r.QueryRow(ctx, query, review.Comment, review.ID).
 			Scan(&updatedReview.ID, &updatedReview.UserID, &updatedReview.Comment, &updatedReview.Rating, &updatedReview.UpdatedAt)
 
 	}
