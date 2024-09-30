@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"platnm/internal/constants"
 	"platnm/internal/errs"
 )
 
@@ -71,7 +72,7 @@ func (h *Handler) UpdateReviewByReviewID(c *fiber.Ctx) error {
 		}
 	} else {
 		// updateRating guaranteed because of validation that !updateRating && !updateComment -> error
-		if *reviewUpdate.Rating > 10 || *reviewUpdate.Rating < 1 {
+		if *reviewUpdate.Rating > constants.MaximumRating || *reviewUpdate.Rating < constants.MinimumRating {
 			return errs.BadRequest("Rating must be between 1 and 10 [1, 10]")
 		}
 		if !updateComment && updateRating {
