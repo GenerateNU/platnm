@@ -19,8 +19,8 @@ type UserRepository interface {
 type ReviewRepository interface {
 	GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error)
 	CreateReview(ctx context.Context, review *models.Review) (*models.Review, error)
-	UpdateReview(ctx context.Context, update *models.Review, updateComment bool, updateRating bool) (*models.Review, error)
-	ReviewExists(ctx context.Context, id string) (bool, error)
+	UpdateReview(ctx context.Context, update *models.Review) (*models.Review, error)
+	GetExistingReview(ctx context.Context, id string) (*models.Review, error)
 	ReviewBelongsToUser(ctx context.Context, reviewID string, userID string) (bool, error)
 }
 

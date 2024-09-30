@@ -2,6 +2,7 @@ package schema
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/jackc/pgx/v5"
@@ -91,42 +92,21 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 	return reviews, nil
 }
 
-func (r *ReviewRepository) UpdateReview(ctx context.Context, review *models.Review, updateComment bool, updateRating bool) (*models.Review, error) {
+func (r *ReviewRepository) UpdateReview(ctx context.Context, review *models.Review) (*models.Review, error) {
 
 	// Declare these variables first to allow for assignment inside if statement body
 	var query string
-	var err error
 	var updatedReview models.Review
 
-	if updateRating && updateComment {
-		query = `
+	query = `
         UPDATE review 
         SET comment = $1, rating = $2, updated_at = now() 
         WHERE id = $3 
         RETURNING id, user_id, comment, rating, updated_at`
-		// QueryRow with both rating and comment
-		err = r.QueryRow(ctx, query, review.Comment, review.Rating, review.ID).
-			Scan(&updatedReview.ID, &updatedReview.UserID, &updatedReview.Comment, &updatedReview.Rating, &updatedReview.UpdatedAt)
-	} else if updateRating && !updateComment {
-		query = `
-        UPDATE review 
-        SET rating = $1, updated_at = now() 
-        WHERE id = $2 
-        RETURNING id, user_id, comment, rating, updated_at`
-		// QueryRow without comment
-		err = r.QueryRow(ctx, query, review.Rating, review.ID).
-			Scan(&updatedReview.ID, &updatedReview.UserID, &updatedReview.Comment, &updatedReview.Rating, &updatedReview.UpdatedAt)
-	} else if !updateRating && updateComment {
-		query = `
-        UPDATE review 
-        SET comment = $1, updated_at = now() 
-        WHERE id = $2 
-        RETURNING id, user_id, comment, rating, updated_at`
-		// QueryRow without rating
-		err = r.QueryRow(ctx, query, review.Comment, review.ID).
-			Scan(&updatedReview.ID, &updatedReview.UserID, &updatedReview.Comment, &updatedReview.Rating, &updatedReview.UpdatedAt)
 
-	}
+	// QueryRow with both rating and comment
+	err := r.QueryRow(ctx, query, review.Comment, review.Rating, review.ID).
+		Scan(&updatedReview.ID, &updatedReview.UserID, &updatedReview.Comment, &updatedReview.Rating, &updatedReview.UpdatedAt)
 
 	if err != nil {
 		return nil, err
@@ -135,19 +115,27 @@ func (r *ReviewRepository) UpdateReview(ctx context.Context, review *models.Revi
 	return &updatedReview, nil
 }
 
-func (r *ReviewRepository) ReviewExists(ctx context.Context, id string) (bool, error) {
+func (r *ReviewRepository) GetExistingReview(ctx context.Context, id string) (*models.Review, error) {
+	var review models.Review
 
-	rows, err := r.Query(ctx, `SELECT * FROM review WHERE id = $1`, id)
+	row := r.QueryRow(ctx, `
+		SELECT id, user_id, media_type, media_id, rating, comment, created_at, updated_at
+		FROM review 
+		WHERE id = $1`, id)
+
+	// Scan the row into the review object
+	err := row.Scan(&review.ID, &review.UserID, &review.MediaType, &review.MediaID, &review.Rating, &review.Comment, &review.CreatedAt, &review.UpdatedAt)
 	if err != nil {
-		return false, err
+		// If no rows were found, return nil, no error
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		// If there is an error, return nil, error
+		return nil, err
 	}
-	defer rows.Close()
 
-	if rows.Next() {
-		return true, nil
-	}
-
-	return false, nil
+	// If there are rows and no error, return &review, nil
+	return &review, nil
 }
 
 func (r *ReviewRepository) ReviewBelongsToUser(ctx context.Context, reviewID string, userID string) (bool, error) {

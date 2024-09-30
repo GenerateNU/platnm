@@ -26,14 +26,14 @@ func (h *Handler) UpdateReviewByReviewID(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid review ID"})
 	}
 
-	exists, err := h.reviewRepository.ReviewExists(c.Context(), reviewIDStr)
+	existingReview, err := h.reviewRepository.GetExistingReview(c.Context(), reviewIDStr)
 	reviewUpdate := ReviewUpdate{}
 
 	if err != nil {
 		return err
 	}
 
-	if !exists {
+	if existingReview == nil {
 		return errs.NotFound("Review", "id", reviewID)
 	}
 
@@ -59,39 +59,41 @@ func (h *Handler) UpdateReviewByReviewID(c *fiber.Ctx) error {
 		return errs.BadRequest("This user does not own the specified review.")
 	}
 
-	var updatedReview models.Review
 	updateRating := reviewUpdate.Rating != nil
 	updateComment := reviewUpdate.Comment != nil
 
-	if !updateRating {
-		updatedReview = models.Review{
+	if !updateRating && updateComment {
+		existingReview = &models.Review{
 			ID:        reviewID,
 			UserID:    reviewUpdate.UserID,
 			Comment:   *reviewUpdate.Comment,
-			UpdatedAt: time.Now(),
-		}
-	} else if !updateComment {
-		if *reviewUpdate.Rating > 10 || *reviewUpdate.Rating < 1 {
-			return errs.BadRequest("Rating must be between 1 and 10 [1, 10]")
-		}
-		updatedReview = models.Review{
-			ID:        reviewID,
-			UserID:    reviewUpdate.UserID,
-			Rating:    *reviewUpdate.Rating,
 			UpdatedAt: time.Now(),
 		}
 	} else {
-		updatedReview = models.Review{
-			ID:        reviewID,
-			UserID:    reviewUpdate.UserID,
-			Rating:    *reviewUpdate.Rating,
-			Comment:   *reviewUpdate.Comment,
-			UpdatedAt: time.Now(),
+		// updateRating guaranteed because of validation that !updateRating && !updateComment -> error
+		if *reviewUpdate.Rating > 10 || *reviewUpdate.Rating < 1 {
+			return errs.BadRequest("Rating must be between 1 and 10 [1, 10]")
+		}
+		if !updateComment && updateRating {
+			existingReview = &models.Review{
+				ID:        reviewID,
+				UserID:    reviewUpdate.UserID,
+				Rating:    *reviewUpdate.Rating,
+				UpdatedAt: time.Now(),
+			}
+		} else { //if updateComment && updateRating
+			existingReview = &models.Review{
+				ID:        reviewID,
+				UserID:    reviewUpdate.UserID,
+				Rating:    *reviewUpdate.Rating,
+				Comment:   *reviewUpdate.Comment,
+				UpdatedAt: time.Now(),
+			}
 		}
 	}
 
 	// Update the review in the database
-	returnedReview, err := h.reviewRepository.UpdateReview(c.Context(), &updatedReview, updateComment, updateRating)
+	returnedReview, err := h.reviewRepository.UpdateReview(c.Context(), existingReview)
 	if err != nil {
 		return err
 	}
