@@ -72,8 +72,8 @@ func (h *Handler) UpdateReviewByReviewID(c *fiber.Ctx) error {
 			UpdatedAt: time.Now(),
 		}
 	} else if !updateComment {
-		if *reviewUpdate.Rating > 10 || *reviewUpdate.Rating < 0 {
-			return errs.BadRequest("Rating must be between 0 and 10")
+		if *reviewUpdate.Rating > 10 || *reviewUpdate.Rating < 1 {
+			return errs.BadRequest("Rating must be between 1 and 10 [1, 10]")
 		}
 		updatedReview = models.Review{
 			ID:        reviewID,
