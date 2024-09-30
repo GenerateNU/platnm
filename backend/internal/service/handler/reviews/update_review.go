@@ -11,7 +11,7 @@ import (
 
 type ReviewUpdate struct {
 	ID        int       `json:"id"`
-	UserID    string    `json:"userID"`
+	UserID    string    `json:"user_id"`
 	Rating    *int      `json:"rating"`
 	Comment   *string   `json:"comment"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -44,9 +44,6 @@ func (h *Handler) UpdateReviewByReviewID(c *fiber.Ctx) error {
 	}
 
 	userID := reviewUpdate.UserID
-	//println("userid: " + reviewUpdate.UserID)
-	//print("reviewid: ")
-	//println(reviewID)
 	reviewIsOwnedByUser, err := h.reviewRepository.ReviewBelongsToUser(c.Context(), reviewIDStr, userID)
 
 	if !reviewIsOwnedByUser {
@@ -60,7 +57,7 @@ func (h *Handler) UpdateReviewByReviewID(c *fiber.Ctx) error {
 		UserID:    reviewUpdate.UserID,
 		Comment:   *reviewUpdate.Comment,
 		Rating:    *reviewUpdate.Rating,
-		UpdatedAt: time.Now(), // Set the updatedAt field to the current time
+		UpdatedAt: time.Now(),
 	}
 
 	// Update the review in the database

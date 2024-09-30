@@ -93,10 +93,10 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 
 func (r *ReviewRepository) UpdateReview(ctx context.Context, review *models.Review) (*models.Review, error) {
 	query := `
-        UPDATE reviews 
-        SET comment = $1, rating = $2, updatedAt = $3 
+        UPDATE review 
+        SET comment = $1, rating = $2, updated_at = $3 
         WHERE id = $4 
-        RETURNING id, user_id, comment, rating, updatedAt`
+        RETURNING id, user_id, comment, rating, updated_at`
 
 	var updatedReview models.Review
 
@@ -127,9 +127,7 @@ func (r *ReviewRepository) ReviewExists(ctx context.Context, id string) (bool, e
 }
 
 func (r *ReviewRepository) ReviewBelongsToUser(ctx context.Context, reviewID string, userID string) (bool, error) {
-	//println("userid: " + userID)
-	//println("reviewid: " + reviewID)
-	rows, err := r.Query(ctx, `SELECT * FROM review WHERE "id" = $1, user_id = $2`, reviewID, userID)
+	rows, err := r.Query(ctx, `SELECT * FROM review WHERE id = $1 and user_id = $2`, reviewID, userID)
 	if err != nil {
 		return false, err
 	}
