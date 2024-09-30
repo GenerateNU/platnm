@@ -46,6 +46,10 @@ func (h *Handler) UpdateReviewByReviewID(c *fiber.Ctx) error {
 	userID := reviewUpdate.UserID
 	reviewIsOwnedByUser, err := h.reviewRepository.ReviewBelongsToUser(c.Context(), reviewIDStr, userID)
 
+	if err != nil {
+		return err
+	}
+
 	if !reviewIsOwnedByUser {
 		// If no rows are returned, the review doesn't belong to the user
 		return errs.BadRequest("This user does not own the specified review.")
