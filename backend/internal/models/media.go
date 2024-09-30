@@ -28,9 +28,10 @@ type Album struct {
 }
 
 type Track struct {
-	Media       MediaType
+	Media       MediaType `json:"media"`
 	ID          int       `json:"id"`
 	AlbumID     int       `json:"album_id"`
+	AlbumTitle  string    `json:"album_title"`
 	Title       string    `json:"title"`
 	Duration    int       `json:"duration_seconds"`
 	ReleaseDate time.Time `json:"release_date"`

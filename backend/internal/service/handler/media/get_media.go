@@ -1,7 +1,6 @@
 package media
 
 import (
-	"fmt"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -14,7 +13,6 @@ func (h *Handler) GetMediaByName(c *fiber.Ctx) error {
 func (h *Handler) GetMedia(c *fiber.Ctx) error {
 	// Check for the "type" query parameter
 	mediaType := c.Query("sort")
-	fmt.Println(mediaType)
 	if mediaType == "recent" {
 		// Call the method to get recent media if the "type" query parameter is "recent"
 		medias, err := h.mediaRepository.GetMediaByDate(c.Context())
