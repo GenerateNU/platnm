@@ -43,9 +43,11 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	})
 
 	app.Route("/reviews", func(r fiber.Router) {
+		voteHandler := vote.NewHandler(repository.UserReviewVote, repository.User)
 		reviewHandler := reviews.NewHandler(repository.Review, repository.User)
 		r.Post("/", reviewHandler.CreateReview)
 		r.Get("/:id", reviewHandler.GetReviewsByUserID)
+		r.Post("/vote/:rating", voteHandler.AddVote)
 	})
 
 	// this store can be passed to other oauth handlers that need to manage state/verifier values

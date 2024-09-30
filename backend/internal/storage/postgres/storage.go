@@ -42,5 +42,6 @@ func NewRepository(config config.DB) *storage.Repository {
 	return &storage.Repository{
 		User:   schema.NewUserRepository(db),
 		Review: schema.NewReviewRepository(db),
+		UserReviewVote: schema.NewVoteRepository(db),
 	}
 }

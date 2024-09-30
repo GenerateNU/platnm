@@ -21,6 +21,18 @@ const (
 	uniqueUserMediaConstraint = "unique_user_media"
 )
 
+func (r *reviewRepository) ReviewExists(ctx context.Context, id String) (bool, error) {
+	rows, err := r.db.Query(ctx, `SELECT * FROM review WHERE id = $1`, id)
+	if err != nil {
+		return false, err
+	}
+	if rows.Next() {
+		return true, nil
+	}
+
+	return false, nil
+}
+
 func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Review) (*models.Review, error) {
 	query := `
 	WITH media_check AS (
