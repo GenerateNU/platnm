@@ -5,7 +5,7 @@ COPY . ./
 RUN go build -o bin/platnm cmd/server/main.go
 
 RUN openssl req -new -x509 -sha256 -nodes -newkey rsa:2048 -keyout server.key -out server.crt -days 3650 -subj "/C=US/ST=MA/L=Boston/O=Generate/CN=platnm"
-RUN sudo update-ca-certificates
+RUN apk add --no-cache ca-certificates && update-ca-certificates
 
 FROM scratch
 COPY --from=builder /app/bin/platnm /platnm
