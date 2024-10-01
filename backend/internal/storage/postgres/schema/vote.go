@@ -12,9 +12,8 @@ import (
 )
 
 type VoteRepository struct {
-	*pgxpool.Pool
+	db *pgxpool.Pool
 }
-//Don't think this is relevant??
 const (
 	userVoteFKeyConstraint   = "review_user_id_fkey"
 	votePKeyConstraint = "user_review_vote_pkey"
