@@ -43,12 +43,12 @@ func (r *VoteRepository) AddVote(ctx context.Context, vote *models.UserReviewVot
 func (r *VoteRepository) GetVoteIfExists(ctx context.Context, usrID string, revID string) (bool, bool, error) {
 	//Should I use this var to return upvote value instead of making helper func
 	var upVoteValue bool
-	row, err := r.db.Query(ctx, `SELECT upvote FROM user_review_vote WHERE user_id = $1 AND review_id = $2`, usrID, revID)
+	row, err := r.Query(ctx, `SELECT upvote FROM user_review_vote WHERE user_id = $1 AND review_id = $2`, usrID, revID)
 	if err != nil {
 		return false, false, err
 	}
 	if rows.Next() {
-		err := row.Scan(&upVoteValue)
+		err := rows.Scan(&upVoteValue)
 		if err != nil {
 			return false, false, err
 		}

@@ -21,7 +21,7 @@ const (
 	uniqueUserMediaConstraint = "unique_user_media"
 )
 
-func (r *reviewRepository) ReviewExists(ctx context.Context, id String) (bool, error) {
+func (r *ReviewRepository) ReviewExists(ctx context.Context, id string) (bool, error) {
 	rows, err := r.db.Query(ctx, `SELECT * FROM review WHERE id = $1`, id)
 	if err != nil {
 		return false, err

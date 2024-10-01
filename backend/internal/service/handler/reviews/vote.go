@@ -33,23 +33,23 @@ func (h *Handler) VoteReview(c *fiber.Ctx) error {
 		return errs.NotFound("Review", "id", &req.UserReviewVote.ReviewID)
 	}
 
-	voteExist, voteValue, voteExistErr := h.voteRepository.GetVoteIfExists(c.Context(), *req.UserReviewVote.UserID, req.UserReviewVote.ReviewID)
+	voteExist, voteValue, voteExistErr := h.voteRepository.GetVoteIfExists(c.Context(), req.UserReviewVote.UserID, req.UserReviewVote.ReviewID)
 	if voteExistErr != nil {
 		return voteExistErr
 	}
 
 	if !voteExist {
-		vote, voteErr := h.voteRepository.AddVote(c.Context(), *req.UserReviewVote)
+		vote, voteErr := h.voteRepository.AddVote(c.Context(), req.UserReviewVote)
 		if voteErr != nil {
 			return voteErr
 		}
-	} else if *req.UserReviewVote.Upvote == voteValue {
-		delVoteErr := h.voteRepository.DeleteVote(c.Context, *req.UserReviewVote.UserID, *req.UserReviewVote.ReviewID)
+	} else if req.UserReviewVote.Upvote == voteValue {
+		delVoteErr := h.voteRepository.DeleteVote(c.Context(), req.UserReviewVote.UserID, req.UserReviewVote.ReviewID)
 		if delVoteErr != nil {
 			return delVoteErr
 		}
 	} else { 
-		updateVoteErr := h.voteRepository.UpdateVote(c.Context, *req.UserReviewVote.UserID, *req.UserReviewVote.ReviewID, *req.UserReviewVote.Upvote)
+		updateVoteErr := h.voteRepository.UpdateVote(c.Context(), req.UserReviewVote.UserID, req.UserReviewVote.ReviewID, req.UserReviewVote.Upvote)
 		if updateVoteErr != nil {
 			return updateVoteErr
 		}
