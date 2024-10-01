@@ -19,9 +19,11 @@ type ReviewRepository interface {
 }
 
 type VoteRepository interface {
-	AddVote(ctx context.Context, ) (*models.UserReviewVote, error)
+	AddVote(ctx context.Context, vote *models.UserReviewVote) (*models.UserReviewVote, error)
+	GetVoteIfExists(ctx context.Context, userID string, reviewID string) (bool, bool, error)
+	UpdateVote(ctx context.Context, userID string, reviewID string, vote bool) (error)
+	DeleteVote(ctx context.Context, userID string, reviewID string) (error)
 }
-
 // Repository storage of all repositories.
 type Repository struct {
 	User   UserRepository

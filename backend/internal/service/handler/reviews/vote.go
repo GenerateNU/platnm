@@ -2,7 +2,7 @@ package reviews
 
 import (
 	"github.com/gofiber/fiber/v2"
-
+	"platnm/internal/models"
 	"platnm/internal/errs"
 )
 
@@ -15,7 +15,6 @@ func (h *Handler) VoteReview(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		return errs.BadRequest("failed to parse request body")
 	}
-
 	exists, err := h.userRepository.UserExists(c.Context(), &req.UserReviewVote.UserID)
 	if err != nil {
 		return err
@@ -24,16 +23,36 @@ func (h *Handler) VoteReview(c *fiber.Ctx) error {
 	if !exists {
 		return errs.NotFound("User", "id", &req.UserReviewVote.UserID)
 	}
-	exists, err := h.reviewRepository.ReviewExists(c.Context(),&req.UserReviewVote.ReviewID)
-	if err != nil {
-		return err
+
+	reviewExists, reviewExistsErr := h.reviewRepository.ReviewExists(c.Context(),&req.UserReviewVote.ReviewID)
+	if reviewExistsErr != nil {
+		return reviewExistsErr
 	}
-	if !exists {
+
+	if !reviewExists {
 		return errs.NotFound("Review", "id", &req.UserReviewVote.ReviewID)
 	}
-	vote, err := h.voteRepository.AddVote(c.Context(), &req.UserReviewVote)
-	if err != nil {
-		return err
+
+	voteExist, voteValue, voteExistErr := h.voteRepository.GetVoteIfExists(c.Context(), &req.UserReviewVote.UserID, &req.UserReviewVote.ReviewID)
+	if voteExistErr != nil {
+		return voteExistErr
+	}
+
+	if !voteExist {
+		vote, voteErr := h.voteRepository.AddVote(c.Context(), &req.UserReviewVote)
+		if voteErr != nil {
+			return voteErr
+		}
+	} else if &req.UserReviewVote.Upvote == voteValue {
+		delVoteErr := h.voteRepository.DeleteVote(c.Context, &req.UserReviewVote.UserID, &req.UserReviewVote.ReviewID)
+		if delVoteErr != nil {
+			return delVoteErr
+		}
+	} else { 
+		updateVoteErr := h.voteRepository.UpdateVote(c.Context, &req.UserReviewVote.UserID, &req.UserReviewVote.ReviewID, &req.UserReviewVote.Upvote)
+		if updateVoteErr != nil {
+			return updateVoteErr
+		}
 	}
 
 	return c.Status(fiber.StatusOK).JSON(vote)
