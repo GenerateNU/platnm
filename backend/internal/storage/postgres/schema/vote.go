@@ -20,13 +20,14 @@ const (
 	reviewFKeyConstraint = "user_review_vote_review_id_fkey"
 )
 
-func (r *VoteRepository) AddVote(ctx context.Context, vote *models.UserReviewVote) (*models.UserReviewVote, error) {
+func (r *VoteRepository) AddVote(ctx context.Context, vote *models.UserReviewVote) (error) {
 	query := `
 	INSERT INTO user_review_vote (user_id, review_id, upvote)
 	VALUES ($1, $2, $3);
 	`
 
-	if err := r.QueryRow(ctx, query, user_review_vote.UserID, user_review_vote.ReviewID, user_review_vote.Upvote).Scan(&user_review_vote.user_id); err != nil {
+	_, err := r.db.ExecContext(ctx, query, user_review_vote.UserID, user_review_vote.ReviewID, user_review_vote.Upvote) 
+	err != nil {
 		if errs.IsUniqueViolation(err, votePKeyConstraint) {
 			return nil, errs.Conflict("user_review_vote", "(user_id, review_id)", fmt.Sprintf("(%s, %d)", user_review_vote.UserID, user_review_vote.ReviewID))
 		} else if errs.IsForeignKeyViolation(err, userVoteFKeyConstraint) {
@@ -34,28 +35,18 @@ func (r *VoteRepository) AddVote(ctx context.Context, vote *models.UserReviewVot
 		} else if errs.IsForeignKeyViolation(err, reviewFKeyConstraint) {
 			return nil, errs.NotFound("user_review_vote", "ReviewID", user_review_vote.ReviewID)
 		}
-
-		return nil, err
+		return err
 	}
-	return review, nil
+	return nil
 }
 
-func (r *VoteRepository) GetVoteIfExists(ctx context.Context, usrID string, revID string) (bool, bool, error) {
-	//Should I use this var to return upvote value instead of making helper func
-	var upVoteValue bool
-	row, err := r.Query(ctx, `SELECT upvote FROM user_review_vote WHERE user_id = $1 AND review_id = $2`, usrID, revID)
+func (r *VoteRepository) GetVoteIfExists(ctx context.Context, usrID string, revID string) (*models.UserReviewVote, error) {
+	var voteHolder models.UserReviewVote
+	row, err := r.db.QueryRow(ctx, `SELECT user_id, review_id, upvote FROM user_review_vote WHERE user_id = $1 AND review_id = $2`, usrID, revID).Scan(&voteHolder.UserID, &voteHolder.ReviewID, &voteHolde.Upvote)
 	if err != nil {
-		return false, false, err
+		return nil, err
 	}
-	if rows.Next() {
-		err := rows.Scan(&upVoteValue)
-		if err != nil {
-			return false, false, err
-		}
-		return true, upVoteValue, nil
-	} else {
-		return false, false, nil
-	}
+	return &voteHolder, nil
 }
 
 func (r *VoteRepository) DeleteVote(ctx context.Context, userID string, revID string) (error) {

@@ -11,11 +11,12 @@ type createVoteRequest struct {
 }
 
 func (h *Handler) VoteReview(c *fiber.Ctx) error {
+	var vote *models.UserReviewVote
 	var req createVoteRequest
 	if err := c.BodyParser(&req); err != nil {
 		return errs.BadRequest("failed to parse request body")
 	}
-	exists, err := h.userRepository.UserExists(c.Context(), &req.UserReviewVote.UserID)
+	exists, err := h.userRepository.UserExists(c.Context(), req.UserReviewVote.UserID)
 	if err != nil {
 		return err
 	}
@@ -24,7 +25,7 @@ func (h *Handler) VoteReview(c *fiber.Ctx) error {
 		return errs.NotFound("User", "id", &req.UserReviewVote.UserID)
 	}
 
-	reviewExists, reviewExistsErr := h.reviewRepository.ReviewExists(c.Context(),*req.UserReviewVote.ReviewID)
+	reviewExists, reviewExistsErr := h.reviewRepository.ReviewExists(c.Context(),req.UserReviewVote.ReviewID)
 	if reviewExistsErr != nil {
 		return reviewExistsErr
 	}
