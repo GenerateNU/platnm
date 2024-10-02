@@ -1,6 +1,7 @@
 package reviews
 
 import (
+	"platnm/internal/constants"
 	"platnm/internal/errs"
 	"platnm/internal/models"
 
@@ -32,7 +33,7 @@ func (h *Handler) CreateReview(c *fiber.Ctx) error {
 func (r *createReviewRequest) validate() map[string]string {
 	var errs = make(map[string]string)
 
-	if r.Rating < 1 || r.Rating > 10 {
+	if r.Rating < constants.MinimumRating || r.Rating > constants.MaximumRating {
 		errs["rating"] = "rating must be between 1 and 10"
 	}
 
