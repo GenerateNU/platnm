@@ -28,6 +28,8 @@ type ReviewRepository interface {
 type MediaRepository interface {
 	GetMediaByName(ctx context.Context, name string) ([]models.Media, error)
 	GetMediaByDate(ctx context.Context) ([]models.Media, error)
+	GetExistingArtistBySpotifyID(ctx context.Context, id string) (*int, error)
+	AddArtist(ctx context.Context, artist *models.Artist) (*models.Artist, error)
 }
 
 // Repository storage of all repositories.

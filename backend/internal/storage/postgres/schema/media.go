@@ -2,6 +2,7 @@ package schema
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"platnm/internal/models"
 	"time"
@@ -117,27 +118,27 @@ LIMIT 20;`
 	return medias, nil
 }
 
-func (r *MediaRepository) ArtistExists(ctx context.Context, id string) (bool, error) {
-	rows, err := r.Query(ctx, `SELECT * FROM "artist" WHERE spotify_id = $1`, id)
+func (r *MediaRepository) GetExistingArtistBySpotifyID(ctx context.Context, id string) (*int, error) {
+	var artistId int
+	err := r.QueryRow(ctx, `SELECT id FROM "artist" WHERE spotify_id = $1`, id).Scan(&artistId)
 	if err != nil {
-		return false, err
-	}
-	defer rows.Close()
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
 
-	if rows.Next() {
-		return true, nil
+		return nil, err
 	}
 
-	return false, nil
+	return &artistId, nil
 }
 
 func (r *MediaRepository) AddArtist(ctx context.Context, artist *models.Artist) (*models.Artist, error) {
 	query :=
 		`INSERT INTO artist (name, spotify_id, photo, bio)
-		VALUES ($1, $2, $3)
-		RETURNING id, name;`
+		 VALUES ($1, $2, $3)
+		 RETURNING id, name;`
 
-	if err := r.QueryRow(ctx, query, "Hozier", "2FXC3k01G6Gw61bmprjgqS", "", "artist").Scan(&artist.ID); err != nil {
+	if err := r.QueryRow(ctx, query, artist.Name, artist.SpotifyID, artist.Photo, artist.Bio).Scan(&artist.ID); err != nil {
 		return nil, err
 	}
 

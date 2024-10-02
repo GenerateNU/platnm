@@ -33,7 +33,16 @@ func (h *SpotifyHandler) GetNewReleases(c *fiber.Ctx) error {
 
 	for _, album := range releases.Albums {
 
-		// artist = getOrAddArtist(album.Artists[0].ID.String(), album.Artists[0].Name)
+		artist, err := h.MediaRepository.GetExistingArtistBySpotifyID(c.Context(), album.Artists[0].ID.String())
+		if err != nil {
+			return err
+		}
+		if artist == nil {
+			h.MediaRepository.AddArtist(c.Context(), &models.Artist{
+				SpotifyID: album.Artists[0].ID.String(),
+				Name:      album.Artists[0].Name,
+			})
+		}
 
 		albums = append(albums, &models.Album{
 			SpotifyID:   album.ID.String(),
@@ -47,11 +56,5 @@ func (h *SpotifyHandler) GetNewReleases(c *fiber.Ctx) error {
 		// 	ArtistID: album.Artists[0].ID.String()}) // this artistID also needs to come from the database...
 	}
 
-	// return c.Status(fiber.StatusOK).JSON(playlist)
-}
-
-func (h *SpotifyHandler) getOrAddArtist() error {
-	// get artist from database
-	// if artist does not exist, add artist to database
-	// return artist
+	return c.Status(fiber.StatusOK).JSON(albums)
 }
