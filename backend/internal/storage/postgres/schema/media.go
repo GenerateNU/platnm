@@ -194,49 +194,56 @@ type trackWithReviewCount struct {
 }
 
 func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset int) ([]models.MediaWithReviewCountAndType, error) {
-	albumsQuery := `
-	WITH MostReviewed AS (
-    SELECT media_id, media_type, COUNT(*) AS review_count
-    FROM review
-    GROUP BY media_id, media_type
-    ORDER BY review_count DESC
-    LIMIT $1 OFFSET $2
-	)
-	SELECT m.review_count, a.*
-	FROM MostReviewed m
-	JOIN album a ON m.media_id = a.id
-	WHERE m.media_type = 'album';
-	`
-
-	rows, err := r.Query(ctx, albumsQuery, limit, offset)
-	if err != nil {
-		return nil, err
-	}
-
-	albums, err := pgx.CollectRows(rows, pgx.RowToStructByName[albumWithReviewCount])
-	if err != nil {
-		return nil, err
-	}
-
-	tracksQuery := `
-	WITH MostReviewed AS (
+	const (
+		albumsQuery = `
+		WITH MostReviewed AS (
 		SELECT media_id, media_type, COUNT(*) AS review_count
 		FROM review
 		GROUP BY media_id, media_type
 		ORDER BY review_count DESC
 		LIMIT $1 OFFSET $2
-	)
-	SELECT m.review_count, t.*
-	FROM MostReviewed m
-	JOIN track t ON m.media_id = t.id
-	WHERE m.media_type = 'track';
-	`
+		)
+		SELECT m.review_count, a.*
+		FROM MostReviewed m
+		JOIN album a ON m.media_id = a.id
+		WHERE m.media_type = 'album';
+		`
 
-	rows, err = r.Query(ctx, tracksQuery, limit, offset)
+		tracksQuery = `
+		WITH MostReviewed AS (
+			SELECT media_id, media_type, COUNT(*) AS review_count
+			FROM review
+			GROUP BY media_id, media_type
+			ORDER BY review_count DESC
+			LIMIT $1 OFFSET $2
+		)
+		SELECT m.review_count, t.*
+		FROM MostReviewed m
+		JOIN track t ON m.media_id = t.id
+		WHERE m.media_type = 'track';
+		`
+	)
+
+	batch := &pgx.Batch{}
+	batch.Queue(albumsQuery, limit, offset)
+	batch.Queue(tracksQuery, limit, offset)
+
+	br := r.SendBatch(ctx, batch)
+	defer br.Close()
+
+	rows, err := br.Query()
+	if err != nil {
+		return nil, err
+	}
+	albums, err := pgx.CollectRows(rows, pgx.RowToStructByName[albumWithReviewCount])
 	if err != nil {
 		return nil, err
 	}
 
+	rows, err = br.Query()
+	if err != nil {
+		return nil, err
+	}
 	tracks, err := pgx.CollectRows(rows, pgx.RowToStructByName[trackWithReviewCount])
 	if err != nil {
 		return nil, err
