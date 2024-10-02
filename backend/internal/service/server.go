@@ -53,6 +53,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		reviewHandler := reviews.NewHandler(repository.Review, repository.User)
 		r.Post("/", reviewHandler.CreateReview)
 		r.Get("/:id", reviewHandler.GetReviewsByUserID)
+		r.Patch("/:id", reviewHandler.UpdateReviewByReviewID)
 		r.Get("/album/:id", func(c *fiber.Ctx) error {
 			return reviewHandler.GetReviewsById(c, "album")
 		})
@@ -64,6 +65,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	mediaHandler := media.NewHandler(repository.Media)
 	app.Route("/media", func(r fiber.Router) {
 		r.Get("/:name", mediaHandler.GetMediaByName)
+		r.Get("/", mediaHandler.GetMedia)
 	})
 
 	// this store can be passed to other oauth handlers that need to manage state/verifier values

@@ -18,7 +18,7 @@ type Media interface {
 }
 
 type Album struct {
-	Media       MediaType
+	Media       MediaType `json:"media"`
 	ID          int       `json:"id"`
 	SpotifyID   string    `json:"spotify_id"`
 	Title       string    `json:"title"`
@@ -29,11 +29,14 @@ type Album struct {
 }
 
 type Track struct {
-	Media    MediaType
-	ID       int    `json:"id"`
-	AlbumID  int    `json:"album_id"`
-	Title    string `json:"title"`
-	Duration int    `json:"duration_seconds"`
+	Media       MediaType `json:"media"`
+	ID          int       `json:"id"`
+	AlbumID     int       `json:"album_id"`
+	AlbumTitle  string    `json:"album_title"`
+	Title       string    `json:"title"`
+	Duration    int       `json:"duration_seconds"`
+	ReleaseDate time.Time `json:"release_date"`
+	Cover       string    `json:"cover"`
 }
 
 func (a Album) GetMediaType() MediaType {

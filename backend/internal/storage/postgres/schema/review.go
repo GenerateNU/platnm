@@ -2,13 +2,13 @@ package schema
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/jackc/pgx/v5"
+	"platnm/internal/errs"
 	"platnm/internal/models"
 
-	"platnm/internal/errs"
-
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -92,6 +92,66 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 	return reviews, nil
 }
 
+func (r *ReviewRepository) UpdateReview(ctx context.Context, review *models.Review) (*models.Review, error) {
+
+	// Declare these variables first to allow for assignment inside if statement body
+	var query string
+	var updatedReview models.Review
+
+	query = `
+        UPDATE review 
+        SET comment = $1, rating = $2, updated_at = now() 
+        WHERE id = $3 
+        RETURNING id, user_id, comment, rating, updated_at`
+
+	// QueryRow with both rating and comment
+	err := r.QueryRow(ctx, query, review.Comment, review.Rating, review.ID).
+		Scan(&updatedReview.ID, &updatedReview.UserID, &updatedReview.Comment, &updatedReview.Rating, &updatedReview.UpdatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &updatedReview, nil
+}
+
+func (r *ReviewRepository) GetExistingReview(ctx context.Context, id string) (*models.Review, error) {
+	var review models.Review
+
+	row := r.QueryRow(ctx, `
+		SELECT id, user_id, media_type, media_id, rating, comment, created_at, updated_at
+		FROM review 
+		WHERE id = $1`, id)
+
+	// Scan the row into the review object
+	err := row.Scan(&review.ID, &review.UserID, &review.MediaType, &review.MediaID, &review.Rating, &review.Comment, &review.CreatedAt, &review.UpdatedAt)
+	if err != nil {
+		// If no rows were found, return nil, no error
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		// If there is an error, return nil, error
+		return nil, err
+	}
+
+	// If there are rows and no error, return &review, nil
+	return &review, nil
+}
+
+func (r *ReviewRepository) ReviewBelongsToUser(ctx context.Context, reviewID string, userID string) (bool, error) {
+	rows, err := r.Query(ctx, `SELECT * FROM review WHERE id = $1 and user_id = $2`, reviewID, userID)
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		return true, nil
+	}
+
+	return false, nil
+}
+
 func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaType string) ([]*models.Review, error) {
 
 	rows, err := r.Query(ctx, "SELECT id, user_id, media_id, media_type, rating, comment, created_at, updated_at FROM review WHERE media_id = $1 and media_type = $2", id, mediaType)
@@ -127,7 +187,6 @@ func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaT
 	}
 
 	return reviews, nil
-
 }
 
 func NewReviewRepository(db *pgxpool.Pool) *ReviewRepository {
