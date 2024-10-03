@@ -235,7 +235,6 @@ func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset i
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
 	results, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.MediaWithReviewCountAndType, error) {
 		c, err := pgx.RowToStructByName[columns](row)
