@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"platnm/internal/models"
-	"slices"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -183,91 +182,101 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string) ([]mo
 	return medias, nil
 }
 
-type albumWithReviewCount struct {
-	models.Album
-	Count int `db:"review_count"`
-}
-
-type trackWithReviewCount struct {
-	models.Track
-	Count int `db:"review_count"`
-}
-
 func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset int) ([]models.MediaWithReviewCountAndType, error) {
-	const (
-		albumsQuery = `
-		WITH MostReviewed AS (
+	// store nullable columns as pointers
+	// if the column is null, the pointer will be nil
+	type columns struct {
+		MediaType   string `db:"media_type"`
+		ReviewCount int    `db:"review_count"`
+
+		// album columns
+		AlbumID     *int       `db:"album_id"`
+		AlbumTitle  *string    `db:"album_title"`
+		ReleaseDate *time.Time `db:"release_date"`
+		Cover       *string    `db:"cover"`
+		Country     *string    `db:"country"`
+		GenreID     *int       `db:"genre_id"`
+
+		// track columns
+		TrackID      *int    `db:"track_id"`
+		TrackTitle   *string `db:"track_title"`
+		TrackAlbumID *int    `db:"track_album_id"`
+		Duration     *int    `db:"duration_seconds"`
+	}
+
+	const query = `
+	WITH MostReviewed AS (
 		SELECT media_id, media_type, COUNT(*) AS review_count
 		FROM review
 		GROUP BY media_id, media_type
 		ORDER BY review_count DESC
 		LIMIT $1 OFFSET $2
-		)
-		SELECT m.review_count, a.*
-		FROM MostReviewed m
-		JOIN album a ON m.media_id = a.id
-		WHERE m.media_type = 'album';
-		`
-
-		tracksQuery = `
-		WITH MostReviewed AS (
-			SELECT media_id, media_type, COUNT(*) AS review_count
-			FROM review
-			GROUP BY media_id, media_type
-			ORDER BY review_count DESC
-			LIMIT $1 OFFSET $2
-		)
-		SELECT m.review_count, t.*
-		FROM MostReviewed m
-		JOIN track t ON m.media_id = t.id
-		WHERE m.media_type = 'track';
-		`
 	)
+	SELECT 
+		m.media_type,
+		m.review_count,
+		a.id AS album_id,
+		a.title AS album_title,
+		a.release_date,
+		a.cover,
+		a.country,
+		a.genre_id,
+		t.id AS track_id,
+		t.title AS track_title,
+		t.album_id AS track_album_id,
+		t.duration_seconds
+	FROM MostReviewed m
+	LEFT JOIN album a ON m.media_id = a.id AND m.media_type = 'album'
+	LEFT JOIN track t ON m.media_id = t.id AND m.media_type = 'track'
+	ORDER BY m.review_count DESC;
+	`
 
-	batch := &pgx.Batch{}
-	batch.Queue(albumsQuery, limit, offset)
-	batch.Queue(tracksQuery, limit, offset)
-
-	br := r.SendBatch(ctx, batch)
-	defer br.Close()
-
-	rows, err := br.Query()
+	rows, err := r.Query(ctx, query, limit, offset)
 	if err != nil {
 		return nil, err
 	}
-	albums, err := pgx.CollectRows(rows, pgx.RowToStructByName[albumWithReviewCount])
-	if err != nil {
-		return nil, err
-	}
+	defer rows.Close()
 
-	rows, err = br.Query()
-	if err != nil {
-		return nil, err
-	}
-	tracks, err := pgx.CollectRows(rows, pgx.RowToStructByName[trackWithReviewCount])
-	if err != nil {
-		return nil, err
-	}
+	results, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.MediaWithReviewCountAndType, error) {
+		c, err := pgx.RowToStructByName[columns](row)
+		if err != nil {
+			return models.MediaWithReviewCountAndType{}, err
+		}
 
-	var media []models.MediaWithReviewCountAndType
-	for _, album := range albums {
-		media = append(media, models.MediaWithReviewCountAndType{
-			Media: album.Album,
-			Count: album.Count,
-			Type:  models.AlbumMedia,
-		})
-	}
+		var media models.Media
+		switch c.MediaType {
+		case "album":
+			album := &models.Album{
+				ID:          *c.AlbumID,
+				Title:       *c.AlbumTitle,
+				ReleaseDate: *c.ReleaseDate,
+				Cover:       *c.Cover,
+				Country:     *c.Country,
+				GenreID:     *c.GenreID,
+			}
 
-	for _, track := range tracks {
-		media = append(media, models.MediaWithReviewCountAndType{
-			Media: track.Track,
-			Count: track.Count,
-			Type:  models.TrackMedia,
-		})
-	}
+			media = album
+		case "track":
+			track := &models.Track{
+				ID:       *c.TrackID,
+				AlbumID:  *c.TrackAlbumID,
+				Title:    *c.TrackTitle,
+				Duration: *c.Duration,
+			}
 
-	slices.SortFunc(media, func(a, b models.MediaWithReviewCountAndType) int { return b.Count - a.Count })
-	return media, nil
+			media = track
+		default:
+			return models.MediaWithReviewCountAndType{}, fmt.Errorf("unknown media type: %s", c.MediaType)
+		}
+
+		return models.MediaWithReviewCountAndType{
+			Media: media,
+			Count: c.ReviewCount,
+			Type:  models.MediaType(c.MediaType),
+		}, nil
+	})
+
+	return results, nil
 }
 
 func NewMediaRepository(db *pgxpool.Pool) *MediaRepository {

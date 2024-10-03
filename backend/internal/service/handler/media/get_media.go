@@ -13,12 +13,12 @@ func (h *Handler) GetMediaByName(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(medias)
 }
 
-type getMediaRequest struct {
-	utils.Pagination
-	Sort string `query:"sort"`
-}
-
 func (h *Handler) GetMedia(c *fiber.Ctx) error {
+	type getMediaRequest struct {
+		utils.Pagination
+		Sort string `query:"sort"`
+	}
+
 	var req getMediaRequest
 	if err := c.QueryParser(&req); err != nil {
 		return errs.BadRequest("Invalid query parameters")
