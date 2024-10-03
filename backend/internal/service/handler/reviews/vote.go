@@ -30,7 +30,7 @@ func (h *Handler) VoteReview(c *fiber.Ctx) error {
 		return reviewExistsErr
 	}
 
-	if !reviewExists {
+	if reviewExists == false {
 		return errs.NotFound("Review", "id", &req.UserReviewVote.ReviewID)
 	}
 

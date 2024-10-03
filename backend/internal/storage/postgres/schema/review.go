@@ -22,7 +22,7 @@ const (
 )
 
 func (r *ReviewRepository) ReviewExists(ctx context.Context, id string) (bool, error) {
-	rows, err := r.db.Query(ctx, `SELECT * FROM review WHERE id = $1`, id)
+	rows, err := r.Query(ctx, `SELECT * FROM review WHERE id = $1`, id)
 	if err != nil {
 		return false, err
 	}
