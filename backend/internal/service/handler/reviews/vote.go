@@ -1,4 +1,4 @@
-package reviews
+package vote
 
 import (
 	"github.com/gofiber/fiber/v2"
