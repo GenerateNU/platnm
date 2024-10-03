@@ -275,6 +275,9 @@ func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset i
 			Type:  models.MediaType(c.MediaType),
 		}, nil
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	return results, nil
 }

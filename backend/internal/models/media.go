@@ -25,22 +25,22 @@ type MediaWithReviewCountAndType struct {
 }
 
 type Album struct {
-	ID          int       `json:"id" db:"id"`
-	Title       string    `json:"title" db:"title"`
-	ReleaseDate time.Time `json:"release_date" db:"release_date"`
-	Cover       string    `json:"cover" db:"cover"`
-	Country     string    `json:"country" db:"country"`
-	GenreID     int       `json:"genre_id" db:"genre_id"`
+	ID          int       `json:"id"`
+	Title       string    `json:"title"`
+	ReleaseDate time.Time `json:"release_date"`
+	Cover       string    `json:"cover"`
+	Country     string    `json:"country"`
+	GenreID     int       `json:"genre_id"`
 }
 
 type Track struct {
-	ID          int       `json:"id" db:"id"`
-	AlbumID     int       `json:"album_id" db:"album_id"`
-	AlbumTitle  string    `json:"album_title" db:"-"`
-	Title       string    `json:"title" db:"title"`
-	Duration    int       `json:"duration_seconds" db:"duration_seconds"`
-	ReleaseDate time.Time `json:"release_date" db:"-"`
-	Cover       string    `json:"cover" db:"-"`
+	ID          int       `json:"id"`
+	AlbumID     int       `json:"album_id"`
+	AlbumTitle  string    `json:"album_title"`
+	Title       string    `json:"title"`
+	Duration    int       `json:"duration_seconds"`
+	ReleaseDate time.Time `json:"release_date"`
+	Cover       string    `json:"cover"`
 }
 
 func (a Album) GetMediaType() MediaType {
