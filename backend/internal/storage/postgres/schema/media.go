@@ -185,6 +185,7 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string) ([]mo
 func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset int) ([]models.MediaWithReviewCountAndType, error) {
 	// store nullable columns as pointers
 	// if the column is null, the pointer will be nil
+	// fields need to be exported so pgx can access them via reflection
 	type columns struct {
 		MediaType   string `db:"media_type"`
 		ReviewCount int    `db:"review_count"`
