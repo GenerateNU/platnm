@@ -11,7 +11,6 @@ type createVoteRequest struct {
 }
 
 func (h *Handler) VoteReview(c *fiber.Ctx) error {
-	var vote *models.UserReviewVote
 	var req createVoteRequest
 	if err := c.BodyParser(&req); err != nil {
 		return errs.BadRequest("failed to parse request body")
@@ -44,7 +43,7 @@ func (h *Handler) VoteReview(c *fiber.Ctx) error {
 		if voteErr != nil {
 			return voteErr
 		}
-	} else if req.UserReviewVote.Upvote == voteValue.UpVote {
+	} else if req.UserReviewVote.Upvote == voteValue.Upvote {
 		delVoteErr := h.voteRepository.DeleteVote(c.Context(), req.UserReviewVote.UserID, req.UserReviewVote.ReviewID)
 		if delVoteErr != nil {
 			return delVoteErr
