@@ -2,11 +2,12 @@ package schema
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 	"fmt"
 	"platnm/internal/models"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -120,11 +121,13 @@ LIMIT 20;`
 
 func (r *MediaRepository) GetExistingArtistBySpotifyID(ctx context.Context, id string) (*int, error) {
 	var artistId int
-	err := r.QueryRow(ctx, `SELECT id FROM "artist" WHERE spotify_id = $1`, id).Scan(&artistId)
+	err := r.QueryRow(ctx, `SELECT id FROM artist WHERE spotify_id = $1`, id).Scan(&artistId)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
+			fmt.Println("didn't find but that's ok!")
 			return nil, nil
 		}
+		fmt.Println("didn't find")
 
 		return nil, err
 	}
@@ -135,7 +138,7 @@ func (r *MediaRepository) GetExistingArtistBySpotifyID(ctx context.Context, id s
 func (r *MediaRepository) AddArtist(ctx context.Context, artist *models.Artist) (*models.Artist, error) {
 	query :=
 		`INSERT INTO artist (name, spotify_id, photo, bio)
-		 VALUES ($1, $2, $3)
+		 VALUES ($1, $2, $3, $4)
 		 RETURNING id, name;`
 
 	if err := r.QueryRow(ctx, query, artist.Name, artist.SpotifyID, artist.Photo, artist.Bio).Scan(&artist.ID); err != nil {

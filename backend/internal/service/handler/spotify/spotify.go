@@ -11,8 +11,8 @@ type SpotifyHandler struct {
 	MediaRepository storage.MediaRepository
 }
 
-func NewHandler() *SpotifyHandler {
-	return &SpotifyHandler{}
+func NewHandler(mediaRepository storage.MediaRepository) *SpotifyHandler {
+	return &SpotifyHandler{MediaRepository: mediaRepository}
 }
 
 func (h *SpotifyHandler) GetPlatnmPlaylist(c *fiber.Ctx) error {
