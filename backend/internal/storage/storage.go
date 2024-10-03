@@ -15,12 +15,12 @@ type ReviewRepository interface {
 	GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error)
 	CreateReview(ctx context.Context, review *models.Review) (*models.Review, error)
 	//Not sure if I should've created this in the review repo
-	ReviewExists(ctx context.Context, id string) ([]*models.Review, error)
+	ReviewExists(ctx context.Context, id string) (bool, error)
 }
 
 type VoteRepository interface {
-	AddVote(ctx context.Context, vote *models.UserReviewVote) (*models.UserReviewVote, error)
-	GetVoteIfExists(ctx context.Context, userID string, reviewID string) (bool, bool, error)
+	AddVote(ctx context.Context, vote *models.UserReviewVote) (error)
+	GetVoteIfExists(ctx context.Context, userID string, reviewID string) (*models.UserReviewVote, error)
 	UpdateVote(ctx context.Context, userID string, reviewID string, vote bool) (error)
 	DeleteVote(ctx context.Context, userID string, reviewID string) (error)
 }
