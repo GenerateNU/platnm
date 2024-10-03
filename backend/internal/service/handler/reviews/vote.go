@@ -34,17 +34,17 @@ func (h *Handler) VoteReview(c *fiber.Ctx) error {
 		return errs.NotFound("Review", "id", &req.UserReviewVote.ReviewID)
 	}
 
-	voteExist, voteValue, voteExistErr := h.voteRepository.GetVoteIfExists(c.Context(), req.UserReviewVote.UserID, req.UserReviewVote.ReviewID)
+	voteValue, voteExistErr := h.voteRepository.GetVoteIfExists(c.Context(), req.UserReviewVote.UserID, req.UserReviewVote.ReviewID)
 	if voteExistErr != nil {
 		return voteExistErr
 	}
 
-	if !voteExist {
-		vote, voteErr := h.voteRepository.AddVote(c.Context(), &req.UserReviewVote)
+	if voteValue != nil {
+		voteErr := h.voteRepository.AddVote(c.Context(), &req.UserReviewVote)
 		if voteErr != nil {
 			return voteErr
 		}
-	} else if req.UserReviewVote.Upvote == voteValue {
+	} else if req.UserReviewVote.Upvote == voteValue.UpVote {
 		delVoteErr := h.voteRepository.DeleteVote(c.Context(), req.UserReviewVote.UserID, req.UserReviewVote.ReviewID)
 		if delVoteErr != nil {
 			return delVoteErr
@@ -56,5 +56,5 @@ func (h *Handler) VoteReview(c *fiber.Ctx) error {
 		}
 	}
 
-	return c.Status(fiber.StatusOK).JSON(vote)
+	return c.Status(fiber.StatusOK).JSON(voteValue)
 }
