@@ -26,14 +26,14 @@ func (r *VoteRepository) AddVote(ctx context.Context, vote *models.UserReviewVot
 	VALUES ($1, $2, $3);
 	`
 
-	_, err := r.db.ExecContext(ctx, query, user_review_vote.UserID, user_review_vote.ReviewID, user_review_vote.Upvote) 
-	err != nil {
+	_, err := r.db.Exec(ctx, query, vote.UserID, vote.ReviewID, vote.Upvote) 
+	if err != nil {
 		if errs.IsUniqueViolation(err, votePKeyConstraint) {
-			return nil, errs.Conflict("user_review_vote", "(user_id, review_id)", fmt.Sprintf("(%s, %d)", user_review_vote.UserID, user_review_vote.ReviewID))
+			return errs.Conflict("user_review_vote", "(user_id, review_id)", fmt.Sprintf("(%s, %d)", vote.UserID, vote.ReviewID))
 		} else if errs.IsForeignKeyViolation(err, userVoteFKeyConstraint) {
-			return nil, errs.NotFound("user_review_vote", "UserID", user_review_vote.UserID)
+			return errs.NotFound("user_review_vote", "UserID", vote.UserID)
 		} else if errs.IsForeignKeyViolation(err, reviewFKeyConstraint) {
-			return nil, errs.NotFound("user_review_vote", "ReviewID", user_review_vote.ReviewID)
+			return errs.NotFound("user_review_vote", "ReviewID", vote.ReviewID)
 		}
 		return err
 	}
@@ -42,7 +42,7 @@ func (r *VoteRepository) AddVote(ctx context.Context, vote *models.UserReviewVot
 
 func (r *VoteRepository) GetVoteIfExists(ctx context.Context, usrID string, revID string) (*models.UserReviewVote, error) {
 	var voteHolder models.UserReviewVote
-	row, err := r.db.QueryRow(ctx, `SELECT user_id, review_id, upvote FROM user_review_vote WHERE user_id = $1 AND review_id = $2`, usrID, revID).Scan(&voteHolder.UserID, &voteHolder.ReviewID, &voteHolde.Upvote)
+	err := r.db.QueryRow(ctx, `SELECT user_id, review_id, upvote FROM user_review_vote WHERE user_id = $1 AND review_id = $2`, usrID, revID).Scan(&voteHolder.UserID, &voteHolder.ReviewID, &voteHolder.Upvote)
 	if err != nil {
 		return nil, err
 	}
@@ -52,9 +52,9 @@ func (r *VoteRepository) GetVoteIfExists(ctx context.Context, usrID string, revI
 func (r *VoteRepository) DeleteVote(ctx context.Context, userID string, revID string) (error) {
 	query := `
 	DELETE FROM user_review_vote 
-	WHERE userID = $1 AND revID =$2
+	WHERE user_id = $1 AND review_id =$2
 	`
-	_, err := r.db.ExecContext(ctx, query, userID, revID)
+	_, err := r.db.Exec(ctx, query, userID, revID)
 	if err != nil {
 		return err
 	}
@@ -62,12 +62,12 @@ func (r *VoteRepository) DeleteVote(ctx context.Context, userID string, revID st
 }
 
 func (r *VoteRepository) UpdateVote(ctx context.Context, userID string, reviewID string, vote bool) (error) {
-	query = `
+	query := `
 	UPDATE user_review_vote
 	SET upvote = $1
 	WHERE user_id = $2 AND review_id = $3
 	`
-	_, err := r.db.ExecContext(ctx, query, vote, userID, reviewID)
+	_, err := r.db.Exec(ctx, query, vote, userID, reviewID)
 	if err != nil {
 		return err
 	}

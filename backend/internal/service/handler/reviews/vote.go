@@ -40,7 +40,7 @@ func (h *Handler) VoteReview(c *fiber.Ctx) error {
 	}
 
 	if !voteExist {
-		vote, voteErr := h.voteRepository.AddVote(c.Context(), req.UserReviewVote)
+		vote, voteErr := h.voteRepository.AddVote(c.Context(), &req.UserReviewVote)
 		if voteErr != nil {
 			return voteErr
 		}
