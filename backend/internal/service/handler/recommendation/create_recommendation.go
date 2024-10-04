@@ -30,16 +30,6 @@ func (h *Handler) CreateRecommendation(c *fiber.Ctx) error {
 		})
 	}
 
-	print(&req.Recommendation)
-	print("media \n")
-	print(req.Recommendation.MediaID)
-	print("media \n")
-	print(req.Recommendation.MediaType)
-	print("id \n")
-	print(req.Recommendation.RecommendeeId)
-	print("id \n")
-	print(req.Recommendation.RecommenderId)
-
 	if errMap := req.validate(); len(errMap) > 0 {
 		return errs.InvalidRequestData(errMap)
 	}

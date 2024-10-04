@@ -90,7 +90,7 @@ VALUES
   ('4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9d', 4, false),
   ('5e6f7a8b-9c0d-1e2f-3a4b-5c6d7e8f9d0e', 5, true);
 
-  INSERT INTO recommendations (
+  INSERT INTO recommendation (
     media_id,
     media_type,
     recommender_id,

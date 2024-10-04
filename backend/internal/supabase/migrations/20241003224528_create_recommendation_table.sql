@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS recommendations (
+CREATE TABLE IF NOT EXISTS recommendation (
     id SERIAL PRIMARY KEY,
     media_id int NOT NULL,
     media_type media_type NOT NULL,
