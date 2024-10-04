@@ -9,7 +9,6 @@ import (
 	"platnm/internal/service/handler/oauth/spotify"
 	"platnm/internal/service/handler/reviews"
 	"platnm/internal/service/handler/users"
-	"platnm/internal/service/handler/vote"
 	"platnm/internal/storage/postgres"
 
 	go_json "github.com/goccy/go-json"
