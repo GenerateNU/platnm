@@ -28,7 +28,7 @@ func (r *VoteRepository) AddVote(ctx context.Context, vote *models.UserReviewVot
 	_, err := r.db.Exec(ctx, query, vote.UserID, vote.ReviewID, vote.Upvote) 
 	if err != nil {
 		if errs.IsUniqueViolation(err, votePKeyConstraint) {
-			return errs.Conflict("user_review_vote", "(user_id, review_id)", fmt.Sprintf("(%s, %d)", vote.UserID, vote.ReviewID))
+			return errs.Conflict("user_review_vote", "(user_id, review_id)", fmt.Sprintf("(%s, %s)", vote.UserID, vote.ReviewID))
 		} else if errs.IsForeignKeyViolation(err, userVoteFKeyConstraint) {
 			return errs.NotFound("user_review_vote", "UserID", vote.UserID)
 		} else if errs.IsForeignKeyViolation(err, reviewFKeyConstraint) {

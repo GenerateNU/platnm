@@ -43,7 +43,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	})
 
 	app.Route("/reviews", func(r fiber.Router) {
-		voteHandler := vote.NewHandler(repository.UserReviewVote, repository.User)
+		voteHandler := reviews.NewHandler(repository.UserReviewVote, repository.User)
 		reviewHandler := reviews.NewHandler(repository.Review, repository.User, repository.UserReviewVote)
 		r.Post("/", reviewHandler.CreateReview)
 		r.Get("/:id", reviewHandler.GetReviewsByUserID)
