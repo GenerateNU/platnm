@@ -8,7 +8,6 @@ import (
 	"platnm/internal/service/handler/oauth"
 	"platnm/internal/service/handler/oauth/spotify"
 	"platnm/internal/service/handler/reviews"
-	"platnm/internal/service/handler/vote"
 	"platnm/internal/service/handler/users"
 	"platnm/internal/storage/postgres"
 
@@ -44,11 +43,10 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	})
 
 	app.Route("/reviews", func(r fiber.Router) {
-		voteHandler := vote.NewHandler(repository.UserReviewVote, repository.User, repository.UserReviewVote)
 		reviewHandler := reviews.NewHandler(repository.Review, repository.User, repository.UserReviewVote)
 		r.Post("/", reviewHandler.CreateReview)
 		r.Get("/:id", reviewHandler.GetReviewsByUserID)
-		r.Post("/vote/:rating", voteHandler.AddVote)
+		r.Post("/vote/:rating", reviewHandler.AddVote)
 	})
 
 	// this store can be passed to other oauth handlers that need to manage state/verifier values
