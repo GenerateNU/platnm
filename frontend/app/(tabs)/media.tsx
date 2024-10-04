@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Image, StyleSheet } from "react-native";
 
 import ParallaxScrollView from "@/components/ParallaxScrollView";
@@ -6,31 +6,34 @@ import { ThemedView } from "@/components/ThemedView";
 import { BASE_URL } from "@env";
 import ReviewStats from "@/components/media/ReviewStats";
 import MediaCard from "@/components/media/MediaCard";
+import axios from "axios";
 
-type User = {
-  user_id: string;
-  username: string;
-  display_name: string;
-  profile_picture: string;
-  linked_account: string;
-  created_at: string;
-  updated_at: string;
+type Review = {
+  id: number;
+  userId: string;
+  mediaType: string;
+  mediaId: number;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export default function MediaScreen() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   console.log(BASE_URL);
-  // useEffect(() => {
-  //   axios
-  //     .get(`${BASE_URL}/users`)
-  //     .then((response) => {
-  //       setUsers(response.data);
-  //     })
-  //     .catch((error) => {
-  //       console.error(error);
-  //     });
-  // }, []);
+  useEffect(() => {
+    axios
+      .get(`${BASE_URL}/reviews/track/1`)
+      .then((response) => {
+        setReviews(response.data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }, []);
 
+  console.log(reviews);
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
