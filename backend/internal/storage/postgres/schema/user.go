@@ -65,6 +65,16 @@ func (r *UserRepository) UserExists(ctx context.Context, id string) (bool, error
 	return false, nil
 }
 
+func (r *UserRepository) CreateUser(ctx context.Context, username string, displayname string, bio string, profilepicture string, linkedaccount string) error {
+
+	_, err := r.db.Exec(ctx, `INSERT INTO "user" (username, display_name, bio, profile_picture, linked_account) VALUES ($1, $2, $3, $4, $5)`, username, displayname, bio, profilepicture, linkedaccount)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *UserRepository) FollowExists(ctx context.Context, follower uuid.UUID, following uuid.UUID) (bool, error) {
 
 	rows, err := r.db.Query(ctx, `SELECT * FROM follower WHERE follower_id = $1 AND followee_id = $2`, follower, following)
