@@ -25,21 +25,38 @@ func NewHandler(recommendationRepository storage.RecommendationRepository) *Hand
 func (h *Handler) CreateRecommendation(c *fiber.Ctx) error {
 	var req createRecommendationRequest
 	if err := c.BodyParser(&req); err != nil {
-		return errs.BadRequest("failed to parse request body")
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid request body",
+		})
 	}
+
+	print(&req.Recommendation)
+	print("media \n")
+	print(req.Recommendation.MediaID)
+	print("media \n")
+	print(req.Recommendation.MediaType)
+	print("id \n")
+	print(req.Recommendation.RecommendeeId)
+	print("id \n")
+	print(req.Recommendation.RecommenderId)
 
 	if errMap := req.validate(); len(errMap) > 0 {
 		return errs.InvalidRequestData(errMap)
 	}
 
-	review, err := h.recommendationRepository.CreateRecommendation(c.Context(), &req.Recommendation)
+	recommendation, err := h.recommendationRepository.CreateRecommendation(c.Context(), &req.Recommendation)
 	if err != nil {
 		return err
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(review)
+	return c.Status(fiber.StatusCreated).JSON(recommendation)
 }
 
 func (r *createRecommendationRequest) validate() map[string]string {
-	return nil
+	var errs = make(map[string]string)
+
+	if r.MediaType != models.TrackMedia && r.MediaType != models.AlbumMedia {
+		errs[string(r.MediaType)] = "media_type must be either track or album"
+	}
+	return errs
 }
