@@ -9,7 +9,7 @@ The following pathway allows you to make and test schema changes locally via mig
 4. Add your SQL to the auto-generated script file in `/migrations`
 5. Add or update the `seed.sql` data to see populated values for your change if relevant
 
-6. With Docker running, run `supabase db start`
+6. With Docker running, run `supabase start`
    - This will take some time on the first run, because the CLI needs to download the Docker images to your local machine. The CLI includes the entire Supabase toolset, and a few additional images that are useful for local development
 7. Run `supabase db reset` to apply your changes locally. This might also take some time. If there are any syntax errors with your migration script or `seed.sql` file, they'll be caught here.
 8. If applying the db changes goes smoothly, go to http://localhost:54323 to see a local version of the Supabase dashboard, where your sample data will be visible. Feel free to add/update data to test out your new schema and any constraints.
@@ -18,7 +18,7 @@ The following pathway allows you to make and test schema changes locally via mig
    at this database by going to `platnm/backend/internal/storage/postgres/storage.go` and modifying the first line of the ConnectDatabase method to `dbConfig, err := pgxpool.ParseConfig("postgresql://postgres:postgres@127.0.0.1:54322/postgres")`
    - This is a connection string for the local DB
    - Make sure to switch this back to what it was when you make your PR!
-10. When done, run `supabase db stop` to stop the local instance of the DB.
+10. When done, run `supabase stop` to stop the local instance of the DB.
 
 After script is approved/merged:
 
