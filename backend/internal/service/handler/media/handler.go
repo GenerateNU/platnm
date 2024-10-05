@@ -2,7 +2,6 @@ package media
 
 import "platnm/internal/storage"
 
-
 type Handler struct {
 	mediaRepository storage.MediaRepository
 }
