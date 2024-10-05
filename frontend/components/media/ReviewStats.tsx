@@ -30,8 +30,9 @@ const styles = StyleSheet.create({
   statContainer: {
     backgroundColor: "#F2F2F2",
     borderRadius: 8,
-    paddingHorizontal: 48,
     padding: 8,
+    alignItems: "center",
+    flex: 1,
   },
   statText: {
     fontSize: 24,
