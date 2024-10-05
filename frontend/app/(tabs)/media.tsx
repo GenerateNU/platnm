@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Button, StyleSheet, ScrollView } from "react-native";
 
-import { ThemedView } from "@/components/ThemedView";
-import ReviewStats from "@/components/media/ReviewStats";
-import MediaCard from "@/components/media/MediaCard";
-import { BASE_URL } from "@env";
-import axios from "axios";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ThemedView } from "@/components/ThemedView";
+import MediaCard from "@/components/media/MediaCard";
+import ReviewStats from "@/components/media/ReviewStats";
+import axios from "axios";
 
 export default function MediaScreen() {
   const insets = useSafeAreaInsets();
@@ -14,7 +13,7 @@ export default function MediaScreen() {
   const [media, setMedia] = useState<Media>();
   const [reviews, setReviews] = useState<Review[]>([]);
 
-  console.log(BASE_URL);
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
   useEffect(() => {
     axios
