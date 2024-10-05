@@ -21,16 +21,16 @@ type User = {
 export default function HomeScreen() {
   const [users, setUsers] = useState<User[]>([]);
   console.log(BASE_URL);
-  useEffect(() => {
-    axios
-      .get(`${BASE_URL}/users`)
-      .then((response) => {
-        setUsers(response.data);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  }, []);
+  // useEffect(() => {
+  //   axios
+  //     .get(`${BASE_URL}/users`)
+  //     .then((response) => {
+  //       setUsers(response.data);
+  //     })
+  //     .catch((error) => {
+  //       console.error(error);
+  //     });
+  // }, []);
 
   return (
     <ParallaxScrollView
