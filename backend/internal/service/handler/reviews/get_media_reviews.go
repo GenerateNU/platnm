@@ -3,34 +3,22 @@ package reviews
 import (
 	"fmt"
 	"platnm/internal/models"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-type PaginationRequest struct {
-	Page  int `json:"page"`
-	Limit int `json:"limit"`
-}
-
 func (h *Handler) GetReviewsById(c *fiber.Ctx, mediaType string) error {
-	var body PaginationRequest
 	var id = c.Params("id")
 
-	// Parse body into struct
-	if err := c.BodyParser(&body); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "invalid request body",
-		})
+	page, err := strconv.Atoi(c.Query("page", "0"))
+	if err != nil {
+		return err
 	}
 
-	page := body.Page
-	if page < 0 {
-		page = 0
-	}
-
-	limit := body.Limit
-	if limit == 0 {
-		limit = 10
+	limit, err := strconv.Atoi(c.Query("limit", "10"))
+	if err != nil {
+		return err
 	}
 
 	// Even though we are paginating the reviews we need to get all the reviews in order to calculate average rating
