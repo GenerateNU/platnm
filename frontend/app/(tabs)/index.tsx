@@ -6,7 +6,6 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { BASE_URL } from "@env";
 
 type User = {
   user_id: string;
@@ -20,7 +19,8 @@ type User = {
 
 export default function HomeScreen() {
   const [users, setUsers] = useState<User[]>([]);
-  console.log(BASE_URL);
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
   useEffect(() => {
     axios
       .get(`${BASE_URL}/users`)
