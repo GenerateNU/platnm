@@ -14,87 +14,93 @@ type AlbumArtist struct {
 	ArtistID int
 }
 
+type AddedContent struct {
+	Albums  []*models.Album
+	Artists []*models.Artist
+}
+
 func (h *SpotifyHandler) GetNewReleases(c *fiber.Ctx) error {
 	client, err := ctxt.GetSpotifyClient(c)
 	if err != nil {
 		return err
 	}
 
-	// options := spotify.RequestOption{
-	// 	Country: "US",
-	// }
-
-	releases, err := client.NewReleases(c.Context(), spotify.Limit(10))
+	releases, err := client.NewReleases(c.Context(), spotify.Limit(20))
 	if err != nil {
 		return err
 	}
 
-	fmt.Println(releases.Albums[0])
 	albums := []*models.Album{}
-	// albumArtists := []*AlbumArtist{}
-	// addedAlbumCount := 0
+	artists := []*models.Artist{}
+
+	fmt.Printf("releases.Albums: %v", releases.Albums[0])
 
 	for _, album := range releases.Albums {
-		fmt.Printf("Full album object: %+v\n", album)
 
-		fmt.Println("album: ", album.Name)
+		fmt.Println("looking for album: ", album.Name)
+		albumId, err := h.MediaRepository.GetExistingAlbumBySpotifyID(c.Context(), album.ID.String())
+		if err != nil {
+			return err
+		}
 
-		// Check if album.Artists is nil or empty before accessing
-		if album.Artists == nil || len(album.Artists) == 0 {
+		if albumId != nil {
+			break // don't add the album or corresponding artists if the album already exists
+		}
+
+		newAlbum, err := h.MediaRepository.AddAlbum(c.Context(), &models.Album{
+			SpotifyID:   album.ID.String(),
+			Title:       album.Name,
+			ReleaseDate: album.ReleaseDateTime(),
+			Cover:       album.Images[0].URL,
+			Country:     album.AvailableMarkets[0],
+		})
+		if err != nil {
+			return err
+		}
+		albums = append(albums, newAlbum)
+
+		if len(album.Artists) == 0 {
 			fmt.Println("album.Artists is nil or empty")
 			return fiber.NewError(fiber.StatusBadRequest, "No artists found in the album")
 		}
 
-		// Check if the first artist in the list is nil
-		if &album.Artists[0] == nil {
-			fmt.Println("album.Artists[0] is nil")
-			return fiber.NewError(fiber.StatusBadRequest, "Artist data missing")
-		}
-
-		fmt.Println("artist: ", album.Artists[0].ID.String())
-
-		artistId, err := h.MediaRepository.GetExistingArtistBySpotifyID(c.Context(), "06HL4z0CvFAxyc27GXpf02")
-		if err != nil {
-			return err
-		}
-		fmt.Println("made to 41")
-		if artistId == nil {
-			println("adding artist: ", album.Artists[0].Name)
-			artist, err := h.MediaRepository.AddArtist(c.Context(), &models.Artist{
-				SpotifyID: album.Artists[0].ID.String(),
-				Name:      album.Artists[0].Name,
-			})
+		for _, artist := range album.Artists {
+			artistId, err := h.MediaRepository.GetExistingArtistBySpotifyID(c.Context(), artist.ID.String())
 			if err != nil {
 				return err
 			}
-			artistId = &artist.ID
-			println("got artistID: ", artistId)
+
+			/* TODO: it's possible that the artist can exist but not be detected by spotifyID lookup
+			   if it was created through an analogous Apple Music pathway
+			   we need more sophisticated artist search logic, but are limited by the overlap betweem the two APIs
+			   the only 100% shared data point is the artist name, which is not unique, posing a problem.
+			   for now, we'll just create a new artist if one doesn't exist */
+
+			if artistId == nil {
+				artist, err := h.MediaRepository.AddArtist(c.Context(), &models.Artist{
+					SpotifyID: artist.ID.String(),
+					Name:      artist.Name,
+				})
+				if err != nil {
+					return err
+				}
+
+				artistId = &artist.ID
+
+				artists = append(artists, artist)
+			}
+
+			err = h.MediaRepository.AddAlbumArtist(c.Context(), newAlbum.ID, *artistId)
+			if err != nil {
+				return err
+			}
 		}
-		println("made to 54")
-
-		// albumId, err := h.MediaRepository.GetExistingAlbumBySpotifyID(c.Context(), album.Artists[0].ID.String())
-		// if err != nil {
-		// 	return err
-		// }
-		// if albumId == nil {
-		// 	album, err := h.MediaRepository.AddAlbum(c.Context(), &models.Album{
-		// 		SpotifyID:   album.ID.String(),
-		// 		Title:       album.Name,
-		// 		ReleaseDate: album.ReleaseDateTime(),
-		// 		Cover:       album.Images[0].URL,
-		// 		Country:     album.AvailableMarkets[0],
-		// 	})
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// 	addedAlbumCount++
-		// 	albumId = &album.ID
-		// }
-
-		// albumArtists = append(albumArtists, &AlbumArtist{
-		// 	AlbumID:  *albumId,
-		// 	ArtistID: artistId})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(albums)
+	addedContent := &AddedContent{
+		Albums:  albums,
+		Artists: artists,
+	}
+
+	return c.Status(fiber.StatusOK).JSON(addedContent)
 }
