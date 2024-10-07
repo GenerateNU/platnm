@@ -1,28 +1,34 @@
 import React from "react";
-import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
+import { Text, View, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, Keyboard } from "react-native";
 import { DateInputRating } from "@/components/DateInputRating";
-import { StarRating } from "@/components/StarRating";
+import { StarRate } from "@/components/StarRate";
 import { CommentRating } from "@/components/CommentRating";
 import { Divider } from "react-native-paper";
 import { useNavigation } from "expo-router";
+import { SongCard } from "@/components/SongBanner";
+import HeaderComponent from "@/components/HeaderComponent";
 
 const Reviews = () => {
     const navigation = useNavigation(); // Get navigation object
   
     return (
-      <View>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Text style={styles.backButtonText}>Back</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Log Album</Text>
-        </View>
-        <DateInputRating />
-        <Divider />
-        <StarRating />
-        <Divider />
-        <CommentRating />
-      </View>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+            <View>
+                {/* <View style={styles.header}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                    <Text style={styles.backButtonText}>Back</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.headerTitle}>Log Album</Text>
+                </View> */}
+                <HeaderComponent />
+                <SongCard />
+                <DateInputRating />
+                <Divider />
+                <StarRate />
+                <Divider />
+                <CommentRating />
+            </View>
+        </TouchableWithoutFeedback>
     );
   };
   

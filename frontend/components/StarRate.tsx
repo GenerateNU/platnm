@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { StyleSheet, View, Text, Image } from "react-native";
-import { Rating } from '@kolking/react-native-rating';
+import StarRating from 'react-native-star-rating-widget';
 
-export function StarRating() { 
+export function StarRate() { 
 
     const [rating, setRating] = useState(0);
 
@@ -14,15 +14,13 @@ export function StarRating() {
     return (
         <View style={styles.ratingContainer}>
             <Text style={styles.rateText}>Rate</Text>
-            <Rating 
-                size={27} 
-                rating={rating} 
-                onChange={handleChange} 
-                scale={1} 
-                fillColor="#555151" 
-                touchColor="#555151" 
-                baseColor="#C4C4C4;" 
-                spacing={10} 
+            <StarRating
+                rating={rating}
+                onChange={setRating}
+                emptyColor="#C4C4C4"
+                color="#555151"
+                animationConfig={{ scale: 1 }}
+                starSize={30}
             />
         </View>
     );
