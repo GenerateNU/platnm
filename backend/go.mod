@@ -5,6 +5,7 @@ go 1.22.6
 require (
 	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/gofiber/storage/memory v1.3.4
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/jackc/pgerrcode v0.0.0-20240316143900-6e2875d9b438
 	github.com/jackc/pgx/v5 v5.7.0
 	github.com/lib/pq v1.10.9
@@ -13,8 +14,6 @@ require (
 
 require (
 	github.com/gofiber/utils v1.0.1 // indirect
-	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
-	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/gorilla/schema v1.1.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect

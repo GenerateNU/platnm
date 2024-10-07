@@ -37,6 +37,10 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		return c.SendStatus(http.StatusOK)
 	})
 
+	app.Post("/secret", func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{"secret": "This is a secret!"})
+	})
+
 	repository := postgres.NewRepository(config.DB)
 	userHandler := users.NewHandler(repository.User)
 	app.Route("/users", func(r fiber.Router) {
@@ -69,8 +73,10 @@ func setupRoutes(app *fiber.App, config config.Config) {
 			h := spotify.NewHandler(store, config.Spotify)
 			r.Get("/begin", h.Begin)
 			r.Get("/callback", h.Callback)
+
 		})
 	})
+
 }
 
 func setupApp() *fiber.App {

@@ -2,46 +2,45 @@ import { useEffect, useState } from "react";
 import { Auth } from "@supabase/auth-ui-react";
 import { User, createClient } from "@supabase/supabase-js";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { SUPABASE_URL, SUPABASE_ANON_KEY} from "@env";
-import { Text } from "react-native";
+import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_ID } from "@env";
+import { View, Text, Alert, Button, TextInput, StyleSheet } from "react-native";
+import axios from "axios";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-function Login() {
-  // Contains the user received from Supabase
+export default function Login() {
   const [user, setUser] = useState<User>();
 
-//   useEffect(() => {
-//     // Whenever the auth state changes, we receive an event and a session object.
-//     // Save the user from the session object to the state.
-//     supabase.auth.onAuthStateChange((event, session) => {
-//       if (event === "SIGNED_IN") {
-//         setUser(session?.user);
-//       }
-//     });
-//   }, []);
+  useEffect(() => {
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN") {
+        console.log("Signed in");
+        console.log(session?.user);
+        setUser(session?.user);
+      }
+    });
+  }, []);
 
-  return <LoggedOut />;
+  return user ? <LoggedIn /> : <LoggedOut />;
 }
 
 function LoggedIn() {
-  // Store data that we get from the backend
-  const [ourSecretData, setOutSecretData] = useState();
+  const [ourSecretData, setOutSecretData] = useState("not secret right now");
 
   // Perform a request to the backend (with a protected route) to get the secret data
-//   useEffect(() => {
-//     fetch("http://localhost:3000/secret", {
-//       method: "POST",
-//       headers: {
-//         // This is the token that we get from Supabase.
-//         Authorization: getToken(),
-//       },
-//     })
-//       .then((res) => res.json())
-//       .then((data) => setOutSecretData(data));
-//   }, []);
+  useEffect(() => {
+    console.log('useEffect called');
+    axios.post("http://localhost:8080/secret")
+    .then((res) => {
+      console.log('res:', res.data.secret);
+      setOutSecretData(res.data.secret);
+    })
+    .catch((error) => {
+      console.error('Error fetching data:', error);
+    });
+    console.log('fetch called');
+  }, []);
 
-  // This removes the token from local storage and reloads the page
   const handleSignOut = () => {
     supabase.auth.signOut().then(() => {
       window.location.reload();
@@ -49,39 +48,112 @@ function LoggedIn() {
   };
 
   return (
-    <>
-      <div>{JSON.stringify(ourSecretData)}</div>
-      <button onClick={handleSignOut}>Sign out</button>
-    </>
+    <View>
+      <Text style={styles.secretText}>{ourSecretData}</Text>
+      <Button title="Sign Out" onPress={handleSignOut}/>
+    </View>
   );
 }
 
-function LoggedOut() {
+const LoggedOut = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // Sign-in function using Supabase
+  const handleSignIn = async () => {
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+
+    if (error) {
+      Alert.alert('Login Error', error.message);
+    } else {
+      Alert.alert('Success', 'You are now signed in!');
+    }
+  };
+
   return (
-    <Auth
-      supabaseClient={supabase}
-      appearance={{
-        theme: ThemeSupa,
-      }}
-      providers={[]}
-      theme="dark"
-      redirectTo="/"
-      showLinks
-    >
-        <Text>Some text string</Text>
-    </Auth>
+    <View style={styles.container}>
+      <Text style={styles.title}>Log In</Text>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        placeholderTextColor="#aaa"
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        placeholderTextColor="#aaa"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+      />
+
+      <Button
+        title={loading ? 'Logging in...' : 'Log In'}
+        onPress={handleSignIn}
+        disabled={loading}
+      />
+
+      <Text style={styles.note}>Don't have an account? Sign up with Supabase!</Text>
+    </View>
   );
-}
+};
+
+  
 
 // This function gets the token from local storage.
 // Supabase stores the token in local storage so we can access it from there.
-// const getToken = () => {
-//   const storageKey = `sb-${supabaseProjectId}-auth-token`;
-//   const sessionDataString = localStorage.getItem(storageKey);
-//   const sessionData = JSON.parse(sessionDataString || "null");
-//   const token = sessionData?.access_token;
+const getToken = () => {
+  const storageKey = `sb-${SUPABASE_ID}-auth-token`;
+  const sessionDataString = localStorage.getItem(storageKey);
+  const sessionData = JSON.parse(sessionDataString || "null");
+  const token = sessionData?.access_token;
 
-//   return token;
-// };
+  return token;
+};
 
-export default Login;
+// export default Login;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: '#121212',  // Dark theme background
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  input: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 15,
+    paddingHorizontal: 10,
+    color: '#fff',  // Text color in dark mode
+    backgroundColor: '#333',  // Dark input background
+  },
+  note: {
+    textAlign: 'center',
+    color: '#bbb',
+    marginTop: 20,
+  },
+  secretText: {
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+});
