@@ -35,9 +35,14 @@ type MediaRepository interface {
 	AddAlbumArtist(ctx context.Context, albumId int, artistId int) error
 }
 
+type RecommendationRepository interface {
+	CreateRecommendation(ctx context.Context, recommendation *models.Recommendation) (*models.Recommendation, error)
+}
+
 // Repository storage of all repositories.
 type Repository struct {
-	User   UserRepository
-	Review ReviewRepository
-	Media  MediaRepository
+	User           UserRepository
+	Review         ReviewRepository
+	Media          MediaRepository
+	Recommendation RecommendationRepository
 }
