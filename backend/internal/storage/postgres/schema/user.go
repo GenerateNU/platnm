@@ -102,6 +102,41 @@ func (r *UserRepository) UnFollow(ctx context.Context, follower uuid.UUID, follo
 	return true, nil
 }
 
+func (r *UserRepository) CalculateScore(ctx context.Context, id uuid.UUID) (int, error) {
+
+	// Coalesce returns first non-null value in the set of arguments, so if SUM returns null, 0 is defaulted to.
+	// urv, rec, and u are aliases to user_review_vote, recommendation, and user tables.
+	query := `
+    SELECT 
+        COALESCE((
+            SELECT 
+                SUM(CASE WHEN urv.upvote = TRUE THEN 1 ELSE -1 END)
+            FROM 
+                user_review_vote urv
+            WHERE 
+                urv.user_id = $1
+        ), 0) + 
+        COALESCE((
+            SELECT 
+                SUM(CASE WHEN rec.reaction = TRUE THEN 1 ELSE 0 END)
+            FROM 
+                recommendation rec
+            WHERE 
+                rec.recommender_id = $1
+        ), 0) AS score 
+`
+
+	var score int
+	err := r.db.QueryRow(ctx, query, id).Scan(&score)
+
+	if err != nil {
+		print(err.Error(), "from transactions err ")
+		return 0, err
+	}
+
+	return score, nil
+}
+
 func NewUserRepository(db *pgxpool.Pool) *UserRepository {
 	return &UserRepository{
 		db: db,
