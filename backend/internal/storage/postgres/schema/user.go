@@ -114,7 +114,7 @@ func (r *UserRepository) CalculateScore(ctx context.Context, id uuid.UUID) (int,
             FROM 
                 user_review_vote urv
             WHERE 
-                urv.user_id = u.id
+                urv.user_id = $1
         ), 0) + 
         COALESCE((
             SELECT 
@@ -122,12 +122,8 @@ func (r *UserRepository) CalculateScore(ctx context.Context, id uuid.UUID) (int,
             FROM 
                 recommendation rec
             WHERE 
-                rec.recommender_id = u.id
-        ), 0) AS score
-    FROM 
-        "user" u
-    WHERE 
-        u.id = $1
+                rec.recommender_id = $1
+        ), 0) AS score 
 `
 
 	var score int
