@@ -86,6 +86,7 @@ LIMIT 20;`
 		switch mediaType {
 		case models.AlbumMedia:
 			album := &models.Album{
+				MediaType:   models.AlbumMedia,
 				ID:          albumID,
 				Title:       mediaTitle,
 				ReleaseDate: releaseDate,
@@ -96,6 +97,7 @@ LIMIT 20;`
 			medias = append(medias, album)
 		case models.TrackMedia:
 			track := &models.Track{
+				MediaType:   models.TrackMedia,
 				ID:          trackID,
 				AlbumID:     albumID,
 				Title:       mediaTitle,
@@ -160,6 +162,7 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string) ([]mo
 		); err != nil {
 			return nil, err
 		}
+		album.MediaType = models.AlbumMedia
 		medias = append(medias, album)
 	}
 
@@ -177,12 +180,13 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string) ([]mo
 		); err != nil {
 			return nil, err
 		}
+		track.MediaType = models.TrackMedia
 		medias = append(medias, track)
 	}
 	return medias, nil
 }
 
-func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset int) ([]models.MediaWithReviewCountAndType, error) {
+func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset int) ([]models.MediaWithReviewCount, error) {
 	// store nullable columns as pointers
 	// if the column is null, the pointer will be nil
 	// fields need to be exported so pgx can access them via reflection
@@ -237,16 +241,17 @@ func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset i
 		return nil, err
 	}
 
-	results, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.MediaWithReviewCountAndType, error) {
+	results, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.MediaWithReviewCount, error) {
 		c, err := pgx.RowToStructByName[columns](row)
 		if err != nil {
-			return models.MediaWithReviewCountAndType{}, err
+			return models.MediaWithReviewCount{}, err
 		}
 
 		var media models.Media
 		switch c.MediaType {
 		case "album":
 			album := &models.Album{
+				MediaType:   models.AlbumMedia,
 				ID:          *c.AlbumID,
 				Title:       *c.AlbumTitle,
 				ReleaseDate: *c.ReleaseDate,
@@ -258,21 +263,21 @@ func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset i
 			media = album
 		case "track":
 			track := &models.Track{
-				ID:       *c.TrackID,
-				AlbumID:  *c.TrackAlbumID,
-				Title:    *c.TrackTitle,
-				Duration: *c.Duration,
+				MediaType: models.TrackMedia,
+				ID:        *c.TrackID,
+				AlbumID:   *c.TrackAlbumID,
+				Title:     *c.TrackTitle,
+				Duration:  *c.Duration,
 			}
 
 			media = track
 		default:
-			return models.MediaWithReviewCountAndType{}, fmt.Errorf("unknown media type: %s", c.MediaType)
+			return models.MediaWithReviewCount{}, fmt.Errorf("unknown media type: %s", c.MediaType)
 		}
 
-		return models.MediaWithReviewCountAndType{
+		return models.MediaWithReviewCount{
 			Media: media,
 			Count: c.ReviewCount,
-			Type:  models.MediaType(c.MediaType),
 		}, nil
 	})
 	if err != nil {

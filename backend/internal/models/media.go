@@ -12,19 +12,18 @@ const (
 // A Media interface that both Album and Track must implement. T
 // The single class method is somewhat of a dummy method, since we only want the inheritance behavior but never use this method.
 // The inheritance behavior enables a search query to the media search endpoint to return a list of both albums and tracks.
-
 type Media interface {
 	GetMediaType() MediaType
 }
 
 // names dont get much better than this
-type MediaWithReviewCountAndType struct {
-	Media Media     `json:"media"`
-	Count int       `json:"review_count"`
-	Type  MediaType `json:"type"`
+type MediaWithReviewCount struct {
+	Media Media `json:"media"`
+	Count int   `json:"review_count"`
 }
 
 type Album struct {
+	MediaType   MediaType `json:"media_type"`
 	ID          int       `json:"id"`
 	Title       string    `json:"title"`
 	ReleaseDate time.Time `json:"release_date"`
@@ -34,6 +33,7 @@ type Album struct {
 }
 
 type Track struct {
+	MediaType   MediaType `json:"media_type"`
 	ID          int       `json:"id"`
 	AlbumID     int       `json:"album_id"`
 	AlbumTitle  string    `json:"album_title"`
@@ -44,9 +44,9 @@ type Track struct {
 }
 
 func (a Album) GetMediaType() MediaType {
-	return AlbumMedia
+	return a.MediaType
 }
 
 func (t Track) GetMediaType() MediaType {
-	return TrackMedia
+	return t.MediaType
 }

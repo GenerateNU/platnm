@@ -28,7 +28,7 @@ type ReviewRepository interface {
 type MediaRepository interface {
 	GetMediaByName(ctx context.Context, name string) ([]models.Media, error)
 	GetMediaByDate(ctx context.Context) ([]models.Media, error)
-	GetMediaByReviews(ctx context.Context, limit, offset int) ([]models.MediaWithReviewCountAndType, error)
+	GetMediaByReviews(ctx context.Context, limit, offset int) ([]models.MediaWithReviewCount, error)
 }
 
 // Repository storage of all repositories.

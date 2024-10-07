@@ -37,7 +37,7 @@ func (h *Handler) GetMedia(c *fiber.Ctx) error {
 
 		return c.Status(fiber.StatusOK).JSON(media)
 	case "reviews":
-		media, err := h.mediaRepository.GetMediaByReviews(c.Context(), req.Limit, req.GetOffset())
+		media, err := h.mediaRepository.GetMediaByReviews(c.Context(), *req.Limit, req.GetOffset())
 		if err != nil {
 			return err
 		}
