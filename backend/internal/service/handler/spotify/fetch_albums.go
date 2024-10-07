@@ -35,11 +35,6 @@ func (h *SpotifyHandler) GetNewReleases(c *fiber.Ctx) error {
 }
 
 func (h *SpotifyHandler) handleAlbum(c *fiber.Ctx, album spotify.SimpleAlbum, addedContent *AddedContent) error {
-	for _, artist := range album.Artists {
-		if err := h.handleArtist(c, artist, addedContent); err != nil {
-			return err
-		}
-	}
 	albumId, err := h.MediaRepository.GetExistingAlbumBySpotifyID(c.Context(), album.ID.String())
 	if err != nil {
 		return err
@@ -60,11 +55,17 @@ func (h *SpotifyHandler) handleAlbum(c *fiber.Ctx, album spotify.SimpleAlbum, ad
 		return err
 	}
 
+	for _, artist := range album.Artists {
+		if err := h.handleArtist(c, artist, addedContent, addedAlbum.ID); err != nil {
+			return err
+		}
+	}
+
 	addedContent.Albums = append(addedContent.Albums, addedAlbum)
 	return nil
 }
 
-func (h *SpotifyHandler) handleArtist(c *fiber.Ctx, artist spotify.SimpleArtist, addedContent *AddedContent) error {
+func (h *SpotifyHandler) handleArtist(c *fiber.Ctx, artist spotify.SimpleArtist, addedContent *AddedContent, albumId int) error {
 	/* TODO: it's possible that the artist can exist but not be detected by spotifyID lookup if it was
 	created through a future analogous Apple Music pathway.
 	we need more sophisticated artist search logic, but are limited by the overlap betweem the two APIs.
@@ -82,8 +83,15 @@ func (h *SpotifyHandler) handleArtist(c *fiber.Ctx, artist spotify.SimpleArtist,
 		if err != nil {
 			return err
 		}
+		artistId = &newArtist.ID
 		addedContent.Artists = append(addedContent.Artists, newArtist)
 	}
+
+	err = h.MediaRepository.AddAlbumArtist(c.Context(), albumId, *artistId)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
