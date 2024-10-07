@@ -3,7 +3,12 @@ import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity } from 'react-na
 import { useNavigation } from "expo-router";
 
 
-const HeaderComponent = () => {
+interface HeaderComponentProps {
+    title: string;
+}
+
+
+const HeaderComponent: React.FC<HeaderComponentProps> = ({ title }) => {
 
     const navigation = useNavigation();
     
@@ -15,7 +20,7 @@ const HeaderComponent = () => {
             </TouchableOpacity>
 
             <SafeAreaView style={styles.safeArea}>
-                <Text style={styles.headerTitle}>Log Song</Text>
+                <Text style={styles.headerTitle}>{title}</Text>
             </SafeAreaView>
         </SafeAreaView>
     );
@@ -29,6 +34,9 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   backText: {
+    position: 'absolute',
+    left: 10,
+    bottom: 10,
     color: '#B7B6B6',
     fontSize: 16,
     marginLeft: 10,
@@ -48,7 +56,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Roboto',
     borderRadius: 5,
     padding: 5,
-    right: 20,
   },
 });
 

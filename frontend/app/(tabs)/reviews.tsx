@@ -14,13 +14,7 @@ const Reviews = () => {
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
             <View>
-                {/* <View style={styles.header}>
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Text style={styles.backButtonText}>Back</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Log Album</Text>
-                </View> */}
-                <HeaderComponent />
+                <HeaderComponent title="Log Song"/>
                 <SongCard />
                 <DateInputRating />
                 <Divider />
