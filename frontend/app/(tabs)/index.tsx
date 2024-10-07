@@ -6,7 +6,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { BASE_URL } from "@env";
+// import { BASE_URL } from "@env";
 
 type User = {
   user_id: string;
@@ -20,7 +20,7 @@ type User = {
 
 export default function HomeScreen() {
   const [users, setUsers] = useState<User[]>([]);
-  console.log(BASE_URL);
+  // console.log(BASE_URL);
   // useEffect(() => {
   //   axios
   //     .get(`${BASE_URL}/users`)
@@ -50,7 +50,7 @@ export default function HomeScreen() {
         <ThemedText type="subtitle">Step 1: Backend Setup</ThemedText>
         <ThemedText>
           Make sure the database is connected and the backend server is running.
-          Go to {BASE_URL}/users to see the list of users.
+          Go to /users to see the list of users.
         </ThemedText>
       </ThemedView>
       <ThemedView style={styles.stepContainer}>

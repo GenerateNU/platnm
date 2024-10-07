@@ -6,23 +6,22 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   Keyboard,
-  SafeAreaView,
 } from "react-native";
 import { DateInputRating } from "@/components/DateInputRating";
 import { StarRate } from "@/components/StarRate";
 import { CommentRating } from "@/components/CommentRating";
 import { Divider } from "react-native-paper";
 import { useNavigation } from "expo-router";
-import { SongCard } from "@/components/SongCard";
+import { SongCard } from "@/components/SongBanner";
 import HeaderComponent from "@/components/HeaderComponent";
 import { ReviewButtons } from "@/components/ReviewButtons";
 
-const Reviews = () => {
+const Index = () => {
   const navigation = useNavigation(); // Get navigation object
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <SafeAreaView>
+      <View>
         <HeaderComponent title="Log Song" />
         <SongCard />
         <DateInputRating />
@@ -32,7 +31,7 @@ const Reviews = () => {
         <CommentRating />
         <Divider />
         <ReviewButtons />
-      </SafeAreaView>
+      </View>
     </TouchableWithoutFeedback>
   );
 };
@@ -54,10 +53,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
   },
-  buttons: {
-    position: "absolute",
-    bottom: 0,
-  },
 });
 
-export default Reviews;
+export default Index;
