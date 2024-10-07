@@ -2,7 +2,6 @@ package schema
 
 import (
 	"context"
-	"platnm/internal/errs"
 	"platnm/internal/models"
 
 	"github.com/google/uuid"
@@ -104,14 +103,6 @@ func (r *UserRepository) UnFollow(ctx context.Context, follower uuid.UUID, follo
 }
 
 func (r *UserRepository) CalculateScore(ctx context.Context, id uuid.UUID) (int, error) {
-	exists, err := r.UserExists(ctx, id.String())
-	if err != nil {
-		return 0, err
-	}
-
-	if !exists {
-		return 0, errs.NotFound("User", "userID", id)
-	}
 
 	// Coalesce returns first non-null value in the set of arguments, so if SUM returns null, 0 is defaulted to.
 	// urv, rec, and u are aliases to user_review_vote, recommendation, and user tables.
@@ -140,7 +131,7 @@ func (r *UserRepository) CalculateScore(ctx context.Context, id uuid.UUID) (int,
 `
 
 	var score int
-	err = r.db.QueryRow(ctx, query, id).Scan(&score)
+	err := r.db.QueryRow(ctx, query, id).Scan(&score)
 
 	if err != nil {
 		print(err.Error(), "from transactions err ")
