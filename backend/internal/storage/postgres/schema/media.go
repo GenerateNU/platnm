@@ -121,19 +121,13 @@ LIMIT 20;`
 
 func (r *MediaRepository) GetExistingArtistBySpotifyID(ctx context.Context, id string) (*int, error) {
 	var artistId int
-	fmt.Println("looking for artist with spotify id: ", id)
 	err := r.QueryRow(ctx, `SELECT id FROM artist WHERE spotify_id = $1`, id).Scan(&artistId)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			fmt.Println("didn't find but that's ok!")
 			return nil, nil
 		}
-		fmt.Println("didn't find")
-
 		return nil, err
 	}
-
-	fmt.Println("artistId ", artistId)
 
 	return &artistId, nil
 }
@@ -157,15 +151,10 @@ func (r *MediaRepository) GetExistingAlbumBySpotifyID(ctx context.Context, id st
 	err := r.QueryRow(ctx, `SELECT id FROM album WHERE spotify_id = $1`, id).Scan(&albumId)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			fmt.Println("didn't find but that's ok!")
 			return nil, nil
 		}
-		fmt.Println("didn't find")
-
 		return nil, err
 	}
-
-	fmt.Println("albumId ", albumId)
 
 	return &albumId, nil
 }
