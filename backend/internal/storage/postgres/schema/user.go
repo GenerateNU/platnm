@@ -2,6 +2,7 @@ package schema
 
 import (
 	"context"
+	"platnm/internal/errs"
 	"platnm/internal/models"
 
 	"github.com/google/uuid"
@@ -100,6 +101,51 @@ func (r *UserRepository) UnFollow(ctx context.Context, follower uuid.UUID, follo
 
 	// Match found
 	return true, nil
+}
+
+func (r *UserRepository) CalculateScore(ctx context.Context, id uuid.UUID) (int, error) {
+	exists, err := r.UserExists(ctx, id.String())
+	if err != nil {
+		return 0, err
+	}
+
+	if !exists {
+		return 0, errs.NotFound("User", "userID", id)
+	}
+
+	query := `
+    SELECT 
+        COALESCE((
+            SELECT 
+                SUM(CASE WHEN urv.upvote = TRUE THEN 1 ELSE -1 END)
+            FROM 
+                user_review_vote urv
+            WHERE 
+                urv.user_id = u.id
+        ), 0) + 
+        COALESCE((
+            SELECT 
+                SUM(CASE WHEN rec.reaction = TRUE THEN 1 ELSE 0 END)
+            FROM 
+                recommendation rec
+            WHERE 
+                rec.recommender_id = u.id
+        ), 0) AS score
+    FROM 
+        "user" u
+    WHERE 
+        u.id = $1
+`
+
+	var score int
+	err = r.db.QueryRow(ctx, query, id).Scan(&score)
+
+	if err != nil {
+		print(err.Error(), "from transactions err ")
+		return 0, err
+	}
+
+	return score, nil
 }
 
 func NewUserRepository(db *pgxpool.Pool) *UserRepository {
