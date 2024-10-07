@@ -113,6 +113,8 @@ func (r *UserRepository) CalculateScore(ctx context.Context, id uuid.UUID) (int,
 		return 0, errs.NotFound("User", "userID", id)
 	}
 
+	// Coalesce returns first non-null value in the set of arguments, so if SUM returns null, 0 is defaulted to.
+	// urv, rec, and u are aliases to user_review_vote, recommendation, and user tables.
 	query := `
     SELECT 
         COALESCE((
