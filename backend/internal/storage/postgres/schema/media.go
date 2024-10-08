@@ -209,7 +209,7 @@ func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset i
 		Duration     *int    `db:"duration_seconds"`
 	}
 
-	const query = `
+	const query string = `
 	WITH MostReviewed AS (
 		SELECT media_id, media_type, COUNT(*) AS review_count
 		FROM review
@@ -249,7 +249,7 @@ func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset i
 
 		var media models.Media
 		switch c.MediaType {
-		case "album":
+		case string(models.AlbumMedia):
 			album := &models.Album{
 				MediaType:   models.AlbumMedia,
 				ID:          *c.AlbumID,
@@ -261,7 +261,7 @@ func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset i
 			}
 
 			media = album
-		case "track":
+		case string(models.TrackMedia):
 			track := &models.Track{
 				MediaType: models.TrackMedia,
 				ID:        *c.TrackID,
