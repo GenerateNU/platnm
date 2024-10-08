@@ -13,8 +13,6 @@ require (
 )
 
 require (
-	github.com/gofiber/utils v1.0.1 // indirect
-	github.com/gorilla/schema v1.1.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
@@ -28,7 +26,6 @@ require (
 require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/goccy/go-json v0.10.3
-	github.com/gofiber/fiber v1.14.6
 	github.com/google/uuid v1.5.0
 	github.com/klauspost/compress v1.17.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect

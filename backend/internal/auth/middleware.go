@@ -1,52 +1,52 @@
 package auth
 
 import (
-	"context"
+	"fmt"
 	"platnm/internal/config"
-	"platnm/internal/storage/postgres/schema"
+	"strings"
 
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Claims struct {
-	DB     *pgxpool.Pool
-	Config *config.Supabase
+	Email string `json:"email"`
+	jwt.RegisteredClaims
 }
 
-func (c *Claims) Middleware() func(ctx *fiber.Ctx) error {
+func parseJWTToken(token string, hmacSecret []byte) (email string, err error) {
+	t, err := jwt.ParseWithClaims(token, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return hmacSecret, nil
+	})
+
+	if err != nil {
+		return "", fmt.Errorf("error validating token: %v", err)
+	} else if claims, ok := t.Claims.(*Claims); ok {
+		return claims.Email, nil
+	}
+
+	return "", fmt.Errorf("error parsing token: %v", err)
+}
+
+func Middleware(cfg *config.Supabase) fiber.Handler {
+
 	return func(ctx *fiber.Ctx) error {
+
 		token := ctx.Get("Authorization", "")
+		token = strings.TrimPrefix(token, "Bearer ")
 
 		if token == "" {
-			return ctx.Status(fiber.StatusUnauthorized).JSON((fiber.Map{"code": "unauthorized, token not found"}))
+			return ctx.Status(400).JSON(fiber.Map{"code": "unauthorized, token not found"})
 		}
-		payload, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-			return []byte(c.Config.JWTSecret), nil
-		})
+		_, err := parseJWTToken(token, []byte(cfg.JWTSecret))
+
 		if err != nil {
-			return ctx.Status(fiber.StatusInternalServerError).JSON((fiber.Map{"code": "unauthorized, token failed to parse"}))
+			return ctx.Status(400).JSON(fiber.Map{"code": "unauthorized, error parsing token"})
 		}
-
-		// Subject will be user's UUID
-		subject, err := payload.Claims.GetSubject()
-		if err != nil {
-			return ctx.Status(fiber.StatusInternalServerError).JSON((fiber.Map{"code": "missing subject"}))
-		}
-
-		userRepository := schema.NewUserRepository(c.DB)
-		userExists, err := userRepository.UserExists(context.Background(), subject)
-		if err != nil {
-			return ctx.Status(fiber.StatusInternalServerError).JSON((fiber.Map{"code": "server error"}))
-		}
-
-		if !userExists {
-			return ctx.Status(fiber.StatusUnauthorized).JSON((fiber.Map{"code": "no such user exists"}))
-		}
-
-		ctx.Locals("userId", subject)
-		ctx.Next()
-		return nil
+		return ctx.Next()
 	}
 }

@@ -41,16 +41,9 @@ function LoggedIn() {
     console.log('fetch called');
   }, []);
 
-  const handleSignOut = () => {
-    supabase.auth.signOut().then(() => {
-      window.location.reload();
-    });
-  };
-
   return (
     <View>
       <Text style={styles.secretText}>{ourSecretData}</Text>
-      <Button title="Sign Out" onPress={handleSignOut}/>
     </View>
   );
 }
@@ -108,20 +101,6 @@ const LoggedOut = () => {
 };
 
   
-
-// This function gets the token from local storage.
-// Supabase stores the token in local storage so we can access it from there.
-const getToken = () => {
-  const storageKey = `sb-${SUPABASE_ID}-auth-token`;
-  const sessionDataString = localStorage.getItem(storageKey);
-  const sessionData = JSON.parse(sessionDataString || "null");
-  const token = sessionData?.access_token;
-
-  return token;
-};
-
-// export default Login;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -7,6 +7,7 @@ import (
 	"platnm/internal/errs"
 	"platnm/internal/service/handler/media"
 	"platnm/internal/service/handler/oauth"
+	"platnm/internal/service/handler/oauth/platnm"
 	"platnm/internal/service/handler/oauth/spotify"
 	"platnm/internal/service/handler/reviews"
 	"platnm/internal/service/handler/users"
@@ -35,10 +36,6 @@ func InitApp(config config.Config) *fiber.App {
 func setupRoutes(app *fiber.App, config config.Config) {
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.SendStatus(http.StatusOK)
-	})
-
-	app.Post("/secret", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{"secret": "This is a secret!"})
 	})
 
 	repository := postgres.NewRepository(config.DB)
@@ -73,7 +70,13 @@ func setupRoutes(app *fiber.App, config config.Config) {
 			h := spotify.NewHandler(store, config.Spotify)
 			r.Get("/begin", h.Begin)
 			r.Get("/callback", h.Callback)
-
+		})
+		r.Route("/platnm", func(r fiber.Router) {
+			h := platnm.NewHandler(store, config.Supabase)
+			r.Post("/login", h.Login)
+			r.Get("/health", func(c *fiber.Ctx) error {
+				return c.SendStatus(http.StatusOK)
+			})
 		})
 	})
 
