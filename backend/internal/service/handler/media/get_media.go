@@ -1,6 +1,9 @@
 package media
 
 import (
+	"platnm/internal/errs"
+	"platnm/internal/service/utils"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -11,16 +14,42 @@ func (h *Handler) GetMediaByName(c *fiber.Ctx) error {
 }
 
 func (h *Handler) GetMedia(c *fiber.Ctx) error {
-	// Check for the "type" query parameter
-	mediaType := c.Query("sort")
-	if mediaType == "recent" {
-		// Call the method to get recent media if the "type" query parameter is "recent"
-		medias, err := h.mediaRepository.GetMediaByDate(c.Context())
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch recent media"})
-		}
-		return c.Status(fiber.StatusOK).JSON(medias)
+	type request struct {
+		utils.Pagination
+		Sort string `query:"sort"`
 	}
 
-	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid type query parameter"})
+	var req request
+	if err := c.QueryParser(&req); err != nil {
+		return errs.BadRequest("invalid query parameters")
+	}
+
+	if errMap := req.Validate(); len(errMap) > 0 {
+		return errs.InvalidRequestData(errMap)
+	}
+
+	switch req.Sort {
+	case "recent":
+		media, err := h.mediaRepository.GetMediaByDate(c.Context())
+		if err != nil {
+			return err
+		}
+
+		return c.Status(fiber.StatusOK).JSON(media)
+	case "reviews":
+		media, err := h.mediaRepository.GetMediaByReviews(c.Context(), req.Limit, req.GetOffset())
+		if err != nil {
+			return err
+		}
+
+		return c.Status(fiber.StatusOK).JSON(media)
+	default:
+		// if no sort query parameter is provided, default to some arbitrary sorting order
+		media, err := h.mediaRepository.GetMediaByReviews(c.Context(), req.Limit, req.GetOffset())
+		if err != nil {
+			return err
+		}
+
+		return c.Status(fiber.StatusOK).JSON(media)
+	}
 }
