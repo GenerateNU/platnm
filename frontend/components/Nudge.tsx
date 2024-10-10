@@ -1,14 +1,13 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import React from "react";
+import { View, Text, StyleSheet, Image } from "react-native";
 
 const Nudge = () => {
-
-  const image = require('@/assets/images/placeholder-profile.png');
+  const image = require("@/assets/images/placeholder-profile.png");
 
   return (
     <View style={styles.container}>
-        <Text style={styles.text}> Nudge song to </Text>
-        <View style={styles.imageContainer}>
+      <Text style={styles.text}> Nudge song to </Text>
+      <View style={styles.imageContainer}>
         {[...Array(5)].map((_, index) => (
           <Image key={index} source={image} style={styles.image} />
         ))}
@@ -20,18 +19,18 @@ const Nudge = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: 20,
-    backgroundColor: '#ffffff',
-    height: '60%',
+    backgroundColor: "#ffffff",
+    height: "60%",
   },
   text: {
     fontSize: 16,
-    color: '#000',
+    color: "#000",
   },
   imageContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 20,
   },
   image: {

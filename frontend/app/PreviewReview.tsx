@@ -7,9 +7,9 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   SafeAreaView,
-  ScrollView
+  ScrollView,
 } from "react-native";
-import  Visibility from "@/components/Visibility";
+import Visibility from "@/components/Visibility";
 import { Divider } from "react-native-paper";
 import { useNavigation } from "expo-router";
 import HeaderComponent from "@/components/HeaderComponent";
@@ -19,8 +19,7 @@ import Nudge from "@/components/Nudge";
 import ReviewCard from "@/components/ReviewCard";
 import DraftButton from "@/components/DraftButton";
 import PublishButton from "@/components/PublishButton";
-import { useLocalSearchParams } from 'expo-router';
-
+import { useLocalSearchParams } from "expo-router";
 
 const PreviewReview = () => {
   const { rating, review } = useLocalSearchParams();
@@ -37,30 +36,29 @@ const PreviewReview = () => {
         <Visibility />
         <Divider />
         <Nudge />
-        </ScrollView>
-        <View style={styles.buttonContainer}>
-            <DraftButton />
-            <PublishButton rating={rating} review={review}/>
-        </View>
+      </ScrollView>
+      <View style={styles.buttonContainer}>
+        <DraftButton />
+        <PublishButton rating={rating} review={review} />
+      </View>
     </View>
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     padding: 20,
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#fff', // Optional: Add a background color if needed
+    backgroundColor: "#fff", // Optional: Add a background color if needed
   },
 });
 

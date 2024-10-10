@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import StarRating from 'react-native-star-rating-widget';
-import MusicDisk from '../assets/images/music-disk.png';
+import React, { useState } from "react";
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import StarRating from "react-native-star-rating-widget";
+import MusicDisk from "../assets/images/music-disk.png";
 
 interface ReviewCardProps {
   rating: number;
@@ -9,18 +9,19 @@ interface ReviewCardProps {
 }
 
 const ReviewCard: React.FC<ReviewCardProps> = ({ rating, review }) => {
-
-  const [profilePicture, setProfilePicture]  = useState(require('@/assets/images/placeholder-profile.png'));
+  const [profilePicture, setProfilePicture] = useState(
+    require("@/assets/images/placeholder-profile.png"),
+  );
   const [displayName, setDisplayName] = useState("Name");
   const [songName, setSongName] = useState("Song Name");
 
   const [username, setUsername] = useState("@username");
-  
+
   return (
     <View style={styles.card}>
       <Image source={MusicDisk} style={styles.musicDisk} />
       <View style={styles.topLeftContainer}>
-        <Image style={styles.profilePicture} source={profilePicture}/>
+        <Image style={styles.profilePicture} source={profilePicture} />
         <View style={styles.textContainer}>
           <Text style={styles.displayName}>{displayName}</Text>
           <Text style={styles.username}>{username}</Text>
@@ -44,16 +45,16 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ rating, review }) => {
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: 'column',
-    backgroundColor: '#C4C4C4',
+    flexDirection: "column",
+    backgroundColor: "#C4C4C4",
     padding: 10,
     flex: 1,
     margin: 20,
-    alignItems: 'center',
+    alignItems: "center",
     borderRadius: 10,
   },
   musicDisk: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     right: 0,
     width: 100,
@@ -63,27 +64,27 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   topLeftContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    alignItems: "flex-start",
   },
   profilePicture: {
     width: 40,
     height: 40,
     borderRadius: 25,
     marginRight: 10,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   displayName: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 18,
   },
-  username:{
+  username: {
     fontSize: 14,
-    color: '#808080',
+    color: "#808080",
   },
   songName: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginTop: 10,
   },
   reviewText: {
@@ -93,7 +94,7 @@ const styles = StyleSheet.create({
   review: {
     padding: 5,
     flex: 1,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
   },
 });
 

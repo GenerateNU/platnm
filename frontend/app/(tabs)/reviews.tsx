@@ -4,7 +4,7 @@ import {
   StyleSheet,
   TouchableWithoutFeedback,
   Keyboard,
-  ScrollView
+  ScrollView,
 } from "react-native";
 import DateInputRating from "@/components/DateInputRating";
 import StarRate from "@/components/StarRate";
@@ -21,28 +21,32 @@ const Reviews = () => {
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
 
-  const handleRatingChange = (newRating : Double) => {
+  const handleRatingChange = (newRating: Double) => {
     setRating(newRating);
   };
 
-  const handleReviewChange = (newReview : string) => {
+  const handleReviewChange = (newReview: string) => {
     setReview(newReview);
-  }
+  };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false} >
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <ScrollView style={styles.container}>
         <View>
           <HeaderComponent title="Log Song" />
           <SongCard />
           <DateInputRating />
           <Divider />
-          <StarRate onRatingChange={handleRatingChange}/>
+          <StarRate onRatingChange={handleRatingChange} />
           <Divider />
-          <CommentRating onReviewChange={handleReviewChange}/>
+          <CommentRating onReviewChange={handleReviewChange} />
           <View style={styles.buttonContainer}>
             <DraftButton />
-            <NextButton completed={rating !== 0} rating={rating} review={review}/>
+            <NextButton
+              completed={rating !== 0}
+              rating={rating}
+              review={review}
+            />
           </View>
         </View>
       </ScrollView>
@@ -53,11 +57,10 @@ const Reviews = () => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#ffffff",
-
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     padding: 10,
   },
 });

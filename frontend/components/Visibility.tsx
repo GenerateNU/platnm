@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
 const Visibility = () => {
   const [text, setText] = useState("Everyone can view this post");
 
   const handleClick = () => {
-    setText(prevText => prevText === "Everyone can view this post" ? "Followers Only" : "Everyone can view this post");
+    setText((prevText) =>
+      prevText === "Everyone can view this post"
+        ? "Followers Only"
+        : "Everyone can view this post",
+    );
   };
 
   return (
@@ -20,9 +24,9 @@ const Visibility = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
   },
   text: {
     fontSize: 16,

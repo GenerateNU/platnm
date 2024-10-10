@@ -1,9 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  StyleSheet,
-  View,
-  TextInput,
-} from "react-native";
+import { StyleSheet, View, TextInput } from "react-native";
 
 interface StarRateProps {
   onReviewChange: (value: string) => void;
@@ -29,7 +25,7 @@ const CommentRating = ({ onReviewChange }: StarRateProps) => {
       />
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   comment: {
@@ -38,7 +34,7 @@ const styles = StyleSheet.create({
     padding: 20,
     color: "#434343",
     fontSize: 19,
-    height: '35%'
+    height: "35%",
   },
   input: {
     flex: 1,
