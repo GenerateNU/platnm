@@ -53,7 +53,10 @@ func (h *SpotifyHandler) GetNewReleases(c *fiber.Ctx) error {
 		go func(album spotify.SimpleAlbum) { // Capture the album variable to avoid race condition
 			defer wg.Done()
 			if err := h.handleAlbum(c, &wg, album, albums, artists, errCh); err != nil {
-				errCh <- err
+				select {
+				case errCh <- err:
+				default:
+				}
 			}
 		}(album)
 	}
@@ -114,13 +117,19 @@ func (h *SpotifyHandler) handleAlbum(c *fiber.Ctx, wg *sync.WaitGroup, album spo
 		go func() {
 			defer wg.Done()
 			if err := h.handleArtist(c.Context(), artist, artists, addedAlbum.ID); err != nil {
-				errCh <- err
+				select {
+				case errCh <- err:
+				default:
+				}
 			}
 
 		}()
 	}
 
-	albums <- *addedAlbum
+	select {
+	case albums <- *addedAlbum:
+	default:
+	}
 	return nil
 
 }
@@ -144,7 +153,10 @@ func (h *SpotifyHandler) handleArtist(ctx context.Context, artist spotify.Simple
 			return err
 		}
 		artistId = &newArtist.ID
-		artists <- *newArtist
+		select {
+		case artists <- *newArtist:
+		default:
+		}
 	}
 
 	if err := h.MediaRepository.AddAlbumArtist(ctx, albumId, *artistId); err != nil {
