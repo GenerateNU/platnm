@@ -1,2 +1,2 @@
-alter table artist add column spotify_id text unique;
-alter table album add column spotify_id text unique;
+ALTER TABLE artist ADD COLUMN spotify_id TEXT UNIQUE;
+ALTER TABLE album ADD COLUMN spotify_id TEXT UNIQUE;
