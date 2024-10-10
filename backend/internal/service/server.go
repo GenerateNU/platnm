@@ -8,6 +8,7 @@ import (
 	"platnm/internal/service/handler/media"
 	"platnm/internal/service/handler/oauth"
 	spotify_oauth_handler "platnm/internal/service/handler/oauth/spotify"
+	"platnm/internal/service/handler/recommendation"
 	spotify_handler "platnm/internal/service/handler/spotify"
 	spotify_middleware "platnm/internal/service/middleware/spotify"
 
@@ -47,6 +48,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Get("/", userHandler.GetUsers)
 		r.Get("/:id", userHandler.GetUserById)
 		r.Post("/follow", userHandler.FollowUnfollowUser)
+		r.Get("/score/:id", userHandler.CalculateScore)
 	})
 
 	app.Route("/reviews", func(r fiber.Router) {
@@ -66,6 +68,11 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	app.Route("/media", func(r fiber.Router) {
 		r.Get("/:name", mediaHandler.GetMediaByName)
 		r.Get("/", mediaHandler.GetMedia)
+	})
+
+	recommendationHandler := recommendation.NewHandler(repository.Recommendation)
+	app.Route("/recommendation", func(r fiber.Router) {
+		r.Post("/", recommendationHandler.CreateRecommendation)
 	})
 
 	// this store can be passed to other oauth handlers that need to manage state/verifier values
