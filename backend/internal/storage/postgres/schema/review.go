@@ -5,9 +5,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/jackc/pgx/v5"
 	"platnm/internal/errs"
 	"platnm/internal/models"
+
+	"github.com/jackc/pgx/v5"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -20,6 +21,18 @@ const (
 	userFKeyConstraint        = "review_user_id_fkey"
 	uniqueUserMediaConstraint = "unique_user_media"
 )
+
+func (r *ReviewRepository) ReviewExists(ctx context.Context, id string) (bool, error) {
+	rows, err := r.Query(ctx, `SELECT * FROM review WHERE id = $1`, id)
+	if err != nil {
+		return false, err
+	}
+	if rows.Next() {
+		return true, nil
+	}
+
+	return false, nil
+}
 
 func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Review) (*models.Review, error) {
 	query := `

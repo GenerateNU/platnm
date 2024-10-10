@@ -20,6 +20,7 @@ type UserRepository interface {
 type ReviewRepository interface {
 	GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error)
 	CreateReview(ctx context.Context, review *models.Review) (*models.Review, error)
+	ReviewExists(ctx context.Context, id string) (bool, error)
 	UpdateReview(ctx context.Context, update *models.Review) (*models.Review, error)
 	GetExistingReview(ctx context.Context, id string) (*models.Review, error)
 	ReviewBelongsToUser(ctx context.Context, reviewID string, userID string) (bool, error)
@@ -36,10 +37,18 @@ type RecommendationRepository interface {
 	CreateRecommendation(ctx context.Context, recommendation *models.Recommendation) (*models.Recommendation, error)
 }
 
+type VoteRepository interface {
+	AddVote(ctx context.Context, vote *models.UserReviewVote) error
+	GetVoteIfExists(ctx context.Context, userID string, reviewID string) (*models.UserReviewVote, error)
+	UpdateVote(ctx context.Context, userID string, reviewID string, vote bool) error
+	DeleteVote(ctx context.Context, userID string, reviewID string) error
+}
+
 // Repository storage of all repositories.
 type Repository struct {
 	User           UserRepository
 	Review         ReviewRepository
+	UserReviewVote VoteRepository
 	Media          MediaRepository
 	Recommendation RecommendationRepository
 }
