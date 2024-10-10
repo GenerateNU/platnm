@@ -35,7 +35,6 @@ type MediaRepository interface {
 
 type RecommendationRepository interface {
 	CreateRecommendation(ctx context.Context, recommendation *models.Recommendation) (*models.Recommendation, error)
-	//Not sure if I should've created this in the review repo
 	ReviewExists(ctx context.Context, id string) (bool, error)
 }
 
