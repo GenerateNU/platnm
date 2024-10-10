@@ -25,6 +25,7 @@ type MediaWithReviewCount struct {
 type Album struct {
 	MediaType   MediaType `json:"media_type"`
 	ID          int       `json:"id"`
+	SpotifyID   string    `json:"spotify_id"`
 	Title       string    `json:"title"`
 	ReleaseDate time.Time `json:"release_date"`
 	Cover       string    `json:"cover"`
