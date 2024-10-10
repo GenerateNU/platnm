@@ -2,6 +2,7 @@ package schema
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"platnm/internal/models"
 	"time"
@@ -116,6 +117,75 @@ LIMIT 20;`
 		return nil, err
 	}
 	return medias, nil
+}
+
+func (r *MediaRepository) GetExistingArtistBySpotifyID(ctx context.Context, id string) (*int, error) {
+	var artistId int
+	err := r.QueryRow(ctx, `SELECT id FROM artist WHERE spotify_id = $1`, id).Scan(&artistId)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &artistId, nil
+}
+
+func (r *MediaRepository) AddArtist(ctx context.Context, artist *models.Artist) (*models.Artist, error) {
+	query :=
+		`INSERT INTO artist (name, spotify_id, photo, bio)
+		 VALUES ($1, $2, $3, $4)
+		 RETURNING id;`
+
+	if err := r.QueryRow(ctx, query, artist.Name, artist.SpotifyID, artist.Photo, artist.Bio).Scan(&artist.ID); err != nil {
+		return nil, err
+	}
+
+	return artist, nil
+}
+
+func (r *MediaRepository) GetExistingAlbumBySpotifyID(ctx context.Context, id string) (*int, error) {
+	var albumId int
+	fmt.Println("looking for album with spotify id: ", id)
+	err := r.QueryRow(ctx, `SELECT id FROM album WHERE spotify_id = $1`, id).Scan(&albumId)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &albumId, nil
+}
+
+func (r *MediaRepository) AddAlbum(ctx context.Context, album *models.Album) (*models.Album, error) {
+	query :=
+		`INSERT INTO album (title, release_date, cover, country, spotify_id)
+		 VALUES ($1, $2, $3, $4, $5)
+		 RETURNING id;`
+
+	if err := r.QueryRow(ctx, query, album.Title, album.ReleaseDate, album.Cover, album.Country, album.SpotifyID).Scan(&album.ID); err != nil {
+		return nil, err
+	}
+
+	return album, nil
+}
+
+func (r *MediaRepository) AddAlbumArtist(ctx context.Context, albumId int, artistId int) error {
+	query :=
+		`INSERT INTO album_artist (album_id, artist_id)
+		 VALUES ($1, $2)`
+
+	result, err := r.Exec(ctx, query, albumId, artistId)
+	if err != nil {
+		return err
+	}
+	if result.RowsAffected() == 0 {
+		return errors.New("no rows affected")
+	}
+
+	return nil
 }
 
 func (r *MediaRepository) GetMediaByName(ctx context.Context, name string) ([]models.Media, error) {

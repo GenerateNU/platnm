@@ -31,6 +31,11 @@ type MediaRepository interface {
 	GetMediaByName(ctx context.Context, name string) ([]models.Media, error)
 	GetMediaByDate(ctx context.Context) ([]models.Media, error)
 	GetMediaByReviews(ctx context.Context, limit, offset int) ([]models.MediaWithReviewCount, error)
+	GetExistingArtistBySpotifyID(ctx context.Context, id string) (*int, error)
+	AddArtist(ctx context.Context, artist *models.Artist) (*models.Artist, error)
+	GetExistingAlbumBySpotifyID(ctx context.Context, id string) (*int, error)
+	AddAlbum(ctx context.Context, artist *models.Album) (*models.Album, error)
+	AddAlbumArtist(ctx context.Context, albumId int, artistId int) error
 }
 
 type RecommendationRepository interface {
