@@ -102,6 +102,7 @@ func (h *SpotifyHandler) handleAlbum(c *fiber.Ctx, wg *sync.WaitGroup, album spo
 	}
 
 	addedAlbum, err := h.MediaRepository.AddAlbum(c.Context(), &models.Album{
+		MediaType:   models.AlbumMedia,
 		SpotifyID:   album.ID.String(),
 		Title:       album.Name,
 		ReleaseDate: album.ReleaseDateTime(),
@@ -167,11 +168,12 @@ func (h *SpotifyHandler) handleArtist(ctx context.Context, artist spotify.Simple
 }
 
 func fetchNewReleasesFromSpotify(c *fiber.Ctx) (*spotify.SimpleAlbumPage, error) {
-	limit, err := strconv.Atoi(c.Params("limit", "20"))
+	limit, err := strconv.Atoi(c.Query("limit", "20"))
 	if err != nil {
 		return &spotify.SimpleAlbumPage{}, err
 	}
 
+	fmt.Println(limit)
 	client, err := ctxt.GetSpotifyClient(c)
 	if err != nil {
 		return &spotify.SimpleAlbumPage{}, err

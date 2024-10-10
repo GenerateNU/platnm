@@ -14,6 +14,7 @@ type UserRepository interface {
 	FollowExists(ctx context.Context, follower uuid.UUID, following uuid.UUID) (bool, error)
 	Follow(ctx context.Context, follower uuid.UUID, following uuid.UUID) (bool, error)
 	UnFollow(ctx context.Context, follower uuid.UUID, following uuid.UUID) (bool, error)
+	CalculateScore(ctx context.Context, id uuid.UUID) (int, error)
 }
 
 type ReviewRepository interface {
@@ -28,6 +29,7 @@ type ReviewRepository interface {
 type MediaRepository interface {
 	GetMediaByName(ctx context.Context, name string) ([]models.Media, error)
 	GetMediaByDate(ctx context.Context) ([]models.Media, error)
+	GetMediaByReviews(ctx context.Context, limit, offset int) ([]models.MediaWithReviewCount, error)
 	GetExistingArtistBySpotifyID(ctx context.Context, id string) (*int, error)
 	AddArtist(ctx context.Context, artist *models.Artist) (*models.Artist, error)
 	GetExistingAlbumBySpotifyID(ctx context.Context, id string) (*int, error)

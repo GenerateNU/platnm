@@ -87,22 +87,22 @@ LIMIT 20;`
 		switch mediaType {
 		case models.AlbumMedia:
 			album := &models.Album{
+				MediaType:   models.AlbumMedia,
 				ID:          albumID,
 				Title:       mediaTitle,
 				ReleaseDate: releaseDate,
 				Cover:       cover,
 				Country:     country,
 				GenreID:     genreID,
-				Media:       models.AlbumMedia,
 			}
 			medias = append(medias, album)
 		case models.TrackMedia:
 			track := &models.Track{
+				MediaType:   models.TrackMedia,
 				ID:          trackID,
 				AlbumID:     albumID,
 				Title:       mediaTitle,
 				Duration:    durationSecs,
-				Media:       models.TrackMedia,
 				Cover:       cover,
 				ReleaseDate: releaseDate,
 				AlbumTitle:  albumTitle,
@@ -232,7 +232,7 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string) ([]mo
 		); err != nil {
 			return nil, err
 		}
-		album.Media = models.AlbumMedia
+		album.MediaType = models.AlbumMedia
 		medias = append(medias, album)
 	}
 
@@ -250,10 +250,111 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string) ([]mo
 		); err != nil {
 			return nil, err
 		}
-		track.Media = models.TrackMedia
+		track.MediaType = models.TrackMedia
 		medias = append(medias, track)
 	}
 	return medias, nil
+}
+
+func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset int) ([]models.MediaWithReviewCount, error) {
+	// store nullable columns as pointers
+	// if the column is null, the pointer will be nil
+	// fields need to be exported so pgx can access them via reflection
+	type columns struct {
+		MediaType   string `db:"media_type"`
+		ReviewCount int    `db:"review_count"`
+
+		// album columns
+		AlbumID     *int       `db:"album_id"`
+		AlbumTitle  *string    `db:"album_title"`
+		ReleaseDate *time.Time `db:"release_date"`
+		Cover       *string    `db:"cover"`
+		Country     *string    `db:"country"`
+		GenreID     *int       `db:"genre_id"`
+
+		// track columns
+		TrackID      *int    `db:"track_id"`
+		TrackTitle   *string `db:"track_title"`
+		TrackAlbumID *int    `db:"track_album_id"`
+		Duration     *int    `db:"duration_seconds"`
+	}
+
+	const query string = `
+	WITH MostReviewed AS (
+		SELECT media_id, media_type, COUNT(*) AS review_count
+		FROM review
+		GROUP BY media_id, media_type
+		ORDER BY review_count DESC
+		LIMIT $1 OFFSET $2
+	)
+	SELECT 
+		m.media_type,
+		m.review_count,
+		a.id AS album_id,
+		a.title AS album_title,
+		a.release_date,
+		a.cover,
+		a.country,
+		a.genre_id,
+		t.id AS track_id,
+		t.title AS track_title,
+		t.album_id AS track_album_id,
+		t.duration_seconds
+	FROM MostReviewed m
+	LEFT JOIN album a ON m.media_id = a.id AND m.media_type = 'album'
+	LEFT JOIN track t ON m.media_id = t.id AND m.media_type = 'track'
+	ORDER BY m.review_count DESC;
+	`
+
+	rows, err := r.Query(ctx, query, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	results, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.MediaWithReviewCount, error) {
+		c, err := pgx.RowToStructByName[columns](row)
+		if err != nil {
+			return models.MediaWithReviewCount{}, err
+		}
+
+		var media models.Media
+		switch c.MediaType {
+		case string(models.AlbumMedia):
+			album := &models.Album{
+				MediaType:   models.AlbumMedia,
+				ID:          *c.AlbumID,
+				Title:       *c.AlbumTitle,
+				ReleaseDate: *c.ReleaseDate,
+				Cover:       *c.Cover,
+				Country:     *c.Country,
+				GenreID:     *c.GenreID,
+			}
+
+			media = album
+		case string(models.TrackMedia):
+			track := &models.Track{
+				MediaType: models.TrackMedia,
+				ID:        *c.TrackID,
+				AlbumID:   *c.TrackAlbumID,
+				Title:     *c.TrackTitle,
+				Duration:  *c.Duration,
+			}
+
+			media = track
+		default:
+			return models.MediaWithReviewCount{}, fmt.Errorf("unknown media type: %s", c.MediaType)
+		}
+
+		return models.MediaWithReviewCount{
+			Media: media,
+			Count: c.ReviewCount,
+		}, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
 }
 
 func NewMediaRepository(db *pgxpool.Pool) *MediaRepository {
