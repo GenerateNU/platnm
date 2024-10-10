@@ -12,11 +12,3 @@ type Review struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
-
-// mediatype can be either track or album
-type MediaType string
-
-const (
-	Track MediaType = "track"
-	Album MediaType = "album"
-)

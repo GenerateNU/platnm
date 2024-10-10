@@ -6,23 +6,32 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { BASE_URL } from "@env";
 
 type User = {
-  email: string;
-  first_name: string;
-  last_name: string;
-  phone: string;
   user_id: string;
+  username: string;
+  display_name: string;
+  profile_picture: string;
+  linked_account: string;
+  created_at: string;
+  updated_at: string;
 };
 
 export default function HomeScreen() {
   const [users, setUsers] = useState<User[]>([]);
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
   useEffect(() => {
-    axios.get(`${BASE_URL}/users`).then((response) => {
-      setUsers(response.data);
-    });
-  }, [users]);
+    axios
+      .get(`${BASE_URL}/users`)
+      .then((response) => {
+        setUsers(response.data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }, []);
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
@@ -47,8 +56,8 @@ export default function HomeScreen() {
       <ThemedView style={styles.stepContainer}>
         <ThemedText type="subtitle">Step 2: Frontend Setup</ThemedText>
         <ThemedText>
-          If frontend and backend are connected, you should see a phone number
-          here : {users[0].phone}.
+          If frontend and backend are connected, you should see a username here:{" "}
+          {users[0]?.username}.
         </ThemedText>
       </ThemedView>
       <ThemedView style={styles.stepContainer}>

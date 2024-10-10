@@ -40,8 +40,10 @@ func NewRepository(config config.DB) *storage.Repository {
 	db := ConnectDatabase(config)
 
 	return &storage.Repository{
-		User:   schema.NewUserRepository(db),
-		Review: schema.NewReviewRepository(db),
+		User:           schema.NewUserRepository(db),
+		Review:         schema.NewReviewRepository(db),
 		UserReviewVote: schema.NewVoteRepository(db),
+		Media:          schema.NewMediaRepository(db),
+		Recommendation: schema.NewRecommendationRepository(db),
 	}
 }
