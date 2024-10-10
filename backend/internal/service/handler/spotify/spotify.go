@@ -8,11 +8,11 @@ import (
 )
 
 type SpotifyHandler struct {
-	MediaRepository storage.MediaRepository
+	mediaRepository storage.MediaRepository
 }
 
 func NewHandler(mediaRepository storage.MediaRepository) *SpotifyHandler {
-	return &SpotifyHandler{MediaRepository: mediaRepository}
+	return &SpotifyHandler{mediaRepository: mediaRepository}
 }
 
 func (h *SpotifyHandler) GetPlatnmPlaylist(c *fiber.Ctx) error {

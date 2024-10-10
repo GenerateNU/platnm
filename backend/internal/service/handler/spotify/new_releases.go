@@ -82,7 +82,7 @@ func (h *SpotifyHandler) NewReleases(c *fiber.Ctx) error {
 }
 
 func (h *SpotifyHandler) handleAlbum(ctx context.Context, wg *sync.WaitGroup, album spotify.SimpleAlbum, albums chan<- models.Album, artists chan<- models.Artist, errCh chan<- error) error {
-	albumId, err := h.MediaRepository.GetExistingAlbumBySpotifyID(ctx, album.ID.String())
+	albumId, err := h.mediaRepository.GetExistingAlbumBySpotifyID(ctx, album.ID.String())
 	if err != nil {
 		return err
 	}
@@ -91,7 +91,7 @@ func (h *SpotifyHandler) handleAlbum(ctx context.Context, wg *sync.WaitGroup, al
 		return nil
 	}
 
-	addedAlbum, err := h.MediaRepository.AddAlbum(ctx, &models.Album{
+	addedAlbum, err := h.mediaRepository.AddAlbum(ctx, &models.Album{
 		MediaType:   models.AlbumMedia,
 		SpotifyID:   album.ID.String(),
 		Title:       album.Name,
@@ -128,12 +128,12 @@ func (h *SpotifyHandler) handleArtist(ctx context.Context, artist spotify.Simple
 	we need more sophisticated artist search logic, but are limited by the overlap betweem the two APIs.
 	the only 100% shared data point is the artist name, which is not unique, posing a problem.
 	for now, we'll just create a new artist if one doesn't exist */
-	artistId, err := h.MediaRepository.GetExistingArtistBySpotifyID(ctx, artist.ID.String())
+	artistId, err := h.mediaRepository.GetExistingArtistBySpotifyID(ctx, artist.ID.String())
 	if err != nil {
 		return err
 	}
 	if artistId == nil {
-		newArtist, err := h.MediaRepository.AddArtist(ctx, &models.Artist{
+		newArtist, err := h.mediaRepository.AddArtist(ctx, &models.Artist{
 			SpotifyID: artist.ID.String(),
 			Name:      artist.Name,
 		})
@@ -147,7 +147,7 @@ func (h *SpotifyHandler) handleArtist(ctx context.Context, artist spotify.Simple
 		}
 	}
 
-	if err := h.MediaRepository.AddAlbumArtist(ctx, albumId, *artistId); err != nil {
+	if err := h.mediaRepository.AddAlbumArtist(ctx, albumId, *artistId); err != nil {
 		return err
 	}
 
