@@ -1,8 +1,13 @@
 package spotify
 
 import (
+	"context"
+	"errors"
+	"fmt"
 	"platnm/internal/models"
 	"platnm/internal/service/ctxt"
+	"strconv"
+	"sync"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/zmb3/spotify/v2"
@@ -13,9 +18,9 @@ type AlbumArtist struct {
 	ArtistID int
 }
 
-type AddedContent struct {
-	Albums  []*models.Album
-	Artists []*models.Artist
+type Response struct {
+	Albums  []models.Album  `json:"albums"`
+	Artists []models.Artist `json:"artists"`
 }
 
 func (h *SpotifyHandler) GetNewReleases(c *fiber.Ctx) error {
@@ -24,18 +29,67 @@ func (h *SpotifyHandler) GetNewReleases(c *fiber.Ctx) error {
 		return err
 	}
 
-	addedContent := &AddedContent{}
+	numJobs := len(newReleases.Albums)
+
+	albums := make(chan models.Album, numJobs)
+
+	artists := make(chan models.Artist)
+
+	errCh := make(chan error)
+
+	var wg sync.WaitGroup
+
+	go func() {
+		wg.Wait()
+		close(albums)
+		close(artists)
+		close(errCh)
+	}()
+
 	for _, album := range newReleases.Albums {
-		if err := h.handleAlbum(c, album, addedContent); err != nil {
-			return err
-		}
+		// assuming I should handle each album concurrently?
+		// do I also handle each artist/track concurrently?
+		wg.Add(1)
+		go func(album spotify.SimpleAlbum) { // Capture the album variable to avoid race condition
+			defer wg.Done()
+			if err := h.handleAlbum(c, &wg, album, albums, artists, errCh); err != nil {
+				errCh <- err
+			}
+		}(album)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(addedContent)
+	wg.Wait()
+
+	fmt.Println("done waiting")
+
+	var errs []error
+	for err := range errCh {
+		errs = append(errs, err)
+	}
+	if len(errs) > 0 {
+		return errors.Join(errs...)
+	}
+
+	// Read all the albums and artists from the channels
+	var rAlbums []models.Album
+	for album := range albums {
+		rAlbums = append(rAlbums, album)
+	}
+
+	var rArtists []models.Artist
+	for artist := range artists {
+		rArtists = append(rArtists, artist)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(Response{
+		Albums:  rAlbums,
+		Artists: rArtists,
+	})
 }
 
-func (h *SpotifyHandler) handleAlbum(c *fiber.Ctx, album spotify.SimpleAlbum, addedContent *AddedContent) error {
+func (h *SpotifyHandler) handleAlbum(c *fiber.Ctx, wg *sync.WaitGroup, album spotify.SimpleAlbum, albums chan<- models.Album, artists chan<- models.Artist, errCh chan<- error) error {
 	albumId, err := h.MediaRepository.GetExistingAlbumBySpotifyID(c.Context(), album.ID.String())
+
 	if err != nil {
 		return err
 	}
@@ -56,27 +110,33 @@ func (h *SpotifyHandler) handleAlbum(c *fiber.Ctx, album spotify.SimpleAlbum, ad
 	}
 
 	for _, artist := range album.Artists {
-		if err := h.handleArtist(c, artist, addedContent, addedAlbum.ID); err != nil {
-			return err
-		}
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if err := h.handleArtist(c.Context(), artist, artists, addedAlbum.ID); err != nil {
+				errCh <- err
+			}
+
+		}()
 	}
 
-	addedContent.Albums = append(addedContent.Albums, addedAlbum)
+	albums <- *addedAlbum
 	return nil
+
 }
 
-func (h *SpotifyHandler) handleArtist(c *fiber.Ctx, artist spotify.SimpleArtist, addedContent *AddedContent, albumId int) error {
+func (h *SpotifyHandler) handleArtist(ctx context.Context, artist spotify.SimpleArtist, artists chan<- models.Artist, albumId int) error {
 	/* TODO: it's possible that the artist can exist but not be detected by spotifyID lookup if it was
 	created through a future analogous Apple Music pathway.
 	we need more sophisticated artist search logic, but are limited by the overlap betweem the two APIs.
 	the only 100% shared data point is the artist name, which is not unique, posing a problem.
 	for now, we'll just create a new artist if one doesn't exist */
-	artistId, err := h.MediaRepository.GetExistingArtistBySpotifyID(c.Context(), artist.ID.String())
+	artistId, err := h.MediaRepository.GetExistingArtistBySpotifyID(ctx, artist.ID.String())
 	if err != nil {
 		return err
 	}
 	if artistId == nil {
-		newArtist, err := h.MediaRepository.AddArtist(c.Context(), &models.Artist{
+		newArtist, err := h.MediaRepository.AddArtist(ctx, &models.Artist{
 			SpotifyID: artist.ID.String(),
 			Name:      artist.Name,
 		})
@@ -84,11 +144,10 @@ func (h *SpotifyHandler) handleArtist(c *fiber.Ctx, artist spotify.SimpleArtist,
 			return err
 		}
 		artistId = &newArtist.ID
-		addedContent.Artists = append(addedContent.Artists, newArtist)
+		artists <- *newArtist
 	}
 
-	err = h.MediaRepository.AddAlbumArtist(c.Context(), albumId, *artistId)
-	if err != nil {
+	if err := h.MediaRepository.AddAlbumArtist(ctx, albumId, *artistId); err != nil {
 		return err
 	}
 
@@ -96,10 +155,15 @@ func (h *SpotifyHandler) handleArtist(c *fiber.Ctx, artist spotify.SimpleArtist,
 }
 
 func fetchNewReleasesFromSpotify(c *fiber.Ctx) (*spotify.SimpleAlbumPage, error) {
+	limit, err := strconv.Atoi(c.Params("limit", "20"))
+	if err != nil {
+		return &spotify.SimpleAlbumPage{}, err
+	}
+
 	client, err := ctxt.GetSpotifyClient(c)
 	if err != nil {
 		return &spotify.SimpleAlbumPage{}, err
 	}
 
-	return client.NewReleases(c.Context(), spotify.Limit(20))
+	return client.NewReleases(c.Context(), spotify.Limit(limit))
 }
