@@ -35,7 +35,6 @@ type MediaRepository interface {
 
 type RecommendationRepository interface {
 	CreateRecommendation(ctx context.Context, recommendation *models.Recommendation) (*models.Recommendation, error)
-	ReviewExists(ctx context.Context, id string) (bool, error)
 }
 
 type VoteRepository interface {

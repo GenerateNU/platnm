@@ -13,19 +13,20 @@ import (
 type VoteRepository struct {
 	db *pgxpool.Pool
 }
+
 const (
-	userVoteFKeyConstraint   = "review_user_id_fkey"
-	votePKeyConstraint = "user_review_vote_pkey"
-	reviewFKeyConstraint = "user_review_vote_review_id_fkey"
+	userVoteFKeyConstraint = "review_user_id_fkey"
+	votePKeyConstraint     = "user_review_vote_pkey"
+	reviewFKeyConstraint   = "user_review_vote_review_id_fkey"
 )
 
-func (r *VoteRepository) AddVote(ctx context.Context, vote *models.UserReviewVote) (error) {
+func (r *VoteRepository) AddVote(ctx context.Context, vote *models.UserReviewVote) error {
 	query := `
 	INSERT INTO user_review_vote (user_id, review_id, upvote)
 	VALUES ($1, $2, $3);
 	`
 
-	_, err := r.db.Exec(ctx, query, vote.UserID, vote.ReviewID, vote.Upvote) 
+	_, err := r.db.Exec(ctx, query, vote.UserID, vote.ReviewID, vote.Upvote)
 	if err != nil {
 		if errs.IsUniqueViolation(err, votePKeyConstraint) {
 			return errs.Conflict("user_review_vote", "(user_id, review_id)", fmt.Sprintf("(%s, %s)", vote.UserID, vote.ReviewID))
@@ -48,7 +49,7 @@ func (r *VoteRepository) GetVoteIfExists(ctx context.Context, usrID string, revI
 	return &voteHolder, nil
 }
 
-func (r *VoteRepository) DeleteVote(ctx context.Context, userID string, revID string) (error) {
+func (r *VoteRepository) DeleteVote(ctx context.Context, userID string, revID string) error {
 	query := `
 	DELETE FROM user_review_vote 
 	WHERE user_id = $1 AND review_id =$2
@@ -60,7 +61,7 @@ func (r *VoteRepository) DeleteVote(ctx context.Context, userID string, revID st
 	return nil
 }
 
-func (r *VoteRepository) UpdateVote(ctx context.Context, userID string, reviewID string, vote bool) (error) {
+func (r *VoteRepository) UpdateVote(ctx context.Context, userID string, reviewID string, vote bool) error {
 	query := `
 	UPDATE user_review_vote
 	SET upvote = $1

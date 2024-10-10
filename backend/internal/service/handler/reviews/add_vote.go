@@ -2,8 +2,8 @@ package reviews
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"platnm/internal/models"
 	"platnm/internal/errs"
+	"platnm/internal/models"
 )
 
 type createVoteRequest struct {
@@ -24,7 +24,7 @@ func (h *Handler) VoteReview(c *fiber.Ctx) error {
 		return errs.NotFound("User", "id", &req.UserReviewVote.UserID)
 	}
 
-	reviewExists, reviewExistsErr := h.reviewRepository.ReviewExists(c.Context(),req.UserReviewVote.ReviewID)
+	reviewExists, reviewExistsErr := h.reviewRepository.ReviewExists(c.Context(), req.UserReviewVote.ReviewID)
 	if reviewExistsErr != nil {
 		return reviewExistsErr
 	}
@@ -48,7 +48,7 @@ func (h *Handler) VoteReview(c *fiber.Ctx) error {
 		if delVoteErr != nil {
 			return delVoteErr
 		}
-	} else { 
+	} else {
 		updateVoteErr := h.voteRepository.UpdateVote(c.Context(), req.UserReviewVote.UserID, req.UserReviewVote.ReviewID, req.UserReviewVote.Upvote)
 		if updateVoteErr != nil {
 			return updateVoteErr
