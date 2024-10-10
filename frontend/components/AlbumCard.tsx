@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 
-export const AlbumCard = () => {
+const AlbumCard = () => {
 
     const ablumImage = require('@/assets/images/placeholder-image.png');
     const songImage = require('@/assets/images/song-placeholder.png');
@@ -69,3 +69,5 @@ const styles = StyleSheet.create({
     height: 30,
   },
 });
+
+export default AlbumCard;

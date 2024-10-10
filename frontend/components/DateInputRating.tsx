@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { StyleSheet, View, Text } from "react-native";
 
 
-export function DateInputRating() { 
+const DateInputRating = () => { 
 
     const [date, setDate] = useState(new Date());
 
@@ -34,3 +34,4 @@ const styles = StyleSheet.create({
     }
   });
   
+export default DateInputRating;

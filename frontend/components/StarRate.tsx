@@ -1,22 +1,26 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { StyleSheet, View, Text, Image } from "react-native";
 import StarRating from 'react-native-star-rating-widget';
 
-export function StarRate() { 
+interface StarRateProps {
+    onRatingChange: (value: number) => void;
+}
+
+const StarRate = ({ onRatingChange }: StarRateProps) => { 
 
     const [rating, setRating] = useState(0);
 
-    const handleChange = useCallback(
-        (value: number) => setRating(Math.round((rating + value) * 5) / 10),
-        [rating],
-    );
+    const handleRating = (value: number) => {
+        setRating(value);
+        onRatingChange(value);
+    };
 
     return (
         <View style={styles.ratingContainer}>
             <Text style={styles.rateText}>Rate</Text>
             <StarRating
                 rating={rating}
-                onChange={setRating}
+                onChange={handleRating}
                 emptyColor="#C4C4C4"
                 color="#555151"
                 animationConfig={{ scale: 1 }}
@@ -41,3 +45,4 @@ const styles = StyleSheet.create({
     }
   });
   
+export default StarRate;

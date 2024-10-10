@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 
-export const SongCard = () => {
+const SongCard = () => {
 
     const image = require('@/assets/images/placeholder-image.png');
     const [releaseDate, setReleaseDate] = useState(new Date());
@@ -60,3 +60,5 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
 });
+
+export default SongCard;

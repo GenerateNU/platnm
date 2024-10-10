@@ -2,14 +2,20 @@ import { useEffect, useState } from "react";
 import {
   StyleSheet,
   View,
-  Text,
   TextInput,
-  TouchableWithoutFeedback,
-  Keyboard,
 } from "react-native";
 
-export function CommentRating() {
+interface StarRateProps {
+  onReviewChange: (value: string) => void;
+}
+
+const CommentRating = ({ onReviewChange }: StarRateProps) => {
   const [comment, setComment] = useState("");
+
+  const handleReview = (value: string) => {
+    setComment(value);
+    onReviewChange(value);
+  };
 
   return (
     <View style={styles.comment}>
@@ -19,7 +25,7 @@ export function CommentRating() {
         placeholderTextColor="#434343"
         placeholder="Provide your thoughts..."
         value={comment}
-        onChangeText={setComment}
+        onChangeText={handleReview}
       />
     </View>
   );
@@ -32,7 +38,7 @@ const styles = StyleSheet.create({
     padding: 20,
     color: "#434343",
     fontSize: 19,
-    height: "45%",
+    height: '35%'
   },
   input: {
     flex: 1,
@@ -40,3 +46,5 @@ const styles = StyleSheet.create({
     padding: 0,
   },
 });
+
+export default CommentRating;
