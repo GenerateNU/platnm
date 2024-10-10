@@ -59,7 +59,7 @@ func (r *RecommendationRepository) GetRecommendation(ctx context.Context, id str
 
 	row := r.QueryRow(ctx, `SELECT * FROM recommendation WHERE id = $1`, id)
 
-	err := row.Scan(&rec.ID, &rec.MediaType, &rec.MediaID, &rec.RecommendeeId, &rec.RecommenderId, &rec.Reaction, &rec.CreatedAt)
+	err := row.Scan(&rec.ID, &rec.MediaType, &rec.MediaID, &rec.RecommenderId, &rec.RecommendeeId, &rec.CreatedAt, &rec.Reaction)
 
 	if err != nil {
 		if err == sql.ErrNoRows {

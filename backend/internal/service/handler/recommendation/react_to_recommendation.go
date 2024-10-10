@@ -8,20 +8,18 @@ import (
 )
 
 type RecommendationReaction struct {
-	RecommendationID int    `json:"recommendation_id"`
-	UserID           string `json:"user_id"`
-	Reaction         bool   `json:"reaction"`
+	UserID   string `json:"user_id"`
+	Reaction bool   `json:"reaction"`
 }
 
 func (h *Handler) ReactToRecommendation(c *fiber.Ctx) error {
-
-	rec_id := c.Params("id")
+	rec_id := c.Params("recommendationId")
 	recommendation, err := h.recommendationRepository.GetRecommendation(c.Context(), rec_id)
 
 	reaction := RecommendationReaction{}
 
 	if err != nil {
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid recommendation ID.c"})
 	}
 
 	if recommendation == nil {
