@@ -24,6 +24,7 @@ type ReviewRepository interface {
 	GetExistingReview(ctx context.Context, id string) (*models.Review, error)
 	ReviewBelongsToUser(ctx context.Context, reviewID string, userID string) (bool, error)
 	GetReviewsByID(ctx context.Context, id string, media_type string) ([]*models.Review, error)
+	CreateComment(ctx context.Context, comment *models.Comment) (*models.Comment, error)
 }
 
 type MediaRepository interface {

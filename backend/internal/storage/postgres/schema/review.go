@@ -53,6 +53,12 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 	return review, nil
 }
 
+func (r *ReviewRepository) CreateComment(ctx context.Context, review *models.Comment) (*models.Comment, error) {
+	//TODO
+
+	return nil, nil
+}
+
 func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error) {
 
 	rows, err := r.Query(ctx, "SELECT * FROM review WHERE user_id = $1", id)
