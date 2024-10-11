@@ -2,6 +2,7 @@ package schema
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"platnm/internal/errs"
 	"platnm/internal/models"
@@ -50,6 +51,41 @@ func (r *RecommendationRepository) CreateRecommendation(ctx context.Context, rec
 	}
 
 	return recommendation, nil
+}
+
+func (r *RecommendationRepository) GetRecommendation(ctx context.Context, id string) (*models.Recommendation, error) {
+
+	var rec models.Recommendation
+
+	row := r.QueryRow(ctx, `SELECT * FROM recommendation WHERE id = $1`, id)
+
+	err := row.Scan(&rec.ID, &rec.MediaType, &rec.MediaID, &rec.RecommenderId, &rec.RecommendeeId, &rec.CreatedAt, &rec.Reaction)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &rec, nil
+
+}
+
+func (r *RecommendationRepository) UpdateRecommendation(ctx context.Context, recommendation *models.Recommendation) error {
+
+	query := `
+		UPDATE recommendation
+		SET reaction = $1
+		WHERE id = $2
+	`
+
+	_, err := r.Exec(ctx, query, recommendation.Reaction, recommendation.ID)
+
+	if err != nil {
+		return err
+	}
+	return nil
+
 }
 
 func NewRecommendationRepository(db *pgxpool.Pool) *RecommendationRepository {
