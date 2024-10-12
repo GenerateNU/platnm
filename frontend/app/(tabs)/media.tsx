@@ -20,10 +20,10 @@ export default function MediaScreen() {
   useEffect(() => {
     axios
       .get(`${BASE_URL}/media?sort=recent`)
-      .then((response) => setMedia(response.data[0]))
+      .then((response) => setMedia(response.data[0])) // TODO: update this hardcoding
       .catch((error) => console.error(error));
     axios
-      .get(`${BASE_URL}/reviews/track/1`)
+      .get(`${BASE_URL}/reviews/track/1`) // TODO: update this hardcoding
       .then((response) => {
         setReviews(response.data.reviews);
         setReviewAvgRating(response.data.avgRating || null);
@@ -46,7 +46,7 @@ export default function MediaScreen() {
           </ThemedView>
         </ThemedView>
         <ThemedView style={styles.titleContainer}>
-          {rating !== null && <ReviewStats rating={rating} reviews={reviews} />}
+          {rating && <ReviewStats rating={rating} reviews={reviews} />}
         </ThemedView>
         <ThemedView>
           <TopReview reviews={reviews} />

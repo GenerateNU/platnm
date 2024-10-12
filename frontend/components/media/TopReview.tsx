@@ -17,22 +17,14 @@ const TopReview = ({ reviews }: ReviewCardProps) => {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const [reviewUser, setReviewUser] = useState<User | null>(null);
 
-  console.log("hereherher");
-  console.log(topReview);
-
   useEffect(() => {
     if (topReview) {
       axios
         .get(`${BASE_URL}/users/${topReview.user_id}`)
-        .then((response) => {
-          console.log(response.data);
-          setReviewUser(response.data);
-        })
+        .then((response) => setReviewUser(response.data))
         .catch((error) => console.error(error));
     }
   }, [topReview]);
-
-  console.log(reviewUser);
 
   // TODO: THE RATINGS SHOULD EVENTUALLY BECOME SOME STARS MAYBE
   return (
