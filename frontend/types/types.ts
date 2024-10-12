@@ -25,11 +25,22 @@ type Media = Album | Track;
 
 type Review = {
   id: number;
-  userId: string;
-  mediaType: string;
-  mediaId: number;
+  user_id: string;
+  media_type: string;
+  media_id: number;
   rating: number;
   comment: string;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 };
+
+type User = {
+  id: string;
+  username: string;
+  display_name: string;
+  bio: string;
+  profile_picture: string;
+  linked_account: string;
+  created_at: string;
+  updated_at: string;
+}

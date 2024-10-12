@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { Button, StyleSheet, ScrollView } from "react-native";
+import { Button, StyleSheet, ScrollView, Text } from "react-native";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ThemedView } from "@/components/ThemedView";
 import MediaCard from "@/components/media/MediaCard";
 import ReviewStats from "@/components/media/ReviewStats";
+import TopReview from "@/components/media/TopReview";
 import axios from "axios";
 
 export default function MediaScreen() {
@@ -41,7 +42,10 @@ export default function MediaScreen() {
           </ThemedView>
         </ThemedView>
         <ThemedView style={styles.titleContainer}>
-          <ReviewStats />
+          <ReviewStats/>
+        </ThemedView>
+        <ThemedView>
+          <TopReview reviews={reviews}/>
         </ThemedView>
       </ScrollView>
     )
