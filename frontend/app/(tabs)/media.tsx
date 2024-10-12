@@ -31,7 +31,6 @@ export default function MediaScreen() {
       .catch((error) => console.error(error));
     }, []);
     
-  // TODO: HOOK UP THE BACKEND THE TOTAL NUMBER OF REVIEWS 
   return (
     media && (
       <ScrollView style={{ ...styles.scrollView, paddingTop: insets.top }}>
@@ -47,7 +46,7 @@ export default function MediaScreen() {
           </ThemedView>
         </ThemedView>
         <ThemedView style={styles.titleContainer}>
-        {rating !== null && <ReviewStats rating={rating} />}
+        {rating !== null && <ReviewStats rating={rating} reviews={reviews} />}
         </ThemedView>
         <ThemedView>
           <TopReview reviews={reviews}/>

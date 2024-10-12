@@ -2,13 +2,14 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
 type ReviewStatsProps = {
-  rating: number; // Expecting a number for the rating
+  rating: number;
+  reviews: Review[] 
 };
 
-const ReviewStats = ({ rating }: ReviewStatsProps) => {  return (
+const ReviewStats = ({ rating, reviews }: ReviewStatsProps) => {  return (
     <View style={styles.container}>
       <View style={styles.statContainer}>
-        <Text style={styles.statText}>10,000</Text>
+        <Text style={styles.statText}>{reviews.length}</Text>
         <Text>Total ratings</Text>
       </View>
       <View style={styles.statContainer}>
