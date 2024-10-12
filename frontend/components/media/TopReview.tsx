@@ -62,9 +62,9 @@ export default TopReview;
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: 18, 
-    fontWeight: 'bold',
-    color: '#333', 
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
     marginVertical: 8,
   },
   reviewBox: {

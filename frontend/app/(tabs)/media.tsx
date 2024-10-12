@@ -13,7 +13,7 @@ export default function MediaScreen() {
 
   const [media, setMedia] = useState<Media>();
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [rating, setReviewAvgRating] = useState<number | null>(null); 
+  const [rating, setReviewAvgRating] = useState<number | null>(null);
 
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -29,8 +29,8 @@ export default function MediaScreen() {
         setReviewAvgRating(response.data.avgRating || null);
       })
       .catch((error) => console.error(error));
-    }, []);
-    
+  }, []);
+
   return (
     media && (
       <ScrollView style={{ ...styles.scrollView, paddingTop: insets.top }}>
@@ -46,10 +46,10 @@ export default function MediaScreen() {
           </ThemedView>
         </ThemedView>
         <ThemedView style={styles.titleContainer}>
-        {rating !== null && <ReviewStats rating={rating} reviews={reviews} />}
+          {rating !== null && <ReviewStats rating={rating} reviews={reviews} />}
         </ThemedView>
         <ThemedView>
-          <TopReview reviews={reviews}/>
+          <TopReview reviews={reviews} />
         </ThemedView>
       </ScrollView>
     )

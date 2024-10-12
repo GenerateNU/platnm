@@ -3,10 +3,11 @@ import { View, Text, StyleSheet } from "react-native";
 
 type ReviewStatsProps = {
   rating: number;
-  reviews: Review[] 
+  reviews: Review[];
 };
 
-const ReviewStats = ({ rating, reviews }: ReviewStatsProps) => {  return (
+const ReviewStats = ({ rating, reviews }: ReviewStatsProps) => {
+  return (
     <View style={styles.container}>
       <View style={styles.statContainer}>
         <Text style={styles.statText}>{reviews.length}</Text>
