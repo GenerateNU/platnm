@@ -3,7 +3,6 @@ package reviews
 import (
 	"fmt"
 	"platnm/internal/models"
-	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -11,15 +10,8 @@ import (
 func (h *Handler) GetReviewsById(c *fiber.Ctx, mediaType string) error {
 	var id = c.Params("id")
 
-	page, err := strconv.Atoi(c.Query("page", "0"))
-	if err != nil {
-		return err
-	}
-
-	limit, err := strconv.Atoi(c.Query("limit", "10"))
-	if err != nil {
-		return err
-	}
+	page := c.QueryInt("page", 0)
+	limit := c.QueryInt("limit", 20)
 
 	// Even though we are paginating the reviews we need to get all the reviews in order to calculate average rating
 	// Fetch the review based on ID and media type
