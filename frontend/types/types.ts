@@ -40,7 +40,7 @@ type User = {
   display_name: string;
   bio: string;
   profile_picture: string;
-  linked_account: string;
+  linked_ccount: string;
   created_at: string;
   updated_at: string;
 }

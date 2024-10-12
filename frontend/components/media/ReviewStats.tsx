@@ -1,8 +1,11 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
-const ReviewStats = () => {
-  return (
+type ReviewStatsProps = {
+  rating: number; // Expecting a number for the rating
+};
+
+const ReviewStats = ({ rating }: ReviewStatsProps) => {  return (
     <View style={styles.container}>
       <View style={styles.statContainer}>
         <Text style={styles.statText}>10,000</Text>
@@ -10,7 +13,7 @@ const ReviewStats = () => {
       </View>
       <View style={styles.statContainer}>
         <View>
-          <Text style={styles.statText}>4.5 / 5</Text>
+          <Text style={styles.statText}>{rating}</Text>
           {/* <Icon></Icon> */}
         </View>
         <Text>Avg. rating</Text>

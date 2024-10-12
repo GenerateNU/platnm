@@ -13,6 +13,7 @@ export default function MediaScreen() {
 
   const [media, setMedia] = useState<Media>();
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [rating, setReviewAvgRating] = useState<number | null>(null); 
 
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -23,10 +24,14 @@ export default function MediaScreen() {
       .catch((error) => console.error(error));
     axios
       .get(`${BASE_URL}/reviews/track/1`)
-      .then((response) => setReviews(response.data.reviews))
+      .then((response) => {
+        setReviews(response.data.reviews);
+        setReviewAvgRating(response.data.avgRating || null);
+      })
       .catch((error) => console.error(error));
-  }, []);
-
+    }, []);
+    
+  // TODO: HOOK UP THE BACKEND THE TOTAL NUMBER OF REVIEWS 
   return (
     media && (
       <ScrollView style={{ ...styles.scrollView, paddingTop: insets.top }}>
@@ -42,7 +47,7 @@ export default function MediaScreen() {
           </ThemedView>
         </ThemedView>
         <ThemedView style={styles.titleContainer}>
-          <ReviewStats/>
+        {rating !== null && <ReviewStats rating={rating} />}
         </ThemedView>
         <ThemedView>
           <TopReview reviews={reviews}/>
