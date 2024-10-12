@@ -1,0 +1,2 @@
+ALTER TABLE artist ADD COLUMN spotify_id TEXT UNIQUE;
+ALTER TABLE album ADD COLUMN spotify_id TEXT UNIQUE;

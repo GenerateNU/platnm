@@ -22,6 +22,19 @@ const (
 	uniqueUserMediaConstraint = "unique_user_media"
 )
 
+
+func (r *ReviewRepository) ReviewExists(ctx context.Context, id string) (bool, error) {
+	rows, err := r.Query(ctx, `SELECT * FROM review WHERE id = $1`, id)
+	if err != nil {
+		return false, err
+	}
+	if rows.Next() {
+		return true, nil
+	}
+
+	return false, nil
+}
+
 // CreateReview creates a new review in the database
 // Handles both published and draft reviews
 func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Review) (*models.Review, error) {

@@ -52,9 +52,10 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	})
 
 	app.Route("/reviews", func(r fiber.Router) {
-		reviewHandler := reviews.NewHandler(repository.Review, repository.User)
+		reviewHandler := reviews.NewHandler(repository.Review, repository.User, repository.UserReviewVote)
 		r.Post("/", reviewHandler.CreateReview)
 		r.Get("/:id", reviewHandler.GetReviewsByUserID)
+		r.Post("/vote/:rating", reviewHandler.VoteReview)
 		r.Patch("/:id", reviewHandler.UpdateReviewByReviewID)
 		r.Get("/album/:id", func(c *fiber.Ctx) error {
 			return reviewHandler.GetReviewsById(c, "album")
@@ -73,6 +74,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	recommendationHandler := recommendation.NewHandler(repository.Recommendation)
 	app.Route("/recommendation", func(r fiber.Router) {
 		r.Post("/", recommendationHandler.CreateRecommendation)
+		r.Patch("/:recommendationId", recommendationHandler.ReactToRecommendation)
 	})
 
 	// this store can be passed to other oauth handlers that need to manage state/verifier values
@@ -93,11 +95,12 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	})
 
 	app.Route("/spotify", func(r fiber.Router) {
-		h := spotify_handler.NewHandler()
+		h := spotify_handler.NewHandler(repository.Media)
 		m := spotify_middleware.NewMiddleware(config.Spotify)
 
 		r.Use(m.WithSpotifyClient())
 		r.Get("/", h.GetPlatnmPlaylist)
+		r.Get("/new-releases", h.NewReleases)
 	})
 }
 
