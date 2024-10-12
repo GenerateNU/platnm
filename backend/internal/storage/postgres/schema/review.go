@@ -22,6 +22,8 @@ const (
 	uniqueUserMediaConstraint = "unique_user_media"
 )
 
+// CreateReview creates a new review in the database
+// Handles both published and draft reviews
 func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Review) (*models.Review, error) {
 	query := `
 	WITH media_check AS (

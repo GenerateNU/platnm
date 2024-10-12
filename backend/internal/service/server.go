@@ -62,7 +62,6 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Get("/track/:id", func(c *fiber.Ctx) error {
 			return reviewHandler.GetReviewsById(c, "track")
 		})
-		r.Post("/draft", reviewHandler.CreateReview)
 	})
 
 	mediaHandler := media.NewHandler(repository.Media)
