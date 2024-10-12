@@ -5,9 +5,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/jackc/pgx/v5"
 	"platnm/internal/errs"
 	"platnm/internal/models"
+
+	"github.com/jackc/pgx/v5"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -32,13 +33,13 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 		FROM album
 		WHERE id = $2 AND $3 = 'album'
 	)
-	INSERT INTO review (user_id, media_id, media_type, rating, comment)
-	SELECT $1, $2, $3::media_type, $4, $5
+	INSERT INTO review (user_id, media_id, media_type, rating, comment, draft)
+	SELECT $1, $2, $3::media_type, $4, $5, $6
 	FROM media_check
 	RETURNING id, created_at, updated_at;
 	`
 
-	if err := r.QueryRow(ctx, query, review.UserID, review.MediaID, review.MediaType, review.Rating, review.Comment).Scan(&review.ID, &review.CreatedAt, &review.UpdatedAt); err != nil {
+	if err := r.QueryRow(ctx, query, review.UserID, review.MediaID, review.MediaType, review.Rating, review.Comment, review.Draft).Scan(&review.ID, &review.CreatedAt, &review.UpdatedAt); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, errs.NotFound(string(review.MediaType), "id", review.MediaID)
 		} else if errs.IsUniqueViolation(err, uniqueUserMediaConstraint) {
