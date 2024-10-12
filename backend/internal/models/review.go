@@ -11,4 +11,5 @@ type Review struct {
 	Comment   string    `json:"comment"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	Draft     bool      `json:"draft"`
 }
