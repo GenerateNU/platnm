@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"platnm/internal/auth"
+	"platnm/internal/errs"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -18,9 +19,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 	var loginData LoginRequest
 
 	if err := c.BodyParser(&loginData); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Failed to parse request body",
-		})
+		return errs.BadRequest("failed to parse request body")
 	}
 
 	email := loginData.Email
@@ -29,9 +28,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 	authToken, err := auth.GetAuthToken(&h.config, email, password)
 
 	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "Failed to authenticate user",
-		})
+		return errs.BadRequest("failed to authenticate user")
 	}
 
 	return c.Status(http.StatusOK).JSON(fiber.Map{

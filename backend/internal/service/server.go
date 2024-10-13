@@ -2,6 +2,7 @@ package service
 
 import (
 	"net/http"
+	"platnm/internal/auth"
 	"platnm/internal/config"
 	"platnm/internal/constants"
 	"platnm/internal/errs"
@@ -80,6 +81,9 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		})
 	})
 
+	app.Get("/secret", auth.Middleware(&config.Supabase), func(c *fiber.Ctx) error {
+		return c.SendStatus(http.StatusOK)
+	})
 }
 
 func setupApp() *fiber.App {

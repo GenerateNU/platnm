@@ -1,69 +1,33 @@
-import { useEffect, useState } from "react";
-import { Auth } from "@supabase/auth-ui-react";
-import { User, createClient } from "@supabase/supabase-js";
-import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_ID } from "@env";
+import { useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_ID, BASE_URL } from "@env";
 import { View, Text, Alert, Button, TextInput, StyleSheet, Touchable, TouchableOpacity } from "react-native";
 import axios from "axios";
+import { useAuthContext } from "@/components/AuthProvider";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export default function Login() {
-  const [user, setUser] = useState<User>();
-
-  useEffect(() => {
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN") {
-        console.log("Signed in");
-        console.log(session?.user);
-        setUser(session?.user);
-      }
-    });
-  }, []);
-
-  return user ? <LoggedIn /> : <LoggedOut />;
-}
-
-function LoggedIn() {
-  const [ourSecretData, setOutSecretData] = useState("not secret right now");
-
-  // Perform a request to the backend (with a protected route) to get the secret data
-  useEffect(() => {
-    console.log('useEffect called');
-    axios.post("http://localhost:8080/secret")
-    .then((res) => {
-      console.log('res:', res.data.secret);
-      setOutSecretData(res.data.secret);
-    })
-    .catch((error) => {
-      console.error('Error fetching data:', error);
-    });
-    console.log('fetch called');
-  }, []);
-
-  return (
-    <View>
-      <Text style={styles.secretText}>{ourSecretData}</Text>
-    </View>
-  );
-}
-
-const LoggedOut = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { updateAccessToken } = useAuthContext();
 
-  // Sign-in function using Supabase
+
   const handleSignIn = async () => {
     setLoading(true);
 
-    await axios.post("http://10.110.235.22:8080/auth/platnm/login", {
+    await axios.post(`http://10.110.235.22:8080/auth/platnm/login`, {
       email: email,
       password: password,
     })
     .then ((res) => {
-      console.log('res:', res.data);
+      if (res.data.error) {
+        Alert.alert('Error', res.data.error);
+        return;
+      }
       Alert.alert('Success', 'You are now signed in!');
+      updateAccessToken(res.data.token);
     })
     .catch((error) => {
       console.error('Error logging in:', error);

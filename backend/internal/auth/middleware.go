@@ -3,6 +3,7 @@ package auth
 import (
 	"fmt"
 	"platnm/internal/config"
+	"platnm/internal/errs"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -34,19 +35,19 @@ func parseJWTToken(token string, hmacSecret []byte) (email string, err error) {
 
 func Middleware(cfg *config.Supabase) fiber.Handler {
 
-	return func(ctx *fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
 
-		token := ctx.Get("Authorization", "")
+		token := c.Get("Authorization", "")
 		token = strings.TrimPrefix(token, "Bearer ")
 
 		if token == "" {
-			return ctx.Status(400).JSON(fiber.Map{"code": "unauthorized, token not found"})
+			return errs.BadRequest("token not found")
 		}
 		_, err := parseJWTToken(token, []byte(cfg.JWTSecret))
 
 		if err != nil {
-			return ctx.Status(400).JSON(fiber.Map{"code": "unauthorized, error parsing token"})
+			return errs.BadRequest("error parsing token")
 		}
-		return ctx.Next()
+		return c.Next()
 	}
 }

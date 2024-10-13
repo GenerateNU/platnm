@@ -7,64 +7,74 @@ import (
 	"io"
 	"net/http"
 	"platnm/internal/config"
+	"platnm/internal/errs"
 )
 
 type SignInResponse struct {
 	AccessToken  string      `json:"access_token"`
 	TokenType    string      `json:"token_type"`
-	RefreshToken string      `json:"refresh_token"`
 	ExpiresIn    int         `json:"expires_in"`
+	RefreshToken string      `json:"refresh_token"`
 	User         interface{} `json:"user"`
 	Error        interface{} `json:"error"`
 }
 
-func GetAuthToken(config *config.Supabase, email string, password string) (string, error) {
+func GetAuthToken(cfg *config.Supabase, email string, password string) (string, error) {
 
-	supabaseURL := config.URL
-	apiKey := config.Key
+	supabaseURL := cfg.URL
+	apiKey := cfg.Key
 
+	// Prepare the request payload
 	payload := map[string]string{
 		"email":    email,
 		"password": password,
 	}
-	jsonData, err := json.Marshal(payload)
+	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
-		return "", fmt.Errorf("failed to marshal payload: %v", err)
+		return "", err
 	}
 
-	req, err := http.NewRequest("POST", fmt.Sprintf("%s/auth/v1/token?grant_type=password", supabaseURL), bytes.NewBuffer(jsonData))
+	// Create the HTTP POST request
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/auth/v1/token?grant_type=password", supabaseURL), bytes.NewBuffer(payloadBytes))
 	if err != nil {
-		return "", fmt.Errorf("failed to create HTTP request: %v", err)
+		return "", err
 	}
 
-	req.Header.Set("apikey", apiKey)
+	// Set headers
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("apikey", apiKey)
 
+	// Execute the request
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("failed to make HTTP request: %v", err)
+		return "", errs.BadRequest("failed to execute request")
 	}
 	defer resp.Body.Close()
 
+	// Read the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("failed to read response body: %v", err)
+		return "", errs.BadRequest("failed to read response body")
 	}
 
+	// Check if the response was successful
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("error: status code %d, body: %s", resp.StatusCode, body)
+		return "", errs.BadRequest(fmt.Sprintf("failed to login %d, %s", resp.StatusCode, body))
 	}
 
-	var signInResp SignInResponse
-	err = json.Unmarshal(body, &signInResp)
+	// Parse the response JSON
+	var signInResponse SignInResponse
+	err = json.Unmarshal(body, &signInResponse)
 	if err != nil {
-		return "", fmt.Errorf("failed to unmarshal response: %v", err)
+		return "", errs.BadRequest("failed to parse response body")
 	}
 
-	if signInResp.Error != nil {
-		return "", fmt.Errorf("error in response: %v", signInResp.Error)
+	// Make sure response does not contain an error
+	if signInResponse.Error != nil {
+		return "", errs.BadRequest(fmt.Sprintf("sign in response error %v", signInResponse.Error))
 	}
 
-	return signInResp.AccessToken, nil
+	// Return the access token
+	return signInResponse.AccessToken, nil
 }
