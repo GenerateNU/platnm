@@ -86,6 +86,10 @@ func (h *Handler) GetUserProfile(c *fiber.Ctx) error {
 	}
 
 	profile, err := h.userRepository.GetUserProfile(c.Context(), userUUID)
+	if err != nil {
+		print(err.Error(), "unable to fetch profile ")
+		return err
+	}
 
 	return c.Status(fiber.StatusOK).JSON(profile)
 
