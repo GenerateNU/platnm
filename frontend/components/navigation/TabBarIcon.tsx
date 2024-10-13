@@ -3,17 +3,21 @@ import { View, StyleSheet, Animated } from 'react-native';
 import { useColorScheme } from 'react-native';
 
 interface TabBarIconProps {
-  Icon: React.FC<{ style?: React.CSSProperties }>; // Expecting a functional SVG component
+  Icon: React.FC<{ style?: React.CSSProperties }>; 
   focused: boolean;
 }
 
 const TabBarIcon: React.FC<TabBarIconProps> = ({ Icon, focused }) => {
   const colorScheme = useColorScheme();
-  const dotColor = colorScheme === 'dark' ? '#D3D3D3' : '#1C1B1F';
   
+  // Define colors based on the color scheme
+  const activeColor = colorScheme === 'dark' ? '#D3D3D3' : '#1E1E1E'; // selected
+  const inactiveColor = colorScheme === 'dark' ? '#B0B0B0' : '#A09CAB'; // Light gray in dark mode
+  const dotColor = colorScheme === 'dark' ? '#D3D3D3' : '#1C1B1F'; // Dot color based on mode
+
   const dotPosition = useRef(new Animated.Value(0)).current;
   const iconY = useRef(new Animated.Value(0)).current;
-  const opacity = focused ? 0.9 : 0.6; // Change opacity based on focus
+  const opacity = focused ? 0.9 : 0.6; // Opacity based on focus
 
   useEffect(() => {
     Animated.parallel([
@@ -33,8 +37,12 @@ const TabBarIcon: React.FC<TabBarIconProps> = ({ Icon, focused }) => {
   return (
     <View style={styles.container}>
       <Animated.View style={{ transform: [{ translateY: iconY }] }}>
-      <Icon style={{ color: focused ? '#1E1E1E' : '#A09CAB' , opacity}} />
-
+        <Icon
+          style={{
+            color: focused ? activeColor : inactiveColor,
+            opacity,
+          }}
+        />
       </Animated.View>
       {focused && (
         <Animated.View

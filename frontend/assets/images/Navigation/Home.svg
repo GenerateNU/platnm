@@ -1,5 +1,5 @@
 <svg width="20" height="18" viewBox="0 0 20 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g opacity="1">
-<path d="M10 3.19L15 7.69V15.5H13V9.5H7V15.5H5V7.69L10 3.19ZM10 0.5L0 9.5H3V17.5H9V11.5H11V17.5H17V9.5H20L10 0.5Z" fill="#1C1B1F" style="fill:#1C1B1F;fill:color(display-p3 0.1098 0.1059 0.1216);fill-opacity:1;"/>
-</g>
+  <g>
+    <path d="M10 3.19L15 7.69V15.5H13V9.5H7V15.5H5V7.69L10 3.19ZM10 0.5L0 9.5H3V17.5H9V11.5H11V17.5H17V9.5H20L10 0.5Z" fill="currentColor" />
+  </g>
 </svg>
