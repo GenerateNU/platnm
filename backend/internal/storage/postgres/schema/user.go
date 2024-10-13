@@ -139,9 +139,10 @@ func (r *UserRepository) CalculateScore(ctx context.Context, id uuid.UUID) (int,
 
 func (r *UserRepository) GetUserProfile(ctx context.Context, id uuid.UUID) (*models.Profile, error) {
 	profile := &models.Profile{}
-	query := `SELECT u.id, u.username, u.bio, COUNT(f.follower_id) AS follower_count, COUNT(f.followee_id) AS followed_count
+	query := `SELECT u.id, u.username, u.bio, COUNT(DISTINCT followers.follower_id) AS follower_count, COUNT(DISTINCT followed.followee_id) AS followed_count
 		FROM "user" u
-		LEFT JOIN follower f ON f.follower_id = u.id
+		LEFT JOIN follower followers ON followers.followee_id = u.id
+		LEFT JOIN follower followed ON followed.follower_id = u.id
 		WHERE u.id = $1
 		GROUP BY u.id, u.username;`
 
