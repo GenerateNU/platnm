@@ -10,6 +10,7 @@ import (
 type UserRepository interface {
 	GetUsers(ctx context.Context) ([]*models.User, error)
 	GetUserByID(ctx context.Context, id string) (*models.User, error)
+	GetUserProfile(ctx context.Context, id uuid.UUID) (*models.Profile, error)
 	UserExists(ctx context.Context, id string) (bool, error)
 	FollowExists(ctx context.Context, follower uuid.UUID, following uuid.UUID) (bool, error)
 	Follow(ctx context.Context, follower uuid.UUID, following uuid.UUID) (bool, error)
