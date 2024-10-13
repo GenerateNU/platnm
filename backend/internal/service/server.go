@@ -75,6 +75,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	recommendationHandler := recommendation.NewHandler(repository.Recommendation)
 	app.Route("/recommendation", func(r fiber.Router) {
 		r.Post("/", recommendationHandler.CreateRecommendation)
+		r.Patch("/:recommendationId", recommendationHandler.ReactToRecommendation)
 	})
 
 	// this store can be passed to other oauth handlers that need to manage state/verifier values
