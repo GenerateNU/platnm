@@ -1,5 +1,5 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { StyleSheet, Image, Platform } from "react-native";
+import { StyleSheet } from "react-native";
 
 import { Collapsible } from "@/components/Collapsible";
 import { ExternalLink } from "@/components/ExternalLink";
@@ -18,10 +18,9 @@ export default function SearchScreen() {
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Search</ThemedText>
       </ThemedView>
-      <ThemedText>
-        This is where search goes.
-      </ThemedText>
-    </ParallaxScrollView> );
+      <ThemedText>This is where search goes.</ThemedText>
+    </ParallaxScrollView>
+  );
 }
 
 const styles = StyleSheet.create({
