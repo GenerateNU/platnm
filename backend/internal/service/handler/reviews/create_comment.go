@@ -30,6 +30,10 @@ func (h *Handler) CreateComment(c *fiber.Ctx) error {
 	// get the existing review (convert the review_id from int to string)
 	existingReview, err := h.reviewRepository.GetExistingReview(c.Context(), strconv.Itoa(req.ReviewID))
 
+	if err != nil {
+		return err
+	}
+
 	if existingReview == nil {
 		return errs.NotFound("Review", "id", req.ReviewID)
 	}
