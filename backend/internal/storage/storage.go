@@ -43,6 +43,7 @@ type RecommendationRepository interface {
 	CreateRecommendation(ctx context.Context, recommendation *models.Recommendation) (*models.Recommendation, error)
 	GetRecommendation(ctx context.Context, id string) (*models.Recommendation, error)
 	UpdateRecommendation(ctx context.Context, recommendation *models.Recommendation) (error)
+	GetRecommendations(ctx context.Context, id string) ([]*models.Recommendation, error)
 }
 
 type VoteRepository interface {

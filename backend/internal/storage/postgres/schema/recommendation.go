@@ -71,6 +71,39 @@ func (r *RecommendationRepository) GetRecommendation(ctx context.Context, id str
 
 }
 
+func (r *RecommendationRepository) GetRecommendations(ctx context.Context, id string) ([]*models.Recommendation, error) {
+	rows, err := r.Query(ctx, "SELECT * from recommendation WHERE recomendee_id = $1",id)
+	
+	if err != nil {
+		return []*models.Recommendation{}, err
+	}
+
+	defer rows.Close()
+
+	var recs []*models.Recommendation
+	for rows.Next() {
+		var recommendation models.Recommendation
+
+		if err := rows.Scan(
+			&recommendation.ID,
+			&recommendation.MediaType,
+			&recommendation.MediaID,
+			&recommendation.RecommendeeID,
+			&recommencation.RecommenderID.
+			&recommendation.Reaction,
+			&recommendation.CreatedAt); err != nil {
+				return nil, err
+			}
+		recs = append(recs, &recommendation)
+	}
+
+	if err := rows.Err(); err != nill {
+		print(err.Error(), "recommentation Err")
+		return []*models.Recommendation{}, err
+	}
+	return recs, nil
+}
+
 func (r *RecommendationRepository) UpdateRecommendation(ctx context.Context, recommendation *models.Recommendation) error {
 
 	query := `
