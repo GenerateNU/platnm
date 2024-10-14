@@ -53,10 +53,19 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 	return review, nil
 }
 
-func (r *ReviewRepository) CreateComment(ctx context.Context, review *models.Comment) (*models.Comment, error) {
-	//TODO
+func (r *ReviewRepository) CreateComment(ctx context.Context, comment *models.Comment) (*models.Comment, error) {
+	query := `
+    INSERT INTO comment (text, review_id, user_id, created_at)
+    VALUES ($1, $2, $3, NOW())
+    RETURNING id, text, review_id, user_id, created_at;
+`
 
-	return nil, nil
+	if err := r.QueryRow(ctx, query, comment.Text, comment.ReviewID, comment.UserID).Scan(
+		&comment.ID, &comment.Text, &comment.ReviewID, &comment.UserID, &comment.CreatedAt); err != nil {
+		return nil, err
+	}
+
+	return comment, nil
 }
 
 func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error) {
