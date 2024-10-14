@@ -12,15 +12,7 @@ type createRecommendationRequest struct {
 	models.Recommendation
 }
 
-type Handler struct {
-	recommendationRepository storage.RecommendationRepository
-}
 
-func NewHandler(recommendationRepository storage.RecommendationRepository) *Handler {
-	return &Handler{
-		recommendationRepository,
-	}
-}
 
 func (h *Handler) CreateRecommendation(c *fiber.Ctx) error {
 	var req createRecommendationRequest
