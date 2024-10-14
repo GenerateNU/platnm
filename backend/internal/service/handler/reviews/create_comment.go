@@ -1,11 +1,9 @@
 package reviews
 
 import (
+	"github.com/gofiber/fiber/v2"
 	"platnm/internal/errs"
 	"platnm/internal/models"
-	"strconv"
-
-	"github.com/gofiber/fiber/v2"
 )
 
 type createComment struct {
@@ -25,17 +23,6 @@ func (h *Handler) CreateComment(c *fiber.Ctx) error {
 		return errs.BadRequest("user_id is required")
 	} else if req.Text == "" {
 		return errs.BadRequest("text is required")
-	}
-
-	// get the existing review (convert the review_id from int to string)
-	existingReview, err := h.reviewRepository.GetExistingReview(c.Context(), strconv.Itoa(req.ReviewID))
-
-	if err != nil {
-		return err
-	}
-
-	if existingReview == nil {
-		return errs.NotFound("Review", "id", req.ReviewID)
 	}
 
 	// Create the comment in the repository

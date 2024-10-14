@@ -17,8 +17,10 @@ type ReviewRepository struct {
 }
 
 const (
-	userFKeyConstraint        = "review_user_id_fkey"
-	uniqueUserMediaConstraint = "unique_user_media"
+	userFKeyConstraint          = "review_user_id_fkey"
+	uniqueUserMediaConstraint   = "unique_user_media"
+	commentUserFKeyConstraint   = "fk_user"
+	commentReviewFKeyConstraint = "fk_review"
 )
 
 func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Review) (*models.Review, error) {
@@ -62,6 +64,12 @@ func (r *ReviewRepository) CreateComment(ctx context.Context, comment *models.Co
 
 	if err := r.QueryRow(ctx, query, comment.Text, comment.ReviewID, comment.UserID).Scan(
 		&comment.ID, &comment.Text, &comment.ReviewID, &comment.UserID, &comment.CreatedAt); err != nil {
+		if errs.IsForeignKeyViolation(err, commentUserFKeyConstraint) {
+			return nil, errs.NotFound("user", "id", comment.UserID)
+		} else if errs.IsForeignKeyViolation(err, commentReviewFKeyConstraint) {
+			return nil, errs.NotFound("review", "id", comment.UserID)
+		}
+
 		return nil, err
 	}
 
