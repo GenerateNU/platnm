@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createClient } from "@supabase/supabase-js";
-import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_ID, BASE_URL } from "@env";
+import { SUPABASE_URL, SUPABASE_ANON_KEY, BASE_URL } from "@env";
 import {
   View,
   Text,
@@ -26,7 +26,7 @@ export default function Login() {
     setLoading(true);
 
     await axios
-      .post(`http://10.110.235.22:8080/auth/platnm/login`, {
+      .post(`${BASE_URL}/auth/platnm/login`, {
         email: email,
         password: password,
       })
