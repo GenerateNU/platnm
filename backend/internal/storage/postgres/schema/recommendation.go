@@ -88,8 +88,8 @@ func (r *RecommendationRepository) GetRecommendations(ctx context.Context, id st
 			&recommendation.ID,
 			&recommendation.MediaType,
 			&recommendation.MediaID,
-			&recommendation.RecommendeeID,
-			&recommencation.RecommenderID.
+			&recommendation.RecommendeeId,
+			&recommendation.RecommenderId,
 			&recommendation.Reaction,
 			&recommendation.CreatedAt); err != nil {
 				return nil, err
@@ -97,7 +97,7 @@ func (r *RecommendationRepository) GetRecommendations(ctx context.Context, id st
 		recs = append(recs, &recommendation)
 	}
 
-	if err := rows.Err(); err != nill {
+	if err := rows.Err(); err != nil {
 		print(err.Error(), "recommentation Err")
 		return []*models.Recommendation{}, err
 	}

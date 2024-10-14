@@ -1,14 +1,12 @@
 package recommendation
 
 import (
-	"platnm/internal/models"
 	"github.com/gofiber/fiber/v2"
 	"platnm/internal/errs"
 )
 
-func (h *Handler) GetRecommendations(c *fiber.Ctx, id string) error {
+func (h *Handler) GetRecommendations(c *fiber.Ctx) error {
 	var id = c.Params("id")
-
 	exists, userErr := h.userRepository.UserExists(c.Context(), id)
 	if userErr != nil {
 		return userErr
@@ -20,5 +18,5 @@ func (h *Handler) GetRecommendations(c *fiber.Ctx, id string) error {
 	if err != nil {
 		return err
 	}
-	return c.Status(fiber.StatusO).JSON(recommendations)
+	return c.Status(fiber.StatusOK).JSON(recommendations)
 }
