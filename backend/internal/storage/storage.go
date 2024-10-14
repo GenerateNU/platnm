@@ -37,12 +37,13 @@ type MediaRepository interface {
 	GetExistingAlbumBySpotifyID(ctx context.Context, id string) (*int, error)
 	AddAlbum(ctx context.Context, artist *models.Album) (*models.Album, error)
 	AddAlbumArtist(ctx context.Context, albumId int, artistId int) error
+	AddTrack(ctx context.Context, track *models.Track) (*models.Track, error)
 }
 
 type RecommendationRepository interface {
 	CreateRecommendation(ctx context.Context, recommendation *models.Recommendation) (*models.Recommendation, error)
 	GetRecommendation(ctx context.Context, id string) (*models.Recommendation, error)
-	UpdateRecommendation(ctx context.Context, recommendation *models.Recommendation) (error)
+	UpdateRecommendation(ctx context.Context, recommendation *models.Recommendation) error
 }
 
 type VoteRepository interface {

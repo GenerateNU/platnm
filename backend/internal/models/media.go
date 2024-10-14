@@ -36,6 +36,7 @@ type Album struct {
 type Track struct {
 	MediaType   MediaType `json:"media_type"`
 	ID          int       `json:"id"`
+	SpotifyID   string    `json:"spotify_id"`
 	AlbumID     int       `json:"album_id"`
 	AlbumTitle  string    `json:"album_title"`
 	Title       string    `json:"title"`

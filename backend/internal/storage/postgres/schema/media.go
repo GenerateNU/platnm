@@ -172,6 +172,19 @@ func (r *MediaRepository) AddAlbum(ctx context.Context, album *models.Album) (*m
 	return album, nil
 }
 
+func (r *MediaRepository) AddTrack(ctx context.Context, track *models.Track) (*models.Track, error) {
+	query :=
+		`INSERT INTO track (album_id, title, duration_seconds, spotify_id)
+		 VALUES ($1, $2, $3, $4)
+		 RETURNING id;`
+
+	if err := r.QueryRow(ctx, query, track.AlbumID, track.Title, track.Duration, track.SpotifyID).Scan(&track.ID); err != nil {
+		return nil, err
+	}
+
+	return track, nil
+}
+
 func (r *MediaRepository) AddAlbumArtist(ctx context.Context, albumId int, artistId int) error {
 	query :=
 		`INSERT INTO album_artist (album_id, artist_id)

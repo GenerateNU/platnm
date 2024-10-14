@@ -3,6 +3,7 @@ package spotify
 import (
 	"context"
 	"errors"
+	"fmt"
 	"platnm/internal/models"
 	"platnm/internal/service/ctxt"
 	"sync"
@@ -41,7 +42,16 @@ func (h *SpotifyHandler) NewReleases(c *fiber.Ctx) error {
 		wg.Add(1)
 		go func(album spotify.SimpleAlbum) {
 			defer wg.Done()
-			if err := h.handleAlbum(c.Context(), &wg, album, albums, artists, errCh); err != nil {
+			albumId, err := h.handleAlbum(c.Context(), &wg, album, albums, artists, errCh)
+
+			if err != nil {
+				select {
+				case errCh <- err:
+				default:
+				}
+			}
+			err = h.handleTracks(c, *albumId, album.ID)
+			if err != nil {
 				select {
 				case errCh <- err:
 				default:
@@ -81,14 +91,14 @@ func (h *SpotifyHandler) NewReleases(c *fiber.Ctx) error {
 		)
 }
 
-func (h *SpotifyHandler) handleAlbum(ctx context.Context, wg *sync.WaitGroup, album spotify.SimpleAlbum, albums chan<- models.Album, artists chan<- models.Artist, errCh chan<- error) error {
+func (h *SpotifyHandler) handleAlbum(ctx context.Context, wg *sync.WaitGroup, album spotify.SimpleAlbum, albums chan<- models.Album, artists chan<- models.Artist, errCh chan<- error) (*int, error) {
 	albumId, err := h.mediaRepository.GetExistingAlbumBySpotifyID(ctx, album.ID.String())
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if albumId != nil {
-		return nil
+		return albumId, nil
 	}
 
 	addedAlbum, err := h.mediaRepository.AddAlbum(ctx, &models.Album{
@@ -99,7 +109,7 @@ func (h *SpotifyHandler) handleAlbum(ctx context.Context, wg *sync.WaitGroup, al
 		Cover:       album.Images[0].URL,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	for _, artist := range album.Artists {
@@ -118,7 +128,7 @@ func (h *SpotifyHandler) handleAlbum(ctx context.Context, wg *sync.WaitGroup, al
 
 	albums <- *addedAlbum
 
-	return nil
+	return &addedAlbum.ID, nil
 
 }
 
@@ -163,4 +173,40 @@ func fetchNewReleasesFromSpotify(c *fiber.Ctx) (*spotify.SimpleAlbumPage, error)
 	limit := c.QueryInt("limit", 20)
 
 	return client.NewReleases(c.Context(), spotify.Limit(limit))
+}
+
+func fetchAlbumTracksFromSpotify(c *fiber.Ctx, id spotify.ID) (*spotify.SimpleTrackPage, error) {
+	client, err := ctxt.GetSpotifyClient(c)
+	if err != nil {
+		return &spotify.SimpleTrackPage{}, err
+	}
+
+	return client.GetAlbumTracks(c.Context(), id)
+}
+
+func (h *SpotifyHandler) handleTracks(c *fiber.Ctx, albumId int, spotifyID spotify.ID) error {
+	// artistId, err := h.mediaRepository.GetExistingArtistBySpotifyID(ctx, tracks.Tracks[0])
+	tracks, err := fetchAlbumTracksFromSpotify(c, spotifyID)
+	fmt.Println(tracks)
+	if err != nil {
+		return err
+	}
+	// first pass: just add tracks to db
+	for _, t := range tracks.Tracks {
+		track := models.Track{
+			SpotifyID: t.ID.String(),
+			AlbumID:   albumId,
+			Title:     t.Name,
+			Duration:  int(t.Duration / 1000),
+		}
+
+		trackResult, err := h.mediaRepository.AddTrack(c.Context(), &track)
+		if err != nil {
+			return err
+		}
+		fmt.Println(trackResult)
+
+	}
+
+	return nil
 }
