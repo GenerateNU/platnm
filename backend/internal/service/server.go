@@ -49,6 +49,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Get("/:id", userHandler.GetUserById)
 		r.Post("/follow", userHandler.FollowUnfollowUser)
 		r.Get("/score/:id", userHandler.CalculateScore)
+		r.Post("/", userHandler.CreateUser)
 	})
 
 	app.Route("/reviews", func(r fiber.Router) {

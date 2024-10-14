@@ -137,6 +137,14 @@ func (r *UserRepository) CalculateScore(ctx context.Context, id uuid.UUID) (int,
 	return score, nil
 }
 
+func (r *UserRepository) CreateUser(ctx context.Context, user models.User) (models.User, error) {
+	if err := r.db.QueryRow(ctx, `INSERT INTO "user" (username, display_name, email) VALUES ($1, $2, $3) RETURNING id`, user.Username, user.DisplayName, user.Email).Scan(&user.ID); err != nil {
+		return models.User{}, err
+	}
+
+	return user, nil
+}
+
 func NewUserRepository(db *pgxpool.Pool) *UserRepository {
 	return &UserRepository{
 		db: db,
