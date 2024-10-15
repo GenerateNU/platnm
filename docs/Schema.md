@@ -2,6 +2,7 @@ We are using a Supabase-hosted Postgres database. Our schema is relational and w
 
 The following pathway allows you to make and test schema changes locally via migration script without affecting the shared database until you're ready. More information on local development best practices can be found in the [Supabase docs](https://supabase.com/docs/guides/cli/local-development). **Note that running the DB locally requires Docker to be installed and running.**
 
+0. Install the Supabase CLI by following directions [here](https://supabase.com/docs/guides/local-development/cli/getting-started?queryGroups=access-method&access-method=postgres&queryGroups=platform&platform=macos).
 1. Create a new feature branch off of main to make sure you are up-to-date with any recently-added migration scripts.
 2. `cd` into `/backend/internal`
 3. Create a new migration script by running `supabase migration new migration-name`. Your migration-name should be concise but descriptive of what's going on!
