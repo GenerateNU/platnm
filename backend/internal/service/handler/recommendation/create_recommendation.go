@@ -3,7 +3,6 @@ package recommendation
 import (
 	"platnm/internal/errs"
 	"platnm/internal/models"
-	"platnm/internal/storage"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -12,15 +11,7 @@ type createRecommendationRequest struct {
 	models.Recommendation
 }
 
-type Handler struct {
-	recommendationRepository storage.RecommendationRepository
-}
 
-func NewHandler(recommendationRepository storage.RecommendationRepository) *Handler {
-	return &Handler{
-		recommendationRepository,
-	}
-}
 
 func (h *Handler) CreateRecommendation(c *fiber.Ctx) error {
 	var req createRecommendationRequest
