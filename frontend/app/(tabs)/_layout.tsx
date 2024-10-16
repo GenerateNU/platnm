@@ -51,6 +51,15 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="login"
+        options={{
+          title: "Login",
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon Icon={ProfileIcon} focused={focused} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

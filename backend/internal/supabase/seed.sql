@@ -19,9 +19,9 @@ VALUES
 
 INSERT INTO album (title, release_date, cover, country, genre_id)
 VALUES
-  ('Abbey Road', '1969-09-26', 'https://upload.wikimedia.org/wikipedia/en/4/42/Beatles_-_Abbey_Road.jpg', 'United Kingdom', 1),
-  ('Sticky Fingers', '1971-04-23', 'https://upload.wikimedia.org/wikipedia/en/3/38/Stickyfingersalbumcover.jpg', 'United Kingdom', 1),
-  ('1989 (Taylor''s Version)', '2023-10-27', 'https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png', 'United States', 2);
+  ('Abbey Road', '1969-09-26', 'https://upload.wikimedia.org/wikipedia/en/4/42/Beatles_-_Abbey_Road.jpg', 'United Kingdom', 0),
+  ('Sticky Fingers', '1971-04-23', 'https://upload.wikimedia.org/wikipedia/en/3/38/Stickyfingersalbumcover.jpg', 'United Kingdom', 0),
+  ('1989 (Taylor''s Version)', '2023-10-27', 'https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png', 'United States', 0);
 
 INSERT INTO album_artist (album_id, artist_id)
 VALUES

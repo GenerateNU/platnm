@@ -2,11 +2,13 @@ package service
 
 import (
 	"net/http"
+	"platnm/internal/auth"
 	"platnm/internal/config"
 	"platnm/internal/constants"
 	"platnm/internal/errs"
 	"platnm/internal/service/handler/media"
 	"platnm/internal/service/handler/oauth"
+	"platnm/internal/service/handler/oauth/platnm"
 	spotify_oauth_handler "platnm/internal/service/handler/oauth/spotify"
 	"platnm/internal/service/handler/recommendation"
 	spotify_handler "platnm/internal/service/handler/spotify"
@@ -93,6 +95,13 @@ func setupRoutes(app *fiber.App, config config.Config) {
 			r.Get("/begin", h.Begin)
 			r.Get("/callback", h.Callback)
 		})
+		r.Route("/platnm", func(r fiber.Router) {
+			h := platnm.NewHandler(store, config.Supabase)
+			r.Post("/login", h.Login)
+			r.Get("/health", func(c *fiber.Ctx) error {
+				return c.SendStatus(http.StatusOK)
+			})
+		})
 	})
 
 	app.Route("/spotify", func(r fiber.Router) {
@@ -102,6 +111,10 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Use(m.WithSpotifyClient())
 		r.Get("/", h.GetPlatnmPlaylist)
 		r.Get("/new-releases", h.NewReleases)
+	})
+
+	app.Get("/secret", auth.Middleware(&config.Supabase), func(c *fiber.Ctx) error {
+		return c.SendStatus(http.StatusOK)
 	})
 }
 
