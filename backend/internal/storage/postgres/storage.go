@@ -12,7 +12,6 @@ import (
 )
 
 func ConnectDatabase(config config.DB) *pgxpool.Pool {
-	// dbConfig, err := pgxpool.ParseConfig(config.Connection())
 	dbConfig, err := pgxpool.ParseConfig(config.Connection())
 	if err != nil {
 		log.Fatal("Failed to create a config, error: ", err)
