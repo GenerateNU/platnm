@@ -137,6 +137,44 @@ func (r *UserRepository) CalculateScore(ctx context.Context, id uuid.UUID) (int,
 	return score, nil
 }
 
+func (r *UserRepository) CreateUser(ctx context.Context, user models.User) (models.User, error) {
+	if err := r.db.QueryRow(ctx, `INSERT INTO "user" (username, display_name, email) VALUES ($1, $2, $3) RETURNING id`, user.Username, user.DisplayName, user.Email).Scan(&user.ID); err != nil {
+		return models.User{}, err
+	}
+
+	return user, nil
+}
+
+func (r *UserRepository) GetUserProfile(ctx context.Context, id uuid.UUID) (*models.Profile, error) {
+	profile := &models.Profile{}
+	query := `SELECT u.id, u.username, u.bio, COUNT(DISTINCT followers.follower_id) AS follower_count, COUNT(DISTINCT followed.followee_id) AS followed_count
+		FROM "user" u
+		LEFT JOIN follower followers ON followers.followee_id = u.id
+		LEFT JOIN follower followed ON followed.follower_id = u.id
+		WHERE u.id = $1
+		GROUP BY u.id, u.username;`
+
+	exists, err := r.UserExists(ctx, id.String())
+	if !exists {
+		print("User does not exist.")
+		return nil, err
+	}
+
+	err = r.db.QueryRow(ctx, query, id).Scan(&profile.UserID, &profile.Username, &profile.Bio, &profile.Followers, &profile.Followed)
+	if err != nil {
+		print(err.Error(), "unable to find profile")
+		return nil, err
+	}
+
+	score, err := r.CalculateScore(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	profile.Score = score
+
+	return profile, nil
+}
+
 func NewUserRepository(db *pgxpool.Pool) *UserRepository {
 	return &UserRepository{
 		db: db,
