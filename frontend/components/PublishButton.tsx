@@ -10,7 +10,7 @@ interface ReviewCardProps {
 }
 
 const PublishButton: React.FC<ReviewCardProps> = ({ rating, review }) => {
-  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const handleClick = () => {
     console.log("Publishing review");
     axios
