@@ -10,10 +10,11 @@ interface ReviewCardProps {
 }
 
 const PublishButton: React.FC<ReviewCardProps> = ({ rating, review }) => {
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL
   const handleClick = () => {
     console.log("Publishing review");
     axios
-      .post(`http://10.110.235.22:8080/reviews`, {
+      .post(`${BASE_URL}/reviews`, {
         user_id: "2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e",
         media_type: "track",
         media_id: 2,

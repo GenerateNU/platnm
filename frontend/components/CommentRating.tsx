@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { StyleSheet, View, TextInput } from "react-native";
 
-interface StarRateProps {
+interface CommentRatingProps {
   onReviewChange: (value: string) => void;
 }
 
-const CommentRating = ({ onReviewChange }: StarRateProps) => {
+const CommentRating = ({ onReviewChange }: CommentRatingProps) => {
   const [comment, setComment] = useState("");
 
   const handleReview = (value: string) => {

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 
 const AlbumCard = () => {
-  const ablumImage = require("@/assets/images/placeholder-image.png");
+  const albumImage = require("@/assets/images/placeholder-image.png");
   const songImage = require("@/assets/images/song-placeholder.png");
   const [releaseDate, setReleaseDate] = useState(new Date());
   const [albumName, setSongName] = useState("Name of Album");
@@ -10,7 +10,7 @@ const AlbumCard = () => {
 
   return (
     <View style={styles.card}>
-      <Image source={ablumImage} />
+      <Image source={albumImage} />
       <View>
         <View style={styles.textContainer}>
           <Text style={styles.releaseDate}>
