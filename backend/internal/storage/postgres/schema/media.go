@@ -147,7 +147,6 @@ func (r *MediaRepository) AddArtist(ctx context.Context, artist *models.Artist) 
 
 func (r *MediaRepository) GetExistingAlbumBySpotifyID(ctx context.Context, id string) (*int, error) {
 	var albumId int
-	fmt.Println("looking for album with spotify id: ", id)
 	err := r.QueryRow(ctx, `SELECT id FROM album WHERE spotify_id = $1`, id).Scan(&albumId)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -228,22 +227,17 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, media
 				&album.GenreID,
 				&album.SpotifyID,
 			); err != nil {
-				fmt.Println("Error retrieving media:", err)
 				return nil, err
 			}
 			album.MediaType = models.AlbumMedia
 			medias = append(medias, album)
-			print("here")
 		}
 	}
 
 	if mediaType == models.TrackMedia || mediaType == models.BothMedia {
 
-		print("we inside &2 ")
-
 		trackRows, trackErr := r.Query(ctx, trackQuery, name)
 		if trackErr != nil {
-			print("are we hererererere")
 			return nil, trackErr
 		}
 		defer trackRows.Close()
@@ -259,12 +253,10 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, media
 				&track.Cover,
 				&track.AlbumTitle,
 			); err != nil {
-				print("ajsdhfjasdhfkajsdhfk")
 				return nil, err
 			}
 			track.MediaType = models.TrackMedia
 			medias = append(medias, track)
-			print("here")
 		}
 
 	}
