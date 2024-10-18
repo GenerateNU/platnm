@@ -28,3 +28,25 @@ func (h *SpotifyHandler) GetPlatnmPlaylist(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(playlist)
 }
+
+func (h *SpotifyHandler) GetTopItems(c *fiber.Ctx) error {
+	client, err := ctxt.GetSpotifyClient(c)
+	if err != nil {
+		return err
+	}
+
+	topTracks, err := client.CurrentUsersTopTracks(c.Context())
+	if err != nil {
+		return err
+	}
+
+	topArtists, err := client.CurrentUsersTopArtists(c.Context())
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"topTracks":  topTracks.Tracks,
+		"topArtists": topArtists.Artists,
+	})
+}

@@ -104,6 +104,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Use(m.WithSpotifyClient())
 		r.Get("/", h.GetPlatnmPlaylist)
 		r.Get("/new-releases", h.NewReleases)
+		r.Get("/user/:id", h.GetTopItems)
 	})
 }
 
