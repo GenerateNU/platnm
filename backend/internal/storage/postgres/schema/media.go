@@ -60,7 +60,8 @@ LIMIT 20;`
 	var medias []models.Media
 	for mediaRows.Next() {
 		var mediaTitle, cover, country, mediaTypeStr, albumTitle string
-		var albumID, genreID, priority, trackID, durationSecs int
+		var albumID, priority, trackID, durationSecs int
+		var genreID *int
 		var releaseDate time.Time
 
 		// Scan the common fields, including mediaType as a string
@@ -83,6 +84,14 @@ LIMIT 20;`
 		// Cast mediaTypeStr into models.MediaType
 		mediaType := models.MediaType(mediaTypeStr)
 
+		// TODO: fix genre handling, but for now just set it to 0 if null
+		var genreIDValue int
+		if genreID != nil {
+			genreIDValue = *genreID
+		} else {
+			genreIDValue = 0
+		}
+
 		// Switch based on mediaType to append either Album or Track
 		switch mediaType {
 		case models.AlbumMedia:
@@ -93,7 +102,7 @@ LIMIT 20;`
 				ReleaseDate: releaseDate,
 				Cover:       cover,
 				Country:     country,
-				GenreID:     genreID,
+				GenreID:     genreIDValue,
 			}
 			medias = append(medias, album)
 		case models.TrackMedia:
