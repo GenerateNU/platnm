@@ -7,7 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (h *Handler) GetReviewsById(c *fiber.Ctx, mediaType string) error {
+func (h *Handler) GetReviewsByMediaId(c *fiber.Ctx, mediaType string) error {
 	var id = c.Params("id")
 
 	page := c.QueryInt("page", 0)
@@ -15,7 +15,7 @@ func (h *Handler) GetReviewsById(c *fiber.Ctx, mediaType string) error {
 
 	// Even though we are paginating the reviews we need to get all the reviews in order to calculate average rating
 	// Fetch the review based on ID and media type
-	reviews, err := h.reviewRepository.GetReviewsByID(c.Context(), id, mediaType)
+	reviews, err := h.reviewRepository.GetReviewsByMediaID(c.Context(), id, mediaType)
 	if err != nil {
 		// If error, log it and return 500
 		fmt.Println(err.Error(), "from transactions err ")

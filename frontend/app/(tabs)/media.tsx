@@ -17,19 +17,36 @@ export default function MediaScreen() {
 
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
+  const getReviews = () => {
+    axios
+      .get(`${BASE_URL}/reviews/track/1`) // TODO: update this hardcoding
+      .then((response) => {
+        setReviews(response.data.reviews);
+        setReviewAvgRating(response.data.avgRating);
+      })
+      .catch((error) => console.error(error));
+  };
+
   useEffect(() => {
     axios
       .get(`${BASE_URL}/media?sort=recent`)
       .then((response) => setMedia(response.data[0])) // TODO: update this hardcoding
       .catch((error) => console.error(error));
-    axios
-      .get(`${BASE_URL}/reviews/track/1`) // TODO: update this hardcoding
-      .then((response) => {
-        setReviews(response.data.reviews);
-        setReviewAvgRating(response.data.avgRating || null);
-      })
-      .catch((error) => console.error(error));
+    getReviews();
   }, []);
+
+  const handleVote = (reviewId: number, upvote: boolean) => {
+    axios
+      .post(`${BASE_URL}/reviews/vote/${reviews[0].user_id}`, {
+        user_id: reviews[0].user_id, // TODO: get current user's id
+        review_id: reviewId.toString(),
+        upvote,
+      })
+      .then(() => getReviews()) // update reviews so page refreshes
+      .catch((error) => {
+        console.error(error);
+      });
+  };
 
   return (
     media && (
@@ -49,7 +66,7 @@ export default function MediaScreen() {
           {rating && <ReviewStats rating={rating} reviews={reviews} />}
         </ThemedView>
         <ThemedView>
-          <TopReview reviews={reviews} />
+          <TopReview reviews={reviews} handleVote={handleVote} />
         </ThemedView>
       </ScrollView>
     )

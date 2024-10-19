@@ -1,9 +1,10 @@
 package reviews
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"platnm/internal/errs"
 	"platnm/internal/models"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 type createVoteRequest struct {
@@ -38,7 +39,7 @@ func (h *Handler) VoteReview(c *fiber.Ctx) error {
 		return voteExistErr
 	}
 
-	if voteValue != nil {
+	if voteValue == nil {
 		voteErr := h.voteRepository.AddVote(c.Context(), &req.UserReviewVote)
 		if voteErr != nil {
 			return voteErr

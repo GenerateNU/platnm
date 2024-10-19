@@ -32,6 +32,7 @@ type Review = {
   comment: string;
   created_at: string;
   updated_at: string;
+  votes: number;
 };
 
 type User = {

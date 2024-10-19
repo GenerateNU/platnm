@@ -24,7 +24,6 @@ const (
 	commentReviewFKeyConstraint = "fk_review"
 )
 
-
 func (r *ReviewRepository) ReviewExists(ctx context.Context, id string) (bool, error) {
 	rows, err := r.Query(ctx, `SELECT * FROM review WHERE id = $1`, id)
 	if err != nil {
@@ -191,9 +190,14 @@ func (r *ReviewRepository) ReviewBelongsToUser(ctx context.Context, reviewID str
 	return false, nil
 }
 
-func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaType string) ([]*models.Review, error) {
-
-	rows, err := r.Query(ctx, "SELECT id, user_id, media_id, media_type, rating, comment, created_at, updated_at FROM review WHERE media_id = $1 and media_type = $2", id, mediaType)
+func (r *ReviewRepository) GetReviewsByMediaID(ctx context.Context, id string, mediaType string) ([]*models.Review, error) {
+	rows, err := r.Query(ctx, `
+		SELECT r.id, r.user_id, r.media_id, r.media_type, r.rating, r.comment, r.created_at, r.updated_at,
+			COALESCE(SUM(CASE WHEN urv.upvote IS NOT NULL THEN CASE WHEN urv.upvote = TRUE THEN 1 ELSE -1 END ELSE 0 END), 0) AS score
+		FROM review r
+		LEFT JOIN user_review_vote urv ON urv.review_id = r.id
+		WHERE media_id = $1 and media_type = $2
+		GROUP BY r.id`, id, mediaType)
 
 	if err != nil {
 		return []*models.Review{}, err
@@ -214,6 +218,7 @@ func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaT
 			&review.Comment,
 			&review.CreatedAt,
 			&review.UpdatedAt,
+			&review.Votes,
 		); err != nil {
 			return nil, err
 		}

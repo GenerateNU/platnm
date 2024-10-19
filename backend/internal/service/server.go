@@ -60,10 +60,10 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Post("/vote/:rating", reviewHandler.VoteReview)
 		r.Patch("/:id", reviewHandler.UpdateReviewByReviewID)
 		r.Get("/album/:id", func(c *fiber.Ctx) error {
-			return reviewHandler.GetReviewsById(c, "album")
+			return reviewHandler.GetReviewsByMediaId(c, "album")
 		})
 		r.Get("/track/:id", func(c *fiber.Ctx) error {
-			return reviewHandler.GetReviewsById(c, "track")
+			return reviewHandler.GetReviewsByMediaId(c, "track")
 		})
 		r.Post("/comment", reviewHandler.CreateComment)
 	})

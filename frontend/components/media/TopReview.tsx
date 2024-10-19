@@ -1,21 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Image, StyleSheet } from "react-native";
 import axios from "axios";
+import { View, Text, Image, StyleSheet, Button } from "react-native";
+
+import UpvoteIcon from "@/assets/images/reviews/upvote.svg";
+import DownvoteIcon from "@/assets/images/reviews/downvote.svg";
+import { IconButton } from "react-native-paper";
 
 type ReviewCardProps = {
   reviews: Review[];
+  handleVote: (reviewId: number, upvote: boolean) => void;
 };
 
-const TopReview = ({ reviews }: ReviewCardProps) => {
-  const getTopReview = (reviews: Review[]): Review => {
-    let topReview: Review = reviews[0];
-    // TODO: NEEDS BACKEND FUNCTION TO CALCULATE THE UPVOTES/DOWNVOTES OF A REVIEW, HERE IT WOULD RETURN THE REVIEW WITH THE HIGHEST UPVOTES. BELOW CODE IS A PLACEHOLDER
-    return topReview;
-  };
-
-  const topReview: Review = getTopReview(reviews);
+const TopReview = ({ reviews, handleVote }: ReviewCardProps) => {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const [reviewUser, setReviewUser] = useState<User | null>(null);
+  const topReview = reviews.reduce((maxReview, currentReview) => {
+    return currentReview.votes > maxReview.votes ? currentReview : maxReview;
+  }, reviews[0]);
 
   useEffect(() => {
     if (topReview) {
@@ -30,22 +31,35 @@ const TopReview = ({ reviews }: ReviewCardProps) => {
   return (
     <View>
       <Text style={styles.title}> Top Reviews </Text>
-      <View style={styles.reviewBox}>
-        {reviewUser && reviewUser.profile_picture && (
-          <Image
-            style={styles.image}
-            source={{ uri: reviewUser.profile_picture }}
-          />
-        )}
-        <View style={styles.column}>
-          <Text>{reviewUser?.display_name}</Text>
-          <Text>{reviewUser?.username}</Text>
-          <View style={styles.commentContainer}>
-            <Text style={styles.ratingText}>Rating: {topReview.rating}</Text>
-            <Text style={styles.commentText}>{topReview.comment}</Text>
+      {reviews.map((review) => (
+        <View style={styles.reviewBox} key={review.id}>
+          {reviewUser && reviewUser.profile_picture && (
+            <Image
+              style={styles.image}
+              source={{ uri: reviewUser.profile_picture }}
+            />
+          )}
+          <View style={styles.column}>
+            <Text>{reviewUser?.display_name}</Text>
+            <Text>{reviewUser?.username}</Text>
+            <View style={styles.commentContainer}>
+              <Text style={styles.ratingText}>Rating: {review.rating}</Text>
+              <Text style={styles.commentText}>{review.comment}</Text>
+            </View>
+            <View style={styles.voteContainer}>
+              <IconButton
+                onPress={() => handleVote(review.id, true)}
+                icon={UpvoteIcon}
+              />
+              <Text>{review.votes}</Text>
+              <IconButton
+                onPress={() => handleVote(review.id, false)}
+                icon={DownvoteIcon}
+              />
+            </View>
           </View>
         </View>
-      </View>
+      ))}
     </View>
   );
 };
@@ -92,5 +106,11 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize: 14,
     color: "#555",
+  },
+  voteContainer: {
+    flexDirection: "row",
+    alignSelf: "flex-start",
+    alignItems: "center",
+    marginTop: 10,
   },
 });
