@@ -38,6 +38,7 @@ type MediaRepository interface {
 	AddAlbum(ctx context.Context, artist *models.Album) (*models.Album, error)
 	AddAlbumArtist(ctx context.Context, albumId int, artistId int) error
 	AddTrack(ctx context.Context, track *models.Track) (*models.Track, error)
+	AddTrackArtist(ctx context.Context, trackId int, artistId int) error
 }
 
 type RecommendationRepository interface {

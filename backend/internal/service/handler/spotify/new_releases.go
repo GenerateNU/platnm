@@ -3,7 +3,6 @@ package spotify
 import (
 	"context"
 	"errors"
-	"fmt"
 	"platnm/internal/models"
 	"platnm/internal/service/ctxt"
 	"sync"
@@ -14,6 +13,7 @@ import (
 
 type newReleasesResponse struct {
 	Albums  []models.Album  `json:"albums"`
+	Tracks  []models.Track  `json:"tracks"`
 	Artists []models.Artist `json:"artists"`
 }
 
@@ -26,6 +26,7 @@ func (h *SpotifyHandler) NewReleases(c *fiber.Ctx) error {
 	var (
 		numJobs = len(newReleases.Albums)
 		albums  = make(chan models.Album, numJobs)
+		tracks  = make(chan models.Track, numJobs)
 		artists = make(chan models.Artist)
 		errCh   = make(chan error)
 		wg      sync.WaitGroup
@@ -34,6 +35,7 @@ func (h *SpotifyHandler) NewReleases(c *fiber.Ctx) error {
 	go func() {
 		wg.Wait()
 		close(albums)
+		close(tracks)
 		close(artists)
 		close(errCh)
 	}()
@@ -50,7 +52,7 @@ func (h *SpotifyHandler) NewReleases(c *fiber.Ctx) error {
 				default:
 				}
 			}
-			err = h.handleTracks(c, *albumId, album.ID)
+			err = h.handleTracks(c, &wg, *albumId, album.ID, tracks, errCh)
 			if err != nil {
 				select {
 				case errCh <- err:
@@ -76,6 +78,11 @@ func (h *SpotifyHandler) NewReleases(c *fiber.Ctx) error {
 		rAlbums = append(rAlbums, album)
 	}
 
+	var rTracks []models.Track
+	for track := range tracks {
+		rTracks = append(rTracks, track)
+	}
+
 	var rArtists []models.Artist
 	for artist := range artists {
 		rArtists = append(rArtists, artist)
@@ -86,6 +93,7 @@ func (h *SpotifyHandler) NewReleases(c *fiber.Ctx) error {
 		JSON(
 			newReleasesResponse{
 				Albums:  rAlbums,
+				Tracks:  rTracks,
 				Artists: rArtists,
 			},
 		)
@@ -184,29 +192,69 @@ func fetchAlbumTracksFromSpotify(c *fiber.Ctx, id spotify.ID) (*spotify.SimpleTr
 	return client.GetAlbumTracks(c.Context(), id)
 }
 
-func (h *SpotifyHandler) handleTracks(c *fiber.Ctx, albumId int, spotifyID spotify.ID) error {
-	// artistId, err := h.mediaRepository.GetExistingArtistBySpotifyID(ctx, tracks.Tracks[0])
-	tracks, err := fetchAlbumTracksFromSpotify(c, spotifyID)
-	fmt.Println(tracks)
+func (h *SpotifyHandler) handleTracks(c *fiber.Ctx, wg *sync.WaitGroup, albumId int, spotifyID spotify.ID, tracks chan<- models.Track, errCh chan<- error) error {
+	spotifyTracks, err := fetchAlbumTracksFromSpotify(c, spotifyID)
 	if err != nil {
 		return err
 	}
-	// first pass: just add tracks to db
-	for _, t := range tracks.Tracks {
-		track := models.Track{
-			SpotifyID: t.ID.String(),
-			AlbumID:   albumId,
-			Title:     t.Name,
-			Duration:  int(t.Duration / 1000),
-		}
 
-		trackResult, err := h.mediaRepository.AddTrack(c.Context(), &track)
-		if err != nil {
-			return err
-		}
-		fmt.Println(trackResult)
+	for _, t := range spotifyTracks.Tracks {
+		wg.Add(1)
+		go func(t spotify.SimpleTrack) {
+			defer wg.Done()
 
+			track := models.Track{
+				SpotifyID: t.ID.String(),
+				AlbumID:   albumId,
+				Title:     t.Name,
+				Duration:  int(t.Duration / 1000),
+			}
+
+			trackResult, err := h.mediaRepository.AddTrack(c.Context(), &track)
+			if err != nil {
+				select {
+				case errCh <- err:
+				default:
+				}
+			}
+
+			select {
+			case tracks <- *trackResult:
+			default:
+			}
+
+			// get the Spotify artists associated with this track and add a record for each
+			for _, artist := range t.Artists {
+				artistId, err := h.mediaRepository.GetExistingArtistBySpotifyID(c.Context(), artist.ID.String())
+				if err != nil {
+					select {
+					case errCh <- err:
+					default:
+					}
+				}
+
+				if artistId == nil {
+					newArtist, err := h.mediaRepository.AddArtist(c.Context(), &models.Artist{
+						SpotifyID: artist.ID.String(),
+						Name:      artist.Name,
+					})
+					if err != nil {
+						select {
+						case errCh <- err:
+						default:
+						}
+					}
+					artistId = &newArtist.ID
+				}
+				err = h.mediaRepository.AddTrackArtist(c.Context(), trackResult.ID, *artistId)
+				if err != nil {
+					select {
+					case errCh <- err:
+					default:
+					}
+				}
+			}
+		}(t)
 	}
-
 	return nil
 }
