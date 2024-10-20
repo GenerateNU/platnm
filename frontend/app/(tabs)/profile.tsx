@@ -2,14 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import axios from "axios";
+import TopReview from '@/components/media/TopReview';
+import Section from '@/components/profile/Section';
 
 export default function ProfileScreen() {
   
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;//'http://127.0.0.1:8080';
 
-  const [userData, setUserData] = useState<User>();
   const [userProfile, setUserProfile] = useState<UserProfile>();
+  const [userReviews, setUserReviews] = useState<Review[]>();
   const userId = '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d'; // Hardcoding - Get userId from navigation
+  const [sections, setSections] = useState([{ title: 'Section 1', items: ['Item title', 'Item title', 'Item title'] }, { title: 'Section 2', items: ['Item title', 'Item title', 'Item title'] }]); //TODO depending on what we do with sections
   const hasNotification = true; // Hardcoding - Get notification status from somewhere else
 
   useEffect(() => {
@@ -24,12 +27,24 @@ export default function ProfileScreen() {
       }
     };
 
+    const fetchUserReviews = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/reviews/${userId}`);
+        console.log('Fetched user reviews:', response.data); // Log fetched data
+        setUserReviews(response.data);
+      } catch (error) {
+        console.error('Error fetching user reviews:', error);
+      }
+    };
+
     fetchUserProfile();
+    fetchUserReviews();
   }, [userId]);
 
   useEffect(() => {
     console.log('Updated userProfile:', userProfile); // Log updated state
-  }, [userData, userProfile]);
+    console.log('Updated userReviews:', userReviews); // Log updated state
+  }, [userReviews, userProfile]);
 
   const handleActivityPress = () => {
     console.log('Activity icon pressed');
@@ -49,6 +64,15 @@ export default function ProfileScreen() {
   const handleEditPress = () => {
     console.log('Edit icon pressed');
     // Add edit icon press handling logic here
+  };
+
+  const handleAddSection = () => {
+    const newSectionIndex = sections.length + 1;
+    const newSection = {
+      title: `Section ${newSectionIndex}`,
+      items: ['New item title 1', 'New item title 2', 'New item title 3'],
+    };
+    setSections([...sections, newSection]);
   };
 
   return (
@@ -112,47 +136,27 @@ export default function ProfileScreen() {
         <Text style={styles.queueButtonText}>▶ On Queue</Text>
       </TouchableOpacity>
 
-      {/* Section 1 */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Section 1</Text>
-          <TouchableOpacity style={styles.editIcon}>
-            <Text style={styles.editText}>✏️</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.itemsRow}>
-          <View style={styles.item}>
-            <Text style={styles.itemTitle}>Item title</Text>
-          </View>
-          <View style={styles.item}>
-            <Text style={styles.itemTitle}>Item title</Text>
-          </View>
-          <View style={styles.item}>
-            <Text style={styles.itemTitle}>Item title</Text>
-          </View>
-        </View>
-      </View>
+      {/* User Reviews Section */}
+      {userReviews && userReviews.length > 0 ? (
+          userReviews.map((review) => {
+            const reviews = [review];
+            return <TopReview key={review.id} reviews={reviews} />;
+          })
+        ) : (
+          <Text style={styles.noReviewsText}>No reviews found.</Text>
+        )}
 
-      {/* Section 2 */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Section 2</Text>
-          <TouchableOpacity style={styles.editIcon}>
-            <Text style={styles.editText}>✏️</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.itemsRow}>
-          <View style={styles.item}>
-            <Text style={styles.itemTitle}>Item title</Text>
-          </View>
-          <View style={styles.item}>
-            <Text style={styles.itemTitle}>Item title</Text>
-          </View>
-          <View style={styles.item}>
-            <Text style={styles.itemTitle}>Item title</Text>
-          </View>
-        </View>
-      </View>
+      {/* Sections */}
+      <Section title="Section 1" items={['Item title', 'Item title', 'Item title']} onEditPress={handleEditPress} />
+
+      <Section title="Section 2" items={['Item title', 'Item title', 'Item title']} onEditPress={handleEditPress} />
+
+      {/* Button to Add a New Section */}
+      <TouchableOpacity onPress={handleAddSection} style={styles.addSectionButton}>
+        <Text style={styles.addSectionButtonText}>Add Section</Text>
+        <Icon name="plus-circle" size={24} color="#000" />
+      </TouchableOpacity>
+      
     </ScrollView>
   )
 );
@@ -279,34 +283,39 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
-  section: {
-    marginHorizontal: 20,
-    marginBottom: 20,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
   itemsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    paddingHorizontal: 20,
   },
   item: {
-    width: '30%',
-    aspectRatio: 1,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#f9f9f9',
+    padding: 10,
     borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginBottom: 5,
+    width: '100%',
   },
   itemTitle: {
-    marginTop: 10,
-    fontSize: 14,
+    fontSize: 16,
+  },
+  noReviewsText: {
+    textAlign: 'center',
+    color: '#888',
+    marginVertical: 20,
+  },
+  addSectionButton: {
+    backgroundColor: '#888',
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 20,
+    alignSelf: 'center',
+  },
+  addSectionButtonText: {
+    color: '#000',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
