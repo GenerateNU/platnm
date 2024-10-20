@@ -1,12 +1,15 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type MediaType string
 
 const (
 	TrackMedia MediaType = "track"
 	AlbumMedia MediaType = "album"
+	BothMedia  MediaType = "both"
 )
 
 // A Media interface that both Album and Track must implement. T

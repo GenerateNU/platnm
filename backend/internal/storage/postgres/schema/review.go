@@ -18,8 +18,10 @@ type ReviewRepository struct {
 }
 
 const (
-	userFKeyConstraint        = "review_user_id_fkey"
-	uniqueUserMediaConstraint = "unique_user_media"
+	userFKeyConstraint          = "review_user_id_fkey"
+	uniqueUserMediaConstraint   = "unique_user_media"
+	commentUserFKeyConstraint   = "fk_user"
+	commentReviewFKeyConstraint = "fk_review"
 )
 
 
@@ -67,6 +69,27 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 	}
 
 	return review, nil
+}
+
+func (r *ReviewRepository) CreateComment(ctx context.Context, comment *models.Comment) (*models.Comment, error) {
+	query := `
+    INSERT INTO comment (text, review_id, user_id, created_at)
+    VALUES ($1, $2, $3, NOW())
+    RETURNING id, text, review_id, user_id, created_at;
+`
+
+	if err := r.QueryRow(ctx, query, comment.Text, comment.ReviewID, comment.UserID).Scan(
+		&comment.ID, &comment.Text, &comment.ReviewID, &comment.UserID, &comment.CreatedAt); err != nil {
+		if errs.IsForeignKeyViolation(err, commentUserFKeyConstraint) {
+			return nil, errs.NotFound("user", "id", comment.UserID)
+		} else if errs.IsForeignKeyViolation(err, commentReviewFKeyConstraint) {
+			return nil, errs.NotFound("review", "id", comment.UserID)
+		}
+
+		return nil, err
+	}
+
+	return comment, nil
 }
 
 func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error) {

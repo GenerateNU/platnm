@@ -61,7 +61,8 @@ LIMIT 20;`
 	var medias []models.Media
 	for mediaRows.Next() {
 		var mediaTitle, cover, country, mediaTypeStr, albumTitle string
-		var albumID, genreID, priority, trackID, durationSecs int
+		var albumID, priority, trackID, durationSecs int
+		var genreID *int
 		var releaseDate time.Time
 
 		// Scan the common fields, including mediaType as a string
@@ -84,6 +85,14 @@ LIMIT 20;`
 		// Cast mediaTypeStr into models.MediaType
 		mediaType := models.MediaType(mediaTypeStr)
 
+		// TODO: fix genre handling, but for now just set it to 0 if null
+		var genreIDValue int
+		if genreID != nil {
+			genreIDValue = *genreID
+		} else {
+			genreIDValue = 0
+		}
+
 		// Switch based on mediaType to append either Album or Track
 		switch mediaType {
 		case models.AlbumMedia:
@@ -94,7 +103,7 @@ LIMIT 20;`
 				ReleaseDate: releaseDate,
 				Cover:       cover,
 				Country:     country,
-				GenreID:     genreID,
+				GenreID:     genreIDValue,
 			}
 			medias = append(medias, album)
 		case models.TrackMedia:
@@ -148,7 +157,6 @@ func (r *MediaRepository) AddArtist(ctx context.Context, artist *models.Artist) 
 
 func (r *MediaRepository) GetExistingAlbumBySpotifyID(ctx context.Context, id string) (*int, error) {
 	var albumId int
-	fmt.Println("looking for album with spotify id: ", id)
 	err := r.QueryRow(ctx, `SELECT id FROM album WHERE spotify_id = $1`, id).Scan(&albumId)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -226,7 +234,7 @@ func (r *MediaRepository) AddTrackArtist(ctx context.Context, trackId int, artis
 	return nil
 }
 
-func (r *MediaRepository) GetMediaByName(ctx context.Context, name string) ([]models.Media, error) {
+func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, mediaType models.MediaType) ([]models.Media, error) {
 	// Select all rows where either the input string is in the title of the media, or if the string matches one of the titles fuzzily
 	var albumQuery = "SELECT * FROM album WHERE levenshtein(title, $1) <= 5 OR title ILIKE '%' || $1 || '%' LIMIT 20;"
 	var trackQuery = `
@@ -244,54 +252,63 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string) ([]mo
 	LIMIT 20;
 	`
 
-	// Execute album query
-	albumRows, albumErr := r.Query(ctx, albumQuery, name)
-	if albumErr != nil {
-		return nil, albumErr
-	}
-	defer albumRows.Close()
-
-	trackRows, trackErr := r.Query(ctx, trackQuery, name)
-	if trackErr != nil {
-		return nil, trackErr
-	}
-	defer trackRows.Close()
-
 	var medias []models.Media
-	for albumRows.Next() {
-		var album models.Album
-		if err := albumRows.Scan(
-			&album.ID,
-			&album.Title,
-			&album.ReleaseDate,
-			&album.Cover,
-			&album.Country,
-			&album.GenreID,
-		); err != nil {
-			return nil, err
+
+	if mediaType == models.AlbumMedia || mediaType == models.BothMedia {
+
+		albumRows, albumErr := r.Query(ctx, albumQuery, name)
+		if albumErr != nil {
+			return nil, albumErr
 		}
-		album.MediaType = models.AlbumMedia
-		medias = append(medias, album)
+		defer albumRows.Close()
+
+		for albumRows.Next() {
+			var album models.Album
+			if err := albumRows.Scan(
+				&album.ID,
+				&album.Title,
+				&album.ReleaseDate,
+				&album.Cover,
+				&album.Country,
+				&album.GenreID,
+				&album.SpotifyID,
+			); err != nil {
+				return nil, err
+			}
+			album.MediaType = models.AlbumMedia
+			medias = append(medias, album)
+		}
 	}
 
-	// Scan track rows
-	for trackRows.Next() {
-		var track models.Track
-		if err := trackRows.Scan(
-			&track.ID,
-			&track.Title,
-			&track.Duration,
-			&track.AlbumID,
-			&track.ReleaseDate,
-			&track.Cover,
-			&track.AlbumTitle,
-		); err != nil {
-			return nil, err
+	if mediaType == models.TrackMedia || mediaType == models.BothMedia {
+
+		trackRows, trackErr := r.Query(ctx, trackQuery, name)
+		if trackErr != nil {
+			return nil, trackErr
 		}
-		track.MediaType = models.TrackMedia
-		medias = append(medias, track)
+		defer trackRows.Close()
+
+		for trackRows.Next() {
+			var track models.Track
+			if err := trackRows.Scan(
+				&track.ID,
+				&track.Title,
+				&track.Duration,
+				&track.AlbumID,
+				&track.ReleaseDate,
+				&track.Cover,
+				&track.AlbumTitle,
+			); err != nil {
+				return nil, err
+			}
+			track.MediaType = models.TrackMedia
+			medias = append(medias, track)
+		}
+
 	}
+
 	return medias, nil
+
 }
 
 func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset int) ([]models.MediaWithReviewCount, error) {
