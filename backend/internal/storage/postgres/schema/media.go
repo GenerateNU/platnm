@@ -2,7 +2,6 @@ package schema
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"platnm/internal/models"
@@ -146,12 +145,19 @@ func (r *MediaRepository) AddArtist(ctx context.Context, artist *models.Artist) 
 	query :=
 		`INSERT INTO artist (name, spotify_id, photo, bio)
 		 VALUES ($1, $2, $3, $4)
+		 ON CONFLICT (spotify_id) DO NOTHING
 		 RETURNING id;`
 
-	if err := r.QueryRow(ctx, query, artist.Name, artist.SpotifyID, artist.Photo, artist.Bio).Scan(&artist.ID); err != nil {
+	var id int
+	if err := r.QueryRow(ctx, query, artist.Name, artist.SpotifyID, artist.Photo, artist.Bio).Scan(&id); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			artist.ID = id
+			return artist, nil // No new row was inserted because one existed
+		}
 		return nil, err
 	}
 
+	artist.ID = id
 	return artist, nil
 }
 
@@ -192,7 +198,7 @@ func (r *MediaRepository) AddTrack(ctx context.Context, track *models.Track) (*m
 	var id int
 	err := r.QueryRow(ctx, query, track.AlbumID, track.Title, track.Duration, track.SpotifyID).Scan(&id)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			track.ID = id
 			return track, nil // No new row was inserted because one existed
 		}

@@ -203,14 +203,12 @@ func (h *SpotifyHandler) handleTracks(c *fiber.Ctx, wg *sync.WaitGroup, albumId 
 		go func(t spotify.SimpleTrack) {
 			defer wg.Done()
 
-			track := models.Track{
+			trackResult, err := h.mediaRepository.AddTrack(c.Context(), &models.Track{
 				SpotifyID: t.ID.String(),
 				AlbumID:   albumId,
 				Title:     t.Name,
-				Duration:  int(t.Duration / 1000),
-			}
+				Duration:  int(t.Duration / 1000)})
 
-			trackResult, err := h.mediaRepository.AddTrack(c.Context(), &track)
 			if err != nil {
 				select {
 				case errCh <- err:
