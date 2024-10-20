@@ -97,3 +97,7 @@ VALUES
     recommendee_id) 
     VALUES
     (1, 'album', '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', '2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e');
+
+INSERT INTO "user" (id, username, display_name, bio, created_at, updated_at, enthusiasm)
+VALUES
+  ('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6f', 'jack', 'Jack Ripper', 'I love music', now(), now()), 'Expert';
