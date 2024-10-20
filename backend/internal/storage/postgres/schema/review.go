@@ -5,9 +5,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/jackc/pgx/v5"
 	"platnm/internal/errs"
 	"platnm/internal/models"
+
+	"github.com/jackc/pgx/v5"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -17,10 +18,27 @@ type ReviewRepository struct {
 }
 
 const (
-	userFKeyConstraint        = "review_user_id_fkey"
-	uniqueUserMediaConstraint = "unique_user_media"
+	userFKeyConstraint          = "review_user_id_fkey"
+	uniqueUserMediaConstraint   = "unique_user_media"
+	commentUserFKeyConstraint   = "fk_user"
+	commentReviewFKeyConstraint = "fk_review"
 )
 
+
+func (r *ReviewRepository) ReviewExists(ctx context.Context, id string) (bool, error) {
+	rows, err := r.Query(ctx, `SELECT * FROM review WHERE id = $1`, id)
+	if err != nil {
+		return false, err
+	}
+	if rows.Next() {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+// CreateReview creates a new review in the database
+// Handles both published and draft reviews
 func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Review) (*models.Review, error) {
 	query := `
 	WITH media_check AS (
@@ -32,13 +50,13 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 		FROM album
 		WHERE id = $2 AND $3 = 'album'
 	)
-	INSERT INTO review (user_id, media_id, media_type, rating, comment)
-	SELECT $1, $2, $3::media_type, $4, $5
+	INSERT INTO review (user_id, media_id, media_type, rating, comment, draft)
+	SELECT $1, $2, $3::media_type, $4, $5, $6
 	FROM media_check
 	RETURNING id, created_at, updated_at;
 	`
 
-	if err := r.QueryRow(ctx, query, review.UserID, review.MediaID, review.MediaType, review.Rating, review.Comment).Scan(&review.ID, &review.CreatedAt, &review.UpdatedAt); err != nil {
+	if err := r.QueryRow(ctx, query, review.UserID, review.MediaID, review.MediaType, review.Rating, review.Comment, review.Draft).Scan(&review.ID, &review.CreatedAt, &review.UpdatedAt); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, errs.NotFound(string(review.MediaType), "id", review.MediaID)
 		} else if errs.IsUniqueViolation(err, uniqueUserMediaConstraint) {
@@ -51,6 +69,27 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 	}
 
 	return review, nil
+}
+
+func (r *ReviewRepository) CreateComment(ctx context.Context, comment *models.Comment) (*models.Comment, error) {
+	query := `
+    INSERT INTO comment (text, review_id, user_id, created_at)
+    VALUES ($1, $2, $3, NOW())
+    RETURNING id, text, review_id, user_id, created_at;
+`
+
+	if err := r.QueryRow(ctx, query, comment.Text, comment.ReviewID, comment.UserID).Scan(
+		&comment.ID, &comment.Text, &comment.ReviewID, &comment.UserID, &comment.CreatedAt); err != nil {
+		if errs.IsForeignKeyViolation(err, commentUserFKeyConstraint) {
+			return nil, errs.NotFound("user", "id", comment.UserID)
+		} else if errs.IsForeignKeyViolation(err, commentReviewFKeyConstraint) {
+			return nil, errs.NotFound("review", "id", comment.UserID)
+		}
+
+		return nil, err
+	}
+
+	return comment, nil
 }
 
 func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error) {

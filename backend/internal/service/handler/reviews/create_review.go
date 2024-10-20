@@ -12,6 +12,8 @@ type createReviewRequest struct {
 	models.Review
 }
 
+// CreateReview creates a review for a track or album.
+// Handles both published reviews and drafts.
 func (h *Handler) CreateReview(c *fiber.Ctx) error {
 	var req createReviewRequest
 	if err := c.BodyParser(&req); err != nil {

@@ -1,10 +1,11 @@
 package reviews
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"platnm/internal/models"
 	"strconv"
 	"time"
+
+	"github.com/gofiber/fiber/v2"
 
 	"platnm/internal/constants"
 	"platnm/internal/errs"
