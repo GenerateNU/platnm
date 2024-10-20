@@ -2,11 +2,11 @@ import { Tabs } from "expo-router";
 import React from "react";
 
 import TabBarIcon from "@/components/navigation/TabBarIcon";
-// import HomeIcon from "@/assets/images/Navigation/Home.svg";
-// import FilledHomeIcon from "@/assets/images/Navigation/filledHome.svg";
-// import SearchIcon from "@/assets/images/Navigation/search.svg";
-// import ExploreIcon from "@/assets/images/Navigation/explore.svg";
-// import ProfileIcon from "@/assets/images/Navigation/profile.svg";
+import HomeIcon from "@/assets/images/Navigation/Home.svg";
+import FilledHomeIcon from "@/assets/images/Navigation/filledHome.svg";
+import SearchIcon from "@/assets/images/Navigation/search.svg";
+import ExploreIcon from "@/assets/images/Navigation/explore.svg";
+import ProfileIcon from "@/assets/images/Navigation/profile.svg";
 
 export default function TabLayout() {
   return (
