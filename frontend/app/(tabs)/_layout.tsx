@@ -57,6 +57,15 @@ export default function TabLayout() {
           title: "Login",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon Icon={ProfileIcon} focused={focused} />
+      <Tabs.Screen
+        name="reviews"
+        options={{
+          title: "Review",
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon
+              name={focused ? "code-slash" : "code-slash-outline"}
+              color={color}
+            />
           ),
         }}
       />

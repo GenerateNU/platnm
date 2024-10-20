@@ -52,6 +52,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Get("/profile/:id", userHandler.GetUserProfile)
 		r.Post("/follow", userHandler.FollowUnfollowUser)
 		r.Get("/score/:id", userHandler.CalculateScore)
+		r.Post("/", userHandler.CreateUser)
 	})
 
 	app.Route("/reviews", func(r fiber.Router) {
@@ -66,6 +67,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Get("/track/:id", func(c *fiber.Ctx) error {
 			return reviewHandler.GetReviewsById(c, "track")
 		})
+		r.Post("/comment", reviewHandler.CreateComment)
 	})
 
 	mediaHandler := media.NewHandler(repository.Media)

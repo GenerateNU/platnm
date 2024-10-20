@@ -7,16 +7,6 @@ import { ThemedView } from "@/components/ThemedView";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-type User = {
-  user_id: string;
-  username: string;
-  display_name: string;
-  profile_picture: string;
-  linked_account: string;
-  created_at: string;
-  updated_at: string;
-};
-
 export default function HomeScreen() {
   const [users, setUsers] = useState<User[]>([]);
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -31,7 +21,6 @@ export default function HomeScreen() {
         console.error(error);
       });
   }, []);
-
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
@@ -50,7 +39,7 @@ export default function HomeScreen() {
         <ThemedText type="subtitle">Step 1: Backend Setup</ThemedText>
         <ThemedText>
           Make sure the database is connected and the backend server is running.
-          Go to {BASE_URL}/users to see the list of users.
+          Go to /users to see the list of users.
         </ThemedText>
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
