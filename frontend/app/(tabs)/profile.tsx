@@ -7,7 +7,7 @@ import Section from '@/components/profile/Section';
 
 export default function ProfileScreen() {
   
-  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;//'http://127.0.0.1:8080';
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
   const [userProfile, setUserProfile] = useState<UserProfile>();
   const [userReviews, setUserReviews] = useState<Review[]>();
