@@ -2,14 +2,27 @@ package media
 
 import (
 	"platnm/internal/errs"
+	"platnm/internal/models"
 	"platnm/internal/service/utils"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 func (h *Handler) GetMediaByName(c *fiber.Ctx) error {
-	name := c.Params("name")
-	medias, _ := h.mediaRepository.GetMediaByName(c.Context(), name)
+    name := c.Params("name")
+    typeString := c.Query("media_type")
+    
+    var mediaType models.MediaType 
+    
+    switch typeString {
+    case "album":
+        mediaType = models.AlbumMedia 
+    case "track":
+        mediaType = models.TrackMedia
+	case "":
+		mediaType = models.BothMedia
+	}
+	medias, _ := h.mediaRepository.GetMediaByName(c.Context(), name, mediaType)
 	return c.Status(fiber.StatusOK).JSON(medias)
 }
 
