@@ -20,7 +20,6 @@ export default function ProfileScreen() {
     const fetchUserProfile = async () => {
       try {
         const response = await axios.get(`${BASE_URL}/users/profile/${userId}`);
-        console.log('Fetched user profile:', response.data); // Log fetched data
         setUserProfile(response.data);
       } catch (error) {
         console.error('Error fetching user profile:', error);
@@ -30,7 +29,6 @@ export default function ProfileScreen() {
     const fetchUserReviews = async () => {
       try {
         const response = await axios.get(`${BASE_URL}/reviews/${userId}`);
-        console.log('Fetched user reviews:', response.data); // Log fetched data
         setUserReviews(response.data);
       } catch (error) {
         console.error('Error fetching user reviews:', error);
@@ -40,11 +38,6 @@ export default function ProfileScreen() {
     fetchUserProfile();
     fetchUserReviews();
   }, [userId]);
-
-  useEffect(() => {
-    console.log('Updated userProfile:', userProfile); // Log updated state
-    console.log('Updated userReviews:', userReviews); // Log updated state
-  }, [userReviews, userProfile]);
 
   const handleActivityPress = () => {
     console.log('Activity icon pressed');
