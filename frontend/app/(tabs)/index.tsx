@@ -21,6 +21,7 @@ export default function HomeScreen() {
         console.error(error);
       });
   }, []);
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
@@ -39,7 +40,7 @@ export default function HomeScreen() {
         <ThemedText type="subtitle">Step 1: Backend Setup</ThemedText>
         <ThemedText>
           Make sure the database is connected and the backend server is running.
-          Go to /users to see the list of users.
+          Go to {BASE_URL}/users to see the list of users.
         </ThemedText>
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
