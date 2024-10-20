@@ -94,7 +94,14 @@ export default function ProfileScreen() {
         {/* Profile Picture */}
         <View style={styles.profileContainer}>
           <Image source={require('@/assets/images/Profile/record.png')} style={styles.recordImage} />
-          <Image source={{ uri: userProfile.profile_picture }} style={styles.profileImage} />
+          {userProfile.profile_picture ? (  // Check if profilePicture exists
+            <Image
+              source={{ uri: userProfile.profile_picture }} // Use uri for remote images
+              style={styles.profileImage}
+              resizeMode="cover"
+            />
+          ) : null}  // Don't render anything if there's no profile picture
+
           <TouchableOpacity onPress={handleEditPress} style={styles.editIcon}>
           <Icon name="edit-2" size={20} color="#888" />
           </TouchableOpacity>
