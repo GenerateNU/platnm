@@ -293,7 +293,8 @@ const styles = StyleSheet.create({
     color: "#666",
   },
   statItemContainer: {
-    alignItems: "center", // Center align the items in each stat item container
+    alignItems: "center",
+    marginHorizontal: 12,
   },
   statNumber: {
     fontSize: 18,
