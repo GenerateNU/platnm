@@ -126,7 +126,7 @@ export default function ProfileScreen() {
                 resizeMode="cover"
               />
             ) : null}{" "}
-            // Don't render anything if there's no profile picture
+            {/* Don't render anything if there's no profile picture */}
             <TouchableOpacity onPress={handleEditPress} style={styles.editIcon}>
               <Icon name="edit-2" size={20} color="#888" />
             </TouchableOpacity>
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
   },
   stats: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "center",
     width: "100%",
     marginVertical: 10,
   },
