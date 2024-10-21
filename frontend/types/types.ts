@@ -40,7 +40,18 @@ type User = {
   display_name: string;
   bio: string;
   profile_picture: string;
-  linked_ccount: string;
+  linked_account: string;
   created_at: string;
   updated_at: string;
+};
+
+type UserProfile = {
+  id: string;
+  username: string;
+  display_name: string;
+  bio: string;
+  profile_picture: string;
+  followers: number;
+  followed: number;
+  score: number;
 };
