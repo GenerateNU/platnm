@@ -1,10 +1,14 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 
-const SongCard = () => {
+interface SongCardProps {
+  mediaName: string;
+}
+
+const SongCard: React.FC<SongCardProps> = ({ mediaName }: SongCardProps) => {
   const image = require("@/assets/images/placeholder-image.png");
   const [releaseDate, setReleaseDate] = useState(new Date());
-  const [songName, setSongName] = useState("Name of Song");
+  // const [songName, setSongName] = useState("Name of Song");
   const [artistName, setArtistName] = useState("Artist Name");
 
   return (
@@ -14,7 +18,7 @@ const SongCard = () => {
         <Text style={styles.releaseDate}>
           {releaseDate.toLocaleDateString()}
         </Text>
-        <Text style={styles.songName}>{songName}</Text>
+        <Text style={styles.songName}>{mediaName}</Text>
         <Text style={styles.artistName}>{artistName} • Song</Text>
       </View>
       <TouchableOpacity style={styles.seeAlbumButton}>

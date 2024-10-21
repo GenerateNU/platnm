@@ -11,14 +11,10 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({ title }) => {
 
   return (
     <SafeAreaView style={styles.headerContainer}>
-      {/* Back Button */}
       <TouchableOpacity onPress={() => navigation.goBack()}>
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
-
-      <SafeAreaView style={styles.safeArea}>
-        <Text style={styles.headerTitle}>{title}</Text>
-      </SafeAreaView>
+      <Text style={styles.headerTitle}>{title}</Text>
     </SafeAreaView>
   );
 };
@@ -31,19 +27,9 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   backText: {
-    position: "absolute",
-    left: 10,
-    bottom: 10,
     color: "#B7B6B6",
     fontSize: 16,
-    marginLeft: 10,
-  },
-  safeArea: {
-    padding: 20,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    flex: 1,
+    marginLeft: 20,
   },
   headerTitle: {
     fontSize: 22,
@@ -52,6 +38,7 @@ const styles = StyleSheet.create({
     fontFamily: "Roboto",
     borderRadius: 5,
     padding: 5,
+    marginLeft: "14%",
   },
 });
 

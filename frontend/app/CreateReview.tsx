@@ -10,14 +10,17 @@ import DateInputRating from "@/components/DateInputRating";
 import StarRate from "@/components/StarRate";
 import CommentRating from "@/components/CommentRating";
 import { Divider } from "react-native-paper";
-import { useNavigation } from "expo-router";
 import SongCard from "@/components/SongCard";
 import HeaderComponent from "@/components/HeaderComponent";
 import DraftButton from "@/components/DraftButton";
 import NextButton from "@/components/NextButton";
 import { Double } from "react-native/Libraries/Types/CodegenTypes";
+import { useLocalSearchParams } from "expo-router";
 
-const Reviews = () => {
+const CreateReview = () => {
+  const { mediaName } = useLocalSearchParams<{
+    mediaName: string;
+  }>();
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
 
@@ -34,7 +37,7 @@ const Reviews = () => {
       <ScrollView style={styles.container}>
         <View>
           <HeaderComponent title="Log Song" />
-          <SongCard />
+          <SongCard mediaName={mediaName} />
           <DateInputRating />
           <Divider />
           <StarRate onRatingChange={handleRatingChange} />
@@ -65,4 +68,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Reviews;
+export default CreateReview;

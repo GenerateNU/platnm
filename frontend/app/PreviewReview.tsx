@@ -1,17 +1,7 @@
 import React from "react";
-import {
-  Text,
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  Keyboard,
-  SafeAreaView,
-  ScrollView,
-} from "react-native";
+import { View, StyleSheet, ScrollView } from "react-native";
 import Visibility from "@/components/Visibility";
 import { Divider } from "react-native-paper";
-import { useNavigation } from "expo-router";
 import HeaderComponent from "@/components/HeaderComponent";
 
 import Tags from "@/components/Tags";
@@ -22,14 +12,16 @@ import PublishButton from "@/components/PublishButton";
 import { useLocalSearchParams } from "expo-router";
 
 const PreviewReview = () => {
-  const { rating, review } = useLocalSearchParams();
-  const navigation = useNavigation(); // Get navigation object
+  const { rating, review } = useLocalSearchParams<{
+    rating: string;
+    review: string;
+  }>();
 
   return (
     <View style={styles.container}>
       <HeaderComponent title="Preview Review" />
       <ScrollView>
-        <ReviewCard rating={rating} review={review} />
+        <ReviewCard rating={parseFloat(rating)} review={review} />
         <Divider />
         <Tags />
         <Divider />
@@ -39,7 +31,7 @@ const PreviewReview = () => {
       </ScrollView>
       <View style={styles.buttonContainer}>
         <DraftButton />
-        <PublishButton rating={rating} review={review} />
+        <PublishButton rating={parseFloat(rating)} review={review} />
       </View>
     </View>
   );

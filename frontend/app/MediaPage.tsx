@@ -7,13 +7,15 @@ import MediaCard from "@/components/media/MediaCard";
 import ReviewStats from "@/components/media/ReviewStats";
 import TopReview from "@/components/media/TopReview";
 import axios from "axios";
+import { useNavigation } from "expo-router";
 
-export default function MediaScreen() {
+export default function MediaPage() {
   const insets = useSafeAreaInsets();
 
   const [media, setMedia] = useState<Media>();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [rating, setReviewAvgRating] = useState<number | null>(null);
+  const navigation = useNavigation();
 
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -39,7 +41,15 @@ export default function MediaScreen() {
         </ThemedView>
         <ThemedView style={styles.buttonContainer}>
           <ThemedView style={styles.addReviewContainer}>
-            <Button color={"white"} title="Add rating" />
+            <Button
+              onPress={() =>
+                navigation.navigate("CreateReview", {
+                  mediaName: media.title,
+                })
+              }
+              color={"white"}
+              title="Add rating"
+            />
           </ThemedView>
           <ThemedView style={styles.saveReviewContainer}>
             <Button color={"white"} title="Save" />
