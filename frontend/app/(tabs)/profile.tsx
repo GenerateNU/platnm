@@ -125,7 +125,7 @@ export default function ProfileScreen() {
                 style={styles.profileImage}
                 resizeMode="cover"
               />
-            ) : null}{" "}
+            ) : null}
             {/* Don't render anything if there's no profile picture */}
             <TouchableOpacity onPress={handleEditPress} style={styles.editIcon}>
               <Icon name="edit-2" size={20} color="#888" />
