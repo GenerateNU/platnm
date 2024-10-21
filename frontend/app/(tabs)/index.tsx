@@ -1,4 +1,5 @@
 import { Image, StyleSheet } from "react-native";
+import { router } from "expo-router";
 
 import { HelloWave } from "@/components/HelloWave";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
@@ -6,6 +7,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import OnboardButton from "@/components/onboarding/OnboardButton";
 
 export default function HomeScreen() {
   const [users, setUsers] = useState<User[]>([]);
@@ -60,6 +62,7 @@ export default function HomeScreen() {
           <ThemedText type="defaultSemiBold">app</ThemedText> to{" "}
           <ThemedText type="defaultSemiBold">app-example</ThemedText>.
         </ThemedText>
+        <OnboardButton onPress={() => router.push("/onboard")} text="Onboard"/>
       </ThemedView>
     </ParallaxScrollView>
   );
