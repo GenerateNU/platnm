@@ -74,7 +74,7 @@
             '';
           };
          "frontend-run-wsl" = {
-            description = "Runs the frontend server in development mode.";
+            description = "Runs the frontend server in tunnel mode.";
             exec = ''
               cd "$DEVENV_ROOT"/frontend
               ${pkgs.nodejs}/bin/npx expo start --tunnel
