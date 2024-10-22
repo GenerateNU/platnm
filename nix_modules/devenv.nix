@@ -73,6 +73,13 @@
               ${pkgs.nodejs}/bin/npm run start
             '';
           };
+         "frontend-run-wsl" = {
+            description = "Runs the frontend server in development mode.";
+            exec = ''
+              cd "$DEVENV_ROOT"/frontend
+              ${pkgs.nodejs}/bin/npx expo start --tunnel
+            '';
+         };
         };
       };
     };
