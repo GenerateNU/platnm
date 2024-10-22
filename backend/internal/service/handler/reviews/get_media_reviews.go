@@ -28,9 +28,7 @@ func (h *Handler) GetReviewsById(c *fiber.Ctx, mediaType string) error {
 
 	for _, r := range reviews {
 		rating := float64(r.Rating)
-		if err == nil { // Only append if conversion succeeds
-			scores = append(scores, rating)
-		}
+		scores = append(scores, rating)
 	}
 
 	var rating = getAve(scores)
