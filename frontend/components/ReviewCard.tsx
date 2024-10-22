@@ -13,7 +13,7 @@ interface ReviewCardProps {
 
 const ReviewCard: React.FC<ReviewCardProps> = ({ rating, comment }) => {
   const [profilePicture, setProfilePicture] = useState(
-    require("@/assets/images/placeholder-profile.png")
+    require("@/assets/images/placeholder-profile.png"),
   );
   const [displayName, setDisplayName] = useState("Name");
   const [username, setUsername] = useState("@username");

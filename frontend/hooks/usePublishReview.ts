@@ -11,7 +11,7 @@ function usePublishReview() {
     mediaId: number,
     comment: string,
     rating: number,
-    draft: boolean
+    draft: boolean,
   ) => {
     return axios
       .post(`${BASE_URL}/reviews`, {

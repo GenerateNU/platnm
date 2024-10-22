@@ -28,7 +28,7 @@ const PreviewReview = () => {
       parseInt(mediaId),
       review,
       parseFloat(rating),
-      draft
+      draft,
     );
   };
 
