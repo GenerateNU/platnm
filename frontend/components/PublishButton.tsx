@@ -4,36 +4,11 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "expo-router";
 import axios from "axios";
 
-interface ReviewCardProps {
-  rating: number;
-  review: string;
+interface PublishButtonProps {
+  handleClick: () => void;
 }
 
-const PublishButton: React.FC<ReviewCardProps> = ({ rating, review }) => {
-  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-  const navigation = useNavigation();
-
-  const handleClick = () => {
-    console.log("Publishing review");
-    navigation.navigate("MediaPage");
-
-    // axios
-    //   .post(`${BASE_URL}/reviews`, {
-    //     user_id: "2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e",
-    //     media_type: "track",
-    //     media_id: 2,
-    //     comment: review,
-    //     rating: parseInt(rating.toString()),
-    //   })
-    //   .then((response) => {
-    //     navigation.navigate("/MediaScreen");
-    //     console.log(response);
-    //   })
-    //   .catch((error) => {
-    //     console.error(error);
-    //   });
-  };
-
+const PublishButton: React.FC<PublishButtonProps> = ({ handleClick }) => {
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.button} onPress={handleClick}>

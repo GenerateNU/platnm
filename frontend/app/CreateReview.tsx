@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useLocalSearchParams, useNavigation } from "expo-router";
 import {
   View,
   StyleSheet,
@@ -6,23 +7,33 @@ import {
   Keyboard,
   ScrollView,
 } from "react-native";
+import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
+import { Divider } from "react-native-paper";
+
 import DateInputRating from "@/components/DateInputRating";
 import StarRate from "@/components/StarRate";
 import CommentRating from "@/components/CommentRating";
-import { Divider } from "react-native-paper";
 import SongCard from "@/components/SongCard";
 import HeaderComponent from "@/components/HeaderComponent";
 import DraftButton from "@/components/DraftButton";
 import NextButton from "@/components/NextButton";
+import { usePublishReview } from "@/hooks/usePublishReview";
 import { Double } from "react-native/Libraries/Types/CodegenTypes";
-import { useLocalSearchParams } from "expo-router";
 
 const CreateReview = () => {
-  const { mediaName } = useLocalSearchParams<{
+  const { mediaName, mediaType, mediaId } = useLocalSearchParams<{
     mediaName: string;
+    mediaType: string;
+    mediaId: string;
   }>();
-  const [rating, setRating] = useState(0);
+  const [rating, setRating] = useState(1);
   const [review, setReview] = useState("");
+  const { publishReview } = usePublishReview();
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
+
+  const handleDraftSubmit = () => {
+    publishReview(mediaType, parseInt(mediaId), review, rating, true);
+  };
 
   const handleRatingChange = (newRating: Double) => {
     setRating(newRating);
@@ -32,39 +43,49 @@ const CreateReview = () => {
     setReview(newReview);
   };
 
+  const handleNextClick = () => {
+    if (rating !== 0) {
+      navigation.navigate("PreviewReview", {
+        rating: rating * 2, // to handle current 1-5 vs. 1-10 scale
+        review,
+        mediaName,
+        mediaType,
+        mediaId,
+      });
+    }
+  };
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <ScrollView style={styles.container}>
-        <View>
-          <HeaderComponent title="Log Song" />
+      <View style={styles.container}>
+        <HeaderComponent title="Log Song" />
+        <ScrollView>
           <SongCard mediaName={mediaName} />
           <DateInputRating />
           <Divider />
           <StarRate onRatingChange={handleRatingChange} />
           <Divider />
           <CommentRating onReviewChange={handleReviewChange} />
-          <View style={styles.buttonContainer}>
-            <DraftButton />
-            <NextButton
-              completed={rating !== 0}
-              rating={rating}
-              review={review}
-            />
-          </View>
+        </ScrollView>
+
+        <View style={styles.buttonContainer}>
+          <DraftButton handleClick={() => handleDraftSubmit()} />
+          <NextButton completed={rating !== 0} handleClick={handleNextClick} />
         </View>
-      </ScrollView>
+      </View>
     </TouchableWithoutFeedback>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     backgroundColor: "#ffffff",
   },
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    padding: 10,
+    padding: 20,
   },
 });
 

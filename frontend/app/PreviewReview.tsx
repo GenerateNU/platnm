@@ -9,19 +9,34 @@ import Nudge from "@/components/Nudge";
 import ReviewCard from "@/components/ReviewCard";
 import DraftButton from "@/components/DraftButton";
 import PublishButton from "@/components/PublishButton";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useNavigation } from "expo-router";
+import { usePublishReview } from "@/hooks/usePublishReview";
 
 const PreviewReview = () => {
-  const { rating, review } = useLocalSearchParams<{
+  const { rating, review, mediaType, mediaId } = useLocalSearchParams<{
     rating: string;
     review: string;
+    mediaName: string;
+    mediaType: string;
+    mediaId: string;
   }>();
+
+  const { publishReview } = usePublishReview();
+  const handleSubmit = (draft: boolean) => {
+    publishReview(
+      mediaType,
+      parseInt(mediaId),
+      review,
+      parseFloat(rating),
+      draft
+    );
+  };
 
   return (
     <View style={styles.container}>
       <HeaderComponent title="Preview Review" />
       <ScrollView>
-        <ReviewCard rating={parseFloat(rating)} review={review} />
+        <ReviewCard rating={parseFloat(rating)} comment={review} />
         <Divider />
         <Tags />
         <Divider />
@@ -30,8 +45,8 @@ const PreviewReview = () => {
         <Nudge />
       </ScrollView>
       <View style={styles.buttonContainer}>
-        <DraftButton />
-        <PublishButton rating={parseFloat(rating)} review={review} />
+        <DraftButton handleClick={() => handleSubmit(true)} />
+        <PublishButton handleClick={() => handleSubmit(false)} />
       </View>
     </View>
   );
@@ -46,11 +61,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     padding: 20,
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "#fff", // Optional: Add a background color if needed
+    backgroundColor: "#fff",
   },
 });
 

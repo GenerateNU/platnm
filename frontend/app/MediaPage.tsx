@@ -1,67 +1,104 @@
-import { useState, useEffect } from "react";
-import { Button, StyleSheet, ScrollView, Text } from "react-native";
+import { useState, useEffect, useCallback } from "react";
+import { Button, StyleSheet, ScrollView, View } from "react-native";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ThemedView } from "@/components/ThemedView";
 import MediaCard from "@/components/media/MediaCard";
 import ReviewStats from "@/components/media/ReviewStats";
-import TopReview from "@/components/media/TopReview";
 import axios from "axios";
-import { useNavigation } from "expo-router";
+import { useFocusEffect, useNavigation } from "expo-router";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+
+import ReviewCard from "@/components/ReviewCard";
+import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
+
+type MediaResponse = {
+  media: Media;
+  reviewCount: number;
+};
 
 export default function MediaPage() {
-  const insets = useSafeAreaInsets();
-
-  const [media, setMedia] = useState<Media>();
+  const [media, setMedia] = useState<MediaResponse>();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [rating, setReviewAvgRating] = useState<number | null>(null);
-  const navigation = useNavigation();
 
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
+
+  const insets = useSafeAreaInsets();
+  const height = useBottomTabBarHeight();
 
   useEffect(() => {
     axios
-      .get(`${BASE_URL}/media?sort=recent`)
-      .then((response) => setMedia(response.data[0])) // TODO: update this hardcoding
-      .catch((error) => console.error(error));
-    axios
-      .get(`${BASE_URL}/reviews/track/1`) // TODO: update this hardcoding
-      .then((response) => {
-        setReviews(response.data.reviews);
-        setReviewAvgRating(response.data.avgRating || null);
-      })
+      .get(`${BASE_URL}/media?sort=review`)
+      .then((response) => setMedia(response.data[1])) // TODO: update this hardcoding
       .catch((error) => console.error(error));
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      if (media) {
+        axios
+          .get(
+            `${BASE_URL}/reviews/${media.media.media_type}/${media.media.id}`
+          )
+          .then((response) => {
+            setReviews(response.data.reviews);
+            // convert to
+            setReviewAvgRating(response.data.avgRating.toFixed(2) / 2 || null);
+          })
+          .catch((error) => console.error(error));
+      }
+    }, [media])
+  );
+
   return (
     media && (
-      <ScrollView style={{ ...styles.scrollView, paddingTop: insets.top }}>
-        <ThemedView>
-          <MediaCard media={media} />
-        </ThemedView>
-        <ThemedView style={styles.buttonContainer}>
-          <ThemedView style={styles.addReviewContainer}>
-            <Button
-              onPress={() =>
-                navigation.navigate("CreateReview", {
-                  mediaName: media.title,
-                })
-              }
-              color={"white"}
-              title="Add rating"
-            />
+      <View style={{ backgroundColor: "#FFF" }}>
+        <ScrollView
+          style={{
+            ...styles.scrollView,
+            marginTop: insets.top,
+          }}
+          contentContainerStyle={{
+            paddingBottom: height - insets.top, // Add padding at the bottom equal to the height of the bottom tab bar
+          }}
+        >
+          <ThemedView>
+            <MediaCard media={media.media} />
           </ThemedView>
-          <ThemedView style={styles.saveReviewContainer}>
-            <Button color={"white"} title="Save" />
+          <ThemedView style={styles.buttonContainer}>
+            <ThemedView style={styles.addReviewContainer}>
+              <Button
+                onPress={() =>
+                  navigation.navigate("CreateReview", {
+                    mediaName: media.media.title,
+                    mediaType: media.media.media_type,
+                    mediaId: media.media.id,
+                  })
+                }
+                color={"white"}
+                title="Add rating"
+              />
+            </ThemedView>
+            <ThemedView style={styles.saveReviewContainer}>
+              <Button color={"white"} title="Save" />
+            </ThemedView>
           </ThemedView>
-        </ThemedView>
-        <ThemedView style={styles.titleContainer}>
-          {rating && <ReviewStats rating={rating} reviews={reviews} />}
-        </ThemedView>
-        <ThemedView>
-          <TopReview reviews={reviews} />
-        </ThemedView>
-      </ScrollView>
+          <ThemedView style={styles.titleContainer}>
+            {rating && <ReviewStats rating={rating} reviews={reviews} />}
+          </ThemedView>
+          <ThemedView>
+            {reviews?.map((review) => (
+              <ReviewCard
+                key={review.id}
+                rating={review.rating}
+                comment={review.comment}
+              />
+            ))}
+          </ThemedView>
+        </ScrollView>
+      </View>
     )
   );
 }

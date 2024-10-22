@@ -8,15 +8,14 @@ const MusicDisk = require("../assets/images/music-disk.png");
 
 interface ReviewCardProps {
   rating: number;
-  review: string;
+  comment: string;
 }
 
-const ReviewCard: React.FC<ReviewCardProps> = ({ rating, review }) => {
+const ReviewCard: React.FC<ReviewCardProps> = ({ rating, comment }) => {
   const [profilePicture, setProfilePicture] = useState(
     require("@/assets/images/placeholder-profile.png")
   );
   const [displayName, setDisplayName] = useState("Name");
-  const [songName, setSongName] = useState("Song Name");
   const [username, setUsername] = useState("@username");
 
   return (
@@ -31,15 +30,14 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ rating, review }) => {
       </View>
       <View style={styles.review}>
         <StarRating
-          rating={rating}
+          rating={rating / 2} // 5 star rating system but DB is 1 to 10.
           onChange={() => {}}
           emptyColor="#2C2C2C"
           color="#2C2C2C"
           animationConfig={{ scale: 1 }}
           starSize={20}
         />
-        <Text style={styles.songName}>{songName}</Text>
-        <Text style={styles.reviewText}>{review}</Text>
+        <Text style={styles.commentText}>{comment}</Text>
         <View style={styles.voteContainer}>
           <IconButton
             style={styles.vote}
@@ -103,7 +101,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginTop: 10,
   },
-  reviewText: {
+  commentText: {
     fontSize: 14,
     marginTop: 5,
     height: "auto",

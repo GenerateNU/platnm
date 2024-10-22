@@ -5,17 +5,10 @@ import { useNavigation } from "expo-router";
 
 interface NextButtonProps {
   completed: boolean;
-  rating: number;
-  review: string;
+  handleClick: () => void;
 }
 
-const NextButton: React.FC<NextButtonProps> = ({
-  completed,
-  rating,
-  review,
-}) => {
-  const navigation = useNavigation();
-
+const NextButton: React.FC<NextButtonProps> = ({ completed, handleClick }) => {
   return (
     <View style={styles.container}>
       <TouchableOpacity
@@ -23,14 +16,7 @@ const NextButton: React.FC<NextButtonProps> = ({
           styles.button,
           { backgroundColor: completed ? "#000" : "#D9D9D9" },
         ]}
-        onPress={() => {
-          if (completed) {
-            navigation.navigate("PreviewReview", {
-              rating: rating,
-              review: review,
-            });
-          }
-        }}
+        onPress={() => handleClick()}
         disabled={!completed}
       >
         <View style={styles.row}>
