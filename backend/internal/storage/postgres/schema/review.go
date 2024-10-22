@@ -18,10 +18,11 @@ type ReviewRepository struct {
 }
 
 const (
-	userFKeyConstraint        = "review_user_id_fkey"
-	uniqueUserMediaConstraint = "unique_user_media"
+	userFKeyConstraint          = "review_user_id_fkey"
+	uniqueUserMediaConstraint   = "unique_user_media"
+	commentUserFKeyConstraint   = "fk_user"
+	commentReviewFKeyConstraint = "fk_review"
 )
-
 
 func (r *ReviewRepository) ReviewExists(ctx context.Context, id string) (bool, error) {
 	rows, err := r.Query(ctx, `SELECT * FROM review WHERE id = $1`, id)
@@ -69,6 +70,27 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 	return review, nil
 }
 
+func (r *ReviewRepository) CreateComment(ctx context.Context, comment *models.Comment) (*models.Comment, error) {
+	query := `
+    INSERT INTO comment (text, review_id, user_id, created_at)
+    VALUES ($1, $2, $3, NOW())
+    RETURNING id, text, review_id, user_id, created_at;
+`
+
+	if err := r.QueryRow(ctx, query, comment.Text, comment.ReviewID, comment.UserID).Scan(
+		&comment.ID, &comment.Text, &comment.ReviewID, &comment.UserID, &comment.CreatedAt); err != nil {
+		if errs.IsForeignKeyViolation(err, commentUserFKeyConstraint) {
+			return nil, errs.NotFound("user", "id", comment.UserID)
+		} else if errs.IsForeignKeyViolation(err, commentReviewFKeyConstraint) {
+			return nil, errs.NotFound("review", "id", comment.UserID)
+		}
+
+		return nil, err
+	}
+
+	return comment, nil
+}
+
 func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error) {
 
 	rows, err := r.Query(ctx, "SELECT * FROM review WHERE user_id = $1", id)
@@ -95,6 +117,7 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 			&review.Comment,
 			&review.CreatedAt,
 			&review.UpdatedAt,
+			&review.Draft,
 		); err != nil {
 			return nil, err
 		}
@@ -122,7 +145,7 @@ func (r *ReviewRepository) UpdateReview(ctx context.Context, review *models.Revi
 
 	// QueryRow with both rating and comment
 	err := r.QueryRow(ctx, query, review.Comment, review.Rating, review.ID).
-		Scan(&updatedReview.ID, &updatedReview.UserID, &updatedReview.Comment, &updatedReview.Rating, &updatedReview.UpdatedAt)
+		Scan(&updatedReview.ID, &updatedReview.UserID, &updatedReview.Comment, &updatedReview.Rating, &updatedReview.UpdatedAt, &review.Draft)
 
 	if err != nil {
 		return nil, err
@@ -140,7 +163,7 @@ func (r *ReviewRepository) GetExistingReview(ctx context.Context, id string) (*m
 		WHERE id = $1`, id)
 
 	// Scan the row into the review object
-	err := row.Scan(&review.ID, &review.UserID, &review.MediaType, &review.MediaID, &review.Rating, &review.Comment, &review.CreatedAt, &review.UpdatedAt)
+	err := row.Scan(&review.ID, &review.UserID, &review.MediaType, &review.MediaID, &review.Rating, &review.Comment, &review.CreatedAt, &review.UpdatedAt, &review.Draft)
 	if err != nil {
 		// If no rows were found, return nil, no error
 		if err == sql.ErrNoRows {

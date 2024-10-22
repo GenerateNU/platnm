@@ -7,16 +7,6 @@ import { ThemedView } from "@/components/ThemedView";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-type User = {
-  user_id: string;
-  username: string;
-  display_name: string;
-  profile_picture: string;
-  linked_account: string;
-  created_at: string;
-  updated_at: string;
-};
-
 export default function HomeScreen() {
   const [users, setUsers] = useState<User[]>([]);
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
