@@ -62,7 +62,7 @@ export default function HomeScreen() {
           <ThemedText type="defaultSemiBold">app</ThemedText> to{" "}
           <ThemedText type="defaultSemiBold">app-example</ThemedText>.
         </ThemedText>
-        <OnboardButton onPress={() => router.push("/onboard")} text="Onboard"/>
+        <OnboardButton onPress={() => router.push("/onboard")} text="Onboard" />
       </ThemedView>
     </ParallaxScrollView>
   );

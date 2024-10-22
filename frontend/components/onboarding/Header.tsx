@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
 
 interface HeaderProps {
   title: string;
@@ -16,19 +16,17 @@ const OnboardingHeader: React.FC<HeaderProps> = ({ title, subtitle }) => {
 };
 
 const styles = StyleSheet.create({
-
   title: {
     fontSize: 25,
-    color: '#000000',
-    fontWeight: 'bold',
+    color: "#000000",
+    fontWeight: "bold",
   },
   container: {
     gap: 11,
-
   },
   subtitle: {
     fontSize: 18,
-    color: '#7C7C7C',
+    color: "#7C7C7C",
   },
 });
 

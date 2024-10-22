@@ -1,146 +1,199 @@
-import React, { useState, useEffect } from 'react';
-import { View, TextInput, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import CustomButton from '@/components/onboarding/OnboardButton';
-import Header from '@/components/onboarding/Header';
-import { useSharedValue, withTiming } from 'react-native-reanimated';
-import ProgressBar from '@/components/onboarding/ProgressBar'; 
-import { Ionicons } from '@expo/vector-icons'; 
-import { router } from 'expo-router';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  TextInput,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
+import CustomButton from "@/components/onboarding/OnboardButton";
+import Header from "@/components/onboarding/Header";
+import { useSharedValue, withTiming } from "react-native-reanimated";
+import ProgressBar from "@/components/onboarding/ProgressBar";
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 
 const slides = [
-  { id: 1, title: "Let's get started", question: 'What is your name?', placeholder: 'Enter Name' },
-  { id: 2, title: 'Account Information', question: 'What is your email?', placeholder: 'Enter Email' },
-  { id: 3, title: 'Create a Password', question: 'Pick a password', placeholder: 'Enter Password' },
-  { id: 4, title: 'Link Music Account', question: 'Link to your music account' },
+  {
+    id: 0,
+    title: "Let's get started",
+    question: "What is your name?",
+    placeholder: "Enter Name",
+  },
+  {
+    id: 1,
+    title: "Account Information",
+    question: "What is your email?",
+    placeholder: "Enter Email",
+  },
+  {
+    id: 2,
+    title: "Account Information",
+    question: "Pick a password",
+    placeholder: "Enter Password",
+  },
+  {
+    id: 3,
+    title: "Account Information",
+    question: "Pick a username",
+    placeholder: "Enter Username",
+  },
+  {
+    id: 4,
+    title: "Link Music Account",
+    question: "Link to your music account",
+  },
 ];
 
 const OnboardingCarousel: React.FC = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [currentSlide, setCurrentSlide] = useState(0); // Start from slide 0
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [username, setUsername] = useState("");
   const [passwordMatch, setPasswordMatch] = useState(true);
+  const [inputValid, setInputValid] = useState(false);
+  const [tried, setTried] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
-  const [passwordVisible, setPasswordVisible] = useState(false); 
-  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false); 
-
-  const progressBar1 = useSharedValue(0);  // progress bar progress
+  const progressBar1 = useSharedValue(0);
   const progressBar2 = useSharedValue(0);
 
-  // Check if passwords match
+  const emailFormat = /^[ ]*([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})[ ]*$/i;
+
   useEffect(() => {
     if (currentSlide === 2) {
       setPasswordMatch(password === confirmPassword);
     }
   }, [password, confirmPassword, currentSlide]);
 
-  // Function to handle slide changes and reset inputs
   const handleSlideChange = (newSlideIndex: number) => {
     setPasswordVisible(false);
-    setConfirmPasswordVisible(false);
     setCurrentSlide(newSlideIndex);
 
-    // Update progress bar
-    if (newSlideIndex === 0) {
-      progressBar1.value = withTiming(0, { duration: 500 });
-      progressBar2.value = withTiming(0, { duration: 500 });
-    } else if (newSlideIndex === 1) {
-      progressBar1.value = withTiming(1, { duration: 500 });
-      progressBar2.value = withTiming(0, { duration: 500 });
-    } else {
-      progressBar1.value = withTiming(1, { duration: 500 });
-      progressBar2.value = withTiming((newSlideIndex - 1) / 3, { duration: 500 });
-    }
+    progressBar1.value = withTiming(newSlideIndex > 0 ? 1 : 0, {
+      duration: 500,
+    });
+    progressBar2.value = withTiming(
+      newSlideIndex > 1 ? (newSlideIndex - 1) / 3 : 0,
+      { duration: 500 },
+    );
   };
 
-  // Move to the next slide (forwards)
   const handleNext = () => {
     if (currentSlide < slides.length - 1) {
-      handleSlideChange(currentSlide + 1);
+      if (inputValid || (currentSlide === 2 && passwordMatch)) {
+        handleSlideChange(currentSlide + 1);
+        setInputValid(false);
+      } else {
+        setTried(true);
+      }
     } else {
-      alert(`Onboarding Completed! Name: ${name}, Email: ${email}, Password: ${password}`);
+      alert(
+        `Onboarding Completed! Name: ${name}, Email: ${email}, Password: ${password}, Username: ${username}`,
+      );
       router.push("/");
     }
   };
 
   return (
     <View style={styles.container}>
-      <Header title={slides[currentSlide].title} subtitle={slides[currentSlide].question} />
+      <Header
+        title={slides[currentSlide].title}
+        subtitle={slides[currentSlide].question}
+      />
+
       {currentSlide === 2 ? (
         <View>
-          <View>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter Password"
-              secureTextEntry={!passwordVisible}
-              value={password}
-              onChangeText={setPassword}
-            />
-            <TouchableOpacity
-              style={styles.eyeIcon}
-              onPress={() => setPasswordVisible(!passwordVisible)}
-            >
-              <Ionicons name={passwordVisible ? 'eye-off' : 'eye'} size={24} color="gray" />
-            </TouchableOpacity>
-          </View>
-
-          <View>
-            <TextInput
-              style={styles.input}
-              placeholder="Confirm Password"
-              secureTextEntry={!confirmPasswordVisible}
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-            />
-            <TouchableOpacity
-              style={styles.eyeIcon}
-              onPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
-            >
-              <Ionicons name={confirmPasswordVisible ? 'eye-off' : 'eye'} size={24} color="gray" />
-            </TouchableOpacity>
-            {!passwordMatch && <Text style={styles.errorText}>Passwords do not match.</Text>}
-
-          </View>
-        </View>
-      ) : (
-        currentSlide === 3 ? (
-          <View style={styles.buttonGroup}>
-            <CustomButton 
-              text={'Log in with Spotify'} 
-              onPress={() => {
-                alert('Open with Spotify');
-                handleNext();
-              }} 
-              backgroundColor='#1DB954' 
-            />
-            <CustomButton 
-              text={'Log in with Apple'} 
-              onPress={() => {
-                alert('Open with Apple Music');
-                handleNext();
-              }} 
-            />            
-          </View>
-        ) : (
           <TextInput
             style={styles.input}
-            keyboardType={currentSlide === 1 ? 'email-address' : 'default'}
-            placeholder={slides[currentSlide].placeholder}
-            autoComplete={currentSlide === 1 ? 'email' : 'name'}
-            value={currentSlide === 1 ? name : email}
-            onChangeText={currentSlide === 1 ? setName : setEmail}
+            placeholder="Enter Password"
+            secureTextEntry={!passwordVisible}
+            value={password}
+            onChangeText={setPassword}
           />
-        )
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setPasswordVisible(!passwordVisible)}
+          >
+            <Ionicons
+              name={passwordVisible ? "eye-off" : "eye"}
+              size={24}
+              color="gray"
+            />
+          </TouchableOpacity>
+          <TextInput
+            style={styles.input}
+            placeholder="Confirm Password"
+            secureTextEntry={!passwordVisible}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
+          {!passwordMatch && (
+            <Text style={styles.errorText}>Passwords do not match.</Text>
+          )}
+        </View>
+      ) : currentSlide === 4 ? (
+        <View style={styles.buttonGroup}>
+          <CustomButton
+            text={"Log in with Spotify"}
+            onPress={() => alert("Open with Spotify")}
+            backgroundColor="#1DB954"
+          />
+          <CustomButton
+            text={"Log in with Apple"}
+            onPress={() => alert("Open with Apple Music")}
+          />
+        </View>
+      ) : (
+        <View>
+          {tried && !inputValid && (
+            <Text style={styles.errorText}>Is this correct?</Text>
+          )}
+          <TextInput
+            style={[
+              styles.input,
+              !inputValid && tried && { borderColor: "#8b0000" },
+            ]}
+            keyboardType={currentSlide === 1 ? "email-address" : "default"}
+            placeholder={slides[currentSlide].placeholder}
+            autoComplete={currentSlide === 1 ? "email" : "off"}
+            value={
+              currentSlide === 0
+                ? name
+                : currentSlide === 1
+                  ? email
+                  : currentSlide === 3
+                    ? username
+                    : ""
+            }
+            onChangeText={
+              currentSlide === 0
+                ? setName
+                : currentSlide === 1
+                  ? setEmail
+                  : setUsername
+            }
+            onBlur={() => {
+              if (currentSlide === 1) {
+                setInputValid(emailFormat.test(email));
+              } else if (currentSlide === 0 || currentSlide === 3) {
+                setInputValid(true);
+              }
+              setTried(false);
+            }}
+          />
+        </View>
       )}
 
       <View style={styles.stickyContainer}>
-        {currentSlide === 3 ? null : <CustomButton text="Continue" onPress={handleNext} />}
+        <CustomButton text="Continue" onPress={handleNext} />
         <ProgressBar
           progress1={progressBar1}
           progress2={progressBar2}
           currentSlide={currentSlide}
-          handleSlideChange={handleSlideChange} // Pass down the handleSlideChange function
+          handleSlideChange={handleNext}
         />
       </View>
     </View>
@@ -150,15 +203,15 @@ const OnboardingCarousel: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: 150,
+    marginTop: 230,
     marginHorizontal: 22,
     gap: 65,
   },
   input: {
     height: 50,
     borderWidth: 1,
-    width: '100%',
-    borderColor: '#33333314',
+    width: "100%",
+    borderColor: "#33333314",
     borderRadius: 10,
     paddingHorizontal: 15,
     fontSize: 16,
@@ -166,24 +219,26 @@ const styles = StyleSheet.create({
   },
 
   eyeIcon: {
-    position: 'absolute',
+    position: "absolute",
     right: 15,
     top: 15,
   },
   stickyContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 80,
-    width: '100%',
-    alignItems: 'center',
+    width: "100%",
+    alignItems: "center",
   },
   buttonGroup: {
-    width: '100%',
+    width: "100%",
     gap: 22,
   },
   errorText: {
-    color: 'red',
-    marginTop: 10,
+    color: "#8b0000",
     fontSize: 14,
+    position: "absolute",
+    bottom: 72,
+    paddingHorizontal: 5,
   },
 });
 
