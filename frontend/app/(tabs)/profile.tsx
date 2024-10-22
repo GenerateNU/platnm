@@ -29,7 +29,6 @@ export default function ProfileScreen() {
     const fetchUserProfile = async () => {
       try {
         const response = await axios.get(`${BASE_URL}/users/profile/${userId}`);
-        console.log("User profile:", response.data);
         setUserProfile(response.data);
       } catch (error) {
         console.error("Error fetching user profile:", error);
@@ -171,7 +170,7 @@ export default function ProfileScreen() {
               <ReviewCard
                 key={index}
                 rating={review.rating}
-                review={review.comment}
+                comment={review.comment}
               />
             );
           })
