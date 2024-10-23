@@ -5,6 +5,8 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import CustomButton from "@/components/onboarding/OnboardButton";
 import Header from "@/components/onboarding/Header";
@@ -12,6 +14,7 @@ import { useSharedValue, withTiming } from "react-native-reanimated";
 import ProgressBar from "@/components/onboarding/ProgressBar";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import axios from "axios";
 
 const slides = [
   {
@@ -45,6 +48,8 @@ const slides = [
   },
 ];
 
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
 const OnboardingCarousel: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0); // Start from slide 0
   const [name, setName] = useState("");
@@ -56,6 +61,7 @@ const OnboardingCarousel: React.FC = () => {
   const [inputValid, setInputValid] = useState(false);
   const [tried, setTried] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const progressBar1 = useSharedValue(0);
   const progressBar2 = useSharedValue(0);
@@ -81,6 +87,30 @@ const OnboardingCarousel: React.FC = () => {
     );
   };
 
+  const handleSignUp = async () => {
+    setLoading(true);
+
+    await axios
+      .post(`${BASE_URL}/users`, {
+        DisplayName: name,
+        email: email,
+        password: password,
+        username: username,
+      })
+      .then((res) => {
+        if (res.data.error) {
+          alert("Error" + res.data.error);
+          return;
+        }
+        alert("Success \n You've got an account!");
+      })
+      .catch((error) => {
+        console.error("Error logging in:", error);
+        alert("Login Error" + error.message);
+      });
+    setLoading(false);
+  };
+
   const handleNext = () => {
     if (currentSlide < slides.length - 1) {
       if (inputValid || (currentSlide === 2 && passwordMatch)) {
@@ -90,9 +120,7 @@ const OnboardingCarousel: React.FC = () => {
         setTried(true);
       }
     } else {
-      alert(
-        `Onboarding Completed! Name: ${name}, Email: ${email}, Password: ${password}, Username: ${username}`,
-      );
+      handleSignUp;
       router.push("/");
     }
   };
@@ -106,13 +134,18 @@ const OnboardingCarousel: React.FC = () => {
 
       {currentSlide === 2 ? (
         <View>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Password"
-            secureTextEntry={!passwordVisible}
-            value={password}
-            onChangeText={setPassword}
-          />
+          <TouchableWithoutFeedback
+            onPress={Keyboard.dismiss}
+            accessible={false}
+          >
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Password"
+              secureTextEntry={!passwordVisible}
+              value={password}
+              onChangeText={setPassword}
+            />
+          </TouchableWithoutFeedback>
           <TouchableOpacity
             style={styles.eyeIcon}
             onPress={() => setPasswordVisible(!passwordVisible)}
@@ -123,13 +156,26 @@ const OnboardingCarousel: React.FC = () => {
               color="gray"
             />
           </TouchableOpacity>
-          <TextInput
-            style={styles.input}
-            placeholder="Confirm Password"
-            secureTextEntry={!passwordVisible}
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-          />
+          <TouchableWithoutFeedback
+            onPress={Keyboard.dismiss}
+            accessible={false}
+          >
+            <TextInput
+              style={styles.input}
+              placeholder="Confirm Password"
+              secureTextEntry={!passwordVisible}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              onBlur={
+                password.isWellFormed()
+                  ? () => {
+                      setInputValid(true);
+                      setTried(false);
+                    }
+                  : () => setTried(true)
+              }
+            />
+          </TouchableWithoutFeedback>
           {!passwordMatch && (
             <Text style={styles.errorText}>Passwords do not match.</Text>
           )}
@@ -149,46 +195,56 @@ const OnboardingCarousel: React.FC = () => {
       ) : (
         <View>
           {tried && !inputValid && (
-            <Text style={styles.errorText}>Is this correct?</Text>
+            <Text style={[styles.errorText, { bottom: 156 }]}>
+              Is this correct?
+            </Text>
           )}
-          <TextInput
-            style={[
-              styles.input,
-              !inputValid && tried && { borderColor: "#8b0000" },
-            ]}
-            keyboardType={currentSlide === 1 ? "email-address" : "default"}
-            placeholder={slides[currentSlide].placeholder}
-            autoComplete={currentSlide === 1 ? "email" : "off"}
-            value={
-              currentSlide === 0
-                ? name
-                : currentSlide === 1
-                  ? email
-                  : currentSlide === 3
-                    ? username
-                    : ""
-            }
-            onChangeText={
-              currentSlide === 0
-                ? setName
-                : currentSlide === 1
-                  ? setEmail
-                  : setUsername
-            }
-            onBlur={() => {
-              if (currentSlide === 1) {
-                setInputValid(emailFormat.test(email));
-              } else if (currentSlide === 0 || currentSlide === 3) {
-                setInputValid(true);
+          <TouchableWithoutFeedback
+            onPress={Keyboard.dismiss}
+            accessible={false}
+          >
+            <TextInput
+              style={[
+                styles.input,
+                !inputValid && tried && { borderColor: "#8b0000" },
+              ]}
+              keyboardType={currentSlide === 1 ? "email-address" : "default"}
+              placeholder={slides[currentSlide].placeholder}
+              autoComplete={currentSlide === 1 ? "email" : "off"}
+              value={
+                currentSlide === 0
+                  ? name
+                  : currentSlide === 1
+                    ? email
+                    : currentSlide === 3
+                      ? username
+                      : ""
               }
-              setTried(false);
-            }}
-          />
+              onChangeText={
+                currentSlide === 0
+                  ? setName
+                  : currentSlide === 1
+                    ? setEmail
+                    : setUsername
+              }
+              onBlur={() => {
+                if (currentSlide === 1) {
+                  setInputValid(emailFormat.test(email));
+                } else if (currentSlide === 0 || currentSlide === 3) {
+                  setInputValid(true);
+                }
+                setTried(false);
+              }}
+            />
+          </TouchableWithoutFeedback>
         </View>
       )}
 
       <View style={styles.stickyContainer}>
-        <CustomButton text="Continue" onPress={handleNext} />
+        <CustomButton
+          text={loading ? "Loading" : "Continue"}
+          onPress={handleNext}
+        />
         <ProgressBar
           progress1={progressBar1}
           progress2={progressBar2}
@@ -206,6 +262,7 @@ const styles = StyleSheet.create({
     marginTop: 230,
     marginHorizontal: 22,
     gap: 65,
+    color: "white",
   },
   input: {
     height: 50,
