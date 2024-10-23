@@ -13,7 +13,7 @@ interface ReviewCardProps {
 
 const ReviewCard: React.FC<ReviewCardProps> = ({ rating, comment }) => {
   const [profilePicture, setProfilePicture] = useState(
-    require("@/assets/images/placeholder-profile.png"),
+    require("@/assets/images/placeholder-profile.png")
   );
   const [displayName, setDisplayName] = useState("Name");
   const [username, setUsername] = useState("@username");
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#C4C4C4",
     padding: 10,
     flex: 1,
-    margin: 20,
+    marginVertical: 20,
     alignItems: "center",
     borderRadius: 15,
   },
