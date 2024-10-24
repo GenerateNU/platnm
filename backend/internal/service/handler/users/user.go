@@ -10,11 +10,13 @@ import (
 
 type Handler struct {
 	userRepository storage.UserRepository
+	playlistRepository storage.PlaylistRepository
 }
 
-func NewHandler(userRepository storage.UserRepository) *Handler {
+func NewHandler(userRepository storage.UserRepository, playlistRepository storage.PlaylistRepository) *Handler {
 	return &Handler{
 		userRepository,
+		playlistRepository,
 	}
 }
 

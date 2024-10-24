@@ -55,7 +55,7 @@ type VoteRepository interface {
 }
 
 type PlaylistRepository interface {
-	CreatePlaylist(ctx context.Context, playlist *models.Playlist) error
+	CreatePlaylist(ctx context.Context, playlist models.Playlist) error
 }
 
 // Repository storage of all repositories.
