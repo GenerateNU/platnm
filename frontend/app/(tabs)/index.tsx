@@ -1,4 +1,5 @@
 import { Image, StyleSheet } from "react-native";
+import { router } from "expo-router";
 
 import { HelloWave } from "@/components/HelloWave";
 import ParallaxScrollView from "@/components/ParallaxScrollView";

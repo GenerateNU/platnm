@@ -33,6 +33,7 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="onboard" options={{ headerShown: false }} />
         <Stack.Screen name="CreateReview" options={{ headerShown: false }} />
         <Stack.Screen name="PreviewReview" options={{ headerShown: false }} />
         <Stack.Screen name="MediaPage" options={{ headerShown: false }} />
