@@ -3,7 +3,6 @@ package recommendation
 import (
 	"github.com/gofiber/fiber/v2"
 	"platnm/internal/errs"
-	"fmt"
 )
 
 func (h *Handler) GetRecommendations(c *fiber.Ctx) error {

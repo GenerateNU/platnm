@@ -3,7 +3,6 @@ package recommendation
 import (
 	"platnm/internal/errs"
 	"platnm/internal/models"
-
 	"github.com/gofiber/fiber/v2"
 )
 
