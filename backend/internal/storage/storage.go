@@ -54,6 +54,9 @@ type VoteRepository interface {
 	DeleteVote(ctx context.Context, userID string, reviewID string) error
 }
 
+type PlaylistRepository interface {
+}
+
 // Repository storage of all repositories.
 type Repository struct {
 	User           UserRepository
