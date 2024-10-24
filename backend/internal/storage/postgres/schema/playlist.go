@@ -15,7 +15,8 @@ func (r *PlaylistRepository) CreatePlaylist(ctx context.Context, playlist models
 
 	query := `
 	INSERT INTO playlist (title, user_id, bio, cover_photo)
-	VALUES ($1 $2 $3 $4);`
+	VALUES ($1, $2, $3, $4);
+	`
 
 	_, err := r.Exec(ctx, query, playlist.Title, playlist.UserID, playlist.Bio, playlist.CoverPhoto)
 

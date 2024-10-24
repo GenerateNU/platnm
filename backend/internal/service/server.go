@@ -45,7 +45,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	})
 
 	repository := postgres.NewRepository(config.DB)
-	userHandler := users.NewHandler(repository.User)
+	userHandler := users.NewHandler(repository.User, repository.Playlist)
 	app.Route("/users", func(r fiber.Router) {
 		r.Get("/", userHandler.GetUsers)
 		r.Get("/:id", userHandler.GetUserById)
