@@ -15,7 +15,7 @@ function usePublishReview() {
   ) => {
     return axios
       .post(`${BASE_URL}/reviews`, {
-        user_id: "2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e",
+        user_id: "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
         media_type: mediaType,
         media_id: mediaId,
         comment,

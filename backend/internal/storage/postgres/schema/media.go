@@ -311,7 +311,7 @@ func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset i
 		a.id AS album_id,
 		a.title AS album_title,
 		a.release_date,
-		a.cover,
+		a.cover as cover,
 		a.country,
 		a.genre_id,
 		t.id AS track_id,
@@ -319,8 +319,8 @@ func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset i
 		t.album_id AS track_album_id,
 		t.duration_seconds
 	FROM MostReviewed m
-	LEFT JOIN album a ON m.media_id = a.id AND m.media_type = 'album'
 	LEFT JOIN track t ON m.media_id = t.id AND m.media_type = 'track'
+	JOIN album a ON (t.album_id = a.id OR (m.media_id = a.id AND m.media_type = 'album'))
 	ORDER BY m.review_count DESC;
 	`
 
@@ -356,6 +356,7 @@ func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset i
 				AlbumID:   *c.TrackAlbumID,
 				Title:     *c.TrackTitle,
 				Duration:  *c.Duration,
+				Cover:     *c.Cover,
 			}
 
 			media = track
