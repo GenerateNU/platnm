@@ -44,7 +44,7 @@ type MediaRepository interface {
 type RecommendationRepository interface {
 	CreateRecommendation(ctx context.Context, recommendation *models.Recommendation) (*models.Recommendation, error)
 	GetRecommendation(ctx context.Context, id string) (*models.Recommendation, error)
-	UpdateRecommendation(ctx context.Context, recommendation *models.Recommendation) (error)
+	UpdateRecommendation(ctx context.Context, recommendation *models.Recommendation) error
 }
 
 type VoteRepository interface {
@@ -55,6 +55,7 @@ type VoteRepository interface {
 }
 
 type PlaylistRepository interface {
+	CreatePlaylist(ctx context.Context, playlist *models.Playlist) error
 }
 
 // Repository storage of all repositories.
@@ -64,4 +65,5 @@ type Repository struct {
 	UserReviewVote VoteRepository
 	Media          MediaRepository
 	Recommendation RecommendationRepository
+	Playlist       PlaylistRepository
 }
