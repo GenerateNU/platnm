@@ -31,7 +31,7 @@ export default function MediaPage() {
   useEffect(() => {
     axios
       .get(`${BASE_URL}/media?sort=review`)
-      .then((response) => setMedia(response.data[1])) // TODO: update this hardcoding
+      .then((response) => setMedia(response.data[0])) // TODO: update this hardcoding
       .catch((error) => console.error(error));
   }, []);
 
@@ -64,11 +64,11 @@ export default function MediaPage() {
             paddingBottom: height - insets.top, // Add padding at the bottom equal to the height of the bottom tab bar
           }}
         >
-          <ThemedView>
+          <View>
             <MediaCard media={media.media} />
-          </ThemedView>
-          <ThemedView style={styles.buttonContainer}>
-            <ThemedView style={styles.addReviewContainer}>
+          </View>
+          <View style={styles.buttonContainer}>
+            <View style={styles.addReviewContainer}>
               <Button
                 onPress={() =>
                   navigation.navigate("CreateReview", {
@@ -80,15 +80,15 @@ export default function MediaPage() {
                 color={"white"}
                 title="Add rating"
               />
-            </ThemedView>
-            <ThemedView style={styles.saveReviewContainer}>
+            </View>
+            <View style={styles.saveReviewContainer}>
               <Button color={"white"} title="Save" />
-            </ThemedView>
-          </ThemedView>
-          <ThemedView style={styles.titleContainer}>
+            </View>
+          </View>
+          <View style={styles.titleContainer}>
             {rating && <ReviewStats rating={rating} reviews={reviews} />}
-          </ThemedView>
-          <ThemedView>
+          </View>
+          <View>
             {reviews?.map((review) => (
               <ReviewCard
                 key={review.id}
@@ -96,7 +96,7 @@ export default function MediaPage() {
                 comment={review.comment}
               />
             ))}
-          </ThemedView>
+          </View>
         </ScrollView>
       </View>
     )
