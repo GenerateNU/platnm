@@ -13,7 +13,6 @@ import Header from "@/components/onboarding/Header";
 import { useSharedValue, withTiming } from "react-native-reanimated";
 import ProgressBar from "@/components/onboarding/ProgressBar";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
 import axios from "axios";
 
 const slides = [
@@ -51,7 +50,7 @@ const slides = [
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const OnboardingCarousel: React.FC = () => {
-  const [currentSlide, setCurrentSlide] = useState(0); // Start from slide 0
+  const [currentSlide, setCurrentSlide] = useState(0);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -61,7 +60,6 @@ const OnboardingCarousel: React.FC = () => {
   const [inputValid, setInputValid] = useState(false);
   const [tried, setTried] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   const progressBar1 = useSharedValue(0);
   const progressBar2 = useSharedValue(0);
@@ -87,87 +85,86 @@ const OnboardingCarousel: React.FC = () => {
     );
   };
 
-  const handleSignUp = async () => {
-    setLoading(true);
-
-    await axios
-      .post(`${BASE_URL}/users`, {
-        DisplayName: name,
+  const handleSignUp = async (): Promise<void> => {
+    try {
+      const res = await axios.post(`${BASE_URL}/users`, {
+        display_name: name,
         email: email,
         password: password,
         username: username,
-      })
-      .then((res) => {
-        if (res.data.error) {
-          alert("Error" + res.data.error);
-          return;
-        }
-        alert("Success \n You've got an account!");
-      })
-      .catch((error) => {
-        console.error("Error logging in:", error);
-        alert("Login Error" + error.message);
       });
-    setLoading(false);
+
+      if (res.data.error) {
+        alert("Error: " + res.data.error);
+        return;
+      }
+      alert("Success \n You've got an account!");
+    } catch (error) {
+      alert("Signup Error");
+    }
   };
 
   const handleNext = () => {
     if (currentSlide < slides.length - 1) {
-      if (inputValid || (currentSlide === 2 && passwordMatch)) {
-        handleSlideChange(currentSlide + 1);
-        setInputValid(false);
+      if (inputValid) {
+        if (currentSlide === 2 && !passwordMatch) {
+          setTried(true);
+          setInputValid(false);
+        } else {
+          handleSlideChange(currentSlide + 1);
+          setInputValid(false);
+        }
       } else {
         setTried(true);
+        setInputValid(false);
       }
     } else {
-      handleSignUp;
-      router.push("/");
+      handleSignUp();
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Header
-        title={slides[currentSlide].title}
-        subtitle={slides[currentSlide].question}
-      />
-
-      {currentSlide === 2 ? (
-        <View>
-          <TouchableWithoutFeedback
-            onPress={Keyboard.dismiss}
-            accessible={false}
-          >
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={styles.container}>
+        <Header
+          title={slides[currentSlide].title}
+          subtitle={slides[currentSlide].question}
+        />
+        {currentSlide === 2 ? (
+          <View>
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                (!inputValid || passwordMatch) &&
+                  tried && { borderColor: "#8b0000" },
+              ]}
               placeholder="Enter Password"
               secureTextEntry={!passwordVisible}
               value={password}
               onChangeText={setPassword}
             />
-          </TouchableWithoutFeedback>
-          <TouchableOpacity
-            style={styles.eyeIcon}
-            onPress={() => setPasswordVisible(!passwordVisible)}
-          >
-            <Ionicons
-              name={passwordVisible ? "eye-off" : "eye"}
-              size={24}
-              color="gray"
-            />
-          </TouchableOpacity>
-          <TouchableWithoutFeedback
-            onPress={Keyboard.dismiss}
-            accessible={false}
-          >
+            <TouchableOpacity
+              style={styles.eyeIcon}
+              onPress={() => setPasswordVisible(!passwordVisible)}
+            >
+              <Ionicons
+                name={passwordVisible ? "eye-off" : "eye"}
+                size={24}
+                color="gray"
+              />
+            </TouchableOpacity>
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                (!inputValid || passwordMatch) &&
+                  tried && { borderColor: "#8b0000" },
+              ]}
               placeholder="Confirm Password"
               secureTextEntry={!passwordVisible}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               onBlur={
-                password.isWellFormed()
+                password.length > 0
                   ? () => {
                       setInputValid(true);
                       setTried(false);
@@ -175,34 +172,44 @@ const OnboardingCarousel: React.FC = () => {
                   : () => setTried(true)
               }
             />
-          </TouchableWithoutFeedback>
-          {!passwordMatch && (
-            <Text style={styles.errorText}>Passwords do not match.</Text>
-          )}
-        </View>
-      ) : currentSlide === 4 ? (
-        <View style={styles.buttonGroup}>
-          <CustomButton
-            text={"Log in with Spotify"}
-            onPress={() => alert("Open with Spotify")}
-            backgroundColor="#1DB954"
-          />
-          <CustomButton
-            text={"Log in with Apple"}
-            onPress={() => alert("Open with Apple Music")}
-          />
-        </View>
-      ) : (
-        <View>
-          {tried && !inputValid && (
-            <Text style={[styles.errorText, { bottom: 156 }]}>
-              Is this correct?
-            </Text>
-          )}
-          <TouchableWithoutFeedback
-            onPress={Keyboard.dismiss}
-            accessible={false}
-          >
+            {!passwordMatch && (
+              <Text style={styles.errorText}>Passwords do not match.</Text>
+            )}
+            {tried && !inputValid && (
+              <Text
+                style={[
+                  styles.errorText,
+                  currentSlide === 2 ? { bottom: 140 } : {},
+                ]}
+              >
+                Is this correct?
+              </Text>
+            )}
+          </View>
+        ) : currentSlide === 4 ? (
+          <View style={styles.buttonGroup}>
+            <CustomButton
+              text={"Log in with Spotify"}
+              onPress={() => alert("Open with Spotify")}
+              backgroundColor="#1DB954"
+            />
+            <CustomButton
+              text={"Log in with Apple"}
+              onPress={() => alert("Open with Apple Music")}
+            />
+          </View>
+        ) : (
+          <View>
+            {tried && !inputValid && (
+              <Text
+                style={[
+                  styles.errorText,
+                  currentSlide === 2 ? { bottom: 10 } : {},
+                ]}
+              >
+                Is this correct?
+              </Text>
+            )}
             <TextInput
               style={[
                 styles.input,
@@ -230,29 +237,30 @@ const OnboardingCarousel: React.FC = () => {
               onBlur={() => {
                 if (currentSlide === 1) {
                   setInputValid(emailFormat.test(email));
-                } else if (currentSlide === 0 || currentSlide === 3) {
+                } else if (
+                  (currentSlide === 0 && name.length > 0) ||
+                  (currentSlide === 3 && password.length > 0) ||
+                  (currentSlide === 4 && username.length > 0)
+                ) {
                   setInputValid(true);
                 }
                 setTried(false);
               }}
             />
-          </TouchableWithoutFeedback>
-        </View>
-      )}
+          </View>
+        )}
 
-      <View style={styles.stickyContainer}>
-        <CustomButton
-          text={loading ? "Loading" : "Continue"}
-          onPress={handleNext}
-        />
-        <ProgressBar
-          progress1={progressBar1}
-          progress2={progressBar2}
-          currentSlide={currentSlide}
-          handleSlideChange={handleNext}
-        />
+        <View style={styles.stickyContainer}>
+          <CustomButton text={"Continue"} onPress={handleNext} />
+          <ProgressBar
+            progress1={progressBar1}
+            progress2={progressBar2}
+            currentSlide={currentSlide}
+            handleSlideChange={handleNext}
+          />
+        </View>
       </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -273,8 +281,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     fontSize: 16,
     marginBottom: 20,
+    color: "white",
   },
-
   eyeIcon: {
     position: "absolute",
     right: 15,
