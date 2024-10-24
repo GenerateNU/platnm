@@ -3,10 +3,11 @@ package recommendation
 import (
 	"github.com/gofiber/fiber/v2"
 	"platnm/internal/errs"
+	"fmt"
 )
 
 func (h *Handler) GetRecommendations(c *fiber.Ctx) error {
-	var id = c.Params("id")
+	id := c.Params("recommendeeId")
 	exists, userErr := h.userRepository.UserExists(c.Context(), id)
 	if userErr != nil {
 		return userErr
