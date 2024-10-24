@@ -8,6 +8,7 @@ interface Album {
   cover: string;
   country: string;
   genre_id: number;
+  media_type: string;
 }
 
 interface Track {
@@ -19,6 +20,7 @@ interface Track {
   duration: number; // duration in seconds
   release_date: Date;
   cover: string;
+  media_type: string;
 }
 
 type Media = Album | Track;

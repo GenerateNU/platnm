@@ -93,7 +93,7 @@ func (r *ReviewRepository) CreateComment(ctx context.Context, comment *models.Co
 
 func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error) {
 
-	rows, err := r.Query(ctx, "SELECT * FROM review WHERE user_id = $1", id)
+	rows, err := r.Query(ctx, "SELECT * FROM review WHERE user_id = $1 ORDER BY updated_at DESC", id)
 
 	if !rows.Next() {
 		return []*models.Review{}, nil
@@ -193,7 +193,7 @@ func (r *ReviewRepository) ReviewBelongsToUser(ctx context.Context, reviewID str
 
 func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaType string) ([]*models.Review, error) {
 
-	rows, err := r.Query(ctx, "SELECT id, user_id, media_id, media_type, rating, comment, created_at, updated_at FROM review WHERE media_id = $1 and media_type = $2", id, mediaType)
+	rows, err := r.Query(ctx, "SELECT id, user_id, media_id, media_type, rating, comment, created_at, updated_at FROM review WHERE media_id = $1 and media_type = $2 ORDER BY updated_at DESC", id, mediaType)
 
 	if err != nil {
 		return []*models.Review{}, err

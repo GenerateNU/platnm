@@ -28,25 +28,27 @@ const TopReview = ({ reviews }: ReviewCardProps) => {
 
   // TODO: THE RATINGS SHOULD EVENTUALLY BECOME SOME STARS MAYBE
   return (
-    <View>
-      <Text style={styles.title}> Top Reviews </Text>
-      <View style={styles.reviewBox}>
-        {reviewUser && reviewUser.profile_picture && (
-          <Image
-            style={styles.image}
-            source={{ uri: reviewUser.profile_picture }}
-          />
-        )}
-        <View style={styles.column}>
-          <Text>{reviewUser?.display_name}</Text>
-          <Text>{reviewUser?.username}</Text>
-          <View style={styles.commentContainer}>
-            <Text style={styles.ratingText}>Rating: {topReview.rating}</Text>
-            <Text style={styles.commentText}>{topReview.comment}</Text>
+    topReview && (
+      <View>
+        <Text style={styles.title}> Top Reviews </Text>
+        <View style={styles.reviewBox}>
+          {reviewUser && reviewUser.profile_picture && (
+            <Image
+              style={styles.image}
+              source={{ uri: reviewUser.profile_picture }}
+            />
+          )}
+          <View style={styles.column}>
+            <Text>{reviewUser?.display_name}</Text>
+            <Text>{reviewUser?.username}</Text>
+            <View style={styles.commentContainer}>
+              <Text style={styles.ratingText}>Rating: {topReview.rating}</Text>
+              <Text style={styles.commentText}>{topReview.comment}</Text>
+            </View>
           </View>
         </View>
       </View>
-    </View>
+    )
   );
 };
 
