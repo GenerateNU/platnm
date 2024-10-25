@@ -85,7 +85,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 
 	playlistHandler := playlist.NewHandler(repository.Playlist)
 	app.Route("/playlist", func(r fiber.Router) {
-		r.Post("/onQueue/:userId", playlistHandler.AddToUserOnQueue)
+		r.Post("/on_queue/:id", playlistHandler.AddToUserOnQueue)
 	})
 
 	// this store can be passed to other oauth handlers that need to manage state/verifier values
