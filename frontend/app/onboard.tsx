@@ -140,7 +140,7 @@ const OnboardingCarousel: React.FC = () => {
                     tried && { borderColor: "#8b0000" },
                 ]}
                 placeholder="Enter Password"
-                placeholderTextColor="#808080" 
+                placeholderTextColor="#808080"
                 secureTextEntry={!passwordVisible}
                 value={password}
                 onChangeText={setPassword}
@@ -162,7 +162,7 @@ const OnboardingCarousel: React.FC = () => {
                     tried && { borderColor: "#8b0000" },
                 ]}
                 placeholder="Confirm Password"
-                placeholderTextColor="#808080" 
+                placeholderTextColor="#808080"
                 secureTextEntry={!passwordVisible}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
@@ -221,7 +221,7 @@ const OnboardingCarousel: React.FC = () => {
                 ]}
                 inputMode={currentSlide === 1 ? "email" : "text"}
                 placeholder={slides[currentSlide].placeholder}
-                placeholderTextColor="#808080" 
+                placeholderTextColor="#808080"
                 autoComplete={currentSlide === 1 ? "email" : "off"}
                 value={
                   currentSlide === 0
@@ -256,7 +256,11 @@ const OnboardingCarousel: React.FC = () => {
           )}
 
           <View style={styles.stickyContainer}>
-            <CustomButton text={"Continue"} onPress={handleNext} backgroundColor="#000000"/>
+            <CustomButton
+              text={"Continue"}
+              onPress={handleNext}
+              backgroundColor="#000000"
+            />
             <ProgressBar
               progress1={progressBar1}
               progress2={progressBar2}

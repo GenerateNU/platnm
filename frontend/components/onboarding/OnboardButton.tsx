@@ -24,7 +24,10 @@ const OnboardButton: React.FC<CustomButtonProps> = ({
   svgIcon,
 }) => {
   return (
-    <TouchableOpacity onPress={onPress} style={[styles.button, {backgroundColor: backgroundColor}]}>
+    <TouchableOpacity
+      onPress={onPress}
+      style={[styles.button, { backgroundColor: backgroundColor }]}
+    >
       {svgIcon ? <View style={styles.icon}>{svgIcon}</View> : null}
       <Text style={[styles.buttonText]}>{text}</Text>
     </TouchableOpacity>
