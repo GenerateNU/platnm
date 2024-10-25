@@ -6,7 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Keyboard,
-  TouchableWithoutFeedback,
+  Pressable,
 } from "react-native";
 import CustomButton from "@/components/onboarding/OnboardButton";
 import Header from "@/components/onboarding/Header";
@@ -124,153 +124,164 @@ const OnboardingCarousel: React.FC = () => {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <View style={styles.container}>
-        <Header
-          title={slides[currentSlide].title}
-          subtitle={slides[currentSlide].question}
-        />
-        {currentSlide === 2 ? (
-          <View>
-            <TextInput
-              style={[
-                styles.input,
-                (!inputValid || passwordMatch) &&
-                  tried && { borderColor: "#8b0000" },
-              ]}
-              placeholder="Enter Password"
-              secureTextEntry={!passwordVisible}
-              value={password}
-              onChangeText={setPassword}
-            />
-            <TouchableOpacity
-              style={styles.eyeIcon}
-              onPress={() => setPasswordVisible(!passwordVisible)}
-            >
-              <Ionicons
-                name={passwordVisible ? "eye-off" : "eye"}
-                size={24}
-                color="gray"
-              />
-            </TouchableOpacity>
-            <TextInput
-              style={[
-                styles.input,
-                (!inputValid || passwordMatch) &&
-                  tried && { borderColor: "#8b0000" },
-              ]}
-              placeholder="Confirm Password"
-              secureTextEntry={!passwordVisible}
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              onBlur={
-                password.length > 0
-                  ? () => {
-                      setInputValid(true);
-                      setTried(false);
-                    }
-                  : () => setTried(true)
-              }
-            />
-            {!passwordMatch && (
-              <Text style={styles.errorText}>Passwords do not match.</Text>
-            )}
-            {tried && !inputValid && (
-              <Text
-                style={[
-                  styles.errorText,
-                  currentSlide === 2 ? { bottom: 140 } : {},
-                ]}
-              >
-                Is this correct?
-              </Text>
-            )}
-          </View>
-        ) : currentSlide === 4 ? (
-          <View style={styles.buttonGroup}>
-            <CustomButton
-              text={"Log in with Spotify"}
-              onPress={() => alert("Open with Spotify")}
-              backgroundColor="#1DB954"
-            />
-            <CustomButton
-              text={"Log in with Apple"}
-              onPress={() => alert("Open with Apple Music")}
-            />
-          </View>
-        ) : (
-          <View>
-            {tried && !inputValid && (
-              <Text
-                style={[
-                  styles.errorText,
-                  currentSlide === 2 ? { bottom: 10 } : {},
-                ]}
-              >
-                Is this correct?
-              </Text>
-            )}
-            <TextInput
-              style={[
-                styles.input,
-                !inputValid && tried && { borderColor: "#8b0000" },
-              ]}
-              keyboardType={currentSlide === 1 ? "email-address" : "default"}
-              placeholder={slides[currentSlide].placeholder}
-              autoComplete={currentSlide === 1 ? "email" : "off"}
-              value={
-                currentSlide === 0
-                  ? name
-                  : currentSlide === 1
-                    ? email
-                    : currentSlide === 3
-                      ? username
-                      : ""
-              }
-              onChangeText={
-                currentSlide === 0
-                  ? setName
-                  : currentSlide === 1
-                    ? setEmail
-                    : setUsername
-              }
-              onBlur={() => {
-                if (currentSlide === 1) {
-                  setInputValid(emailFormat.test(email));
-                } else if (
-                  (currentSlide === 0 && name.length > 0) ||
-                  (currentSlide === 3 && password.length > 0) ||
-                  (currentSlide === 4 && username.length > 0)
-                ) {
-                  setInputValid(true);
-                }
-                setTried(false);
-              }}
-            />
-          </View>
-        )}
-
-        <View style={styles.stickyContainer}>
-          <CustomButton text={"Continue"} onPress={handleNext} />
-          <ProgressBar
-            progress1={progressBar1}
-            progress2={progressBar2}
-            currentSlide={currentSlide}
-            handleSlideChange={handleNext}
+    <Pressable onPress={Keyboard.dismiss} style={{ flex: 1 }}>
+      <View style={styles.outerContainer}>
+        <View style={styles.container}>
+          <Header
+            title={slides[currentSlide].title}
+            subtitle={slides[currentSlide].question}
           />
+          {currentSlide === 2 ? (
+            <View>
+              <TextInput
+                style={[
+                  styles.input,
+                  (!inputValid || passwordMatch) &&
+                    tried && { borderColor: "#8b0000" },
+                ]}
+                placeholder="Enter Password"
+                placeholderTextColor="#808080" 
+                secureTextEntry={!passwordVisible}
+                value={password}
+                onChangeText={setPassword}
+              />
+              <TouchableOpacity
+                style={styles.eyeIcon}
+                onPress={() => setPasswordVisible(!passwordVisible)}
+              >
+                <Ionicons
+                  name={passwordVisible ? "eye-off" : "eye"}
+                  size={24}
+                  color="gray"
+                />
+              </TouchableOpacity>
+              <TextInput
+                style={[
+                  styles.input,
+                  (!inputValid || passwordMatch) &&
+                    tried && { borderColor: "#8b0000" },
+                ]}
+                placeholder="Confirm Password"
+                placeholderTextColor="#808080" 
+                secureTextEntry={!passwordVisible}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                onBlur={
+                  password.length > 0
+                    ? () => {
+                        setInputValid(true);
+                        setTried(false);
+                      }
+                    : () => setTried(true)
+                }
+              />
+              {!passwordMatch && (
+                <Text style={styles.errorText}>Passwords do not match.</Text>
+              )}
+              {tried && !inputValid && (
+                <Text
+                  style={[
+                    styles.errorText,
+                    currentSlide === 2 ? { bottom: 140 } : {},
+                  ]}
+                >
+                  Is this correct?
+                </Text>
+              )}
+            </View>
+          ) : currentSlide === 4 ? (
+            <View style={styles.buttonGroup}>
+              <CustomButton
+                text={"Log in with Spotify"}
+                onPress={() => alert("Open with Spotify")}
+                backgroundColor="#1DB954"
+              />
+              <CustomButton
+                text={"Log in with Apple"}
+                onPress={() => alert("Open with Apple Music")}
+                backgroundColor="#000000"
+              />
+            </View>
+          ) : (
+            <View>
+              {tried && !inputValid && (
+                <Text
+                  style={[
+                    styles.errorText,
+                    currentSlide === 2 ? { bottom: 10 } : {},
+                  ]}
+                >
+                  Is this correct?
+                </Text>
+              )}
+              <TextInput
+                style={[
+                  styles.input,
+                  !inputValid && tried && { borderColor: "#8b0000" },
+                ]}
+                inputMode={currentSlide === 1 ? "email" : "text"}
+                placeholder={slides[currentSlide].placeholder}
+                placeholderTextColor="#808080" 
+                autoComplete={currentSlide === 1 ? "email" : "off"}
+                value={
+                  currentSlide === 0
+                    ? name
+                    : currentSlide === 1
+                      ? email
+                      : currentSlide === 3
+                        ? username
+                        : ""
+                }
+                onChangeText={
+                  currentSlide === 0
+                    ? setName
+                    : currentSlide === 1
+                      ? setEmail
+                      : setUsername
+                }
+                onBlur={() => {
+                  if (currentSlide === 1) {
+                    setInputValid(emailFormat.test(email));
+                  } else if (
+                    (currentSlide === 0 && name.length > 0) ||
+                    (currentSlide === 3 && password.length > 0) ||
+                    (currentSlide === 4 && username.length > 0)
+                  ) {
+                    setInputValid(true);
+                  }
+                  setTried(false);
+                }}
+              />
+            </View>
+          )}
+
+          <View style={styles.stickyContainer}>
+            <CustomButton text={"Continue"} onPress={handleNext} backgroundColor="#000000"/>
+            <ProgressBar
+              progress1={progressBar1}
+              progress2={progressBar2}
+              currentSlide={currentSlide}
+              handleSlideChange={handleNext}
+            />
+          </View>
         </View>
       </View>
-    </TouchableWithoutFeedback>
+    </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
+  outerContainer: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+  },
   container: {
     flex: 1,
     marginTop: 230,
     marginHorizontal: 22,
     gap: 65,
-    color: "white",
+    backgroundColor: "#FFFFFF",
+    color: "black",
   },
   input: {
     height: 50,
@@ -281,7 +292,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     fontSize: 16,
     marginBottom: 20,
-    color: "white",
   },
   eyeIcon: {
     position: "absolute",

@@ -5,7 +5,6 @@ import {
   StyleSheet,
   View,
   GestureResponderEvent,
-  useColorScheme,
 } from "react-native";
 
 // Define props for the CustomButton
@@ -24,23 +23,10 @@ const OnboardButton: React.FC<CustomButtonProps> = ({
   backgroundColor,
   svgIcon,
 }) => {
-  const colorScheme = useColorScheme();
-
-  const buttonStyle = [
-    styles.button,
-    {
-      backgroundColor:
-        backgroundColor || (colorScheme === "dark" ? "#333333" : "#FFFFFF"),
-    },
-    style,
-  ];
-
-  const textColor = colorScheme === "dark" ? "#FFFFFF" : "#000000";
-
   return (
-    <TouchableOpacity onPress={onPress} style={buttonStyle}>
+    <TouchableOpacity onPress={onPress} style={[styles.button, {backgroundColor: backgroundColor}]}>
       {svgIcon ? <View style={styles.icon}>{svgIcon}</View> : null}
-      <Text style={[styles.buttonText, { color: textColor }]}>{text}</Text>
+      <Text style={[styles.buttonText]}>{text}</Text>
     </TouchableOpacity>
   );
 };
@@ -55,9 +41,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     width: "100%",
     textAlign: "center",
+    backgroundColor: "#000000",
   },
   buttonText: {
     fontSize: 16,
+    color: "#FFFFFF",
   },
   icon: {
     marginRight: 10,

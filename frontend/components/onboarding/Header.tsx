@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, useColorScheme } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 
 interface HeaderProps {
   title: string;
@@ -7,18 +7,9 @@ interface HeaderProps {
 }
 
 const OnboardingHeader: React.FC<HeaderProps> = ({ title, subtitle }) => {
-  const colorScheme = useColorScheme(); // Detect system theme
-
   return (
     <View style={styles.container}>
-      <Text
-        style={[
-          styles.title,
-          { color: colorScheme === "dark" ? "#FFFFFF" : "#000000" },
-        ]}
-      >
-        {title}
-      </Text>
+      <Text style={[styles.title]}>{title}</Text>
       <Text style={styles.subtitle}>{subtitle}</Text>
     </View>
   );
@@ -31,6 +22,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 25,
     fontWeight: "bold",
+    color: "#000000",
   },
   subtitle: {
     fontSize: 18,
