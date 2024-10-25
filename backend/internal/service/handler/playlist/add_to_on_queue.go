@@ -28,12 +28,3 @@ func (h *Handler) AddToUserOnQueue(c *fiber.Ctx) error {
 
 	return c.SendStatus(fiber.StatusOK)
 }
-
-func (r *addToOnQueueRequest) validate() map[string]string {
-	var errs = make(map[string]string)
-
-	if r.MediaType != models.TrackMedia && r.MediaType != models.AlbumMedia {
-		errs[string(r.MediaType)] = "media_type must be either track or album"
-	}
-	return errs
-}
