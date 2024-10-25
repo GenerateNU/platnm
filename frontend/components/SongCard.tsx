@@ -1,20 +1,31 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 
-const SongCard = () => {
-  const image = require("@/assets/images/placeholder-image.png");
+interface SongCardProps {
+  mediaName: string;
+}
+
+const SongCard: React.FC<SongCardProps> = ({ mediaName }: SongCardProps) => {
+  // const image = require("@/assets/images/placeholder-image.png");
+  const image =
+    "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png";
   const [releaseDate, setReleaseDate] = useState(new Date());
-  const [songName, setSongName] = useState("Name of Song");
   const [artistName, setArtistName] = useState("Artist Name");
 
   return (
     <View style={styles.card}>
-      <Image source={image} />
+      <Image
+        width={150}
+        height={150}
+        source={{
+          uri: image,
+        }}
+      />
       <View style={styles.textContainer}>
         <Text style={styles.releaseDate}>
           {releaseDate.toLocaleDateString()}
         </Text>
-        <Text style={styles.songName}>{songName}</Text>
+        <Text style={styles.songName}>{mediaName}</Text>
         <Text style={styles.artistName}>{artistName} • Song</Text>
       </View>
       <TouchableOpacity style={styles.seeAlbumButton}>
