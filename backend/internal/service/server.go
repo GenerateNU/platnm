@@ -10,6 +10,7 @@ import (
 	"platnm/internal/service/handler/oauth"
 	"platnm/internal/service/handler/oauth/platnm"
 	spotify_oauth_handler "platnm/internal/service/handler/oauth/spotify"
+	"platnm/internal/service/handler/playlist"
 	"platnm/internal/service/handler/recommendation"
 	spotify_handler "platnm/internal/service/handler/spotify"
 	spotify_middleware "platnm/internal/service/middleware/spotify"
@@ -80,6 +81,11 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	app.Route("/recommendation", func(r fiber.Router) {
 		r.Post("/", recommendationHandler.CreateRecommendation)
 		r.Patch("/:recommendationId", recommendationHandler.ReactToRecommendation)
+	})
+
+	playlistHandler := playlist.NewHandler(repository.Playlist)
+	app.Route("/playlist", func(r fiber.Router) {
+		r.Post("/onQueue/:userId", playlistHandler.AddToUserOnQueue)
 	})
 
 	// this store can be passed to other oauth handlers that need to manage state/verifier values
