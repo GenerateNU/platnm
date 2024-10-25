@@ -14,7 +14,7 @@ func (h *Handler) AddToUserOnQueue(c *fiber.Ctx) error {
 
 	id := c.Params("id")
 	var req addToOnQueueRequest
-	
+
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "invalid request body",

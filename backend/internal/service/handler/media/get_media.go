@@ -9,16 +9,16 @@ import (
 )
 
 func (h *Handler) GetMediaByName(c *fiber.Ctx) error {
-    name := c.Params("name")
-    typeString := c.Query("media_type")
-    
-    var mediaType models.MediaType 
-    
-    switch typeString {
-    case "album":
-        mediaType = models.AlbumMedia 
-    case "track":
-        mediaType = models.TrackMedia
+	name := c.Params("name")
+	typeString := c.Query("media_type")
+
+	var mediaType models.MediaType
+
+	switch typeString {
+	case "album":
+		mediaType = models.AlbumMedia
+	case "track":
+		mediaType = models.TrackMedia
 	case "":
 		mediaType = models.BothMedia
 	}

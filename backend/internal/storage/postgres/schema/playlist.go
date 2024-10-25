@@ -42,7 +42,7 @@ func (r *PlaylistRepository) AddToUserOnQueue(ctx context.Context, id string, tr
 	insertQuery := `
 	INSERT INTO playlist_track (playlist_id, track_id)
 	VALUES ($1, $2);
-	` 
+	`
 	_, err = r.Exec(ctx, insertQuery, playlistID, track.ID)
 
 	if err != nil {

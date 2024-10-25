@@ -9,7 +9,7 @@ import (
 )
 
 type Handler struct {
-	userRepository storage.UserRepository
+	userRepository     storage.UserRepository
 	playlistRepository storage.PlaylistRepository
 }
 
