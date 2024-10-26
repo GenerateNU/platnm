@@ -56,6 +56,17 @@ func (h *Handler) CreateUser(c *fiber.Ctx) error {
 		return err
 	}
 
+	// TODO: Change depending on what the default bio and cover photo
+	playlist_err := h.playlistRepository.CreatePlaylist(c.Context(), models.Playlist{
+		Title:      "On Queue",
+		UserID:     user.ID,
+		Bio:        "What's in your queue right now?",
+		CoverPhoto: "",
+	})
+	if playlist_err != nil {
+		return err
+	}
+
 	return c.Status(fiber.StatusCreated).JSON(user)
 
 }
