@@ -12,7 +12,7 @@ type addToOnQueueRequest struct {
 
 func (h *Handler) AddToUserOnQueue(c *fiber.Ctx) error {
 
-	id := c.Params("id")
+	id := c.Params("userId")
 	var req addToOnQueueRequest
 
 	if err := c.BodyParser(&req); err != nil {

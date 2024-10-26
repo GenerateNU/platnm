@@ -2,6 +2,7 @@ package schema
 
 import (
 	"context"
+	"platnm/internal/errs"
 	"platnm/internal/models"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -10,6 +11,10 @@ import (
 type PlaylistRepository struct {
 	*pgxpool.Pool
 }
+
+const (
+	playlistTrackFKeyConstraint = "playlist_track_track_id_fkey"
+)
 
 func (r *PlaylistRepository) CreatePlaylist(ctx context.Context, playlist models.Playlist) error {
 
@@ -43,11 +48,14 @@ func (r *PlaylistRepository) AddToUserOnQueue(ctx context.Context, id string, tr
 	INSERT INTO playlist_track (playlist_id, track_id)
 	VALUES ($1, $2);
 	`
-	_, err = r.Exec(ctx, insertQuery, playlistID, track.ID)
-
-	if err != nil {
+	if _, err = r.Exec(ctx, insertQuery, playlistID, track.ID); err != nil {
+		if errs.IsForeignKeyViolation(err, playlistTrackFKeyConstraint) {
+			return errs.NotFound("track", "id", track.ID)
+		}
+	} else {
 		return err
 	}
+
 	return nil
 
 }
