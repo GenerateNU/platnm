@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import axios from "axios";
 import { useAuthContext } from "@/components/AuthProvider";
+import { router } from "expo-router";
 
 export default function Login() {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -54,7 +55,7 @@ export default function Login() {
   };
 
   const handleSignUpPress = () => {
-    console.log("Sign up pressed");
+    router.push("/onboard");
   };
 
   return (

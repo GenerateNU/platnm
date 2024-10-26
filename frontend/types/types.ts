@@ -8,6 +8,7 @@ interface Album {
   cover: string;
   country: string;
   genre_id: number;
+  media_type: string;
 }
 
 interface Track {
@@ -19,6 +20,7 @@ interface Track {
   duration: number; // duration in seconds
   release_date: Date;
   cover: string;
+  media_type: string;
 }
 
 type Media = Album | Track;
@@ -40,7 +42,18 @@ type User = {
   display_name: string;
   bio: string;
   profile_picture: string;
-  linked_ccount: string;
+  linked_account: string;
   created_at: string;
   updated_at: string;
+};
+
+type UserProfile = {
+  id: string;
+  username: string;
+  display_name: string;
+  bio: string;
+  profile_picture: string;
+  followers: number;
+  followed: number;
+  score: number;
 };
