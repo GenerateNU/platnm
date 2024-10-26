@@ -8,7 +8,7 @@ import (
 )
 
 func (h *Handler) Begin(c *fiber.Ctx) error {
-	uid, err := uuid.Parse(c.Query("userID"))
+	uid, err := uuid.Parse(c.Params("userID"))
 	if err != nil {
 		return err
 	}

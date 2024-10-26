@@ -96,7 +96,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Route("/spotify", func(r fiber.Router) {
 			h := spotify_oauth_handler.NewHandler(store, config.Spotify, repository.UserAuth)
 
-			r.Get("/begin", h.Begin)
+			r.Get("/begin/:userID", h.Begin)
 			r.Get("/callback", h.Callback)
 		})
 		r.Route("/platnm", func(r fiber.Router) {
