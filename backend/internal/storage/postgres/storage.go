@@ -12,7 +12,8 @@ import (
 )
 
 func ConnectDatabase(config config.DB) *pgxpool.Pool {
-	dbConfig, err := pgxpool.ParseConfig(config.Connection())
+	dbConfig, err := pgxpool.ParseConfig("postgresql://postgres:postgres@127.0.0.1:54322/postgres")
+	// dbConfig, err := pgxpool.ParseConfig(config.Connection())
 	if err != nil {
 		log.Fatal("Failed to create a config, error: ", err)
 	}
@@ -45,5 +46,6 @@ func NewRepository(config config.DB) *storage.Repository {
 		UserReviewVote: schema.NewVoteRepository(db),
 		Media:          schema.NewMediaRepository(db),
 		Recommendation: schema.NewRecommendationRepository(db),
+		UserAuth:       schema.NewUserAuthRepository(db),
 	}
 }

@@ -6,11 +6,11 @@ import (
 )
 
 type Handler struct {
-	store  *oauth.StateStore
+	store  *oauth.UserStateStore
 	config config.Supabase
 }
 
-func NewHandler(store *oauth.StateStore, config config.Supabase) *Handler {
+func NewHandler(store *oauth.UserStateStore, config config.Supabase) *Handler {
 	return &Handler{
 		store:  store,
 		config: config,

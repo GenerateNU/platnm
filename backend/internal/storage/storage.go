@@ -5,6 +5,7 @@ import (
 	"platnm/internal/models"
 
 	"github.com/google/uuid"
+	"golang.org/x/oauth2"
 )
 
 type UserRepository interface {
@@ -44,7 +45,7 @@ type MediaRepository interface {
 type RecommendationRepository interface {
 	CreateRecommendation(ctx context.Context, recommendation *models.Recommendation) (*models.Recommendation, error)
 	GetRecommendation(ctx context.Context, id string) (*models.Recommendation, error)
-	UpdateRecommendation(ctx context.Context, recommendation *models.Recommendation) (error)
+	UpdateRecommendation(ctx context.Context, recommendation *models.Recommendation) error
 	GetRecommendations(ctx context.Context, id string) ([]*models.Recommendation, error)
 }
 
@@ -55,6 +56,11 @@ type VoteRepository interface {
 	DeleteVote(ctx context.Context, userID string, reviewID string) error
 }
 
+type UserAuthRepository interface {
+	GetToken(ctx context.Context, id uuid.UUID) (oauth2.Token, error)
+	SetToken(ctx context.Context, id uuid.UUID, token *oauth2.Token) error
+}
+
 // Repository storage of all repositories.
 type Repository struct {
 	User           UserRepository
@@ -62,4 +68,5 @@ type Repository struct {
 	UserReviewVote VoteRepository
 	Media          MediaRepository
 	Recommendation RecommendationRepository
+	UserAuth       UserAuthRepository
 }

@@ -87,13 +87,14 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	store := oauth.NewStateStore(session.Config{
 		Storage:    memory.New(),
 		Expiration: constants.SessionDuration,
-		KeyLookup:  "header:" + constants.HeaderSession,
+		// KeyLookup:  "header:" + constants.HeaderSession,
 	})
+	store.RegisterType(oauth.UserState{})
 
 	// change to /oauth once its changed in spotify dashboard
 	app.Route("/auth", func(r fiber.Router) {
 		r.Route("/spotify", func(r fiber.Router) {
-			h := spotify_oauth_handler.NewHandler(store, config.Spotify)
+			h := spotify_oauth_handler.NewHandler(store, config.Spotify, repository.UserAuth)
 
 			r.Get("/begin", h.Begin)
 			r.Get("/callback", h.Callback)
@@ -109,11 +110,18 @@ func setupRoutes(app *fiber.App, config config.Config) {
 
 	app.Route("/spotify", func(r fiber.Router) {
 		h := spotify_handler.NewHandler(repository.Media)
-		m := spotify_middleware.NewMiddleware(config.Spotify)
+		m := spotify_middleware.NewMiddleware(config.Spotify, repository.UserAuth)
 
-		r.Use(m.WithSpotifyClient())
-		r.Get("/", h.GetPlatnmPlaylist)
-		r.Get("/new-releases", h.NewReleases)
+		r.Route("/:userID", func(authRoute fiber.Router) {
+			authRoute.Use(m.WithAuthenticatedSpotifyClient())
+			authRoute.Get("/playlists", h.GetCurrentUserPlaylists)
+		})
+
+		r.Route("/", func(clientCredRoute fiber.Router) {
+			clientCredRoute.Use(m.WithSpotifyClient())
+			clientCredRoute.Get("/", h.GetPlatnmPlaylist)
+			clientCredRoute.Get("/new-releases", h.NewReleases)
+		})
 	})
 
 	app.Get("/secret", auth.Middleware(&config.Supabase), func(c *fiber.Ctx) error {
