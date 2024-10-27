@@ -5,7 +5,6 @@ import (
 	"platnm/internal/models"
 
 	"github.com/google/uuid"
-	"golang.org/x/oauth2"
 )
 
 type UserRepository interface {
@@ -57,8 +56,8 @@ type VoteRepository interface {
 }
 
 type UserAuthRepository interface {
-	GetToken(ctx context.Context, id uuid.UUID) (oauth2.Token, error)
-	SetToken(ctx context.Context, id uuid.UUID, token *oauth2.Token) error
+	GetToken(ctx context.Context, id uuid.UUID) (string, error)
+	SetToken(ctx context.Context, id uuid.UUID, token string) error
 }
 
 // Repository storage of all repositories.

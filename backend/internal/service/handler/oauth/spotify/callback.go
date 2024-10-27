@@ -1,9 +1,9 @@
 package spotify
 
 import (
-	"fmt"
 	"net/http"
 	"platnm/internal/constants"
+	"platnm/internal/service/handler/oauth"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/adaptor"
@@ -14,7 +14,6 @@ func (h *Handler) Callback(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("User state: %+v\n", userState)
 
 	req, err := adaptor.ConvertRequest(c, false)
 	if err != nil {
@@ -26,7 +25,12 @@ func (h *Handler) Callback(c *fiber.Ctx) error {
 		return err
 	}
 
-	if err := h.userAuthRepository.SetToken(c.Context(), userState.User, token); err != nil {
+	encryptedToken, err := oauth.EncryptToken(token)
+	if err != nil {
+		return err
+	}
+
+	if err := h.userAuthRepository.SetToken(c.Context(), userState.User, encryptedToken); err != nil {
 		return err
 	}
 

@@ -1,8 +1,5 @@
-ALTER TABLE user_auth 
-ADD COLUMN expiry TIMESTAMP;
-
 ALTER TABLE user_auth
-ADD COLUMN token_type TEXT;
-
-ALTER TABLE user_auth
-ADD CONSTRAINT user_auth_user_id_unique UNIQUE (user_id);
+    DROP COLUMN refresh_token,
+    DROP COLUMN access_token,
+    ADD COLUMN token text,
+    ADD CONSTRAINT user_auth_user_id_unique UNIQUE (user_id);

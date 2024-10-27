@@ -3,6 +3,7 @@ package spotify
 import (
 	"platnm/internal/config"
 	"platnm/internal/service/ctxt"
+	"platnm/internal/service/handler/oauth"
 	"platnm/internal/storage"
 
 	"github.com/gofiber/fiber/v2"
@@ -36,7 +37,12 @@ func (m *Middleware) WithAuthenticatedSpotifyClient() fiber.Handler {
 			return err
 		}
 
-		token, err := m.userAuthRepository.GetToken(c.Context(), uid)
+		encryptedToken, err := m.userAuthRepository.GetToken(c.Context(), uid)
+		if err != nil {
+			return err
+		}
+
+		token, err := oauth.DecryptToken(encryptedToken)
 		if err != nil {
 			return err
 		}

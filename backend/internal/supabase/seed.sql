@@ -74,14 +74,6 @@ VALUES
   (2, 2),
   (3, 3);
 
-INSERT INTO user_auth (id, user_id, refresh_token, access_token)
-VALUES
-  (1, '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 'refresh_token_abc123', 'access_token_xyz123'),
-  (2, '2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e', 'refresh_token_def456', 'access_token_uvw456'),
-  (3, '3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f', 'refresh_token_ghi789', 'access_token_rst789'),
-  (4, '4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9d', 'refresh_token_jkl012', 'access_token_opq012'),
-  (5, '5e6f7a8b-9c0d-1e2f-3a4b-5c6d7e8f9d0e', 'refresh_token_mno345', 'access_token_lmn345');
-
 INSERT INTO user_review_vote (user_id, review_id, upvote)
 VALUES
   ('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 1, true),
