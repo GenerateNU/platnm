@@ -1,6 +1,7 @@
 package media
 
 import (
+	"log"
 	"platnm/internal/errs"
 	"platnm/internal/models"
 	"platnm/internal/service/utils"
@@ -9,20 +10,40 @@ import (
 )
 
 func (h *Handler) GetMediaByName(c *fiber.Ctx) error {
-    name := c.Params("name")
-    typeString := c.Query("media_type")
-    
-    var mediaType models.MediaType 
-    
-    switch typeString {
-    case "album":
-        mediaType = models.AlbumMedia 
-    case "track":
-        mediaType = models.TrackMedia
+	name := c.Params("name")
+	typeString := c.Query("media_type")
+
+	var mediaType models.MediaType
+
+	switch typeString {
+	case "album":
+		mediaType = models.AlbumMedia
+	case "track":
+		mediaType = models.TrackMedia
 	case "":
 		mediaType = models.BothMedia
 	}
 	medias, _ := h.mediaRepository.GetMediaByName(c.Context(), name, mediaType)
+
+	// If fewer than 5 results, call Spotify API for additional results
+	if len(medias) < 5 {
+		log.Println("Fetching additional results from Spotify API")
+		err := h.searchAndHandleSpotifyMedia(c.Context(), name, mediaType)
+		if err != nil {
+			log.Println("Spotify API error:", err)
+			return errs.InternalServerError()
+		}
+
+		// Re-fetch updated media from the local database after adding Spotify results
+		medias, err = h.mediaRepository.GetMediaByName(c.Context(), name, mediaType)
+		if err != nil {
+			return errs.InternalServerError()
+		}
+
+		// Re-fetch all media, including new entries from Spotify
+		medias, _ = h.mediaRepository.GetMediaByName(c.Context(), name, mediaType)
+	}
+
 	return c.Status(fiber.StatusOK).JSON(medias)
 }
 
