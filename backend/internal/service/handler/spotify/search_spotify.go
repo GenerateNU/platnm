@@ -45,7 +45,7 @@ func (h *SpotifyHandler) searchAndHandleSpotifyMedia(ctx context.Context, name s
 	// Query Spotify API based on media type
 	switch mediaType {
 	case models.AlbumMedia:
-		spotifyAlbums, err := spotify.SearchAlbumsByName(name)
+		spotifyAlbums, err := spotify.fetchAlbumsFromSpotify(name)
 		if err != nil {
 			return err
 		}
@@ -64,7 +64,7 @@ func (h *SpotifyHandler) searchAndHandleSpotifyMedia(ctx context.Context, name s
 			}(album)
 		}
 	case models.TrackMedia:
-		spotifyTracks, err := spotify.SearchTracksByName(name)
+		spotifyTracks, err := spotify.fetchTracksFromSpotify(name)
 		if err != nil {
 			return err
 		}
