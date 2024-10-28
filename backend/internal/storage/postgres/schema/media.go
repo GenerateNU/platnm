@@ -145,12 +145,19 @@ func (r *MediaRepository) AddArtist(ctx context.Context, artist *models.Artist) 
 	query :=
 		`INSERT INTO artist (name, spotify_id, photo, bio)
 		 VALUES ($1, $2, $3, $4)
+		 ON CONFLICT (spotify_id) DO NOTHING
 		 RETURNING id;`
 
-	if err := r.QueryRow(ctx, query, artist.Name, artist.SpotifyID, artist.Photo, artist.Bio).Scan(&artist.ID); err != nil {
+	var id int
+	if err := r.QueryRow(ctx, query, artist.Name, artist.SpotifyID, artist.Photo, artist.Bio).Scan(&id); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			artist.ID = id
+			return artist, nil // No new row was inserted because one existed
+		}
 		return nil, err
 	}
 
+	artist.ID = id
 	return artist, nil
 }
 
@@ -180,6 +187,28 @@ func (r *MediaRepository) AddAlbum(ctx context.Context, album *models.Album) (*m
 	return album, nil
 }
 
+func (r *MediaRepository) AddTrack(ctx context.Context, track *models.Track) (*models.Track, error) {
+	query :=
+		`
+		 INSERT INTO track (album_id, title, duration_seconds, spotify_id)
+		 VALUES ($1, $2, $3, $4)
+		 ON CONFLICT (spotify_id) DO NOTHING
+		 RETURNING id;`
+
+	var id int
+	err := r.QueryRow(ctx, query, track.AlbumID, track.Title, track.Duration, track.SpotifyID).Scan(&id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			track.ID = id
+			return track, nil // No new row was inserted because one existed
+		}
+		return nil, err
+	}
+
+	track.ID = id
+	return track, nil
+}
+
 func (r *MediaRepository) AddAlbumArtist(ctx context.Context, albumId int, artistId int) error {
 	query :=
 		`INSERT INTO album_artist (album_id, artist_id)
@@ -196,8 +225,22 @@ func (r *MediaRepository) AddAlbumArtist(ctx context.Context, albumId int, artis
 	return nil
 }
 
-func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, mediaType models.MediaType) ([]models.Media, error) {
+func (r *MediaRepository) AddTrackArtist(ctx context.Context, trackId int, artistId int) error {
+	query :=
+		`INSERT INTO track_artist (track_id, artist_id)
+		 VALUES ($1, $2)`
+	result, err := r.Exec(ctx, query, trackId, artistId)
+	if err != nil {
+		return err
+	}
+	if result.RowsAffected() == 0 {
+		return errors.New("no rows affected")
+	}
 
+	return nil
+}
+
+func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, mediaType models.MediaType) ([]models.Media, error) {
 	// Select all rows where either the input string is in the title of the media, or if the string matches one of the titles fuzzily
 	var albumQuery = "SELECT * FROM album WHERE levenshtein(title, $1) <= 5 OR title ILIKE '%' || $1 || '%' LIMIT 20;"
 	var trackQuery = `
