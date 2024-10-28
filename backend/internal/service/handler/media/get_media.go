@@ -28,7 +28,7 @@ func (h *Handler) GetMediaByName(c *fiber.Ctx) error {
 	// If fewer than 5 results, call Spotify API for additional results
 	if len(medias) < 5 {
 		log.Println("Fetching additional results from Spotify API")
-		err := h.searchAndHandleSpotifyMedia(c.Context(), name, mediaType)
+		err := searchAndHandleSpotifyMedia(c.Context(), name, mediaType)
 		if err != nil {
 			log.Println("Spotify API error:", err)
 			return errs.InternalServerError()

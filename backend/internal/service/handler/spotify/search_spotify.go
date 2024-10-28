@@ -53,7 +53,7 @@ func (h *SpotifyHandler) searchAndHandleSpotifyMedia(c *fiber.Ctx, name string, 
 				wg.Add(1)
 				go func(album spotify.SimpleAlbum) {
 					defer wg.Done()
-					if err := h.handleAlbum(c.Context(), &wg, album, albums, nil, errCh); err != nil {
+					if _, err := h.handleAlbum(c.Context(), &wg, album, albums, nil, errCh); err != nil {
 						select {
 						case errCh <- err:
 						default:
@@ -69,7 +69,15 @@ func (h *SpotifyHandler) searchAndHandleSpotifyMedia(c *fiber.Ctx, name string, 
 				wg.Add(1)
 				go func(track spotify.FullTrack) {
 					defer wg.Done()
-					if err := h.handleTrack(c.Context(), &wg, track, tracks, nil, errCh); err != nil {
+					album, albumErr := h.mediaRepository.GetExistingAlbumBySpotifyID(c.Context(), track.Album.ID.String())
+					if albumErr != nil {
+						select {
+						case errCh <- albumErr:
+						default:
+						}
+						return
+					}
+					if err := h.handleTracks(c, &wg, *album, track.Album.ID, tracks, nil); err != nil {
 						select {
 						case errCh <- err:
 						default:
