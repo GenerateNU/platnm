@@ -41,34 +41,46 @@ func (h *SpotifyHandler) ImportRecommendations(c *fiber.Ctx) error {
 
 func handleRecommendations(recommendations *spotify.Recommendations, mr storage.MediaRepository) {
 	// insert artists in a separate goroutine since artist schema is independent of track and album
-	artistsResults := handleArtists(recommendations, mr)
+	artistResults := handleArtists(recommendations, mr)
 
 	// insert albums and tracks in a pipeline pattern since track schema has a foreign key to album
 	stage1 := generateJobs(recommendations)
 	stage2 := handleAlbums(stage1, mr)
 	pipelineResults := handleTracks(stage2, mr)
 
-	select {
-	case ar := <-artistsResults:
-		if ar.err != nil {
-			// warn or error here?
-			slog.Warn("failed to import artist",
-				"error", ar.err.Error(),
-			)
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		for ar := range artistResults {
+			if ar.err != nil {
+				// error or warn here?
+				slog.Error("failed to import artist",
+					"error", ar.err.Error(),
+				)
+			}
 		}
-	case pr := <-pipelineResults:
-		if pr.albumErr != nil {
-			// warn or error here?
-			slog.Warn("failed to import album",
-				"error", pr.albumErr.Error(),
-			)
-		} else if pr.trackErr != nil {
-			// warn or error here?
-			slog.Warn("failed to import track",
-				"error", pr.trackErr.Error(),
-			)
+	}()
+
+	go func() {
+		defer wg.Done()
+		for pr := range pipelineResults {
+			if pr.albumErr != nil {
+				// error or warn here?
+				slog.Error("failed to import album",
+					"error", pr.albumErr.Error(),
+				)
+			} else if pr.trackErr != nil {
+				// error or warn here?
+				slog.Error("failed to import track",
+					"error", pr.trackErr.Error(),
+				)
+			}
 		}
-	}
+	}()
+
+	wg.Wait()
 }
 
 type job struct {
