@@ -11,14 +11,14 @@ import (
 	"github.com/zmb3/spotify/v2"
 )
 
-type populateRequest struct {
+type importRecommendationsRequest struct {
 	Artists []string `json:"artists"`
 	Tracks  []string `json:"tracks"`
 	Genres  []string `json:"genres"`
 }
 
-func (h *SpotifyHandler) PopulateRecommendations(c *fiber.Ctx) error {
-	var req populateRequest
+func (h *SpotifyHandler) ImportRecommendations(c *fiber.Ctx) error {
+	var req importRecommendationsRequest
 	if err := c.BodyParser(&req); err != nil {
 		return err
 	}
@@ -74,19 +74,19 @@ func handleAlbum(album spotify.SimpleAlbum, mr storage.MediaRepository, wg *sync
 	}
 }
 
-func (pr *populateRequest) toSeeds() spotify.Seeds {
-	artistIDs := make([]spotify.ID, len(pr.Artists))
-	for i, artist := range pr.Artists {
+func (irr *importRecommendationsRequest) toSeeds() spotify.Seeds {
+	artistIDs := make([]spotify.ID, len(irr.Artists))
+	for i, artist := range irr.Artists {
 		artistIDs[i] = spotify.ID(artist)
 	}
 
-	trackIDs := make([]spotify.ID, len(pr.Tracks))
-	for i, track := range pr.Tracks {
+	trackIDs := make([]spotify.ID, len(irr.Tracks))
+	for i, track := range irr.Tracks {
 		trackIDs[i] = spotify.ID(track)
 	}
 	return spotify.Seeds{
 		Artists: artistIDs,
 		Tracks:  trackIDs,
-		Genres:  pr.Genres,
+		Genres:  irr.Genres,
 	}
 }
