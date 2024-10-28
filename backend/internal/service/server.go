@@ -120,6 +120,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Use(m.WithSpotifyClient())
 		r.Get("/", h.GetPlatnmPlaylist)
 		r.Get("/new-releases", h.NewReleases)
+		r.Post("/populate/recommendations", h.PopulateRecommendations)
 	})
 
 	app.Get("/secret", auth.Middleware(&config.Supabase), func(c *fiber.Ctx) error {
