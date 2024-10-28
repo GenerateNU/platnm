@@ -4,6 +4,7 @@ import (
 	"platnm/internal/config"
 	"platnm/internal/service/ctxt"
 	"platnm/internal/service/handler/oauth"
+	"platnm/internal/service/session"
 	"platnm/internal/storage"
 
 	"github.com/gofiber/fiber/v2"
@@ -19,19 +20,31 @@ type Middleware struct {
 	clientSecret       string
 	redirectURI        string
 	userAuthRepository storage.UserAuthRepository
+	sessionStore       session.SessionStore
 }
 
-func NewMiddleware(config config.Spotify, userAuthRepository storage.UserAuthRepository) *Middleware {
+func NewMiddleware(config config.Spotify, userAuthRepository storage.UserAuthRepository, sessionStore *session.SessionStore) *Middleware {
 	return &Middleware{
 		clientID:           config.ClientID,
 		clientSecret:       config.ClientSecret,
 		redirectURI:        config.RedirectURI,
 		userAuthRepository: userAuthRepository,
+		sessionStore:       *sessionStore,
 	}
 }
 
 func (m *Middleware) WithAuthenticatedSpotifyClient() fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		client, err := m.sessionStore.GetAuthSpotifyClient(c)
+		if err != nil {
+			return err
+		}
+
+		if client != nil {
+			ctxt.SetSpotifyClient(c, client)
+			return c.Next()
+		}
+
 		uid, err := uuid.Parse(c.Params("userID"))
 		if err != nil {
 			return err
@@ -53,7 +66,7 @@ func (m *Middleware) WithAuthenticatedSpotifyClient() fiber.Handler {
 			spotifyauth.WithClientSecret(m.clientSecret),
 		)
 		httpClient := authenticator.Client(c.Context(), &token)
-		client := spotify.New(httpClient)
+		client = spotify.New(httpClient)
 
 		ctxt.SetSpotifyClient(c, client)
 		return c.Next()
@@ -62,6 +75,16 @@ func (m *Middleware) WithAuthenticatedSpotifyClient() fiber.Handler {
 
 func (m *Middleware) WithSpotifyClient() fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		client, err := m.sessionStore.GetClientCredsSpotifyClient(c)
+		if err != nil {
+			return err
+		}
+
+		if client != nil {
+			ctxt.SetSpotifyClient(c, client)
+			return c.Next()
+		}
+
 		config := &clientcredentials.Config{
 			ClientID:     m.clientID,
 			ClientSecret: m.clientSecret,
@@ -74,7 +97,7 @@ func (m *Middleware) WithSpotifyClient() fiber.Handler {
 		}
 
 		httpClient := spotifyauth.Authenticator{}.Client(c.Context(), token)
-		client := spotify.New(httpClient)
+		client = spotify.New(httpClient)
 
 		ctxt.SetSpotifyClient(c, client)
 		return c.Next()

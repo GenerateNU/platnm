@@ -2,15 +2,15 @@ package platnm
 
 import (
 	"platnm/internal/config"
-	"platnm/internal/service/handler/oauth"
+	"platnm/internal/service/session"
 )
 
 type Handler struct {
-	store  *oauth.UserStateStore
+	store  *session.SessionStore
 	config config.Supabase
 }
 
-func NewHandler(store *oauth.UserStateStore, config config.Supabase) *Handler {
+func NewHandler(store *session.SessionStore, config config.Supabase) *Handler {
 	return &Handler{
 		store:  store,
 		config: config,
