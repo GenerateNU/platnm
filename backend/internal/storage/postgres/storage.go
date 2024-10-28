@@ -45,5 +45,6 @@ func NewRepository(config config.DB) *storage.Repository {
 		UserReviewVote: schema.NewVoteRepository(db),
 		Media:          schema.NewMediaRepository(db),
 		Recommendation: schema.NewRecommendationRepository(db),
+		Playlist:       schema.NewPlaylistRepository(db),
 	}
 }
