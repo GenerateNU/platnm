@@ -68,6 +68,8 @@ func (m *Middleware) WithAuthenticatedSpotifyClient() fiber.Handler {
 		httpClient := authenticator.Client(c.Context(), &token)
 		client = spotify.New(httpClient)
 
+		m.sessionStore.SetAuthSpotifyClient(c, client)
+
 		ctxt.SetSpotifyClient(c, client)
 		return c.Next()
 	}
@@ -98,6 +100,8 @@ func (m *Middleware) WithSpotifyClient() fiber.Handler {
 
 		httpClient := spotifyauth.Authenticator{}.Client(c.Context(), token)
 		client = spotify.New(httpClient)
+
+		m.sessionStore.SetClientCredsSpotifyClient(c, client)
 
 		ctxt.SetSpotifyClient(c, client)
 		return c.Next()

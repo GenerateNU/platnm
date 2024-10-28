@@ -29,7 +29,12 @@ func (u *SessionStore) GetAuthSpotifyClient(c *fiber.Ctx) (*spotify.Client, erro
 		return nil, err
 	}
 
-	return sess.Get(authSpotifyClientKey).(*spotify.Client), nil
+	v := sess.Get(authSpotifyClientKey)
+	if v == nil {
+		return nil, nil
+	}
+
+	return v.(*spotify.Client), nil
 }
 
 func (u *SessionStore) SetClientCredsSpotifyClient(c *fiber.Ctx, client *spotify.Client) error {
@@ -51,5 +56,10 @@ func (u *SessionStore) GetClientCredsSpotifyClient(c *fiber.Ctx) (*spotify.Clien
 		return nil, err
 	}
 
-	return sess.Get(clientCredsSpotifyClientKey).(*spotify.Client), nil
+	v := sess.Get(clientCredsSpotifyClientKey)
+	if v == nil {
+		return nil, nil
+	}
+
+	return v.(*spotify.Client), nil
 }

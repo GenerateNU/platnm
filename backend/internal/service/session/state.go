@@ -30,5 +30,10 @@ func (s *SessionStore) GetState(c *fiber.Ctx) (UserState, error) {
 	if err != nil {
 		return UserState{}, err
 	}
-	return sess.Get(valueKey).(UserState), nil
+	v := sess.Get(valueKey)
+	if v == nil {
+		return UserState{}, nil
+	}
+
+	return v.(UserState), nil
 }
