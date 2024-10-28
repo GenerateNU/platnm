@@ -2,6 +2,8 @@ package spotify
 
 import (
 	"context"
+	"errors"
+	"log/slog"
 	"platnm/internal/models"
 	"platnm/internal/service/ctxt"
 	"platnm/internal/storage"
@@ -17,28 +19,10 @@ type importRecommendationsRequest struct {
 	Genres  []string `json:"genres"`
 }
 
-type artistResult struct {
-	SpotifyID spotify.ID    `json:"spotify_id"`
-	Artist    models.Artist `json:"artist"`
-	Err       error         `json:"error"`
-}
-
-type trackResult struct {
-	SpotifyID spotify.ID   `json:"spotify_id"`
-	Track     models.Track `json:"track"`
-	Err       error        `json:"error"`
-}
-
-type albumResult struct {
-	SpotifyID spotify.ID   `json:"spotify_id"`
-	Album     models.Album `json:"album"`
-	Err       error        `json:"error"`
-}
-
 type importRecommendationsResponse struct {
-	Artists []artistResult `json:"artists"`
-	Tracks  []trackResult  `json:"tracks"`
-	Albums  []albumResult  `json:"albums"`
+	Artists []models.Artist `json:"artists"`
+	Tracks  []models.Track  `json:"tracks"`
+	Albums  []models.Album  `json:"albums"`
 }
 
 func (h *SpotifyHandler) ImportRecommendations(c *fiber.Ctx) error {
@@ -64,20 +48,30 @@ func (h *SpotifyHandler) ImportRecommendations(c *fiber.Ctx) error {
 
 func handleRecommendations(ctx context.Context, recommendations *spotify.Recommendations, mr storage.MediaRepository) importRecommendationsResponse {
 	var (
-		resp importRecommendationsResponse
-		wg   sync.WaitGroup
+		resp    importRecommendationsResponse
+		wg      sync.WaitGroup
+		errCh   = make(chan error)
+		allErrs []error
 	)
 
-	// insert artists outside of pipeline since artist schema is independent of track and album
-	artistResults := handleArtists(ctx, recommendations, mr)
+	// collect errors from goroutines
+	go func() {
+		for err := range errCh {
+			allErrs = append(allErrs, err)
+		}
+	}()
 
-	// insert albums and tracks in a pipeline pattern since track schema has a foreign key to album
+	// insert artists outside of pipeline since artist schema is independent of track and album
+	artistResults := handleArtists(ctx, recommendations, errCh, mr)
+
+	// insert albums and tracks in pipeline pattern since track schema has a foreign key to album
 	stage1 := startPipeline(recommendations)
-	stage2, albumResults := handleAlbums(ctx, stage1, mr)
-	trackResults := handleTracks(ctx, stage2, mr)
+	stage2, albumResults := handleAlbums(ctx, stage1, errCh, mr)
+	trackResults := handleTracks(ctx, stage2, errCh, mr)
 
 	wg.Add(3)
 
+	// collect inserted artists
 	go func() {
 		defer wg.Done()
 		for ar := range artistResults {
@@ -85,6 +79,7 @@ func handleRecommendations(ctx context.Context, recommendations *spotify.Recomme
 		}
 	}()
 
+	// collect inserted albums
 	go func() {
 		defer wg.Done()
 		for ar := range albumResults {
@@ -92,6 +87,7 @@ func handleRecommendations(ctx context.Context, recommendations *spotify.Recomme
 		}
 	}()
 
+	// collect inserted tracks
 	go func() {
 		defer wg.Done()
 		for tr := range trackResults {
@@ -99,7 +95,17 @@ func handleRecommendations(ctx context.Context, recommendations *spotify.Recomme
 		}
 	}()
 
+	// wait until all goroutines are done
+	// close errCh since no more goroutines will be sending errors
 	wg.Wait()
+	close(errCh)
+
+	if len(allErrs) > 0 {
+		slog.Warn("error importing recommendations",
+			"errors", errors.Join(allErrs...),
+		)
+	}
+
 	return resp
 }
 
@@ -119,10 +125,10 @@ type trackWithAlbumID struct {
 	albumID int
 }
 
-func handleAlbums(ctx context.Context, in <-chan spotify.SimpleTrack, mr storage.MediaRepository) (<-chan trackWithAlbumID, <-chan albumResult) {
+func handleAlbums(ctx context.Context, in <-chan spotify.SimpleTrack, errChan chan<- error, mr storage.MediaRepository) (<-chan trackWithAlbumID, <-chan models.Album) {
 	var (
 		out          = make(chan trackWithAlbumID)
-		albumResults = make(chan albumResult)
+		albumResults = make(chan models.Album)
 	)
 
 	go func() {
@@ -148,22 +154,21 @@ func handleAlbums(ctx context.Context, in <-chan spotify.SimpleTrack, mr storage
 					albumID: id,
 				}
 			} else {
+				var cover string
+				if len(track.Album.Images) > 0 {
+					cover = track.Album.Images[0].URL
+				}
+
 				if album, err := mr.AddAlbum(ctx, &models.Album{
 					MediaType:   models.AlbumMedia,
 					SpotifyID:   track.Album.ID.String(),
 					Title:       track.Album.Name,
 					ReleaseDate: track.Album.ReleaseDateTime(),
-					Cover:       track.Album.Images[0].URL,
+					Cover:       cover,
 				}); err != nil {
-					albumResults <- albumResult{
-						SpotifyID: track.Album.ID,
-						Err:       err,
-					}
+					errChan <- err
 				} else {
-					albumResults <- albumResult{
-						SpotifyID: track.Album.ID,
-						Album:     *album,
-					}
+					albumResults <- *album
 					out <- trackWithAlbumID{
 						track:   track,
 						albumID: album.ID,
@@ -176,32 +181,29 @@ func handleAlbums(ctx context.Context, in <-chan spotify.SimpleTrack, mr storage
 	return out, albumResults
 }
 
-func handleTracks(ctx context.Context, in <-chan trackWithAlbumID, mr storage.MediaRepository) <-chan trackResult {
-	trackResults := make(chan trackResult)
+func handleTracks(ctx context.Context, in <-chan trackWithAlbumID, errChan chan<- error, mr storage.MediaRepository) <-chan models.Track {
+	trackResults := make(chan models.Track)
 
 	go func() {
 		defer close(trackResults)
 		for t := range in {
-			track := models.Track{
+			var cover string
+			if len(t.track.Album.Images) > 0 {
+				cover = t.track.Album.Images[0].URL
+			}
+
+			if newTrack, err := mr.AddTrack(ctx, &models.Track{
 				MediaType:   models.TrackMedia,
 				SpotifyID:   t.track.ID.String(),
 				AlbumID:     t.albumID,
 				Title:       t.track.Name,
 				Duration:    int(t.track.Duration),
 				ReleaseDate: t.track.Album.ReleaseDateTime(),
-				Cover:       t.track.Album.Images[0].URL,
-			}
-
-			if newTrack, err := mr.AddTrack(ctx, &track); err != nil {
-				trackResults <- trackResult{
-					SpotifyID: t.track.ID,
-					Err:       err,
-				}
+				Cover:       cover,
+			}); err != nil {
+				errChan <- err
 			} else {
-				trackResults <- trackResult{
-					SpotifyID: t.track.ID,
-					Track:     *newTrack,
-				}
+				trackResults <- *newTrack
 			}
 		}
 	}()
@@ -209,8 +211,8 @@ func handleTracks(ctx context.Context, in <-chan trackWithAlbumID, mr storage.Me
 	return trackResults
 }
 
-func handleArtists(ctx context.Context, recommendations *spotify.Recommendations, mr storage.MediaRepository) <-chan artistResult {
-	artistResults := make(chan artistResult)
+func handleArtists(ctx context.Context, recommendations *spotify.Recommendations, errChan chan<- error, mr storage.MediaRepository) <-chan models.Artist {
+	artistResults := make(chan models.Artist)
 
 	go func() {
 		defer close(artistResults)
@@ -235,18 +237,12 @@ func handleArtists(ctx context.Context, recommendations *spotify.Recommendations
 							SpotifyID: artist.ID.String(),
 							Name:      artist.Name,
 						}); err != nil {
-							artistResults <- artistResult{
-								SpotifyID: artist.ID,
-								Err:       err,
-							}
+							errChan <- err
 						} else {
 							mu.Lock()
 							artists[artist.ID.String()] = struct{}{}
 							mu.Unlock()
-							artistResults <- artistResult{
-								SpotifyID: artist.ID,
-								Artist:    *newArtist,
-							}
+							artistResults <- *newArtist
 						}
 					}()
 				}
