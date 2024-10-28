@@ -39,12 +39,15 @@ type MediaRepository interface {
 	GetExistingAlbumBySpotifyID(ctx context.Context, id string) (*int, error)
 	AddAlbum(ctx context.Context, artist *models.Album) (*models.Album, error)
 	AddAlbumArtist(ctx context.Context, albumId int, artistId int) error
+	AddTrack(ctx context.Context, track *models.Track) (*models.Track, error)
+	AddTrackArtist(ctx context.Context, trackId int, artistId int) error
 }
 
 type RecommendationRepository interface {
 	CreateRecommendation(ctx context.Context, recommendation *models.Recommendation) (*models.Recommendation, error)
 	GetRecommendation(ctx context.Context, id string) (*models.Recommendation, error)
-	UpdateRecommendation(ctx context.Context, recommendation *models.Recommendation) (error)
+	UpdateRecommendation(ctx context.Context, recommendation *models.Recommendation) error
+	GetRecommendations(ctx context.Context, id string) ([]*models.Recommendation, error)
 }
 
 type VoteRepository interface {
@@ -54,6 +57,11 @@ type VoteRepository interface {
 	DeleteVote(ctx context.Context, userID string, reviewID string) error
 }
 
+type PlaylistRepository interface {
+	CreatePlaylist(ctx context.Context, playlist models.Playlist) error
+	AddToUserOnQueue(ctx context.Context, id string, track models.Track) error
+}
+
 // Repository storage of all repositories.
 type Repository struct {
 	User           UserRepository
@@ -61,4 +69,5 @@ type Repository struct {
 	UserReviewVote VoteRepository
 	Media          MediaRepository
 	Recommendation RecommendationRepository
+	Playlist       PlaylistRepository
 }
