@@ -39,6 +39,8 @@ type MediaRepository interface {
 	GetExistingAlbumBySpotifyID(ctx context.Context, id string) (*int, error)
 	AddAlbum(ctx context.Context, artist *models.Album) (*models.Album, error)
 	AddAlbumArtist(ctx context.Context, albumId int, artistId int) error
+	AddTrack(ctx context.Context, track *models.Track) (*models.Track, error)
+	AddTrackArtist(ctx context.Context, trackId int, artistId int) error
 }
 
 type RecommendationRepository interface {
@@ -60,6 +62,11 @@ type UserAuthRepository interface {
 	SetToken(ctx context.Context, id uuid.UUID, token string) error
 }
 
+type PlaylistRepository interface {
+	CreatePlaylist(ctx context.Context, playlist models.Playlist) error
+	AddToUserOnQueue(ctx context.Context, id string, track models.Track) error
+}
+
 // Repository storage of all repositories.
 type Repository struct {
 	User           UserRepository
@@ -68,4 +75,5 @@ type Repository struct {
 	Media          MediaRepository
 	Recommendation RecommendationRepository
 	UserAuth       UserAuthRepository
+	Playlist       PlaylistRepository
 }
