@@ -73,7 +73,9 @@ func setupRoutes(app *fiber.App, config config.Config) {
 
 	mediaHandler := media.NewHandler(repository.Media)
 	app.Route("/media", func(r fiber.Router) {
-		r.Get("/:name", mediaHandler.GetMediaByName)
+		m := spotify_middleware.NewMiddleware(config.Spotify)
+		// Apply middleware only to the specific route
+		r.Get("/:name", m.WithSpotifyClient(), mediaHandler.GetMediaByName)
 		r.Get("/", mediaHandler.GetMedia)
 	})
 
