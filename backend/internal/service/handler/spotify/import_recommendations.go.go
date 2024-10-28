@@ -148,7 +148,7 @@ func handleTracks(in <-chan job, mr storage.MediaRepository) <-chan job {
 		defer close(out)
 
 		for j := range in {
-			if j.albumErr != nil {
+			if j.albumErr == nil {
 				if _, err := mr.AddTrack(context.TODO(), &models.Track{
 					MediaType:   models.TrackMedia,
 					SpotifyID:   j.track.ID.String(),
