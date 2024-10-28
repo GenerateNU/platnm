@@ -97,12 +97,17 @@ func handleAlbums(in <-chan job, mr storage.MediaRepository) <-chan job {
 	out := make(chan job)
 	go func() {
 		defer close(out)
+		var mu sync.Mutex
 		// map that stores spotify album ids to album ids in our database
 		// this prevents attempts to add duplicate albums
 		albums := make(map[string]int)
 
 		for j := range in {
-			if id, ok := albums[j.track.Album.ID.String()]; ok {
+			mu.Lock()
+			id, ok := albums[j.track.Album.ID.String()]
+			mu.Unlock()
+
+			if ok {
 				j.albumID = id
 			} else {
 				if album, err := mr.AddAlbum(context.TODO(), &models.Album{
@@ -156,12 +161,17 @@ func handleArtists(recommendations *spotify.Recommendations, mr storage.MediaRep
 	go func() {
 		defer close(results)
 		var wg sync.WaitGroup
+		var mu sync.Mutex
 		// map that stores spotify artist ids that have already been added to the database
 		artists := make(map[string]struct{})
 
 		for _, track := range recommendations.Tracks {
 			for _, artist := range track.Artists {
-				if _, ok := artists[artist.ID.String()]; !ok {
+				mu.Lock()
+				_, ok := artists[artist.ID.String()]
+				mu.Unlock()
+
+				if !ok {
 					wg.Add(1)
 					go func() {
 						defer wg.Done()
@@ -171,7 +181,9 @@ func handleArtists(recommendations *spotify.Recommendations, mr storage.MediaRep
 						}); err != nil {
 							results <- artistResult{err: err}
 						} else {
+							mu.Lock()
 							artists[artist.ID.String()] = struct{}{}
+							mu.Unlock()
 						}
 					}()
 				}
