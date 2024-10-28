@@ -63,17 +63,19 @@ func (h *SpotifyHandler) ImportRecommendations(c *fiber.Ctx) error {
 }
 
 func handleRecommendations(ctx context.Context, recommendations *spotify.Recommendations, mr storage.MediaRepository) importRecommendationsResponse {
-	// insert artists in a separate goroutine since artist schema is independent of track and album
+	var (
+		resp importRecommendationsResponse
+		wg   sync.WaitGroup
+	)
+
+	// insert artists outside of pipeline since artist schema is independent of track and album
 	artistResults := handleArtists(ctx, recommendations, mr)
 
 	// insert albums and tracks in a pipeline pattern since track schema has a foreign key to album
-	stage1 := generateJobs(recommendations)
+	stage1 := startPipeline(recommendations)
 	stage2, albumResults := handleAlbums(ctx, stage1, mr)
 	trackResults := handleTracks(ctx, stage2, mr)
 
-	resp := importRecommendationsResponse{}
-
-	var wg sync.WaitGroup
 	wg.Add(3)
 
 	go func() {
@@ -101,7 +103,7 @@ func handleRecommendations(ctx context.Context, recommendations *spotify.Recomme
 	return resp
 }
 
-func generateJobs(recommendations *spotify.Recommendations) <-chan spotify.SimpleTrack {
+func startPipeline(recommendations *spotify.Recommendations) <-chan spotify.SimpleTrack {
 	out := make(chan spotify.SimpleTrack)
 	go func() {
 		defer close(out)
@@ -122,6 +124,7 @@ func handleAlbums(ctx context.Context, in <-chan spotify.SimpleTrack, mr storage
 		out          = make(chan trackWithAlbumID)
 		albumResults = make(chan albumResult)
 	)
+
 	go func() {
 		defer func() {
 			close(out)
@@ -211,8 +214,10 @@ func handleArtists(ctx context.Context, recommendations *spotify.Recommendations
 
 	go func() {
 		defer close(artistResults)
-		var wg sync.WaitGroup
-		var mu sync.Mutex
+		var (
+			wg sync.WaitGroup
+			mu sync.Mutex
+		)
 		// map that stores spotify artist ids that have already been added to the database
 		artists := make(map[string]struct{})
 
@@ -264,6 +269,7 @@ func (irr *importRecommendationsRequest) toSeeds() spotify.Seeds {
 	for i, track := range irr.Tracks {
 		trackIDs[i] = spotify.ID(track)
 	}
+
 	return spotify.Seeds{
 		Artists: artistIDs,
 		Tracks:  trackIDs,
