@@ -55,7 +55,7 @@ export default function Login() {
   };
 
   const handleSignUpPress = () => {
-    router.push("/onboard");
+    router.push("/signup");
   };
 
   return (
