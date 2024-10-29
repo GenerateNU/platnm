@@ -228,6 +228,24 @@ func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaT
 	return reviews, nil
 }
 
+func (r *ReviewRepository) GetTags(ctx context.Context) ([]string, error) {
+	rows, err := r.Query(ctx, "SELECT name FROM tag")
+	if err != nil {
+		return nil, err
+	}
+
+	var tags []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		tags = append(tags, name)
+	}
+
+	return tags, nil
+}
+
 func NewReviewRepository(db *pgxpool.Pool) *ReviewRepository {
 	return &ReviewRepository{
 		db,
