@@ -25,7 +25,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { updateAccessToken } = useAuthContext();
+  const { sessionToken, updateAccessToken, updateSession } = useAuthContext();
 
   const handleSignIn = async () => {
     setLoading(true);
@@ -40,8 +40,15 @@ export default function Login() {
           Alert.alert("Error", res.data.error);
           return;
         }
-        Alert.alert("Success", "You are now signed in!");
         updateAccessToken(res.data.token);
+        const sessionHeader = res.headers['x-session'];
+        console.log("Session from Header: " + sessionHeader);
+        updateSession(sessionHeader);
+
+        // In your component where you're making the API call:
+        console.log("updateSession function:", updateSession); // Should show a function, not undefined
+        
+        Alert.alert("Success", "You are now signed in!");
       })
       .catch((error) => {
         console.error("Error logging in:", error);
@@ -49,6 +56,8 @@ export default function Login() {
       });
     setLoading(false);
   };
+
+
 
   const forgotUsernamePassword = () => {
     console.log("Forgot username or password");

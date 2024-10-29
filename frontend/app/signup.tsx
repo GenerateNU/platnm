@@ -9,11 +9,13 @@ import {
   Pressable,
 } from "react-native";
 import CustomButton from "@/components/onboarding/OnboardButton";
+import { useAuthContext } from "@/components/AuthProvider";
 import Header from "@/components/onboarding/Header";
 import { useSharedValue, withTiming } from "react-native-reanimated";
 import ProgressBar from "@/components/onboarding/ProgressBar";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
+
 
 const slides = [
   {
@@ -60,6 +62,9 @@ const OnboardingCarousel: React.FC = () => {
   const [inputValid, setInputValid] = useState(false);
   const [tried, setTried] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const { sessionToken, updateAccessToken, updateSession } = useAuthContext();
+
+  
 
   const progressBar1 = useSharedValue(0);
   const progressBar2 = useSharedValue(0);
@@ -98,10 +103,21 @@ const OnboardingCarousel: React.FC = () => {
         alert("Error: " + res.data.error);
         return;
       }
+
+      updateAccessToken(res.data.token);
+      updateSession(res.headers['X-Session']);
+      console.log(res.headers);
+      console.log("session: " + sessionToken);
+
+
       alert("Success \n You've got an account!");
     } catch (error) {
       alert("Signup Error");
     }
+    
+    
+
+
   };
 
   const handleNext = () => {
