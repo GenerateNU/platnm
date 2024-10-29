@@ -20,9 +20,21 @@ type importRecommendationsRequest struct {
 }
 
 type importRecommendationsResponse struct {
-	Artists []models.Artist `json:"artists"`
-	Tracks  []models.Track  `json:"tracks"`
-	Albums  []models.Album  `json:"albums"`
+	Artists      []models.Artist           `json:"artists"`
+	Tracks       []models.Track            `json:"tracks"`
+	Albums       []models.Album            `json:"albums"`
+	TrackArtists []bridgeTrackArtistResult `json:"track_artists"`
+	AlbumArtists []bridgeAlbumArtistResult `json:"album_artists"`
+}
+
+type bridgeTrackArtistResult struct {
+	TrackID  int `json:"track_id"`
+	ArtistID int `json:"artist_id"`
+}
+
+type bridgeAlbumArtistResult struct {
+	AlbumID  int `json:"album_id"`
+	ArtistID int `json:"artist_id"`
 }
 
 func (h *SpotifyHandler) ImportRecommendations(c *fiber.Ctx) error {
@@ -61,15 +73,14 @@ func handleRecommendations(ctx context.Context, recommendations *spotify.Recomme
 		}
 	}()
 
-	// insert artists outside of pipeline since artist schema is independent of track and album
-	artistResults := handleArtists(ctx, recommendations, errCh, mr)
-
-	// insert albums and tracks in pipeline pattern since track schema has a foreign key to album
+	// use pipeline pattern to insert tracks, albums, artists, and bridge tables concurrently
 	stage1 := startPipeline(recommendations)
 	stage2, albumResults := handleAlbums(ctx, stage1, errCh, mr)
-	trackResults := handleTracks(ctx, stage2, errCh, mr)
+	stage3, trackResults := handleTracks(ctx, stage2, errCh, mr)
+	stage4, artistResults := handleArtists(ctx, stage3, errCh, mr)
+	trackArtistResults, albumArtistResults := handleBridge(ctx, stage4, errCh, mr)
 
-	wg.Add(3)
+	wg.Add(5)
 
 	// collect inserted artists
 	go func() {
@@ -92,6 +103,22 @@ func handleRecommendations(ctx context.Context, recommendations *spotify.Recomme
 		defer wg.Done()
 		for tr := range trackResults {
 			resp.Tracks = append(resp.Tracks, tr)
+		}
+	}()
+
+	// collect inserted track artists
+	go func() {
+		defer wg.Done()
+		for ta := range trackArtistResults {
+			resp.TrackArtists = append(resp.TrackArtists, ta)
+		}
+	}()
+
+	// collect inserted album artists
+	go func() {
+		defer wg.Done()
+		for aa := range albumArtistResults {
+			resp.AlbumArtists = append(resp.AlbumArtists, aa)
 		}
 	}()
 
@@ -120,14 +147,14 @@ func startPipeline(recommendations *spotify.Recommendations) <-chan spotify.Simp
 	return out
 }
 
-type trackWithAlbumID struct {
+type handleAlbumsResult struct {
 	track   spotify.SimpleTrack
 	albumID int
 }
 
-func handleAlbums(ctx context.Context, in <-chan spotify.SimpleTrack, errChan chan<- error, mr storage.MediaRepository) (<-chan trackWithAlbumID, <-chan models.Album) {
+func handleAlbums(ctx context.Context, in <-chan spotify.SimpleTrack, errChan chan<- error, mr storage.MediaRepository) (<-chan handleAlbumsResult, <-chan models.Album) {
 	var (
-		out          = make(chan trackWithAlbumID)
+		out          = make(chan handleAlbumsResult)
 		albumResults = make(chan models.Album)
 	)
 
@@ -136,44 +163,47 @@ func handleAlbums(ctx context.Context, in <-chan spotify.SimpleTrack, errChan ch
 			close(out)
 			close(albumResults)
 		}()
+
 		var mu sync.Mutex
 		// map that stores spotify album ids to album ids in our database
 		// this prevents attempts to add duplicate albums
 		albums := make(map[string]int)
 
-		for track := range in {
+		for input := range in {
 			mu.Lock()
-			id, ok := albums[track.Album.ID.String()]
+			id, ok := albums[input.Album.ID.String()]
 			mu.Unlock()
 
 			// if the album is already in the database, skip adding album to db
 			// and send track to next stage with corresponding album id
 			if ok {
-				out <- trackWithAlbumID{
-					track:   track,
+				out <- handleAlbumsResult{
+					track:   input,
 					albumID: id,
 				}
 			} else {
 				var cover string
-				if len(track.Album.Images) > 0 {
-					cover = track.Album.Images[0].URL
+				if len(input.Album.Images) > 0 {
+					cover = input.Album.Images[0].URL
 				}
 
 				if album, err := mr.AddAlbum(ctx, &models.Album{
 					MediaType:   models.AlbumMedia,
-					SpotifyID:   track.Album.ID.String(),
-					Title:       track.Album.Name,
-					ReleaseDate: track.Album.ReleaseDateTime(),
+					SpotifyID:   input.Album.ID.String(),
+					Title:       input.Album.Name,
+					ReleaseDate: input.Album.ReleaseDateTime(),
 					Cover:       cover,
 				}); err != nil {
 					errChan <- err
 				} else {
-					albumResults <- *album
-					out <- trackWithAlbumID{
-						track:   track,
+					out <- handleAlbumsResult{
+						track:   input,
 						albumID: album.ID,
 					}
-					albums[track.Album.ID.String()] = album.ID
+					albumResults <- *album
+					mu.Lock()
+					albums[input.Album.ID.String()] = album.ID
+					mu.Unlock()
 				}
 			}
 		}
@@ -181,94 +211,204 @@ func handleAlbums(ctx context.Context, in <-chan spotify.SimpleTrack, errChan ch
 	return out, albumResults
 }
 
-func handleTracks(ctx context.Context, in <-chan trackWithAlbumID, errChan chan<- error, mr storage.MediaRepository) <-chan models.Track {
-	trackResults := make(chan models.Track)
+type handleTracksResult struct {
+	handleAlbumsResult
+	trackID int
+}
+
+func handleTracks(ctx context.Context, in <-chan handleAlbumsResult, errChan chan<- error, mr storage.MediaRepository) (<-chan handleTracksResult, <-chan models.Track) {
+	var (
+		out          = make(chan handleTracksResult)
+		trackResults = make(chan models.Track)
+	)
 
 	go func() {
-		defer close(trackResults)
-		for t := range in {
+		defer func() {
+			close(out)
+			close(trackResults)
+		}()
+
+		for input := range in {
 			var cover string
-			if len(t.track.Album.Images) > 0 {
-				cover = t.track.Album.Images[0].URL
+			if len(input.track.Album.Images) > 0 {
+				cover = input.track.Album.Images[0].URL
 			}
 
 			if newTrack, err := mr.AddTrack(ctx, &models.Track{
 				MediaType:   models.TrackMedia,
-				SpotifyID:   t.track.ID.String(),
-				AlbumID:     t.albumID,
-				Title:       t.track.Name,
-				Duration:    int(t.track.Duration),
-				ReleaseDate: t.track.Album.ReleaseDateTime(),
+				SpotifyID:   input.track.ID.String(),
+				AlbumID:     input.albumID,
+				Title:       input.track.Name,
+				Duration:    int(input.track.Duration),
+				ReleaseDate: input.track.Album.ReleaseDateTime(),
 				Cover:       cover,
 			}); err != nil {
 				errChan <- err
 			} else {
+				out <- handleTracksResult{
+					handleAlbumsResult: input,
+					trackID:            newTrack.ID,
+				}
 				trackResults <- *newTrack
 			}
 		}
 	}()
 
-	return trackResults
+	return out, trackResults
 }
 
-func handleArtists(ctx context.Context, recommendations *spotify.Recommendations, errChan chan<- error, mr storage.MediaRepository) <-chan models.Artist {
-	artistResults := make(chan models.Artist)
+type handleArtistsResult struct {
+	trackID  int
+	albumID  int
+	artistID int
+}
+
+func handleArtists(ctx context.Context, in <-chan handleTracksResult, errChan chan<- error, mr storage.MediaRepository) (<-chan handleArtistsResult, <-chan models.Artist) {
+	var (
+		out           = make(chan handleArtistsResult)
+		artistResults = make(chan models.Artist)
+	)
 
 	go func() {
-		defer close(artistResults)
-		var (
-			wg sync.WaitGroup
-			mu sync.Mutex
-		)
-		// map that stores spotify artist ids that have already been added to the database
-		artists := make(map[string]struct{})
+		defer func() {
+			close(out)
+			close(artistResults)
+		}()
 
-		for _, track := range recommendations.Tracks {
-			for _, artist := range track.Artists {
+		// make a wait group and for each input, increment wg, then do the following work in a goroutine that defers wg.Done()
+		// at end of outer goroutine, call wg.Wait() to wait for all inner goroutines to finish
+
+		var mu sync.Mutex
+		// map that stores spotify artist ids that have already been added to the database
+		artists := make(map[string]int)
+
+		for input := range in {
+			for _, artist := range input.track.Artists {
 				mu.Lock()
 				_, ok := artists[artist.ID.String()]
 				mu.Unlock()
 
-				if !ok {
-					wg.Add(1)
-					go func() {
-						defer wg.Done()
-						if newArtist, err := mr.AddArtist(ctx, &models.Artist{
-							SpotifyID: artist.ID.String(),
-							Name:      artist.Name,
-						}); err != nil {
-							errChan <- err
-						} else {
-							mu.Lock()
-							artists[artist.ID.String()] = struct{}{}
-							mu.Unlock()
-							artistResults <- *newArtist
+				if ok {
+					out <- handleArtistsResult{
+						trackID:  input.trackID,
+						albumID:  input.albumID,
+						artistID: artists[artist.ID.String()],
+					}
+				} else {
+					if newArtist, err := mr.AddArtist(ctx, &models.Artist{
+						SpotifyID: artist.ID.String(),
+						Name:      artist.Name,
+					}); err != nil {
+						errChan <- err
+					} else {
+						out <- handleArtistsResult{
+							trackID:  input.trackID,
+							albumID:  input.albumID,
+							artistID: newArtist.ID,
 						}
-					}()
+						artistResults <- *newArtist
+						mu.Lock()
+						artists[artist.ID.String()] = newArtist.ID
+						mu.Unlock()
+					}
 				}
+			}
+		}
+	}()
+
+	return out, artistResults
+}
+
+func handleBridge(ctx context.Context, in <-chan handleArtistsResult, errChan chan<- error, mr storage.MediaRepository) (<-chan bridgeTrackArtistResult, <-chan bridgeAlbumArtistResult) {
+	var (
+		trackArtistResults = make(chan bridgeTrackArtistResult)
+		albumArtistResults = make(chan bridgeAlbumArtistResult)
+	)
+
+	go func() {
+		defer func() {
+			close(trackArtistResults)
+			close(albumArtistResults)
+		}()
+
+		var (
+			muTA         sync.Mutex
+			muAA         sync.Mutex
+			trackArtists = make(map[bridgeTrackArtistResult]struct{})
+			albumArtists = make(map[bridgeAlbumArtistResult]struct{})
+			wg           sync.WaitGroup
+		)
+
+		for input := range in {
+			ta := bridgeTrackArtistResult{
+				TrackID:  input.trackID,
+				ArtistID: input.artistID,
+			}
+			muTA.Lock()
+			_, ok := trackArtists[ta]
+			muTA.Unlock()
+
+			if !ok {
+				wg.Add(1)
+				go func() {
+					defer wg.Done()
+
+					if err := mr.AddTrackArtist(ctx, input.trackID, input.artistID); err != nil {
+						errChan <- err
+					} else {
+						trackArtistResults <- ta
+						muTA.Lock()
+						trackArtists[ta] = struct{}{}
+						muTA.Unlock()
+					}
+				}()
+			}
+
+			aa := bridgeAlbumArtistResult{
+				AlbumID:  input.albumID,
+				ArtistID: input.artistID,
+			}
+			muAA.Lock()
+			_, ok = albumArtists[aa]
+			muAA.Unlock()
+
+			if !ok {
+				wg.Add(1)
+				go func() {
+					defer wg.Done()
+
+					if err := mr.AddAlbumArtist(ctx, input.albumID, input.artistID); err != nil {
+						errChan <- err
+					} else {
+						albumArtistResults <- aa
+						muAA.Lock()
+						albumArtists[aa] = struct{}{}
+						muAA.Unlock()
+					}
+				}()
 			}
 		}
 
 		wg.Wait()
 	}()
 
-	return artistResults
+	return trackArtistResults, albumArtistResults
 }
 
-func (irr *importRecommendationsRequest) toSeeds() spotify.Seeds {
-	artistIDs := make([]spotify.ID, len(irr.Artists))
-	for i, artist := range irr.Artists {
+func (i *importRecommendationsRequest) toSeeds() spotify.Seeds {
+	artistIDs := make([]spotify.ID, len(i.Artists))
+	for i, artist := range i.Artists {
 		artistIDs[i] = spotify.ID(artist)
 	}
 
-	trackIDs := make([]spotify.ID, len(irr.Tracks))
-	for i, track := range irr.Tracks {
+	trackIDs := make([]spotify.ID, len(i.Tracks))
+	for i, track := range i.Tracks {
 		trackIDs[i] = spotify.ID(track)
 	}
 
 	return spotify.Seeds{
 		Artists: artistIDs,
 		Tracks:  trackIDs,
-		Genres:  irr.Genres,
+		Genres:  i.Genres,
 	}
 }
