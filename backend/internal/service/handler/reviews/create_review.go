@@ -42,5 +42,7 @@ func (r *createReviewRequest) validate() map[string]string {
 	if r.MediaType != models.TrackMedia && r.MediaType != models.AlbumMedia {
 		errs["media_type"] = "media_type must be either track or album"
 	}
+
+	// TODO : Add validation for Tags assuming they are some enumerated type
 	return errs
 }

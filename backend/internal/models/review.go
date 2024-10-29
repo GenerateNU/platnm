@@ -12,4 +12,5 @@ type Review struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	Draft     bool      `json:"draft"`
+	Tags      []string  `json:"tags"`
 }
