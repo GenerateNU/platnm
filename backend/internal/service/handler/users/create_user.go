@@ -1,6 +1,7 @@
 package users
 
 import (
+	"platnm/internal/constants"
 	"platnm/internal/errs"
 	"platnm/internal/models"
 
@@ -67,6 +68,7 @@ func (h *Handler) CreateUser(c *fiber.Ctx) error {
 		return err
 	}
 
+	c.Set(constants.HeaderSession, "hello")
 	return c.Status(fiber.StatusCreated).JSON(user)
 
 }
