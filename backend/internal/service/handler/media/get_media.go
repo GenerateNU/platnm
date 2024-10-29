@@ -37,14 +37,11 @@ func (h *Handler) GetMediaByName(c *fiber.Ctx) error {
 			return errs.InternalServerError()
 		}
 
-		// Re-fetch updated media from the local database after adding Spotify results
+		// Re-fetch all media, including new entries from Spotify
 		medias, err = h.mediaRepository.GetMediaByName(c.Context(), name, mediaType)
 		if err != nil {
 			return errs.InternalServerError()
 		}
-
-		// Re-fetch all media, including new entries from Spotify
-		medias, _ = h.mediaRepository.GetMediaByName(c.Context(), name, mediaType)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(medias)

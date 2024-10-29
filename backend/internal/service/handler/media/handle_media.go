@@ -83,17 +83,6 @@ func (h *Handler) handleArtist(ctx context.Context, artist spotify.SimpleArtist,
 	return nil
 }
 
-func fetchNewReleasesFromSpotify(c *fiber.Ctx) (*spotify.SimpleAlbumPage, error) {
-	client, err := ctxt.GetSpotifyClient(c)
-	if err != nil {
-		return &spotify.SimpleAlbumPage{}, err
-	}
-
-	limit := c.QueryInt("limit", 20)
-
-	return client.NewReleases(c.Context(), spotify.Limit(limit))
-}
-
 func fetchAlbumTracksFromSpotify(c *fiber.Ctx, id spotify.ID) (*spotify.SimpleTrackPage, error) {
 	client, err := ctxt.GetSpotifyClient(c)
 	if err != nil {
