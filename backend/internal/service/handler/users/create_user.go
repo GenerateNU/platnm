@@ -1,7 +1,7 @@
 package users
 
 import (
-	"platnm/internal/constants"
+	"platnm/internal/auth"
 	"platnm/internal/errs"
 	"platnm/internal/models"
 
@@ -68,7 +68,15 @@ func (h *Handler) CreateUser(c *fiber.Ctx) error {
 		return err
 	}
 
-	c.Set(constants.HeaderSession, "hello")
+	email, err := auth.SupabaseSignup(&h.config, req.Email, req.Password)
+	if err != nil {
+		return err
+	}
+
+	if err := h.store.SetUser(c, email); err != nil {
+		return err
+	}
+
 	return c.Status(fiber.StatusCreated).JSON(user)
 
 }

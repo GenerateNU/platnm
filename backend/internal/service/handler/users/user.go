@@ -1,9 +1,12 @@
 package users
 
 import (
-	"github.com/google/uuid"
+	"platnm/internal/config"
 	"platnm/internal/errs"
+	"platnm/internal/service/session"
 	"platnm/internal/storage"
+
+	"github.com/google/uuid"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -11,12 +14,16 @@ import (
 type Handler struct {
 	userRepository     storage.UserRepository
 	playlistRepository storage.PlaylistRepository
+	config             config.Supabase
+	store              *session.SessionStore
 }
 
-func NewHandler(userRepository storage.UserRepository, playlistRepository storage.PlaylistRepository) *Handler {
+func NewHandler(userRepository storage.UserRepository, playlistRepository storage.PlaylistRepository, config config.Supabase, store *session.SessionStore) *Handler {
 	return &Handler{
 		userRepository,
 		playlistRepository,
+		config,
+		store,
 	}
 }
 
