@@ -44,7 +44,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	sessionStore := platnm_session.NewSessionStore(session.Config{
 		Storage:    memory.New(),
 		Expiration: constants.SessionDuration,
-		// KeyLookup:  "header:" + constants.HeaderSession,
+		KeyLookup:  "header:" + constants.HeaderSession,
 	})
 
 	app.Get("/health", func(c *fiber.Ctx) error {
