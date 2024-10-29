@@ -275,9 +275,6 @@ func handleArtists(ctx context.Context, in <-chan handleTracksResult, errChan ch
 			close(artistResults)
 		}()
 
-		// make a wait group and for each input, increment wg, then do the following work in a goroutine that defers wg.Done()
-		// at end of outer goroutine, call wg.Wait() to wait for all inner goroutines to finish
-
 		var mu sync.Mutex
 		// map that stores spotify artist ids that have already been added to the database
 		artists := make(map[string]int)
@@ -285,14 +282,14 @@ func handleArtists(ctx context.Context, in <-chan handleTracksResult, errChan ch
 		for input := range in {
 			for _, artist := range input.track.Artists {
 				mu.Lock()
-				_, ok := artists[artist.ID.String()]
+				id, ok := artists[artist.ID.String()]
 				mu.Unlock()
 
 				if ok {
 					out <- handleArtistsResult{
 						trackID:  input.trackID,
 						albumID:  input.albumID,
-						artistID: artists[artist.ID.String()],
+						artistID: id,
 					}
 				} else {
 					if newArtist, err := mr.AddArtist(ctx, &models.Artist{
