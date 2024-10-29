@@ -7,13 +7,13 @@ import (
 	"platnm/internal/constants"
 	"platnm/internal/errs"
 	"platnm/internal/service/handler/media"
-	"platnm/internal/service/handler/oauth"
 	"platnm/internal/service/handler/oauth/platnm"
 	spotify_oauth_handler "platnm/internal/service/handler/oauth/spotify"
 	"platnm/internal/service/handler/playlist"
 	"platnm/internal/service/handler/recommendation"
 	spotify_handler "platnm/internal/service/handler/spotify"
 	spotify_middleware "platnm/internal/service/middleware/spotify"
+	platnm_session "platnm/internal/service/session"
 
 	"platnm/internal/service/handler/reviews"
 	"platnm/internal/service/handler/users"
@@ -41,6 +41,12 @@ func InitApp(config config.Config) *fiber.App {
 }
 
 func setupRoutes(app *fiber.App, config config.Config) {
+	sessionStore := platnm_session.NewSessionStore(session.Config{
+		Storage:    memory.New(),
+		Expiration: constants.SessionDuration,
+		KeyLookup:  "header:" + constants.HeaderSession,
+	})
+
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.SendStatus(http.StatusOK)
 	})
@@ -89,23 +95,16 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Post("/on_queue/:userId", playlistHandler.AddToUserOnQueue)
 	})
 
-	// this store can be passed to other oauth handlers that need to manage state/verifier values
-	store := oauth.NewStateStore(session.Config{
-		Storage:    memory.New(),
-		Expiration: constants.SessionDuration,
-		KeyLookup:  "header:" + constants.HeaderSession,
-	})
-
 	// change to /oauth once its changed in spotify dashboard
 	app.Route("/auth", func(r fiber.Router) {
 		r.Route("/spotify", func(r fiber.Router) {
-			h := spotify_oauth_handler.NewHandler(store, config.Spotify)
+			h := spotify_oauth_handler.NewHandler(sessionStore, config.Spotify, repository.UserAuth)
 
-			r.Get("/begin", h.Begin)
+			r.Get("/begin/:userID", h.Begin)
 			r.Get("/callback", h.Callback)
 		})
 		r.Route("/platnm", func(r fiber.Router) {
-			h := platnm.NewHandler(store, config.Supabase)
+			h := platnm.NewHandler(sessionStore, config.Supabase)
 			r.Post("/login", h.Login)
 			r.Get("/health", func(c *fiber.Ctx) error {
 				return c.SendStatus(http.StatusOK)
@@ -115,11 +114,18 @@ func setupRoutes(app *fiber.App, config config.Config) {
 
 	app.Route("/spotify", func(r fiber.Router) {
 		h := spotify_handler.NewHandler(repository.Media)
-		m := spotify_middleware.NewMiddleware(config.Spotify)
+		m := spotify_middleware.NewMiddleware(config.Spotify, repository.UserAuth, sessionStore)
 
-		r.Use(m.WithSpotifyClient())
-		r.Get("/", h.GetPlatnmPlaylist)
-		r.Get("/new-releases", h.NewReleases)
+		r.Route("/:userID", func(authRoute fiber.Router) {
+			authRoute.Use(m.WithAuthenticatedSpotifyClient())
+			authRoute.Get("/playlists", h.GetCurrentUserPlaylists)
+		})
+
+		r.Route("/", func(clientCredRoute fiber.Router) {
+			clientCredRoute.Use(m.WithSpotifyClient())
+			clientCredRoute.Get("/", h.GetPlatnmPlaylist)
+			clientCredRoute.Get("/new-releases", h.NewReleases)
+		})
 	})
 
 	app.Get("/secret", auth.Middleware(&config.Supabase), func(c *fiber.Ctx) error {
