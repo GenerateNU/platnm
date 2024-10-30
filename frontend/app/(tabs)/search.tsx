@@ -1,26 +1,24 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { StyleSheet } from "react-native";
-
 import { Collapsible } from "@/components/Collapsible";
 import { ExternalLink } from "@/components/ExternalLink";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-
+import SongChip from "@/components/SongChip";
+const track: Track = {
+  media: "Track",
+  id: 2,
+  album_id: 2,  
+  album_title: "Album Title",
+  title: "Song title",
+  duration: 1, // duration in seconds
+  release_date: new Date(),
+  cover:     "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png",
+  media_type: "track"
+}
 export default function SearchScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#D0D0D0", dark: "#353636" }}
-      headerImage={
-        <Ionicons size={310} name="code-slash" style={styles.headerImage} />
-      }
-    >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Search</ThemedText>
-      </ThemedView>
-      <ThemedText>This is where search goes.</ThemedText>
-    </ParallaxScrollView>
-  );
+  return <SongChip song={track}/>;
 }
 
 const styles = StyleSheet.create({
