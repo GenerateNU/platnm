@@ -3,7 +3,7 @@
 .idea/
 
 .env
-
+node_modules
 .vscode/
 
 .DS_STORE
