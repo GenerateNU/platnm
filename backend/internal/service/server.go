@@ -119,6 +119,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Route("/:userID", func(authRoute fiber.Router) {
 			authRoute.Use(m.WithAuthenticatedSpotifyClient())
 			authRoute.Get("/playlists", h.GetCurrentUserPlaylists)
+			authRoute.Get("/top-items", h.GetTopItems)
 		})
 
 		r.Route("/", func(clientCredRoute fiber.Router) {
