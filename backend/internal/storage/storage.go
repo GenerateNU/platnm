@@ -58,6 +58,11 @@ type VoteRepository interface {
 	DeleteVote(ctx context.Context, userID string, reviewID string) error
 }
 
+type UserAuthRepository interface {
+	GetToken(ctx context.Context, id uuid.UUID) (string, error)
+	SetToken(ctx context.Context, id uuid.UUID, token string) error
+}
+
 type PlaylistRepository interface {
 	CreatePlaylist(ctx context.Context, playlist models.Playlist) error
 	AddToUserOnQueue(ctx context.Context, id string, track models.Track) error
@@ -70,5 +75,6 @@ type Repository struct {
 	UserReviewVote VoteRepository
 	Media          MediaRepository
 	Recommendation RecommendationRepository
+	UserAuth       UserAuthRepository
 	Playlist       PlaylistRepository
 }
