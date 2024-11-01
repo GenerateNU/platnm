@@ -35,29 +35,31 @@ func NewMiddleware(config config.Spotify, userAuthRepository storage.UserAuthRep
 
 func (m *Middleware) WithAuthenticatedSpotifyClient() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		client, err := m.sessionStore.GetAuthSpotifyClient(c)
+		token, err := m.sessionStore.GetAuthToken(c)
 		if err != nil {
 			return err
 		}
 
-		if client != nil {
-			ctxt.SetSpotifyClient(c, client)
-			return c.Next()
-		}
+		if token == nil {
+			uid, err := uuid.Parse(c.Params("userID"))
+			if err != nil {
+				return err
+			}
 
-		uid, err := uuid.Parse(c.Params("userID"))
-		if err != nil {
-			return err
-		}
+			encryptedToken, err := m.userAuthRepository.GetToken(c.Context(), uid)
+			if err != nil {
+				return err
+			}
 
-		encryptedToken, err := m.userAuthRepository.GetToken(c.Context(), uid)
-		if err != nil {
-			return err
-		}
+			t, err := oauth.DecryptToken(encryptedToken)
+			token = &t
+			if err != nil {
+				return err
+			}
 
-		token, err := oauth.DecryptToken(encryptedToken)
-		if err != nil {
-			return err
+			if err := m.sessionStore.SetAuthToken(c, token); err != nil {
+				return err
+			}
 		}
 
 		// client id and secret are required to refresh the token
@@ -65,12 +67,8 @@ func (m *Middleware) WithAuthenticatedSpotifyClient() fiber.Handler {
 			spotifyauth.WithClientID(m.clientID),
 			spotifyauth.WithClientSecret(m.clientSecret),
 		)
-		httpClient := authenticator.Client(c.Context(), &token)
-		client = spotify.New(httpClient)
-
-		if err := m.sessionStore.SetAuthSpotifyClient(c, client); err != nil {
-			return err
-		}
+		httpClient := authenticator.Client(c.Context(), token)
+		client := spotify.New(httpClient)
 
 		ctxt.SetSpotifyClient(c, client)
 		return c.Next()
@@ -79,33 +77,30 @@ func (m *Middleware) WithAuthenticatedSpotifyClient() fiber.Handler {
 
 func (m *Middleware) WithSpotifyClient() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		client, err := m.sessionStore.GetClientCredsSpotifyClient(c)
+		token, err := m.sessionStore.GetClientCredsToken(c)
 		if err != nil {
 			return err
 		}
 
-		if client != nil {
-			ctxt.SetSpotifyClient(c, client)
-			return c.Next()
-		}
+		if token == nil {
+			config := &clientcredentials.Config{
+				ClientID:     m.clientID,
+				ClientSecret: m.clientSecret,
+				TokenURL:     spotifyauth.TokenURL,
+			}
 
-		config := &clientcredentials.Config{
-			ClientID:     m.clientID,
-			ClientSecret: m.clientSecret,
-			TokenURL:     spotifyauth.TokenURL,
-		}
+			token, err = config.Token(c.Context())
+			if err != nil {
+				return err
+			}
 
-		token, err := config.Token(c.Context())
-		if err != nil {
-			return err
+			if err := m.sessionStore.SetClientCredsToken(c, token); err != nil {
+				return err
+			}
 		}
 
 		httpClient := spotifyauth.Authenticator{}.Client(c.Context(), token)
-		client = spotify.New(httpClient)
-
-		if err := m.sessionStore.SetClientCredsSpotifyClient(c, client); err != nil {
-			return err
-		}
+		client := spotify.New(httpClient)
 
 		ctxt.SetSpotifyClient(c, client)
 		return c.Next()
