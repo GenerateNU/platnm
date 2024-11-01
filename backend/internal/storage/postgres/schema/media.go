@@ -159,6 +159,7 @@ func (r *MediaRepository) GetMediaArtist(ctx context.Context, id string, mediaTy
 	var mediaID string // not necessary, just reading it in for convenience
 
 	if err := albumArtistRow.Scan(&mediaID, &artistID); err != nil {
+		
 		return nil, err
 	}
 
