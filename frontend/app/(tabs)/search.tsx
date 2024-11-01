@@ -1,11 +1,5 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { StyleSheet } from "react-native";
-import { Collapsible } from "@/components/Collapsible";
-import { ExternalLink } from "@/components/ExternalLink";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import SongChip from "@/components/SongChip";
+import { StyleSheet, View } from "react-native";
+import TopAlbums from "@/components/search/TopAlbums"
 const track: Track = {
   media: "Track",
   id: 2,
@@ -18,10 +12,17 @@ const track: Track = {
   media_type: "track"
 }
 export default function SearchScreen() {
-  return <SongChip song={track}/>;
+  return <View style={styles.container}>
+    <TopAlbums/>
+    {/* <SongChip song={track}/> */}
+    </View>;
 }
 
 const styles = StyleSheet.create({
+  container: {
+    paddingTop: 80,
+    paddingLeft: 30,
+  },
   headerImage: {
     color: "#808080",
     bottom: -90,
