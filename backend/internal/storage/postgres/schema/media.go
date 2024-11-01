@@ -143,7 +143,7 @@ func (r *MediaRepository) GetExistingArtistBySpotifyID(ctx context.Context, id s
 
 // to test this: http://127.0.0.1:8080/media/artist/10?media_type=track
 func (r *MediaRepository) GetMediaArtist(ctx context.Context, id string, mediaType models.MediaType) (*models.Artist, error) {
-	
+
 	albumQuery := `SELECT * FROM album_artist WHERE album_id = $1`
 	trackQuery := `SELECT * FROM track_artist WHERE track_id = $1`
 
@@ -159,7 +159,6 @@ func (r *MediaRepository) GetMediaArtist(ctx context.Context, id string, mediaTy
 	var mediaID string // not necessary, just reading it in for convenience
 
 	if err := albumArtistRow.Scan(&mediaID, &artistID); err != nil {
-		
 		return nil, err
 	}
 
@@ -179,6 +178,33 @@ func (r *MediaRepository) GetMediaArtist(ctx context.Context, id string, mediaTy
 	}
 
 	return &artist, nil
+
+}
+
+func (r *MediaRepository) GetCoverPhoto(ctx context.Context, id string, mediaType models.MediaType) (string, error) {
+
+	var coverPhoto string
+	if mediaType == models.AlbumMedia {
+		// if the media is an album, just return the cover photo
+		query := `SELECT cover FROM album WHERE id = $1`
+		coverRow := r.QueryRow(ctx, query, id)
+		if err := coverRow.Scan(&coverPhoto); err != nil {
+			return "", err
+		}
+		return coverPhoto, nil
+	} else if mediaType == models.TrackMedia {
+		// otherwise find the album this track belongs to
+		var albumID string
+		query := `SELECT album_id FROM track WHERE id = $1`
+		albumIDRow := r.QueryRow(ctx, query, id)
+		if err := albumIDRow.Scan(&albumID); err != nil {
+			return "", err
+		}
+		// and then send it to the other branch of this if
+		return r.GetCoverPhoto(ctx, albumID, models.AlbumMedia)
+	} else {
+		return "", fmt.Errorf("unknown media type: %s", mediaType)
+	}
 
 }
 

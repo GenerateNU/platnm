@@ -35,6 +35,7 @@ type MediaRepository interface {
 	GetMediaByDate(ctx context.Context) ([]models.Media, error)
 	GetMediaArtist(ctx context.Context, id string, mediaType models.MediaType) (*models.Artist, error)
 	GetMediaByReviews(ctx context.Context, limit, offset int) ([]models.MediaWithReviewCount, error)
+	GetCoverPhoto(ctx context.Context, id string, mediaType models.MediaType) (string, error)
 	GetExistingArtistBySpotifyID(ctx context.Context, id string) (*int, error)
 	AddArtist(ctx context.Context, artist *models.Artist) (*models.Artist, error)
 	GetExistingAlbumBySpotifyID(ctx context.Context, id string) (*int, error)
