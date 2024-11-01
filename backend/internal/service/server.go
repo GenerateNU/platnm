@@ -80,6 +80,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	mediaHandler := media.NewHandler(repository.Media)
 	app.Route("/media", func(r fiber.Router) {
 		r.Get("/:name", mediaHandler.GetMediaByName)
+		r.Get("/artist/:mediaId", mediaHandler.GetMediaArtist)
 		r.Get("/", mediaHandler.GetMedia)
 	})
 

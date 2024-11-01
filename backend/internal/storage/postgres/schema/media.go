@@ -141,6 +141,46 @@ func (r *MediaRepository) GetExistingArtistBySpotifyID(ctx context.Context, id s
 	return &artistId, nil
 }
 
+// to test this: http://127.0.0.1:8080/media/artist/10?media_type=track
+func (r *MediaRepository) GetMediaArtist(ctx context.Context, id string, mediaType models.MediaType) (*models.Artist, error) {
+	
+	albumQuery := `SELECT * FROM album_artist WHERE album_id = $1`
+	trackQuery := `SELECT * FROM track_artist WHERE track_id = $1`
+
+	var albumArtistRow pgx.Row
+
+	if mediaType == models.AlbumMedia {
+		albumArtistRow = r.QueryRow(ctx, albumQuery, id)
+	} else if mediaType == models.TrackMedia {
+		albumArtistRow = r.QueryRow(ctx, trackQuery, id)
+	}
+
+	var artistID string
+	var mediaID string // not necessary, just reading it in for convenience
+
+	if err := albumArtistRow.Scan(&mediaID, &artistID); err != nil {
+		return nil, err
+	}
+
+	artistQuery := `SELECT * FROM artist WHERE id = $1`
+	artistRow := r.QueryRow(ctx, artistQuery, artistID)
+
+	var artist models.Artist
+	if err := artistRow.Scan(
+		&artist.ID,
+		&artist.Name,
+		&artist.Photo,
+		&artist.Bio,
+		&artist.SpotifyID,
+	); err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return &artist, nil
+
+}
+
 func (r *MediaRepository) AddArtist(ctx context.Context, artist *models.Artist) (*models.Artist, error) {
 	query :=
 		`INSERT INTO artist (name, spotify_id, photo, bio)
