@@ -80,6 +80,8 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	mediaHandler := media.NewHandler(repository.Media)
 	app.Route("/media", func(r fiber.Router) {
 		r.Get("/:name", mediaHandler.GetMediaByName)
+		r.Get("/artist/:mediaId", mediaHandler.GetMediaArtist)
+		r.Get("/cover/:mediaId", mediaHandler.GetCoverPhoto)
 		r.Get("/", mediaHandler.GetMedia)
 	})
 
@@ -119,6 +121,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Route("/:userID", func(authRoute fiber.Router) {
 			authRoute.Use(m.WithAuthenticatedSpotifyClient())
 			authRoute.Get("/playlists", h.GetCurrentUserPlaylists)
+			authRoute.Get("/top-items", h.GetTopItems)
 		})
 
 		r.Route("/", func(clientCredRoute fiber.Router) {
