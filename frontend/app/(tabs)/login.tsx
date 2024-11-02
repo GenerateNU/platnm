@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import {
   View,
@@ -15,6 +15,7 @@ import { useAuthContext } from "@/components/AuthProvider";
 import { router } from "expo-router";
 
 export default function Login() {
+  const { sessionToken, updateAccessToken, updateSession } = useAuthContext();
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
   const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
@@ -25,7 +26,6 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { sessionToken, updateAccessToken, updateSession } = useAuthContext();
 
   const handleSignIn = async () => {
     setLoading(true);
@@ -42,12 +42,7 @@ export default function Login() {
         }
         updateAccessToken(res.data.token);
         const sessionHeader = res.headers['x-session'];
-        console.log("Session from Header: " + sessionHeader);
-        updateSession(sessionHeader);
-
-        // In your component where you're making the API call:
-        console.log("updateSession function:", updateSession); // Should show a function, not undefined
-        
+        updateSession(sessionHeader);        
         Alert.alert("Success", "You are now signed in!");
       })
       .catch((error) => {
@@ -56,15 +51,14 @@ export default function Login() {
       });
     setLoading(false);
   };
-
-
+  
 
   const forgotUsernamePassword = () => {
     console.log("Forgot username or password");
   };
 
   const handleSignUpPress = () => {
-    router.push("/signup");
+    router.push("/onboarding/signup");
   };
 
   return (

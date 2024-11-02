@@ -18,15 +18,15 @@ const AuthContext = createContext<AuthProviderProps>({
   username: "",
   accessToken: "",
   sessionToken: "",
-  updateAccessToken: () => {},
-  updateUsername: () => {},
-  updateSession: () => {},
+  updateAccessToken: (token : string) => {},
+  updateUsername: (username : string) => {},
+  updateSession: (session : string) => {},
 });
 
 export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const [username, setUsername] = useState("");
   const [accessToken, setAccessToken] = useState("");
-  const [sessionToken, setSessionToken] = useState("");
+  const [sessionToken, setSessionToken] = useState("sessionStartsLikeThis");
 
   const updateAccessToken = (token: string) => {
     setAccessToken(token);
@@ -37,8 +37,9 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
   };
 
   const updateSession = (session: string) => {
-    console.log("session is..." + session); // THIS IS NOT GETTING PRINTED
+    console.log("session is..." + session); // Check if this is printed
     setSessionToken(session);
+    console.log("Updated sessionToken: " + sessionToken); // Check updated state
   }
 
   return (

@@ -8,6 +8,7 @@ import {
   Keyboard,
   Pressable,
 } from "react-native";
+import { useRouter } from "expo-router";
 import CustomButton from "@/components/onboarding/OnboardButton";
 import { useAuthContext } from "@/components/AuthProvider";
 import Header from "@/components/onboarding/Header";
@@ -52,6 +53,7 @@ const slides = [
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const OnboardingCarousel: React.FC = () => {
+  const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -106,11 +108,7 @@ const OnboardingCarousel: React.FC = () => {
 
       updateAccessToken(res.data.token);
       updateSession(res.headers['X-Session']);
-      console.log(res.headers);
-      console.log("session: " + sessionToken);
-
-
-      alert("Success \n You've got an account!");
+      router.push("/onboarding/interest");
     } catch (error) {
       alert("Signup Error");
     }
