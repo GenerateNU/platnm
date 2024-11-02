@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+import { View, Text, Touchable, TouchableOpacity } from 'react-native';
 import { Dimensions } from 'react-native';
 import Back from '@/assets/images/Icons/Back';
 
@@ -25,7 +25,9 @@ export const SubpageHeader = ({ title, backButton }: Props) => {
 					flexDirection: 'row',
 					gap: 20,
 				}}>
-				<Back width={24} height={24} style={{ color: '#000', marginVertical: 'auto', marginTop: 5 }} />
+				<TouchableOpacity>
+					<Back width={24} height={24} style={{ color: '#000', marginVertical: 'auto', marginTop: 5 }} />
+				</TouchableOpacity>
 				<Text
 					style={{
 						bottom: -10,
