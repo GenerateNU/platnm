@@ -40,7 +40,7 @@ const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({ rank, artist_name, al
 
 const styles = StyleSheet.create({
     cardContainer: {
-        alignItems: "center",
+        alignItems: "flex-start",
         marginRight: 25,
         marginBottom: 16, // Ensure space between cards vertically
         width: 140, // Fixed width to prevent flex overlap issues
@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
     rankContainer: {
         position: 'absolute', // Allows positioning it at the top left
         top: 0,
-        left: -5,
+        left: -20,
         padding: 4, // Add some padding if desired
     },
     rank: {
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     },
     recordContainer: {
         position: "absolute", // Position the record absolutely within the album container
-        bottom: 3, // Align it to the bottom of the album cover, adjust as necessary
+        bottom: 5, // Align it to the bottom of the album cover, adjust as necessary
         left: "50%", // Center it horizontally
         transform: [{ translateX: -20 }], // Adjust to make it stick out
     },
@@ -86,10 +86,12 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         color: "#434343",
         marginTop: 4,
+        textAlign: "left",
     },
     artistName: {
         fontSize: 14,
-        color: "#434343",
+        color: "#434343", 
+        textAlign: "left",
     },
 });
 
