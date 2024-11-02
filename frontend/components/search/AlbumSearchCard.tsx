@@ -13,18 +13,19 @@ const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({ rank, artist_name, al
 
     return (
         <View style={styles.cardContainer}>
-            <View style={styles.rankContainer}>
-                <Text style={styles.rank}>{rank}.</Text>
-            </View>
             <View style={styles.albumContainer}>
-                {/* Album Cover Container */}
+                {/* Rank */}
+                <Text style={styles.rank}>{rank}.</Text>
+                
+                {/* Album Cover */}
                 <View style={styles.coverContainer}>
                     <Image 
                         source={{ uri: cover || placeholderImage }}
                         style={styles.albumCover}
                     />
                 </View>
-                {/* Record Container */}
+                
+                {/* Record Image */}
                 <View style={styles.recordContainer}>
                     <Image
                         source={require("@/assets/images/Profile/record.png")}
@@ -32,6 +33,8 @@ const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({ rank, artist_name, al
                     />
                 </View>
             </View>
+            
+            {/* Album and Artist Name */}
             <Text style={styles.albumName}>{album_name}</Text>
             <Text style={styles.artistName}>{artist_name}</Text>
         </View>
@@ -42,15 +45,13 @@ const styles = StyleSheet.create({
     cardContainer: {
         alignItems: "flex-start",
         marginRight: 25,
-        marginBottom: 16, // Ensure space between cards vertically
-        width: 140, // Fixed width to prevent flex overlap issues
-        position: 'relative', // Enable absolute positioning of rank
+        marginBottom: 16,
+        width: 140,
     },
-    rankContainer: {
-        position: 'absolute', // Allows positioning it at the top left
-        top: 0,
-        left: -20,
-        padding: 4, // Add some padding if desired
+    albumContainer: {
+        flexDirection: "row", // Set horizontal layout to align rank and cover side-by-side
+        alignItems: "center", // Align items vertically centered
+        position: "relative",
     },
     rank: {
         color: "#FFFFFF",
@@ -58,26 +59,24 @@ const styles = StyleSheet.create({
         fontWeight: "600",
         lineHeight: 20,
         fontFamily: "Inter",
-    },
-    albumContainer: {
-        alignItems: "center", // Center align vertically
-        position: "relative",  // Set position relative for stacking
+        marginRight: 6, // Spacing between rank and cover image
+        marginTop: -85,
     },
     coverContainer: {
         zIndex: 2, // Ensure cover is on top
     },
     recordContainer: {
-        position: "absolute", // Position the record absolutely within the album container
-        bottom: 5, // Align it to the bottom of the album cover, adjust as necessary
-        left: "50%", // Center it horizontally
-        transform: [{ translateX: -20 }], // Adjust to make it stick out
+        position: "absolute", // Position record on top of cover
+        bottom: 5,
+        left: "50%",
+        transform: [{ translateX: 0 }],
     },
     recordImage: {
-        width: 100, // Size of the record image
+        width: 100,
         height: 100,
     },
     albumCover: {
-        width: 110, // Size of the album cover image
+        width: 110,
         height: 110,
         borderRadius: 8,
     },
@@ -87,11 +86,13 @@ const styles = StyleSheet.create({
         color: "#434343",
         marginTop: 4,
         textAlign: "left",
+        marginLeft: 24,
     },
     artistName: {
         fontSize: 14,
         color: "#434343", 
         textAlign: "left",
+        marginLeft: 24,
     },
 });
 
