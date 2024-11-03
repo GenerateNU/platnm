@@ -10,14 +10,14 @@ import (
 	"github.com/zmb3/spotify/v2"
 )
 
-func (h *Handler) handleAlbum(ctx context.Context, wg *sync.WaitGroup, album spotify.SimpleAlbum, albums chan<- models.Album, artists chan<- models.Artist, errCh chan<- error) (*int, error) {
+func (h *Handler) handleAlbum(ctx context.Context, wg *sync.WaitGroup, album spotify.SimpleAlbum, errCh chan<- error) error {
 	albumId, err := h.mediaRepository.GetExistingAlbumBySpotifyID(ctx, album.ID.String())
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if albumId != nil {
-		return albumId, nil
+		return nil
 	}
 
 	addedAlbum, err := h.mediaRepository.AddAlbum(ctx, &models.Album{
@@ -27,15 +27,16 @@ func (h *Handler) handleAlbum(ctx context.Context, wg *sync.WaitGroup, album spo
 		ReleaseDate: album.ReleaseDateTime(),
 		Cover:       album.Images[0].URL,
 	})
+
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	for _, artist := range album.Artists {
 		wg.Add(1)
 		go func(artist spotify.SimpleArtist) {
 			defer wg.Done()
-			if err := h.handleArtist(ctx, artist, artists, addedAlbum.ID); err != nil {
+			if err := h.handleArtist(ctx, artist, addedAlbum.ID); err != nil {
 				select {
 				case errCh <- err:
 				default:
@@ -45,13 +46,10 @@ func (h *Handler) handleAlbum(ctx context.Context, wg *sync.WaitGroup, album spo
 		}(artist)
 	}
 
-	albums <- *addedAlbum
-
-	return &addedAlbum.ID, nil
-
+	return nil
 }
 
-func (h *Handler) handleArtist(ctx context.Context, artist spotify.SimpleArtist, artists chan<- models.Artist, albumId int) error {
+func (h *Handler) handleArtist(ctx context.Context, artist spotify.SimpleArtist, albumId int) error {
 	/* TODO: it's possible that the artist can exist but not be detected by spotifyID lookup if it was
 	created through a future analogous Apple Music pathway.
 	we need more sophisticated artist search logic, but are limited by the overlap betweem the two APIs.
@@ -70,10 +68,6 @@ func (h *Handler) handleArtist(ctx context.Context, artist spotify.SimpleArtist,
 			return err
 		}
 		artistId = &newArtist.ID
-		select {
-		case artists <- *newArtist:
-		default:
-		}
 	}
 
 	if err := h.mediaRepository.AddAlbumArtist(ctx, albumId, *artistId); err != nil {
@@ -92,7 +86,7 @@ func fetchAlbumTracksFromSpotify(c *fiber.Ctx, id spotify.ID) (*spotify.SimpleTr
 	return client.GetAlbumTracks(c.Context(), id)
 }
 
-func (h *Handler) handleTracks(c *fiber.Ctx, wg *sync.WaitGroup, albumId int, spotifyID spotify.ID, tracks chan<- models.Track, errCh chan<- error) error {
+func (h *Handler) handleTracks(c *fiber.Ctx, wg *sync.WaitGroup, albumId int, spotifyID spotify.ID, errCh chan<- error) error {
 	spotifyTracks, err := fetchAlbumTracksFromSpotify(c, spotifyID)
 	if err != nil {
 		return err
@@ -116,11 +110,6 @@ func (h *Handler) handleTracks(c *fiber.Ctx, wg *sync.WaitGroup, albumId int, sp
 				}
 			}
 
-			select {
-			case tracks <- *trackResult:
-			default:
-			}
-
 			// get the Spotify artists associated with this track and add a record for each
 			for _, artist := range t.Artists {
 				artistId, err := h.mediaRepository.GetExistingArtistBySpotifyID(c.Context(), artist.ID.String())
@@ -141,6 +130,7 @@ func (h *Handler) handleTracks(c *fiber.Ctx, wg *sync.WaitGroup, albumId int, sp
 						case errCh <- err:
 						default:
 						}
+						return
 					}
 					artistId = &newArtist.ID
 				}

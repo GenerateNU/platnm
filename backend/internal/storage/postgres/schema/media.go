@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
 	"platnm/internal/models"
 	"time"
 
@@ -241,8 +242,13 @@ func (r *MediaRepository) AddTrackArtist(ctx context.Context, trackId int, artis
 }
 
 func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, mediaType models.MediaType) ([]models.Media, error) {
+	decodedName, err := url.QueryUnescape(name) // handle URL encoding
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode name: %w", err)
+	}
+
 	// Select all rows where either the input string is in the title of the media, or if the string matches one of the titles fuzzily
-	var albumQuery = "SELECT * FROM album WHERE levenshtein(title, $1) <= 5 OR title ILIKE '%' || $1 || '%' LIMIT 20;"
+	var albumQuery = "SELECT id, title, release_date, cover, spotify_id FROM album WHERE levenshtein(title, $1) <= 5 OR title ILIKE '%' || $1 || '%' LIMIT 20;"
 	var trackQuery = `
 	SELECT 
 		track.id AS track_id,
@@ -262,8 +268,11 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, media
 
 	if mediaType == models.AlbumMedia || mediaType == models.BothMedia {
 
-		albumRows, albumErr := r.Query(ctx, albumQuery, name)
+		albumRows, albumErr := r.Query(ctx, albumQuery, decodedName)
+		fmt.Println("albumRows: ", albumRows)
 		if albumErr != nil {
+			fmt.Println("found an error", err)
+
 			return nil, albumErr
 		}
 		defer albumRows.Close()
@@ -275,8 +284,9 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, media
 				&album.Title,
 				&album.ReleaseDate,
 				&album.Cover,
-				&album.Country,
-				&album.GenreID,
+				// Country and GenreID are not handled well in the schema yet
+				// &album.Country,
+				// &album.GenreID,
 				&album.SpotifyID,
 			); err != nil {
 				return nil, err

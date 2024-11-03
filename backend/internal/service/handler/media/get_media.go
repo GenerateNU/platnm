@@ -1,6 +1,8 @@
 package media
 
 import (
+	"errors"
+	"fmt"
 	"log"
 	"platnm/internal/errs"
 	"platnm/internal/models"
@@ -26,17 +28,23 @@ func (h *Handler) GetMediaByName(c *fiber.Ctx) error {
 	case "":
 		mediaType = models.BothMedia
 	}
-	medias, _ := h.mediaRepository.GetMediaByName(c.Context(), name, mediaType)
-	log.Println(medias)
+
+	medias, err := h.mediaRepository.GetMediaByName(c.Context(), name, mediaType)
+	if err != nil {
+		log.Println("Error fetching media by name:", err)
+		return errs.InternalServerError()
+	}
 
 	// If fewer than 5 results, call Spotify API for additional results
 	if len(medias) < 5 {
 		log.Println("Fetching additional results from Spotify API")
-		err := h.searchAndHandleSpotifyMedia(c, name, mediaType)
+		err = h.searchAndHandleSpotifyMedia(c, name, mediaType)
 		if err != nil {
 			log.Println("Spotify API error:", err)
 			return errs.InternalServerError()
 		}
+
+		log.Println("Done fetching results from Spotify API")
 
 		// Re-fetch all media, including new entries from Spotify
 		medias, err = h.mediaRepository.GetMediaByName(c.Context(), name, mediaType)
@@ -44,6 +52,8 @@ func (h *Handler) GetMediaByName(c *fiber.Ctx) error {
 			return errs.InternalServerError()
 		}
 	}
+
+	fmt.Println("medias", medias)
 
 	return c.Status(fiber.StatusOK).JSON(medias)
 }
@@ -90,77 +100,122 @@ func (h *Handler) GetMedia(c *fiber.Ctx) error {
 }
 
 func (h *Handler) searchAndHandleSpotifyMedia(c *fiber.Ctx, name string, mediaType models.MediaType) error {
-	var wg sync.WaitGroup
-	albums := make(chan models.Album)
-	tracks := make(chan models.Track)
-	errCh := make(chan error, 10) // Buffer the error channel
+	var (
+		errCh = make(chan error, 1) // Buffered to capture one error
+		wg    sync.WaitGroup
+	)
 
-	client, err := ctxt.GetSpotifyClient(c)
-	if err != nil {
-		return err
-	}
-
-	// SearchType setup
+	// Set search type based on media type
 	var searchType spotify.SearchType
 	switch mediaType {
 	case models.AlbumMedia:
 		searchType = spotify.SearchTypeAlbum
 	case models.TrackMedia:
 		searchType = spotify.SearchTypeTrack
+	case models.BothMedia:
+		searchType = spotify.SearchTypeAlbum | spotify.SearchTypeTrack
 	default:
 		return errs.InvalidRequestData(map[string]string{"media_type": "invalid media type"})
 	}
 
-	result, err := client.Search(c.Context(), name, searchType)
+	client, err := ctxt.GetSpotifyClient(c)
+	if err != nil {
+		return err
+	}
+
+	result, err := client.Search(c.Context(), name, searchType, spotify.Limit(20))
 	if err != nil {
 		return errs.InternalServerError()
 	}
 
-	var once sync.Once
-	handleError := func(e error) {
-		once.Do(func() {
-			errCh <- e
-		})
-	}
-
-	switch mediaType {
-	case models.AlbumMedia:
-		if result.Albums != nil {
-			for _, album := range result.Albums.Albums {
-				wg.Add(1)
-				go func(album spotify.SimpleAlbum) {
-					defer wg.Done()
-					if _, err := h.handleAlbum(c.Context(), &wg, album, albums, nil, errCh); err != nil {
-						handleError(err)
-					}
-				}(album)
+	if mediaType == models.AlbumMedia || mediaType == models.BothMedia {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if err := h.processSpotifyAlbums(c, &wg, result, errCh); err != nil {
+				select {
+				case errCh <- err:
+				default:
+				}
 			}
-		}
-	case models.TrackMedia:
-		if result.Tracks != nil {
-			for _, track := range result.Tracks.Tracks {
-				wg.Add(1)
-				go func(track spotify.FullTrack) {
-					defer wg.Done()
-					album, albumErr := h.mediaRepository.GetExistingAlbumBySpotifyID(c.Context(), track.Album.ID.String())
-					if albumErr != nil {
-						handleError(albumErr)
-						return
-					}
-					if err := h.handleTracks(c, &wg, *album, track.Album.ID, tracks, errCh); err != nil {
-						handleError(err)
-					}
-				}(track)
+		}()
+	}
+
+	if mediaType == models.TrackMedia || mediaType == models.BothMedia {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if err := h.processSpotifyTracks(c, result, errCh, &wg); err != nil {
+				select {
+				case errCh <- err:
+				default:
+				}
 			}
+		}()
+	}
+
+	go func() {
+		wg.Wait()
+		close(errCh)
+	}()
+
+	var errs []error
+	for err := range errCh {
+		fmt.Println(err)
+		errs = append(errs, err)
+	}
+
+	if len(errs) > 0 {
+		return errors.Join(errs...)
+	}
+
+	return nil
+}
+
+func (h *Handler) processSpotifyAlbums(c *fiber.Ctx, wg *sync.WaitGroup, result *spotify.SearchResult, errCh chan<- error) error {
+	if result.Albums == nil {
+		return nil
+	}
+
+	for _, album := range result.Albums.Albums {
+		if err := h.handleAlbum(c.Context(), wg, album, errCh); err != nil {
+			return err
 		}
 	}
+	return nil
+}
 
-	wg.Wait()
-	close(errCh)
-
-	if err := <-errCh; err != nil {
-		return err
+func (h *Handler) processSpotifyTracks(c *fiber.Ctx, result *spotify.SearchResult, errCh chan<- error, wg *sync.WaitGroup) error {
+	if result.Tracks == nil {
+		return nil
 	}
 
+	for _, track := range result.Tracks.Tracks {
+		wg.Add(1)
+		go func(track spotify.FullTrack) {
+			defer wg.Done()
+			album, err := h.mediaRepository.GetExistingAlbumBySpotifyID(c.Context(), track.Album.ID.String())
+			if err != nil {
+				select {
+				case errCh <- err:
+				default:
+				}
+			}
+			if album == nil {
+				select {
+				case errCh <- fmt.Errorf("album not found for track: %s", track.Name):
+				default:
+				}
+				return
+			}
+
+			if err := h.handleTracks(c, wg, *album, track.Album.ID, errCh); err != nil {
+				select {
+				case errCh <- err:
+				default:
+				}
+			}
+		}(track)
+	}
 	return nil
 }
