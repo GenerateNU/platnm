@@ -93,14 +93,14 @@ func (h *Handler) searchAndHandleSpotifyMedia(c *fiber.Ctx, name string, mediaTy
 	var wg sync.WaitGroup
 	albums := make(chan models.Album)
 	tracks := make(chan models.Track)
-	errCh := make(chan error, 1)
+	errCh := make(chan error, 10) // Buffer the error channel
 
 	client, err := ctxt.GetSpotifyClient(c)
 	if err != nil {
 		return err
 	}
 
-	// Determine the SearchType based on mediaType
+	// SearchType setup
 	var searchType spotify.SearchType
 	switch mediaType {
 	case models.AlbumMedia:
@@ -113,7 +113,6 @@ func (h *Handler) searchAndHandleSpotifyMedia(c *fiber.Ctx, name string, mediaTy
 
 	result, err := client.Search(c.Context(), name, searchType)
 	if err != nil {
-		log.Println("Error searching Spotify:", err)
 		return errs.InternalServerError()
 	}
 
@@ -148,11 +147,7 @@ func (h *Handler) searchAndHandleSpotifyMedia(c *fiber.Ctx, name string, mediaTy
 						handleError(albumErr)
 						return
 					}
-					if album == nil {
-						log.Println("No album found for track:", track.Name)
-						return
-					}
-					if err := h.handleTracks(c, &wg, *album, track.Album.ID, tracks, nil); err != nil {
+					if err := h.handleTracks(c, &wg, *album, track.Album.ID, tracks, errCh); err != nil {
 						handleError(err)
 					}
 				}(track)
@@ -161,14 +156,11 @@ func (h *Handler) searchAndHandleSpotifyMedia(c *fiber.Ctx, name string, mediaTy
 	}
 
 	wg.Wait()
-	close(albums)
-	close(tracks)
 	close(errCh)
 
-	select {
-	case err := <-errCh:
+	if err := <-errCh; err != nil {
 		return err
-	default:
-		return c.Status(fiber.StatusOK).JSON(result)
 	}
+
+	return nil
 }
