@@ -2,38 +2,32 @@ package session
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 )
 
-const valueKey = "userState"
+const stateKey = "userState"
 
-type UserState struct {
-	User  uuid.UUID
-	State string
-}
-
-func (s *SessionStore) SetState(c *fiber.Ctx, userState UserState) error {
+func (s *SessionStore) SetState(c *fiber.Ctx, state string) error {
 	sess, err := s.Get(c)
 	if err != nil {
 		return err
 	}
 
-	sess.Set(valueKey, userState)
+	sess.Set(stateKey, state)
 	if err := sess.Save(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *SessionStore) GetState(c *fiber.Ctx) (UserState, error) {
+func (s *SessionStore) GetState(c *fiber.Ctx) (string, error) {
 	sess, err := s.Get(c)
 	if err != nil {
-		return UserState{}, err
+		return "", err
 	}
-	v := sess.Get(valueKey)
+	v := sess.Get(stateKey)
 	if v == nil {
-		return UserState{}, nil
+		return "", nil
 	}
 
-	return v.(UserState), nil
+	return v.(string), nil
 }

@@ -10,7 +10,7 @@ import (
 )
 
 func (h *Handler) Callback(c *fiber.Ctx) error {
-	userState, err := h.store.GetState(c)
+	state, err := h.store.GetState(c)
 	if err != nil {
 		return err
 	}
@@ -20,7 +20,7 @@ func (h *Handler) Callback(c *fiber.Ctx) error {
 		return err
 	}
 
-	token, err := h.authenticator.Token(c.Context(), userState.State, req)
+	token, err := h.authenticator.Token(c.Context(), state, req)
 	if err != nil {
 		return err
 	}
@@ -30,7 +30,12 @@ func (h *Handler) Callback(c *fiber.Ctx) error {
 		return err
 	}
 
-	if err := h.userAuthRepository.SetToken(c.Context(), userState.User, encryptedToken); err != nil {
+	user, err := h.store.GetUser(c)
+	if err != nil {
+		return err
+	}
+
+	if err := h.userAuthRepository.SetToken(c.Context(), user, encryptedToken); err != nil {
 		return err
 	}
 

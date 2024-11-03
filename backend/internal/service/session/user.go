@@ -1,32 +1,35 @@
 package session
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
+)
 
-const emailKey = "email"
+const idKey = "id"
 
-func (s *SessionStore) SetUser(c *fiber.Ctx, email string) error {
+func (s *SessionStore) SetUser(c *fiber.Ctx, id uuid.UUID) error {
 	sess, err := s.Get(c)
 	if err != nil {
 		return err
 	}
 
-	sess.Set(emailKey, email)
+	sess.Set(idKey, id)
 	if err := sess.Save(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *SessionStore) GetUser(c *fiber.Ctx) (string, error) {
+func (s *SessionStore) GetUser(c *fiber.Ctx) (uuid.UUID, error) {
 	sess, err := s.Get(c)
 	if err != nil {
-		return "", err
+		return uuid.UUID{}, err
 	}
 
-	v := sess.Get(emailKey)
+	v := sess.Get(idKey)
 	if v == nil {
-		return "", nil
+		return uuid.UUID{}, nil
 	}
 
-	return v.(string), nil
+	return v.(uuid.UUID), nil
 }

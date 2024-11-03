@@ -100,7 +100,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Route("/spotify", func(r fiber.Router) {
 			h := spotify_oauth_handler.NewHandler(sessionStore, config.Spotify, repository.UserAuth)
 
-			r.Get("/begin/:userID", h.Begin)
+			r.Get("/begin", h.Begin)
 			r.Get("/callback", h.Callback)
 		})
 		r.Route("/platnm", func(r fiber.Router) {
@@ -116,7 +116,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		h := spotify_handler.NewHandler(repository.Media)
 		m := spotify_middleware.NewMiddleware(config.Spotify, repository.UserAuth, sessionStore)
 
-		r.Route("/:userID", func(authRoute fiber.Router) {
+		r.Route("/", func(authRoute fiber.Router) {
 			authRoute.Use(m.WithAuthenticatedSpotifyClient())
 			authRoute.Get("/playlists", h.GetCurrentUserPlaylists)
 		})

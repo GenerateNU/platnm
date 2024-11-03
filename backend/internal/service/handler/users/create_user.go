@@ -68,12 +68,12 @@ func (h *Handler) CreateUser(c *fiber.Ctx) error {
 		return err
 	}
 
-	email, err := auth.SupabaseSignup(&h.config, req.Email, req.Password)
+	id, err := auth.SupabaseSignup(&h.config, req.Email, req.Password)
 	if err != nil {
 		return err
 	}
 
-	if err := h.store.SetUser(c, email); err != nil {
+	if err := h.store.SetUser(c, id); err != nil {
 		return err
 	}
 

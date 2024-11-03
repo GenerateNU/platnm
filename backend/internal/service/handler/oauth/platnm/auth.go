@@ -25,13 +25,13 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 	email := loginData.Email
 	password := loginData.Password
 
-	_, err := auth.GetAuthToken(&h.config, email, password)
+	id, err := auth.GetAuthToken(&h.config, email, password)
 
 	if err != nil {
 		return errs.BadRequest("failed to authenticate user")
 	}
 
-	if err := h.store.SetUser(c, email); err != nil {
+	if err := h.store.SetUser(c, id); err != nil {
 		return err
 	}
 
