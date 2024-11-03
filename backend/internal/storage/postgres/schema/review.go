@@ -228,48 +228,7 @@ func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaT
 	return reviews, nil
 }
 
-// Gets all the reviews of the users that the given user follows
-func (r *ReviewRepository) GetReviewsByFollowingID(ctx context.Context, id string) ([]*models.Review, error) {
-
-	rows, err := r.Query(ctx, "SELECT * FROM review JOIN follower WHERE following_id = $1 ORDER BY updated_at DESC", id)
-
-	if !rows.Next() {
-		return []*models.Review{}, nil
-	}
-
-	if err != nil {
-		return []*models.Review{}, err
-	}
-
-	defer rows.Close()
-
-	var reviews []*models.Review
-	for rows.Next() {
-		var review models.Review
-		if err := rows.Scan(
-			&review.ID,
-			&review.UserID,
-			&review.MediaID,
-			&review.MediaType,
-			&review.Rating,
-			&review.Comment,
-			&review.CreatedAt,
-			&review.UpdatedAt,
-			&review.Draft,
-		); err != nil {
-			return nil, err
-		}
-		reviews = append(reviews, &review)
-	}
-
-	if err := rows.Err(); err != nil {
-		return []*models.Review{}, err
-	}
-
-	return reviews, nil
-}
-
-// Getsthe stats (upvote count, downvote count, and comment count) of a review
+// Gets the stats (upvote count, downvote count, and comment count) of a review
 func (r *ReviewRepository) GetReviewStats(ctx context.Context, id string) (*models.ReviewStat, error) {
 	var reviewStat models.ReviewStat
 
