@@ -176,6 +176,94 @@ func (r *UserRepository) GetUserProfile(ctx context.Context, id uuid.UUID) (*mod
 	return profile, nil
 }
 
+// func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*models.FeedPost, error) {
+
+// 	exists, err := r.UserExists(ctx, id.String())
+// 	if !exists {
+// 		print("User does not exist.")
+// 		return nil, err
+// 	}
+
+// 	var feedPosts []*models.FeedPost
+
+// 	/// SQL query to get reviews and user details from users that the specified user follows
+// 	query := `
+// 	SELECT
+// 	r.id,
+// 	r.user_id,
+// 	u.username,
+// 	r.media_type,
+// 	r.media_id,
+// 	r.rating,
+// 	r.created_at,
+// 	r.updated_at,
+// 	COALESCE(a.cover, t.cover) AS media_cover,
+// 	COALESCE(a.title, t.title) AS media_title,
+// 	COALESCE(a.artist, t.artist) AS media_artist,
+// 	COALESCE(a.id, t.id) AS media_id
+// FROM review r
+// INNER JOIN follower f ON f.followee_id = r.user_id
+// INNER JOIN "user" u ON u.id = r.user_id
+// LEFT JOIN album a ON r.media_type = 'album' AND r.media_id = a.id
+// LEFT JOIN track t ON r.media_type = 'track' AND r.media_id = t.id
+// WHERE f.follower_id = $1
+// ORDER BY r.created_at DESC;`
+
+// 	// Execute the query
+// 	rows, err := r.db.Query(ctx, query, id)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	defer rows.Close()
+
+// 	// Scan results into the feedPosts slice
+// 	for rows.Next() {
+// 		var feedPost models.FeedPost
+// 		err := rows.Scan(
+// 			&feedPost.ID,
+// 			&feedPost.UserID,
+// 			&feedPost.Username,
+// 			&feedPost.MediaType,
+// 			&feedPost.MediaID,
+// 			&feedPost.Rating,
+// 			&feedPost.CreatedAt,
+// 			&feedPost.UpdatedAt,
+// 			&feedPost.MediaCover,
+// 			&feedPost.MediaTitle,
+// 			&feedPost.MediaArtist,
+// 		)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+
+// 		// Prepare a ReviewRepository instance to call GetReviewStats
+// 		reviewRepo := NewReviewRepository(r.db)
+
+// 		// Fetch review statistics for the current review
+// 		reviewStat, err := reviewRepo.GetReviewStats(ctx, strconv.Itoa(feedPost.ID))
+// 		if err != nil {
+// 			return nil, err
+// 		}
+
+// 		// If reviewStat is not nil, populate the corresponding fields in FeedPost
+// 		if reviewStat != nil {
+// 			feedPost.Upvotes = reviewStat.Upvotes
+// 			feedPost.Downvotes = reviewStat.Downvotes
+// 			feedPost.Comments = reviewStat.Comments
+// 		}
+
+// 		// Append the populated FeedPost to the feedPosts slice
+// 		feedPosts = append(feedPosts, &feedPost)
+// 	}
+
+// 	// Check for errors after looping through rows
+// 	if err := rows.Err(); err != nil {
+// 		return nil, err
+// 	}
+
+// 	return feedPosts, nil
+// }
+
 func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*models.FeedPost, error) {
 
 	exists, err := r.UserExists(ctx, id.String())
@@ -225,23 +313,25 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 	/// SQL query to get reviews and user details from users that the specified user follows
 	query := `
 	SELECT 
-		r.id, 
-		r.user_id, 
-		u.username,
-		r.media_type, 
-		r.media_id, 
-		r.rating, 
-		r.created_at, 
-		r.updated_at, 
-		r.media_cover, 
-		r.media_title, 
-		r.media_artist
-	FROM review r
-	INNER JOIN follower f ON f.followee_id = r.user_id
-	INNER JOIN "user" u ON u.id = r.user_id
-	WHERE f.follower_id = $1
-	ORDER BY r.created_at DESC
-	LIMIT 50;`
+	r.id, 
+	r.user_id, 
+	u.username,
+	r.media_type, 
+	r.media_id, 
+	r.rating, 
+	r.created_at, 
+	r.updated_at, 
+	COALESCE(a.cover, t.cover) AS media_cover, 
+	COALESCE(a.title, t.title) AS media_title, 
+	COALESCE(a.artist, t.artist) AS media_artist,
+	COALESCE(a.id, t.id) AS media_id
+FROM review r
+INNER JOIN follower f ON f.followee_id = r.user_id
+INNER JOIN "user" u ON u.id = r.user_id
+LEFT JOIN album a ON r.media_type = 'album' AND r.media_id = a.id
+LEFT JOIN track t ON r.media_type = 'track' AND r.media_id = t.id
+WHERE f.follower_id = $1
+ORDER BY r.created_at DESC;`
 
 	// Execute the query
 	rows, err := r.db.Query(ctx, query, id)
@@ -271,7 +361,7 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 		}
 
 		// Prepare a ReviewRepository instance to call GetReviewStats
-		reviewRepo := NewReviewRepository(r.db) // Assuming you have a function to create a new ReviewRepository
+		reviewRepo := NewReviewRepository(r.db)
 
 		// Fetch review statistics for the current review
 		reviewStat, err := reviewRepo.GetReviewStats(ctx, strconv.Itoa(feedPost.ID))
