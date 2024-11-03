@@ -64,9 +64,9 @@ const OnboardingCarousel: React.FC = () => {
   const [inputValid, setInputValid] = useState(false);
   const [tried, setTried] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const { sessionToken, updateAccessToken, updateSession } = useAuthContext();
 
-  
+  const [enthusiasm, setEnthusiasm] = useState("");
+  const { updateAccessToken, updateSession } = useAuthContext();
 
   const progressBar1 = useSharedValue(0);
   const progressBar2 = useSharedValue(0);
@@ -91,6 +91,7 @@ const OnboardingCarousel: React.FC = () => {
       { duration: 500 },
     );
   };
+  
 
   const handleSignUp = async (): Promise<void> => {
     try {
@@ -108,7 +109,6 @@ const OnboardingCarousel: React.FC = () => {
 
       updateAccessToken(res.data.token);
       updateSession(res.headers['X-Session']);
-      router.push("/onboarding/interest");
     } catch (error) {
       alert("Signup Error");
     }
@@ -119,7 +119,7 @@ const OnboardingCarousel: React.FC = () => {
   };
 
   const handleNext = () => {
-    if (currentSlide < slides.length - 1) {
+    if (currentSlide < slides.length - 2) {
       if (inputValid) {
         if (currentSlide === 2 && !passwordMatch) {
           setTried(true);
@@ -132,7 +132,7 @@ const OnboardingCarousel: React.FC = () => {
         setTried(true);
         setInputValid(false);
       }
-    } else {
+    } else if (currentSlide < slides.length -1) {
       handleSignUp();
     }
   };
