@@ -17,7 +17,12 @@ type Handler struct {
 func NewHandler(store *session.SessionStore, config config.Spotify, userAuthRepository storage.UserAuthRepository) *Handler {
 	authenticator := spotifyauth.New(
 		spotifyauth.WithRedirectURL(config.RedirectURI),
-		spotifyauth.WithScopes(spotifyauth.ScopeUserReadPrivate, spotifyauth.ScopePlaylistReadPrivate, spotifyauth.ScopePlaylistReadCollaborative),
+		spotifyauth.WithScopes(
+			spotifyauth.ScopeUserReadPrivate,
+			spotifyauth.ScopePlaylistReadPrivate,
+			spotifyauth.ScopePlaylistReadCollaborative,
+			spotifyauth.ScopeUserTopRead,
+		),
 		spotifyauth.WithClientID(config.ClientID),
 		spotifyauth.WithClientSecret(config.ClientSecret),
 	)

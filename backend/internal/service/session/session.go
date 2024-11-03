@@ -2,7 +2,7 @@ package session
 
 import (
 	"github.com/gofiber/fiber/v2/middleware/session"
-	"github.com/zmb3/spotify/v2"
+	"golang.org/x/oauth2"
 )
 
 type SessionStore struct {
@@ -15,7 +15,7 @@ func NewSessionStore(config session.Config) *SessionStore {
 	}
 
 	store.RegisterType(UserState{})
-	store.RegisterType(spotify.Client{})
+	store.RegisterType(oauth2.Token{})
 
 	return store
 }
