@@ -25,7 +25,7 @@ type SignInResponse struct {
 	Error        interface{}  `json:"error"`
 }
 
-func GetAuthToken(cfg *config.Supabase, email string, password string) (uuid.UUID, error) {
+func GetAuthToken(cfg *config.Supabase, email string, password string) (SignInResponse, error) {
 	supabaseURL := cfg.URL
 	apiKey := cfg.Key
 
@@ -36,13 +36,13 @@ func GetAuthToken(cfg *config.Supabase, email string, password string) (uuid.UUI
 	}
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
-		return uuid.UUID{}, err
+		return SignInResponse{}, err
 	}
 
 	// Create the HTTP POST request
 	req, err := http.NewRequest("POST", fmt.Sprintf("%s/auth/v1/token?grant_type=password", supabaseURL), bytes.NewBuffer(payloadBytes))
 	if err != nil {
-		return uuid.UUID{}, err
+		return SignInResponse{}, err
 	}
 
 	// Set headers
@@ -53,19 +53,19 @@ func GetAuthToken(cfg *config.Supabase, email string, password string) (uuid.UUI
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return uuid.UUID{}, errs.BadRequest("failed to execute request")
+		return SignInResponse{}, errs.BadRequest("failed to execute request")
 	}
 	defer resp.Body.Close()
 
 	// Read the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return uuid.UUID{}, errs.BadRequest("failed to read response body")
+		return SignInResponse{}, errs.BadRequest("failed to read response body")
 	}
 
 	// Check if the response was successful
 	if resp.StatusCode != http.StatusOK {
-		return uuid.UUID{}, errs.BadRequest(fmt.Sprintf("failed to login %d, %s", resp.StatusCode, body))
+		return SignInResponse{}, errs.BadRequest(fmt.Sprintf("failed to login %d, %s", resp.StatusCode, body))
 	}
 
 	fmt.Printf("body: %s\n", body)
@@ -74,14 +74,14 @@ func GetAuthToken(cfg *config.Supabase, email string, password string) (uuid.UUI
 	var signInResponse SignInResponse
 	err = json.Unmarshal(body, &signInResponse)
 	if err != nil {
-		return uuid.UUID{}, errs.BadRequest("failed to parse response body")
+		return SignInResponse{}, errs.BadRequest("failed to parse response body")
 	}
 
 	// Make sure response does not contain an error
 	if signInResponse.Error != nil {
-		return uuid.UUID{}, errs.BadRequest(fmt.Sprintf("sign in response error %v", signInResponse.Error))
+		return SignInResponse{}, errs.BadRequest(fmt.Sprintf("sign in response error %v", signInResponse.Error))
 	}
 
 	// Return the access token
-	return signInResponse.User.ID, nil
+	return signInResponse, nil
 }

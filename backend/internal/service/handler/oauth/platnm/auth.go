@@ -1,8 +1,6 @@
 package platnm
 
 import (
-	"net/http"
-
 	"platnm/internal/auth"
 	"platnm/internal/errs"
 
@@ -25,15 +23,15 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 	email := loginData.Email
 	password := loginData.Password
 
-	id, err := auth.GetAuthToken(&h.config, email, password)
+	resp, err := auth.GetAuthToken(&h.config, email, password)
 
 	if err != nil {
 		return errs.BadRequest("failed to authenticate user")
 	}
 
-	if err := h.store.SetUser(c, id); err != nil {
+	if err := h.store.SetUser(c, resp.User.ID); err != nil {
 		return err
 	}
 
-	return c.SendStatus(http.StatusNoContent)
+	return c.Status(fiber.StatusOK).JSON(resp)
 }
