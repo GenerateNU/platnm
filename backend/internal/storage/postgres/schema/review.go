@@ -228,6 +228,54 @@ func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaT
 	return reviews, nil
 }
 
+// Gets the stats (upvote count, downvote count, and comment count) of a review
+func (r *ReviewRepository) GetReviewStats(ctx context.Context, id string) (*models.ReviewStat, error) {
+	var reviewStat models.ReviewStat
+
+	row := r.QueryRow(ctx, `SELECT 
+    r.id, 
+    COALESCE(vote_counts.upvotes, 0) AS upvotes,
+    COALESCE(vote_counts.downvotes, 0) AS downvotes,
+    COALESCE(comment_counts.comments, 0) AS comments
+FROM 
+    review r
+LEFT JOIN (
+    SELECT 
+        review_id,
+        SUM(CASE WHEN upvote = TRUE THEN 1 ELSE 0 END) AS upvotes,
+        SUM(CASE WHEN upvote = FALSE THEN 1 ELSE 0 END) AS downvotes
+    FROM 
+        user_review_vote
+    GROUP BY 
+        review_id
+) vote_counts ON r.id = vote_counts.review_id
+LEFT JOIN (
+    SELECT 
+        review_id,
+        COUNT(id) AS comments
+    FROM 
+        comment
+    GROUP BY 
+        review_id
+) comment_counts ON r.id = comment_counts.review_id
+WHERE 
+    r.id = $1;`, id)
+
+	// Scan the row into the review object
+	err := row.Scan(&reviewStat.ID, &reviewStat.Upvotes, &reviewStat.Downvotes, &reviewStat.Comments)
+	if err != nil {
+		// If no rows were found, return nil, no error
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		// If there is an error, return nil, error
+		return nil, err
+	}
+
+	// If there are rows and no error, return &review, nil
+	return &reviewStat, nil
+}
+
 func NewReviewRepository(db *pgxpool.Pool) *ReviewRepository {
 	return &ReviewRepository{
 		db,
