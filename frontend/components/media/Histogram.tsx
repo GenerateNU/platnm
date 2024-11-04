@@ -11,7 +11,10 @@ const Histogram = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Rating Overview</Text>
-      <VictoryChart padding={{ right: 50, left: 20, bottom: 30, top: 20 }}>
+      <VictoryChart
+        height={150}
+        padding={{ right: 50, left: 20, bottom: 30, top: 20 }}
+      >
         <VictoryAxis
           style={{
             axis: { stroke: "transparent" },
