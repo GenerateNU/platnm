@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { Button, StyleSheet, ScrollView, View } from "react-native";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ThemedView } from "@/components/ThemedView";
 import MediaCard from "@/components/media/MediaCard";
 import ReviewStats from "@/components/media/ReviewStats";
 import axios from "axios";
@@ -11,6 +10,7 @@ import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 
 import ReviewCard from "@/components/ReviewCard";
 import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
+import Histogram from "@/components/media/Histogram";
 
 type MediaResponse = {
   media: Media;
@@ -88,6 +88,7 @@ export default function MediaPage() {
           <View style={styles.titleContainer}>
             {rating && <ReviewStats rating={rating} reviews={reviews} />}
           </View>
+          <Histogram />
           <View>
             {reviews?.map((review) => (
               <ReviewCard
@@ -109,10 +110,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
   },
   titleContainer: {
-    width: "100%",
     flexDirection: "row",
     justifyContent: "center",
-    gap: 8,
   },
   metadataContainer: {
     width: "100%",

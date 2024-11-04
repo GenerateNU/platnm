@@ -67,6 +67,28 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 		return nil, err
 	}
 
+	// Fetch or create tag IDs and add them to the review_tags table
+	for _, label := range review.Tags {
+		var tagID int
+
+		// Check if the tag already exists
+		tagQuery := `SELECT id FROM tag WHERE name = $1`
+		err := r.QueryRow(ctx, tagQuery, label).Scan(&tagID)
+
+		// If the tag doesn't exist, error
+		if err == pgx.ErrNoRows {
+			return nil, errs.NotFound("tag", "name", label)
+		} else if err != nil {
+			return nil, err
+		}
+
+		// Insert the tag-review relationship into review_tags
+		reviewTagQuery := `INSERT INTO review_tag (review_id, tag_id) VALUES ($1, $2)`
+		if _, err := r.Exec(ctx, reviewTagQuery, review.ID, tagID); err != nil {
+			return nil, err
+		}
+	}
+
 	return review, nil
 }
 
@@ -254,6 +276,24 @@ func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaT
 	}
 
 	return reviews, nil
+}
+
+func (r *ReviewRepository) GetTags(ctx context.Context) ([]string, error) {
+	rows, err := r.Query(ctx, "SELECT name FROM tag")
+	if err != nil {
+		return nil, err
+	}
+
+	var tags []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		tags = append(tags, name)
+	}
+
+	return tags, nil
 }
 
 // Gets the stats (upvote count, downvote count, and comment count) of a review
