@@ -75,11 +75,11 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 		tagQuery := `SELECT id FROM tag WHERE name = $1`
 		err := r.QueryRow(ctx, tagQuery, label).Scan(&tagID)
 
-		// If the tag doesn't exist, insert it and retrieve its ID
+		// If the tag doesn't exist, error
 		if err == pgx.ErrNoRows {
 			return nil, errs.NotFound("tag", "name", label)
 		} else if err != nil {
-			return nil, err // Return if any other error occurred
+			return nil, err
 		}
 
 		// Insert the tag-review relationship into review_tags
