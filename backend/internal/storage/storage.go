@@ -17,6 +17,7 @@ type UserRepository interface {
 	UnFollow(ctx context.Context, follower uuid.UUID, following uuid.UUID) (bool, error)
 	CalculateScore(ctx context.Context, id uuid.UUID) (int, error)
 	CreateUser(ctx context.Context, user models.User) (models.User, error)
+	GetUserFeed(ctx context.Context, id uuid.UUID) ([]*models.FeedPost, error)
 }
 
 type ReviewRepository interface {
