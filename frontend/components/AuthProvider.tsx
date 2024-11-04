@@ -18,9 +18,9 @@ const AuthContext = createContext<AuthProviderProps>({
   username: "",
   accessToken: "",
   sessionToken: "",
-  updateAccessToken: (token : string) => {},
-  updateUsername: (username : string) => {},
-  updateSession: (session : string) => {},
+  updateAccessToken: (token: string) => {},
+  updateUsername: (username: string) => {},
+  updateSession: (session: string) => {},
 });
 
 export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
@@ -40,11 +40,18 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
     console.log("session is..." + session); // Check if this is printed
     setSessionToken(session);
     console.log("Updated sessionToken: " + sessionToken); // Check updated state
-  }
+  };
 
   return (
     <AuthContext.Provider
-      value={{ username, accessToken, sessionToken, updateAccessToken, updateUsername, updateSession }}
+      value={{
+        username,
+        accessToken,
+        sessionToken,
+        updateAccessToken,
+        updateUsername,
+        updateSession,
+      }}
     >
       {children}
     </AuthContext.Provider>

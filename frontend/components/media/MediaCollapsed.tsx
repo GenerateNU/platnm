@@ -9,10 +9,10 @@ const MediaCard = ({ track }: trackCollapsedProps) => {
   return (
     <View style={styles.container}>
       <Image source={{ uri: track.cover }} style={styles.image} />
-        <>
-          <Text style={styles.songNameText}>{track.title}</Text>
-          {/* <Text>{album.}</Text> */}
-        </>
+      <>
+        <Text style={styles.songNameText}>{track.title}</Text>
+        {/* <Text>{album.}</Text> */}
+      </>
     </View>
   );
 };

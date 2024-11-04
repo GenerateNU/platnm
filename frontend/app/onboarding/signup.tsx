@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Keyboard,
   Pressable,
+  ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
 import CustomButton from "@/components/onboarding/OnboardButton";
@@ -14,9 +15,11 @@ import { useAuthContext } from "@/components/AuthProvider";
 import Header from "@/components/onboarding/Header";
 import { useSharedValue, withTiming } from "react-native-reanimated";
 import ProgressBar from "@/components/onboarding/ProgressBar";
+// import GrayCircle from "@/assets/images/gray-circle.svg"
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
-
+import EnthusiasmSlider from "@/components/onboarding/EnthusiasmSlider";
+import ArtistBubble from "@/components/onboarding/ArtistBubble";
 
 const slides = [
   {
@@ -48,6 +51,21 @@ const slides = [
     title: "Link Music Account",
     question: "Link to your music account",
   },
+  {
+    id: 5,
+    title: "Enthusiastic About Music?",
+    question: "How would you categorize your love for music?",
+  },
+  {
+    id: 6,
+    title: "Favorite Artists",
+    question: "Pick up to 5 of your favorite artists.",
+  },
+  {
+    id: 7,
+    title: "Favorite Songs",
+    question: "Pick up to 5 of your favorite songs.",
+  },
 ];
 
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -64,12 +82,13 @@ const OnboardingCarousel: React.FC = () => {
   const [inputValid, setInputValid] = useState(false);
   const [tried, setTried] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
-
-  const [enthusiasm, setEnthusiasm] = useState("");
   const { updateAccessToken, updateSession } = useAuthContext();
 
   const progressBar1 = useSharedValue(0);
   const progressBar2 = useSharedValue(0);
+  const progressBar3 = useSharedValue(0);
+  const progressBar4 = useSharedValue(0);
+  const progressBar5 = useSharedValue(0);
 
   const emailFormat = /^[ ]*([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})[ ]*$/i;
 
@@ -86,12 +105,26 @@ const OnboardingCarousel: React.FC = () => {
     progressBar1.value = withTiming(newSlideIndex > 0 ? 1 : 0, {
       duration: 500,
     });
+
     progressBar2.value = withTiming(
       newSlideIndex > 1 ? (newSlideIndex - 1) / 3 : 0,
-      { duration: 500 },
+      {
+        duration: 500,
+      },
     );
+
+    progressBar3.value = withTiming(newSlideIndex === 5 ? 1 : 0, {
+      duration: 500,
+    });
+
+    progressBar4.value = withTiming(newSlideIndex === 6 ? 1 : 0, {
+      duration: 500,
+    });
+
+    progressBar5.value = withTiming(newSlideIndex === 7 ? 1 : 0, {
+      duration: 500,
+    });
   };
-  
 
   const handleSignUp = async (): Promise<void> => {
     try {
@@ -108,33 +141,41 @@ const OnboardingCarousel: React.FC = () => {
       }
 
       updateAccessToken(res.data.token);
-      updateSession(res.headers['X-Session']);
+      updateSession(res.headers["X-Session"]);
     } catch (error) {
       alert("Signup Error");
     }
-    
-    
-
-
   };
 
   const handleNext = () => {
-    if (currentSlide < slides.length - 2) {
-      if (inputValid) {
-        if (currentSlide === 2 && !passwordMatch) {
-          setTried(true);
-          setInputValid(false);
-        } else {
-          handleSlideChange(currentSlide + 1);
-          setInputValid(false);
-        }
-      } else {
-        setTried(true);
-        setInputValid(false);
-      }
-    } else if (currentSlide < slides.length -1) {
+    if (currentSlide === 3) {
+      handleSlideChange(currentSlide + 1);
       handleSignUp();
+      return;
     }
+    if (currentSlide === 2 && !passwordMatch) {
+      setTried(true);
+      setInputValid(false);
+      return;
+    }
+
+    if (currentSlide < slides.length - 1 && currentSlide > 4) {
+      handleSlideChange(currentSlide + 1);
+    }
+
+    if (inputValid) {
+      handleSlideChange(currentSlide + 1);
+      setInputValid(false);
+    } else {
+      setTried(true);
+      setInputValid(false);
+    }
+  };
+
+  const artist = {
+    name: "Artist Name",
+    profilePictureUrl: "@/assets/images/gray-circle.svg",
+    selected: false,
   };
 
   return (
@@ -145,7 +186,15 @@ const OnboardingCarousel: React.FC = () => {
             title={slides[currentSlide].title}
             subtitle={slides[currentSlide].question}
           />
-          {currentSlide === 2 ? (
+          {currentSlide === 6 ? (
+            <ScrollView>
+              <ArtistBubble artist={artist} />
+            </ScrollView>
+          ) : null}
+
+          {currentSlide === 5 ? (
+            <EnthusiasmSlider email={email} />
+          ) : currentSlide === 2 ? (
             <View>
               <TextInput
                 style={[
@@ -181,7 +230,7 @@ const OnboardingCarousel: React.FC = () => {
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 onBlur={
-                  password.length > 0
+                  password.length > 5
                     ? () => {
                         setInputValid(true);
                         setTried(false);
@@ -228,44 +277,46 @@ const OnboardingCarousel: React.FC = () => {
                   Is this correct?
                 </Text>
               )}
-              <TextInput
-                style={[
-                  styles.input,
-                  !inputValid && tried && { borderColor: "#8b0000" },
-                ]}
-                inputMode={currentSlide === 1 ? "email" : "text"}
-                placeholder={slides[currentSlide].placeholder}
-                placeholderTextColor="#808080"
-                autoComplete={currentSlide === 1 ? "email" : "off"}
-                value={
-                  currentSlide === 0
-                    ? name
-                    : currentSlide === 1
-                      ? email
-                      : currentSlide === 3
-                        ? username
-                        : ""
-                }
-                onChangeText={
-                  currentSlide === 0
-                    ? setName
-                    : currentSlide === 1
-                      ? setEmail
-                      : setUsername
-                }
-                onBlur={() => {
-                  if (currentSlide === 1) {
-                    setInputValid(emailFormat.test(email));
-                  } else if (
-                    (currentSlide === 0 && name.length > 0) ||
-                    (currentSlide === 3 && password.length > 0) ||
-                    (currentSlide === 4 && username.length > 0)
-                  ) {
-                    setInputValid(true);
+              {currentSlide < 4 ? (
+                <TextInput
+                  style={[
+                    styles.input,
+                    !inputValid && tried && { borderColor: "#8b0000" },
+                  ]}
+                  inputMode={currentSlide === 1 ? "email" : "text"}
+                  placeholder={slides[currentSlide].placeholder}
+                  placeholderTextColor="#808080"
+                  autoComplete={currentSlide === 1 ? "email" : "off"}
+                  value={
+                    currentSlide === 0
+                      ? name
+                      : currentSlide === 1
+                        ? email
+                        : currentSlide === 3
+                          ? username
+                          : ""
                   }
-                  setTried(false);
-                }}
-              />
+                  onChangeText={
+                    currentSlide === 0
+                      ? setName
+                      : currentSlide === 1
+                        ? setEmail
+                        : setUsername
+                  }
+                  onBlur={() => {
+                    if (currentSlide === 1) {
+                      setInputValid(emailFormat.test(email));
+                    } else if (
+                      (currentSlide === 0 && name.length > 1) ||
+                      (currentSlide === 2 && password.length > 5) ||
+                      (currentSlide === 3 && username.length > 0)
+                    ) {
+                      setInputValid(true);
+                    }
+                    setTried(false);
+                  }}
+                />
+              ) : null}
             </View>
           )}
 
@@ -278,6 +329,9 @@ const OnboardingCarousel: React.FC = () => {
             <ProgressBar
               progress1={progressBar1}
               progress2={progressBar2}
+              progress3={progressBar3}
+              progress4={progressBar4}
+              progress5={progressBar5}
               currentSlide={currentSlide}
               handleSlideChange={handleNext}
             />

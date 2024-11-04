@@ -41,8 +41,8 @@ export default function Login() {
           return;
         }
         updateAccessToken(res.data.token);
-        const sessionHeader = res.headers['x-session'];
-        updateSession(sessionHeader);        
+        const sessionHeader = res.headers["x-session"];
+        updateSession(sessionHeader);
         Alert.alert("Success", "You are now signed in!");
       })
       .catch((error) => {
@@ -51,7 +51,6 @@ export default function Login() {
       });
     setLoading(false);
   };
-  
 
   const forgotUsernamePassword = () => {
     console.log("Forgot username or password");
