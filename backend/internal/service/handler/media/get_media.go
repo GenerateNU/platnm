@@ -29,6 +29,9 @@ func (h *Handler) GetMediaByName(c *fiber.Ctx) error {
 		mediaType = models.BothMedia
 	}
 
+	log.Println("mediaType", mediaType)
+	log.Println("name", name)
+
 	medias, err := h.mediaRepository.GetMediaByName(c.Context(), name, mediaType)
 	if err != nil {
 		log.Println("Error fetching media by name:", err)
@@ -132,6 +135,7 @@ func (h *Handler) searchAndHandleSpotifyMedia(c *fiber.Ctx, name string, mediaTy
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
+			log.Println("Processing Spotify albums")
 			if err := h.processSpotifyAlbums(c, &wg, result, errCh); err != nil {
 				select {
 				case errCh <- err:
@@ -145,6 +149,7 @@ func (h *Handler) searchAndHandleSpotifyMedia(c *fiber.Ctx, name string, mediaTy
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
+			log.Println("Processing Spotify tracks")
 			if err := h.processSpotifyTracks(c, result, errCh, &wg); err != nil {
 				select {
 				case errCh <- err:
@@ -201,12 +206,28 @@ func (h *Handler) processSpotifyTracks(c *fiber.Ctx, result *spotify.SearchResul
 				default:
 				}
 			}
-			if album == nil {
-				select {
-				case errCh <- fmt.Errorf("album not found for track: %s", track.Name):
-				default:
+
+			for album == nil {
+				err = h.handleAlbum(c.Context(), wg, track.Album, errCh)
+				if err != nil {
+					select {
+					case errCh <- err:
+					default:
+					}
 				}
-				return
+
+				album, err = h.mediaRepository.GetExistingAlbumBySpotifyID(c.Context(), track.Album.ID.String())
+				if err != nil {
+					select {
+					case errCh <- err:
+					default:
+					}
+				}
+				// select {
+				// case errCh <- fmt.Errorf("album not found for track: %s", track.Name):
+				// default:
+				// }
+				// return
 			}
 
 			if err := h.handleTracks(c, wg, *album, track.Album.ID, errCh); err != nil {

@@ -157,7 +157,8 @@ func (r *MediaRepository) AddArtist(ctx context.Context, artist *models.Artist) 
 		}
 		return nil, err
 	}
-
+	fmt.Println("add artist")
+	fmt.Println(artist, query, id)
 	artist.ID = id
 	return artist, nil
 }
@@ -227,6 +228,7 @@ func (r *MediaRepository) AddAlbumArtist(ctx context.Context, albumId int, artis
 }
 
 func (r *MediaRepository) AddTrackArtist(ctx context.Context, trackId int, artistId int) error {
+	fmt.Println(artistId)
 	query :=
 		`INSERT INTO track_artist (track_id, artist_id)
 		 VALUES ($1, $2)`

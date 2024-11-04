@@ -2,6 +2,7 @@ package media
 
 import (
 	"context"
+	"fmt"
 	"platnm/internal/models"
 	"platnm/internal/service/ctxt"
 	"sync"
@@ -134,6 +135,7 @@ func (h *Handler) handleTracks(c *fiber.Ctx, wg *sync.WaitGroup, albumId int, sp
 					}
 					artistId = &newArtist.ID
 				}
+				fmt.Println("artistId: ", artist.Name, *artistId)
 				err = h.mediaRepository.AddTrackArtist(c.Context(), trackResult.ID, *artistId)
 				if err != nil {
 					select {
