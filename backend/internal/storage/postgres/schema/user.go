@@ -196,6 +196,7 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 		r.media_type, 
 		r.media_id, 
 		r.rating, 
+		r.comment,
 		r.created_at, 
 		r.updated_at,
 		COALESCE(a.cover, t.cover) AS media_cover, 
@@ -240,6 +241,7 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 			&feedPost.MediaType,
 			&feedPost.MediaID,
 			&feedPost.Rating,
+			&feedPost.Comment,
 			&feedPost.CreatedAt,
 			&feedPost.UpdatedAt,
 			&feedPost.MediaCover,
@@ -260,7 +262,7 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 		if reviewStat != nil {
 			feedPost.Upvotes = reviewStat.Upvotes
 			feedPost.Downvotes = reviewStat.Downvotes
-			feedPost.Comments = reviewStat.Comments
+			feedPost.CommentCount = reviewStat.Comments
 		}
 
 		// Append the populated FeedPost to the feedPosts slice
