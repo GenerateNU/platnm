@@ -21,10 +21,3 @@ type ReviewStat struct {
 	Upvotes   int `json:"upvotes"`
 	Downvotes int `json:"downvotes"`
 }
-
-type ReviewStat struct {
-	ID        int `json:"id"`
-	Comments  int `json:"comments"`
-	Upvotes   int `json:"upvotes"`
-	Downvotes int `json:"downvotes"`
-}
