@@ -72,8 +72,8 @@ func (r *RecommendationRepository) GetRecommendation(ctx context.Context, id str
 }
 
 func (r *RecommendationRepository) GetRecommendations(ctx context.Context, id string) ([]*models.Recommendation, error) {
-	rows, err := r.Query(ctx, "SELECT * from recommendation WHERE recommendee_id = $1",id)
-	
+	rows, err := r.Query(ctx, "SELECT * from recommendation WHERE recommendee_id = $1", id)
+
 	if err != nil {
 		return []*models.Recommendation{}, err
 	}
@@ -92,8 +92,8 @@ func (r *RecommendationRepository) GetRecommendations(ctx context.Context, id st
 			&recommendation.RecommendeeId,
 			&recommendation.CreatedAt,
 			&recommendation.Reaction); err != nil {
-				return nil, err
-			}
+			return nil, err
+		}
 		recs = append(recs, &recommendation)
 	}
 
