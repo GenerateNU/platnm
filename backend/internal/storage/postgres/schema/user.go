@@ -2,6 +2,7 @@ package schema
 
 import (
 	"context"
+	"database/sql"
 	"platnm/internal/models"
 	"strconv"
 
@@ -233,6 +234,7 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 	// Scan results into the feedPosts slice
 	for rows.Next() {
 		var feedPost models.FeedPost
+		var comment sql.NullString // Use sql.NullString for nullable strings
 		err := rows.Scan(
 			&feedPost.ID,
 			&feedPost.UserID,
@@ -241,7 +243,7 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 			&feedPost.MediaType,
 			&feedPost.MediaID,
 			&feedPost.Rating,
-			&feedPost.Comment,
+			&comment, // Scan into comment first
 			&feedPost.CreatedAt,
 			&feedPost.UpdatedAt,
 			&feedPost.MediaCover,
@@ -250,6 +252,13 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 		)
 		if err != nil {
 			return nil, err
+		}
+
+		// Assign comment to feedPost.Comment, handling null case
+		if comment.Valid {
+			feedPost.Comment = &comment.String // Point to the string if valid
+		} else {
+			feedPost.Comment = nil // Set to nil if null
 		}
 
 		// Fetch review statistics for the current review

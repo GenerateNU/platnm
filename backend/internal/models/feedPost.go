@@ -12,7 +12,7 @@ type FeedPost struct {
 	MediaType      MediaType `json:"media_type"`
 	MediaID        int       `json:"media_id"`
 	Rating         int       `json:"rating"`
-	Comment        string    `json:"comment"`
+	Comment        *string   `json:"comment"`
 	CommentCount   int       `json:"comment_count"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
