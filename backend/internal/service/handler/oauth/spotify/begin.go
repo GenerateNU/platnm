@@ -15,11 +15,12 @@ func (h *Handler) Begin(c *fiber.Ctx) error {
 
 	url := h.authenticator.AuthURL(state)
 
-	// should only need to store state value in store
-	// since user id should already be attached to session
-	// since user needs to be authenticated to link account with spotify
-	// but until id is stored in session, just store like this
-	if err := h.store.SetState(c, state); err != nil {
+	id, err := h.sessionStore.GetUser(c)
+	if err != nil {
+		return err
+	}
+
+	if err := h.stateStore.SetUser(state, id); err != nil {
 		return err
 	}
 

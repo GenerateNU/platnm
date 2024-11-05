@@ -7,6 +7,7 @@ import (
 	"platnm/internal/constants"
 	"platnm/internal/errs"
 	"platnm/internal/service/handler/media"
+	"platnm/internal/service/handler/oauth"
 	"platnm/internal/service/handler/oauth/platnm"
 	spotify_oauth_handler "platnm/internal/service/handler/oauth/spotify"
 	"platnm/internal/service/handler/playlist"
@@ -46,6 +47,8 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		Expiration: constants.SessionDuration,
 		KeyLookup:  "header:" + constants.HeaderSession,
 	})
+
+	stateStore := oauth.NewStateStore(memory.Config{})
 
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.SendStatus(http.StatusOK)
@@ -99,7 +102,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	// change to /oauth once its changed in spotify dashboard
 	app.Route("/auth", func(r fiber.Router) {
 		r.Route("/spotify", func(r fiber.Router) {
-			h := spotify_oauth_handler.NewHandler(sessionStore, config.Spotify, repository.UserAuth)
+			h := spotify_oauth_handler.NewHandler(sessionStore, stateStore, config.Spotify, repository.UserAuth)
 
 			r.Get("/begin", h.Begin)
 			r.Get("/callback", h.Callback)

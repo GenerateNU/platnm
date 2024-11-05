@@ -82,7 +82,9 @@ const OnboardingCarousel: React.FC = () => {
   const [inputValid, setInputValid] = useState(false);
   const [tried, setTried] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const { updateAccessToken, updateSession } = useAuthContext();
+
+  const [enthusiasm, setEnthusiasm] = useState("");
+  const { sessionToken, updateAccessToken, updateSession } = useAuthContext();
 
   const progressBar1 = useSharedValue(0);
   const progressBar2 = useSharedValue(0);
@@ -140,10 +142,37 @@ const OnboardingCarousel: React.FC = () => {
         return;
       }
 
-      updateAccessToken(res.data.token);
-      updateSession(res.headers["X-Session"]);
+      console.log('data:', res.data);
+      console.log('access token:', res.data['access_token']);
+      console.log('headers:', res.headers);
+      console.log('session header:', res.headers['x-session']);
+
+      updateAccessToken(res.data['access_token']);
+      updateSession(res.headers['x-session']);
     } catch (error) {
       alert("Signup Error");
+    }
+  };
+
+  const handleSpotifyLogin = async (): Promise<void> => {
+    try {
+      console.log("session", sessionToken);
+      const res = await axios.get(`${BASE_URL}/auth/spotify/begin`, {
+        validateStatus: function (status) {
+          return status == 302;
+        },
+        headers: {
+          'X-Session': sessionToken,
+        }
+      });
+
+      const redirectUrl = res.headers['x-redirect'];
+      console.log(redirectUrl);
+
+      router.push(redirectUrl);
+    } catch (error) {
+      console.log(error);
+      alert("Spotify Login Error");
     }
   };
 
@@ -256,7 +285,7 @@ const OnboardingCarousel: React.FC = () => {
             <View style={styles.buttonGroup}>
               <CustomButton
                 text={"Log in with Spotify"}
-                onPress={() => alert("Open with Spotify")}
+                onPress={() => handleSpotifyLogin()}
                 backgroundColor="#1DB954"
               />
               <CustomButton

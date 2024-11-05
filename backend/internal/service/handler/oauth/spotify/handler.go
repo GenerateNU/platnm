@@ -2,6 +2,7 @@ package spotify
 
 import (
 	"platnm/internal/config"
+	"platnm/internal/service/handler/oauth"
 	"platnm/internal/service/session"
 	"platnm/internal/storage"
 
@@ -9,12 +10,13 @@ import (
 )
 
 type Handler struct {
-	store              *session.SessionStore
+	sessionStore       *session.SessionStore
+	stateStore         *oauth.StateStore
 	authenticator      *spotifyauth.Authenticator
 	userAuthRepository storage.UserAuthRepository
 }
 
-func NewHandler(store *session.SessionStore, config config.Spotify, userAuthRepository storage.UserAuthRepository) *Handler {
+func NewHandler(sessionStore *session.SessionStore, stateStore *oauth.StateStore, config config.Spotify, userAuthRepository storage.UserAuthRepository) *Handler {
 	authenticator := spotifyauth.New(
 		spotifyauth.WithRedirectURL(config.RedirectURI),
 		spotifyauth.WithScopes(spotifyauth.ScopeUserReadPrivate, spotifyauth.ScopePlaylistReadPrivate, spotifyauth.ScopePlaylistReadCollaborative),
@@ -23,7 +25,8 @@ func NewHandler(store *session.SessionStore, config config.Spotify, userAuthRepo
 	)
 
 	return &Handler{
-		store:              store,
+		sessionStore:       sessionStore,
+		stateStore:         stateStore,
 		authenticator:      authenticator,
 		userAuthRepository: userAuthRepository,
 	}

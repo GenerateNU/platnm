@@ -15,6 +15,11 @@ type createUserRequest struct {
 	Username    string `json:"username"`
 }
 
+type createUserResponse struct {
+	AccessToken string `json:"access_token"`
+	models.User
+}
+
 func (c *createUserRequest) validate() map[string]string {
 	errs := make(map[string]string)
 
@@ -48,7 +53,13 @@ func (h *Handler) CreateUser(c *fiber.Ctx) error {
 		return errs.InvalidRequestData(errMap)
 	}
 
+	resp, err := auth.SupabaseSignup(&h.config, req.Email, req.Password)
+	if err != nil {
+		return err
+	}
+
 	user, err := h.userRepository.CreateUser(c.Context(), models.User{
+		ID:          resp.User.ID.String(),
 		DisplayName: req.DisplayName,
 		Email:       req.Email,
 		Username:    req.Username,
@@ -68,15 +79,12 @@ func (h *Handler) CreateUser(c *fiber.Ctx) error {
 		return err
 	}
 
-	id, err := auth.SupabaseSignup(&h.config, req.Email, req.Password)
-	if err != nil {
+	if err := h.store.SetUser(c, resp.User.ID); err != nil {
 		return err
 	}
 
-	if err := h.store.SetUser(c, id); err != nil {
-		return err
-	}
-
-	return c.Status(fiber.StatusCreated).JSON(user)
-
+	return c.Status(fiber.StatusCreated).JSON(createUserResponse{
+		AccessToken: resp.AccessToken,
+		User:        user,
+	})
 }

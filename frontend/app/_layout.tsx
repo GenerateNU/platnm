@@ -8,6 +8,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
+import { AuthProvider } from "@/components/AuthProvider";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 
@@ -30,18 +31,20 @@ export default function RootLayout() {
     return null;
   }
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="onboarding/signup"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen name="CreateReview" options={{ headerShown: false }} />
-        <Stack.Screen name="PreviewReview" options={{ headerShown: false }} />
-        <Stack.Screen name="MediaPage" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="onboarding/signup"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen name="CreateReview" options={{ headerShown: false }} />
+          <Stack.Screen name="PreviewReview" options={{ headerShown: false }} />
+          <Stack.Screen name="MediaPage" options={{ headerShown: false }} />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+      </ThemeProvider>
+    </AuthProvider>
   );
 }

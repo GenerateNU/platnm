@@ -1,8 +1,7 @@
 package spotify
 
 import (
-	"net/http"
-	"platnm/internal/constants"
+	"fmt"
 	"platnm/internal/service/handler/oauth"
 
 	"github.com/gofiber/fiber/v2"
@@ -10,10 +9,13 @@ import (
 )
 
 func (h *Handler) Callback(c *fiber.Ctx) error {
-	state, err := h.store.GetState(c)
+	state := c.Query("state")
+	id, err := h.stateStore.GetUser(state)
 	if err != nil {
 		return err
 	}
+
+	fmt.Printf("id: %s\n", id)
 
 	req, err := adaptor.ConvertRequest(c, false)
 	if err != nil {
@@ -30,15 +32,9 @@ func (h *Handler) Callback(c *fiber.Ctx) error {
 		return err
 	}
 
-	user, err := h.store.GetUser(c)
-	if err != nil {
+	if err := h.userAuthRepository.SetToken(c.Context(), id, encryptedToken); err != nil {
 		return err
 	}
 
-	if err := h.userAuthRepository.SetToken(c.Context(), user, encryptedToken); err != nil {
-		return err
-	}
-
-	c.Set(constants.HeaderRedirect, "http://127.0.0.1:3000")
-	return c.SendStatus(http.StatusFound)
+	return c.Status(fiber.StatusFound).Redirect("exp://10.0.0.208:8081")
 }

@@ -12,11 +12,16 @@ import (
 	"github.com/google/uuid"
 )
 
-type signupResponse struct {
+type userSignupResponse struct {
 	ID uuid.UUID `json:"id"`
 }
 
-func SupabaseSignup(cfg *config.Supabase, email string, password string) (uuid.UUID, error) {
+type signupResponse struct {
+	AccessToken string             `json:"access_token"`
+	User        userSignupResponse `json:"user"`
+}
+
+func SupabaseSignup(cfg *config.Supabase, email string, password string) (signupResponse, error) {
 	supabaseURL := cfg.URL
 	apiKey := cfg.Key
 
@@ -27,13 +32,13 @@ func SupabaseSignup(cfg *config.Supabase, email string, password string) (uuid.U
 	}
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
-		return uuid.UUID{}, err
+		return signupResponse{}, err
 	}
 
 	// Create the HTTP POST request
 	req, err := http.NewRequest("POST", fmt.Sprintf("%s/auth/v1/signup", supabaseURL), bytes.NewBuffer(payloadBytes))
 	if err != nil {
-		return uuid.UUID{}, err
+		return signupResponse{}, err
 	}
 
 	// Set headers
@@ -45,27 +50,27 @@ func SupabaseSignup(cfg *config.Supabase, email string, password string) (uuid.U
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return uuid.UUID{}, errs.BadRequest("failed to execute request")
+		return signupResponse{}, errs.BadRequest("failed to execute request")
 	}
 	defer resp.Body.Close()
 
 	// Read the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return uuid.UUID{}, errs.BadRequest("failed to read response body")
+		return signupResponse{}, errs.BadRequest("failed to read response body")
 	}
 
 	// Check if the response was successful
 	if resp.StatusCode != http.StatusOK {
-		return uuid.UUID{}, errs.BadRequest(fmt.Sprintf("failed to login %d, %s", resp.StatusCode, body))
+		return signupResponse{}, errs.BadRequest(fmt.Sprintf("failed to login %d, %s", resp.StatusCode, body))
 	}
 
 	// Parse the response
 	var response signupResponse
 	if err := json.Unmarshal(body, &response); err != nil {
-		return uuid.UUID{}, errs.BadRequest("failed to parse response")
+		return signupResponse{}, errs.BadRequest("failed to parse response")
 	}
 
 	// Return the access token
-	return response.ID, nil
+	return response, nil
 }

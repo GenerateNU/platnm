@@ -65,10 +65,9 @@ func GetAuthToken(cfg *config.Supabase, email string, password string) (SignInRe
 
 	// Check if the response was successful
 	if resp.StatusCode != http.StatusOK {
+		fmt.Printf("failed to login %d, %s", resp.StatusCode, body)
 		return SignInResponse{}, errs.BadRequest(fmt.Sprintf("failed to login %d, %s", resp.StatusCode, body))
 	}
-
-	fmt.Printf("body: %s\n", body)
 
 	// Parse the response JSON
 	var signInResponse SignInResponse

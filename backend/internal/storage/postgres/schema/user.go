@@ -138,7 +138,7 @@ func (r *UserRepository) CalculateScore(ctx context.Context, id uuid.UUID) (int,
 }
 
 func (r *UserRepository) CreateUser(ctx context.Context, user models.User) (models.User, error) {
-	if err := r.db.QueryRow(ctx, `INSERT INTO "user" (username, display_name, email) VALUES ($1, $2, $3) RETURNING id`, user.Username, user.DisplayName, user.Email).Scan(&user.ID); err != nil {
+	if err := r.db.QueryRow(ctx, `INSERT INTO "user" (id, username, display_name, email) VALUES ($1, $2, $3, $4) RETURNING id`, user.ID, user.Username, user.DisplayName, user.Email).Scan(&user.ID); err != nil {
 		return models.User{}, err
 	}
 
