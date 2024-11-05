@@ -203,7 +203,8 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 		r.updated_at,
 		COALESCE(a.cover, t.cover) AS media_cover, 
 		COALESCE(a.title, t.title) AS media_title, 
-		COALESCE(a.artists, t.artists) AS media_artist
+		COALESCE(a.artists, t.artists) AS media_artist,
+		ARRAY_AGG(tag.name) FILTER (WHERE tag.name IS NOT NULL) AS tags
 	FROM review r
 	INNER JOIN follower f ON f.followee_id = r.user_id
 	INNER JOIN "user" u ON u.id = r.user_id
@@ -222,7 +223,10 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 		JOIN artist ar ON aa.artist_id = ar.id
 		GROUP BY a.id, cover, a.title
   ) a ON r.media_type = 'album' AND r.media_id = a.id
+	LEFT JOIN review_tag rt ON r.id = rt.review_id
+	LEFT JOIN tag tag ON rt.tag_id = tag.id
 	WHERE f.follower_id = $1
+	GROUP BY r.id, r.user_id, u.username, u.display_name, u.profile_picture, r.media_type, r.media_id, r.rating, r.comment, r.created_at, r.updated_at, media_cover, media_title, media_artist
 	ORDER BY r.updated_at DESC;`
 
 	// Execute the query
@@ -237,7 +241,7 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 		var preview models.Preview
 		var comment sql.NullString // Use sql.NullString for nullable strings
 		err := rows.Scan(
-			&preview.ID,
+			&preview.ReviewID,
 			&preview.UserID,
 			&preview.Username,
 			&preview.DisplayName,
@@ -251,6 +255,7 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 			&preview.MediaCover,
 			&preview.MediaTitle,
 			&preview.MediaArtist,
+			&preview.Tags,
 		)
 		if err != nil {
 			return nil, err
@@ -263,8 +268,13 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 			preview.Comment = nil // Set to nil if null
 		}
 
+		// Ensure tags is an empty array if null
+		if preview.Tags == nil {
+			preview.Tags = []string{}
+		}
+
 		// Fetch review statistics for the current review
-		reviewStat, err := reviewRepo.GetReviewStats(ctx, strconv.Itoa(preview.ID))
+		reviewStat, err := reviewRepo.GetReviewStats(ctx, strconv.Itoa(preview.ReviewID))
 		if err != nil {
 			return nil, err
 		}

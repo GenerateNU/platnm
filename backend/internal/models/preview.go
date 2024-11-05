@@ -5,7 +5,7 @@ import (
 )
 
 type Preview struct {
-	ID             int        `json:"id"`
+	ReviewID       int        `json:"review_id"`
 	UserID         string     `json:"user_id"`
 	Username       string     `json:"username"`
 	DisplayName    string     `json:"display_name"`
