@@ -2,43 +2,49 @@ import React from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
 
 interface AlbumSearchCardProps {
-    rank: number;
-    artist_name: string;
-    album_name: string;
-    cover: string;
+  rank: number;
+  artist_name: string;
+  album_name: string;
+  cover: string;
 }
 
-const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({ rank, artist_name, album_name, cover }) => {
-    const placeholderImage = "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png";
+const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({
+  rank,
+  artist_name,
+  album_name,
+  cover,
+}) => {
+  const placeholderImage =
+    "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png";
 
-    return (
-        <View style={styles.cardContainer}>
-            <View style={styles.albumContainer}>
-                {/* Rank */}
-                <Text style={styles.rank}>{rank}.</Text>
-                
-                {/* Album Cover */}
-                <View style={styles.coverContainer}>
-                    <Image 
-                        source={{ uri: cover || placeholderImage }}
-                        style={styles.albumCover}
-                    />
-                </View>
-                
-                {/* Record Image */}
-                <View style={styles.recordContainer}>
-                    <Image
-                        source={require("@/assets/images/Profile/record.png")}
-                        style={styles.recordImage}
-                    />
-                </View>
-            </View>
-            
-            {/* Album and Artist Name */}
-            <Text style={styles.albumName}>{album_name}</Text>
-            <Text style={styles.artistName}>{artist_name}</Text>
+  return (
+    <View style={styles.cardContainer}>
+      <View style={styles.albumContainer}>
+        {/* Rank */}
+        <Text style={styles.rank}>{rank}.</Text>
+
+        {/* Album Cover */}
+        <View style={styles.coverContainer}>
+          <Image
+            source={{ uri: cover || placeholderImage }}
+            style={styles.albumCover}
+          />
         </View>
-    );
+
+        {/* Record Image */}
+        <View style={styles.recordContainer}>
+          <Image
+            source={require("@/assets/images/Profile/record.png")}
+            style={styles.recordImage}
+          />
+        </View>
+      </View>
+
+      {/* Album and Artist Name */}
+      <Text style={styles.albumName}>{album_name}</Text>
+      <Text style={styles.artistName}>{artist_name}</Text>
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
@@ -54,7 +60,7 @@ const styles = StyleSheet.create({
         position: "relative",
     },
     rank: {
-        color: "#FFFFFF",
+        color: "#000",
         fontSize: 14,
         fontWeight: "600",
         lineHeight: 20,
