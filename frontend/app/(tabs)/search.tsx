@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 const track: Track = {
   media: "Track",
   id: 2,
-  album_id: 2,  
+  album_id: 2,
   album_title: "Album Title",
   title: "Song title",
   duration: 1, // duration in seconds
