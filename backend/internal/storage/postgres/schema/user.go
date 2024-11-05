@@ -177,7 +177,7 @@ func (r *UserRepository) GetUserProfile(ctx context.Context, id uuid.UUID) (*mod
 	return profile, nil
 }
 
-func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*models.FeedPost, error) {
+func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*models.Preview, error) {
 
 	exists, err := r.UserExists(ctx, id.String())
 	if !exists {
@@ -185,7 +185,7 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 		return nil, err
 	}
 
-	var feedPosts []*models.FeedPost
+	var previews []*models.Preview
 	reviewRepo := NewReviewRepository(r.db)
 
 	query := `
@@ -193,6 +193,7 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 		r.id, 
 		r.user_id, 
 		u.username,
+		u.display_name,
     u.profile_picture,
 		r.media_type, 
 		r.media_id, 
@@ -233,22 +234,23 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 
 	// Scan results into the feedPosts slice
 	for rows.Next() {
-		var feedPost models.FeedPost
+		var preview models.Preview
 		var comment sql.NullString // Use sql.NullString for nullable strings
 		err := rows.Scan(
-			&feedPost.ID,
-			&feedPost.UserID,
-			&feedPost.Username,
-			&feedPost.ProfilePicture,
-			&feedPost.MediaType,
-			&feedPost.MediaID,
-			&feedPost.Rating,
+			&preview.ID,
+			&preview.UserID,
+			&preview.Username,
+			&preview.DisplayName,
+			&preview.ProfilePicture,
+			&preview.MediaType,
+			&preview.MediaID,
+			&preview.Rating,
 			&comment, // Scan into comment first
-			&feedPost.CreatedAt,
-			&feedPost.UpdatedAt,
-			&feedPost.MediaCover,
-			&feedPost.MediaTitle,
-			&feedPost.MediaArtist,
+			&preview.CreatedAt,
+			&preview.UpdatedAt,
+			&preview.MediaCover,
+			&preview.MediaTitle,
+			&preview.MediaArtist,
 		)
 		if err != nil {
 			return nil, err
@@ -256,26 +258,24 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 
 		// Assign comment to feedPost.Comment, handling null case
 		if comment.Valid {
-			feedPost.Comment = &comment.String // Point to the string if valid
+			preview.Comment = &comment.String // Point to the string if valid
 		} else {
-			feedPost.Comment = nil // Set to nil if null
+			preview.Comment = nil // Set to nil if null
 		}
 
 		// Fetch review statistics for the current review
-		reviewStat, err := reviewRepo.GetReviewStats(ctx, strconv.Itoa(feedPost.ID))
+		reviewStat, err := reviewRepo.GetReviewStats(ctx, strconv.Itoa(preview.ID))
 		if err != nil {
 			return nil, err
 		}
 
 		// If reviewStat is not nil, populate the corresponding fields in FeedPost
 		if reviewStat != nil {
-			feedPost.Upvotes = reviewStat.Upvotes
-			feedPost.Downvotes = reviewStat.Downvotes
-			feedPost.CommentCount = reviewStat.CommentCount
+			preview.ReviewStat = *reviewStat
 		}
 
 		// Append the populated FeedPost to the feedPosts slice
-		feedPosts = append(feedPosts, &feedPost)
+		previews = append(previews, &preview)
 	}
 
 	// Check for errors after looping through rows
@@ -283,7 +283,7 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 		return nil, err
 	}
 
-	return feedPosts, nil
+	return previews, nil
 
 }
 
