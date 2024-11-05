@@ -276,7 +276,7 @@ func (r *ReviewRepository) GetReviewStats(ctx context.Context, id string) (*mode
     r.id, 
     COALESCE(vote_counts.upvotes, 0) AS upvotes,
     COALESCE(vote_counts.downvotes, 0) AS downvotes,
-    COALESCE(comment_counts.comments, 0) AS comments
+    COALESCE(comment_counts.comments, 0) AS comments_count
 FROM 
     review r
 LEFT JOIN (
@@ -302,7 +302,7 @@ WHERE
     r.id = $1;`, id)
 
 	// Scan the row into the review object
-	err := row.Scan(&reviewStat.ID, &reviewStat.Upvotes, &reviewStat.Downvotes, &reviewStat.Comments)
+	err := row.Scan(&reviewStat.ID, &reviewStat.Upvotes, &reviewStat.Downvotes, &reviewStat.CommentCount)
 	if err != nil {
 		// If no rows were found, return nil, no error
 		if err == sql.ErrNoRows {

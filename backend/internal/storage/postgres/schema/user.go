@@ -271,7 +271,7 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 		if reviewStat != nil {
 			feedPost.Upvotes = reviewStat.Upvotes
 			feedPost.Downvotes = reviewStat.Downvotes
-			feedPost.CommentCount = reviewStat.Comments
+			feedPost.CommentCount = reviewStat.CommentCount
 		}
 
 		// Append the populated FeedPost to the feedPosts slice
