@@ -6,16 +6,24 @@ import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import AlbumSearchCard from "@/components/search/AlbumSearchCard"
 import { ScrollView } from "react-native";
 
-  const TopAlbums: React.FC = () => {
+type AlbumCardProps = {
+  albums: MediaResponse[];
+};
+
+  const TopAlbums = ({ albums }: AlbumCardProps) => {
     const image =
     "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png";
 
     return (
+      
         <ScrollView horizontal style={styles.container} showsHorizontalScrollIndicator={false}>
-            <AlbumSearchCard rank={1} artist_name={"Adele"} album_name={"Album 1"} cover={""} />
-            <AlbumSearchCard rank={2} artist_name={"Adele"} album_name={"Album 2"} cover={""} />
-            <AlbumSearchCard rank={3} artist_name={"Adele"} album_name={"Album 3"} cover={""} />
-            {/* Add more AlbumSearchCard components as needed */}
+{        albums?.map((album, index) => (
+          <AlbumSearchCard
+          rank={index + 1}
+          artist_name={"Adele"} // hardcoded
+          album_name={album.media.title}
+          cover={album.media.cover}
+                    /> ))}
         </ScrollView>
     );
   };

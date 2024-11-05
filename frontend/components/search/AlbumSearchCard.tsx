@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
         position: "relative",
     },
     rank: {
-        color: "#FFFFFF",
+        color: "#000",
         fontSize: 14,
         fontWeight: "600",
         lineHeight: 20,

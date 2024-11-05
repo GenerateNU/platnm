@@ -57,3 +57,8 @@ type UserProfile = {
   followed: number;
   score: number;
 };
+
+type MediaResponse = {
+  media: Media;
+  reviewCount: number;
+};
