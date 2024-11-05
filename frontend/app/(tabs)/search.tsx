@@ -4,12 +4,10 @@ import TopSongs from "@/components/search/TopSongs";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-
 export default function SearchScreen() {
-
   const [media, setMedia] = useState<MediaResponse[]>([]);
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-  
+
   useEffect(() => {
     axios
       .get(`${BASE_URL}/media?sort=review`)
@@ -17,10 +15,12 @@ export default function SearchScreen() {
       .catch((error) => console.error(error));
   }, []);
 
-  return <View style={styles.container}>
-    <TopSongs songs={media}/>
-    <TopAlbums albums={media}/>
-    </View>;
+  return (
+    <View style={styles.container}>
+      <TopSongs songs={media} />
+      <TopAlbums albums={media} />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
