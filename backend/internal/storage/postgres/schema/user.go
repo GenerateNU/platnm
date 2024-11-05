@@ -2,7 +2,9 @@ package schema
 
 import (
 	"context"
+	"database/sql"
 	"platnm/internal/models"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -189,6 +191,116 @@ func (r *UserRepository) GetUserProfile(ctx context.Context, id uuid.UUID) (*mod
 	profile.Score = score
 
 	return profile, nil
+}
+
+func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*models.FeedPost, error) {
+
+	exists, err := r.UserExists(ctx, id.String())
+	if !exists {
+		print("User does not exist.")
+		return nil, err
+	}
+
+	var feedPosts []*models.FeedPost
+	reviewRepo := NewReviewRepository(r.db)
+
+	query := `
+	SELECT 
+		r.id, 
+		r.user_id, 
+		u.username,
+    u.profile_picture,
+		r.media_type, 
+		r.media_id, 
+		r.rating, 
+		r.comment,
+		r.created_at, 
+		r.updated_at,
+		COALESCE(a.cover, t.cover) AS media_cover, 
+		COALESCE(a.title, t.title) AS media_title, 
+		COALESCE(a.artists, t.artists) AS media_artist
+	FROM review r
+	INNER JOIN follower f ON f.followee_id = r.user_id
+	INNER JOIN "user" u ON u.id = r.user_id
+  LEFT JOIN (
+    SELECT t.title, t.id, STRING_AGG(ar.name, ', ') AS artists, cover
+		FROM track t
+    JOIN track_artist ta on t.id = ta.track_id
+		JOIN artist ar ON ta.artist_id = ar.id
+    JOIN album a on t.album_id = a.id
+		GROUP BY t.id, cover, t.title
+    ) t ON r.media_type = 'track' AND r.media_id = t.id
+  LEFT JOIN (
+    SELECT a.id, a.title, STRING_AGG(ar.name, ', ') AS artists, cover
+		FROM album a
+    JOIN album_artist aa on a.id = aa.album_id
+		JOIN artist ar ON aa.artist_id = ar.id
+		GROUP BY a.id, cover, a.title
+  ) a ON r.media_type = 'album' AND r.media_id = a.id
+	WHERE f.follower_id = $1
+	ORDER BY r.updated_at DESC;`
+
+	// Execute the query
+	rows, err := r.db.Query(ctx, query, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Scan results into the feedPosts slice
+	for rows.Next() {
+		var feedPost models.FeedPost
+		var comment sql.NullString // Use sql.NullString for nullable strings
+		err := rows.Scan(
+			&feedPost.ID,
+			&feedPost.UserID,
+			&feedPost.Username,
+			&feedPost.ProfilePicture,
+			&feedPost.MediaType,
+			&feedPost.MediaID,
+			&feedPost.Rating,
+			&comment, // Scan into comment first
+			&feedPost.CreatedAt,
+			&feedPost.UpdatedAt,
+			&feedPost.MediaCover,
+			&feedPost.MediaTitle,
+			&feedPost.MediaArtist,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		// Assign comment to feedPost.Comment, handling null case
+		if comment.Valid {
+			feedPost.Comment = &comment.String // Point to the string if valid
+		} else {
+			feedPost.Comment = nil // Set to nil if null
+		}
+
+		// Fetch review statistics for the current review
+		reviewStat, err := reviewRepo.GetReviewStats(ctx, strconv.Itoa(feedPost.ID))
+		if err != nil {
+			return nil, err
+		}
+
+		// If reviewStat is not nil, populate the corresponding fields in FeedPost
+		if reviewStat != nil {
+			feedPost.Upvotes = reviewStat.Upvotes
+			feedPost.Downvotes = reviewStat.Downvotes
+			feedPost.CommentCount = reviewStat.Comments
+		}
+
+		// Append the populated FeedPost to the feedPosts slice
+		feedPosts = append(feedPosts, &feedPost)
+	}
+
+	// Check for errors after looping through rows
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return feedPosts, nil
+
 }
 
 func NewUserRepository(db *pgxpool.Pool) *UserRepository {

@@ -12,4 +12,12 @@ type Review struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	Draft     bool      `json:"draft"`
+	Tags      []string  `json:"tags"`
+}
+
+type ReviewStat struct {
+	ID        int `json:"id"`
+	Comments  int `json:"comments"`
+	Upvotes   int `json:"upvotes"`
+	Downvotes int `json:"downvotes"`
 }

@@ -64,11 +64,13 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Get("/score/:id", userHandler.CalculateScore)
 		r.Post("/", userHandler.CreateUser)
 		r.Put("/enthusiasm", userHandler.UpdateUserOnboard)
+		r.Get("/feed/:id", userHandler.GetUserFeed)
 	})
 
 	app.Route("/reviews", func(r fiber.Router) {
 		reviewHandler := reviews.NewHandler(repository.Review, repository.User, repository.UserReviewVote)
 		r.Post("/", reviewHandler.CreateReview)
+		r.Get("/tags", reviewHandler.GetTags)
 		r.Get("/:id", reviewHandler.GetReviewsByUserID)
 		r.Post("/vote/:rating", reviewHandler.VoteReview)
 		r.Patch("/:id", reviewHandler.UpdateReviewByReviewID)
@@ -83,7 +85,9 @@ func setupRoutes(app *fiber.App, config config.Config) {
 
 	mediaHandler := media.NewHandler(repository.Media)
 	app.Route("/media", func(r fiber.Router) {
-		r.Get("/:name", mediaHandler.GetMediaByName)
+		m := spotify_middleware.NewMiddleware(config.Spotify, repository.UserAuth, sessionStore)
+		// Apply middleware only to the specific route
+		r.Get("/:name", m.WithSpotifyClient(), mediaHandler.GetMediaByName)
 		r.Get("/", mediaHandler.GetMedia)
 	})
 
@@ -123,6 +127,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Route("/", func(authRoute fiber.Router) {
 			authRoute.Use(m.WithAuthenticatedSpotifyClient())
 			authRoute.Get("/playlists", h.GetCurrentUserPlaylists)
+			authRoute.Get("/top-items", h.GetTopItems)
 		})
 
 		r.Route("/", func(clientCredRoute fiber.Router) {

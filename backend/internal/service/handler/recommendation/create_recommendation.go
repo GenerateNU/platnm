@@ -1,16 +1,14 @@
 package recommendation
 
 import (
+	"github.com/gofiber/fiber/v2"
 	"platnm/internal/errs"
 	"platnm/internal/models"
-	"github.com/gofiber/fiber/v2"
 )
 
 type createRecommendationRequest struct {
 	models.Recommendation
 }
-
-
 
 func (h *Handler) CreateRecommendation(c *fiber.Ctx) error {
 	var req createRecommendationRequest

@@ -12,9 +12,9 @@ func (h *Handler) GetRecommendations(c *fiber.Ctx) error {
 		return userErr
 	}
 	if !exists {
-		return errs.NotFound("User","id", id)
+		return errs.NotFound("User", "id", id)
 	}
-	recommendations, err := h.recommendationRepository.GetRecommendations(c.Context(), id) 
+	recommendations, err := h.recommendationRepository.GetRecommendations(c.Context(), id)
 	if err != nil {
 		return err
 	}
