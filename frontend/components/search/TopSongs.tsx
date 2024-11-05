@@ -7,8 +7,7 @@ type SongCardProp = {
   songs: MediaResponse[];
 };
 
-const TopSongs = ({ songs }: SongCardProp) =>  {
-
+const TopSongs = ({ songs }: SongCardProp) => {
   return (
     <ScrollView>
       <Text style={styles.title}>Your Top Tracks</Text>
@@ -23,31 +22,31 @@ const TopSongs = ({ songs }: SongCardProp) =>  {
       ))}
     </ScrollView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     padding: 16,
   },
   trackContainer: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
   },
   trackName: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   artistName: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
     marginTop: 4,
   },
   albumName: {
     fontSize: 14,
-    color: '#888',
+    color: "#888",
     marginTop: 2,
   },
 });
