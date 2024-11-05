@@ -1,5 +1,7 @@
 import { StyleSheet, View } from "react-native";
 import TopAlbums from "@/components/search/TopAlbums"
+import SongChip from "@/components/search/SongChip"
+
 const track: Track = {
   media: "Track",
   id: 2,
@@ -14,7 +16,7 @@ const track: Track = {
 export default function SearchScreen() {
   return <View style={styles.container}>
     <TopAlbums/>
-    {/* <SongChip song={track}/> */}
+    <SongChip song={track}/>
     </View>;
 }
 
