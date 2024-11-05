@@ -1,6 +1,6 @@
 import { StyleSheet, View, Image, TouchableOpacity, Text } from "react-native";
 import TopAlbums from "@/components/search/TopAlbums";
-import TopSongs from "@/components/TopSongs";
+import TopSongs from "@/components/search/TopSongs";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
