@@ -10,27 +10,23 @@ type AlbumCardProps = {
   albums: MediaResponse[];
 };
 
-const TopAlbums = ({ albums }: AlbumCardProps) => {
-  const image =
+  const TopAlbums = ({ albums }: AlbumCardProps) => {
+    const image =
     "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png";
 
-  return (
-    <ScrollView
-      horizontal
-      style={styles.container}
-      showsHorizontalScrollIndicator={false}
-    >
-      {albums?.map((album, index) => (
-        <AlbumSearchCard
+    return (
+      
+        <ScrollView horizontal style={styles.container} showsHorizontalScrollIndicator={false}>
+{        albums?.map((album, index) => (
+          <AlbumSearchCard
           rank={index + 1}
-          artist_name={"Adele"} // hardcoded
+          artist_name={album.media.artist_name} // hardcoded
           album_name={album.media.title}
           cover={album.media.cover}
-        />
-      ))}
-    </ScrollView>
-  );
-};
+                    /> ))}
+        </ScrollView>
+    );
+  };
 
 const styles = StyleSheet.create({
   container: {
