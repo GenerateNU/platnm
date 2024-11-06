@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { StyleSheet, ScrollView, View, Text } from "react-native";
-import SongChip from "@/components/search/SongChip"
-
+import SongChip from "@/components/search/SongChip";
 
 type SongCardProp = {
   songs: MediaResponse[];
@@ -12,12 +11,12 @@ const TopSongs = ({ songs }: SongCardProp) => {
     <ScrollView>
       <Text style={styles.title}>Your Top Tracks</Text>
       {songs?.map((song, id) => (
-        <SongChip 
-        id={id+1}
-        title={song.media.title}
-        artist_name={"TEst"}
-        album_name={song.media.title}
-        cover={song.media.cover}
+        <SongChip
+          id={id + 1}
+          title={song.media.title}
+          artist_name={"TEst"}
+          album_name={song.media.title}
+          cover={song.media.cover}
         />
       ))}
     </ScrollView>
