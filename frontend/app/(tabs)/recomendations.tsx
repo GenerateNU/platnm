@@ -25,15 +25,18 @@ export default function RecommendationsScreen() {
 	useEffect(() => {
 		const fetchUserProfile = async () => {
 			try {
-				const response = await axios.get(`${BASE_URL}/reccomendatoins/${userId}`);
+				const response = await axios.get(`${BASE_URL}/recommendation/${userId}`);
 				setRecommendations(response.data);
 			} catch (error) {
 				console.error('Error fetching user profile:', error);
 			}
 		};
-
 		fetchUserProfile();
 	}, [userId]);
+
+	const reactToRecommendation = (id: string, reaction: boolean) => {
+		axios.patch(`${BASE_URL}/recommendation/${id}`, { reaction: reaction, user_id: userId });
+	};
 
 	return (
 		<View
@@ -48,66 +51,23 @@ export default function RecommendationsScreen() {
 					height: Dimensions.get('window').height * 0.4,
 				}}>
 				<SwipeCards
-					cards={[
-						{
-							artist: 'Artist 1',
-							title: 'Title 1',
-							songType: 'album',
-							url: 'https://upload.wikimedia.org/wikipedia/en/thumb/5/51/Igor_-_Tyler%2C_the_Creator.jpg/220px-Igor_-_Tyler%2C_the_Creator.jpg',
-						},
-						{
-							artist: 'Artist 2',
-							title: 'Title 2',
-							songType: 'album',
-							url: 'https://i.scdn.co/image/ab67616d0000b273617997bc09bb7fa23624eff5',
-						},
-						{
-							artist: 'Artist 3',
-							title: 'Title 3',
-							songType: 'song',
-							url: 'https://static.wikia.nocookie.net/keshi/images/4/45/Gabriel_album_cover.jpg/revision/latest/scale-to-width-down/1200?cb=20220323064224',
-						},
-						{
-							artist: 'Artist 4',
-							title: 'Title 4',
-							songType: 'album',
-							url: 'https://i.scdn.co/image/ab67616d0000b27344ce5e5926e0d277b70f0bd5',
-						},
-					]}
+					handleYup={(card) => reactToRecommendation(card.id, true)}
+					handleNope={(card) => reactToRecommendation(card.id, false)}
+					cards={[]}
 					renderCard={({ artist, title, songType, url }: string) => {
 						return (
 							<View
 								style={{
 									borderRadius: 16,
 								}}>
-								<View
-									style={{
-										backgroundColor: '#D1D5DD',
-										borderRadius: 16,
-										width: Dimensions.get('window').width * 0.8,
-										height: Dimensions.get('window').height * 0.4,
-
-										position: 'absolute',
-									}}
-								/>
+								<View style={styles.swipeContainer} />
 								<ImageBackground
 									source={{ uri: url }}
 									imageStyle={{
 										borderRadius: 16,
 									}}
-									style={{
-										width: Dimensions.get('window').width * 0.85,
-										height: Dimensions.get('window').height * 0.4,
-										marginHorizontal: 'auto',
-									}}>
-									<View
-										style={{
-											backgroundColor: 'rgba(57, 62, 70, 0.70)',
-											marginTop: 'auto',
-											borderRadius: 16,
-											borderTopLeftRadius: 0,
-											borderTopRightRadius: 0,
-										}}>
+									style={styles.swipeCard}>
+									<View style={styles.cardBottom}>
 										<View style={{ flexDirection: 'row' }}>
 											<View style={{ padding: 20 }}>
 												<Text style={{ color: 'white', fontSize: 16 }}>{title}</Text>
@@ -173,5 +133,25 @@ const styles = StyleSheet.create({
 	titleContainer: {
 		flexDirection: 'row',
 		gap: 8,
+	},
+	swipeContainer: {
+		backgroundColor: '#D1D5DD',
+		borderRadius: 16,
+		width: Dimensions.get('window').width * 0.8,
+		height: Dimensions.get('window').height * 0.4,
+
+		position: 'absolute',
+	},
+	swipeCard: {
+		width: Dimensions.get('window').width * 0.85,
+		height: Dimensions.get('window').height * 0.4,
+		marginHorizontal: 'auto',
+	},
+	cardBottom: {
+		backgroundColor: 'rgba(57, 62, 70, 0.70)',
+		marginTop: 'auto',
+		borderRadius: 16,
+		borderTopLeftRadius: 0,
+		borderTopRightRadius: 0,
 	},
 });
