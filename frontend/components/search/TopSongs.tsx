@@ -6,21 +6,21 @@ import SongChip from "@/components/search/SongChip"
 type SongCardProp = {
   songs: MediaResponse[];
 };
-
 const TopSongs = ({ songs }: SongCardProp) => {
   return (
-    <ScrollView>
+    <View>
       <Text style={styles.title}>Your Top Tracks</Text>
-      {songs?.map((song, id) => (
-        <SongChip 
-        id={id+1}
-        title={song.media.title}
-        artist_name={"TEst"}
-        album_name={song.media.title}
-        cover={song.media.cover}
-        />
-      ))}
-    </ScrollView>
+      <ScrollView horizontal={true}>
+        {songs?.map((song, id) => (
+          <SongChip 
+          id={id+1}
+          title={song.media.title}
+          artist_name={"TEst"}
+          cover={song.media.cover}
+          />
+        ))}
+      </ScrollView>
+    </View>
   );
 };
 
