@@ -7,11 +7,13 @@ import {
   StyleSheet,
   ScrollView,
   Dimensions,
+  TextInput,
 } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
 import axios from "axios";
 import Section from "@/components/profile/Section";
 import ReviewCard from "@/components/ReviewCard";
+import { router } from "expo-router";
 
 export default function ProfileScreen() {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -20,16 +22,21 @@ export default function ProfileScreen() {
   const [userReviews, setUserReviews] = useState<Review[]>();
   const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
   const [sections, setSections] = useState([
-    { title: "Section 1", items: ["Item title", "Item title", "Item title"] },
-    { title: "Section 2", items: ["Item title", "Item title", "Item title"] },
+    { id: 1, title: "Section 1", items: ["Item title", "Item title", "Item title"] },
+    { id: 2, title: "Section 2", items: ["Item title", "Item title", "Item title"] },
   ]); //TODO depending on what we do with sections
   const hasNotification = true; // Hardcoding - Get notification status from somewhere else
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [bio, setBio] = useState(userProfile?.bio);
+  const [nextId, setNextId] = useState(0);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
         const response = await axios.get(`${BASE_URL}/users/profile/${userId}`);
         setUserProfile(response.data);
+        setBio(response.data.bio);
       } catch (error) {
         console.error("Error fetching user profile:", error);
       }
@@ -49,11 +56,20 @@ export default function ProfileScreen() {
   }, [userId]);
 
   const handleActivityPress = () => {
+    router.push("/Activity");
     console.log("Activity icon pressed");
     // Add activity icon press handling logic here
   };
 
+  const handleOnQueuePress = () => {
+    router.push("/OnQueue");
+    console.log("On Queue button pressed");
+    // Add activity icon press handling logic here
+  };
+
+
   const handleSettingsPress = () => {
+    router.push("/Settings");
     console.log("Settings icon pressed");
     // Add settings icon press handling logic here
   };
@@ -64,17 +80,37 @@ export default function ProfileScreen() {
   };
 
   const handleEditPress = () => {
+    setIsEditing(!isEditing);
     console.log("Edit icon pressed");
+    console.log("isEditingBio:", isEditing);
     // Add edit icon press handling logic here
   };
 
   const handleAddSection = () => {
     const newSectionIndex = sections.length + 1;
     const newSection = {
+      id: nextId,
       title: `Section ${newSectionIndex}`,
       items: ["New item title 1", "New item title 2", "New item title 3"],
     };
     setSections([...sections, newSection]);
+    setNextId(nextId + 1);
+  };
+
+  const handleAddItem = (sectionId: number) => {
+    setSections(sections.map(section => {
+      if (section.id === sectionId) {
+        return {
+          ...section,
+          items: [...section.items, `New item title ${section.items.length + 1}`]
+        };
+      }
+      return section;
+    }));
+  };
+
+  const handleDeleteSection = (id: number) => {
+    setSections(sections.filter(section => section.id !== id));
   };
 
   return (
@@ -135,9 +171,6 @@ export default function ProfileScreen() {
           <Text style={styles.name}>{userProfile.display_name}</Text>
           <View style={styles.usernameContainer}>
             <Text style={styles.username}>@{userProfile.username}</Text>
-            <TouchableOpacity onPress={handleEditPress} style={styles.editIcon}>
-              <Icon name="edit-2" size={15} color="#888" />
-            </TouchableOpacity>
           </View>
           <View style={styles.stats}>
             <View style={styles.statItemContainer}>
@@ -153,49 +186,49 @@ export default function ProfileScreen() {
               <Text style={styles.statLabel}>Platinum</Text>
             </View>
           </View>
-          <Text style={styles.aboutMe}>
-            {userProfile.bio ? userProfile.bio : "About me..."}
-          </Text>
+
+          {/* Bio */}
+          {isEditing ? (
+            <TextInput
+              value={bio}
+              onChangeText={setBio}
+              style={styles.aboutMeInput}
+              multiline
+            />
+          ) : (
+            <Text style={styles.aboutMe}>
+              {bio == "" ? "About me..." : bio}
+            </Text>
+          )}
         </View>
 
         {/* On Queue Button */}
-        <TouchableOpacity style={styles.queueButton}>
+        <TouchableOpacity style={styles.queueButton} onPress={handleOnQueuePress}>
           <Text style={styles.queueButtonText}>▶ On Queue</Text>
         </TouchableOpacity>
 
-        {/* User Reviews Section */}
-        {userReviews && userReviews.length > 0 ? (
-          userReviews.map((review, index) => {
-            return (
-              <ReviewCard
-                key={index}
-                rating={review.rating}
-                comment={review.comment}
-              />
-            );
-          })
-        ) : (
-          <Text style={styles.noReviewsText}>No reviews found.</Text>
-        )}
-
         {/* Sections */}
         {sections.map((section, index) => (
-          <Section
-            key={index}
-            title={section.title}
-            items={section.items}
-            onEditPress={handleEditPress}
-          />
+          <View key={index}>
+            <Section
+              title={section.title}
+              items={section.items}
+              isEditing={isEditing}
+              onAddItem={() => handleAddItem(section.id)}
+              onDelete={() => handleDeleteSection(section.id)}
+            />
+          </View>
         ))}
-
         {/* Button to Add a New Section */}
-        <TouchableOpacity
-          onPress={handleAddSection}
-          style={styles.addSectionButton}
-        >
-          <Text style={styles.addSectionButtonText}>Add Section</Text>
-          <Icon name="plus-circle" size={24} color="#000" />
-        </TouchableOpacity>
+        {isEditing &&
+          <TouchableOpacity
+            onPress={handleAddSection}
+            style={styles.addSectionButton}
+          >
+            <Text style={styles.addSectionButtonText}>Add Section</Text>
+            <Icon name="plus-circle" size={24} color="#000" />
+          </TouchableOpacity>
+  }
       </ScrollView>
     )
   );
@@ -280,8 +313,8 @@ const styles = StyleSheet.create({
     color: "#888",
   },
   usernameContainer: {
-    width: 120, // Adjust size to match your record image
-    height: 20, // Adjust size to match your record image
+    width: 120,
+    height: 20,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -312,8 +345,19 @@ const styles = StyleSheet.create({
     marginTop: 10,
     color: "#666",
   },
+  aboutMeInput: {
+    width: "80%",
+    padding: 10,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 20, 
+    fontSize: 16,
+    color: "#666",
+    backgroundColor: "#ddd",
+    textAlign: "center",
+  },
   queueButton: {
-    backgroundColor: "#666",
+    backgroundColor: "#F28037",
     paddingVertical: 10,
     paddingHorizontal: 30,
     borderRadius: 20,
