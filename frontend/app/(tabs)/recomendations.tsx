@@ -1,11 +1,7 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { useState, useEffect } from 'react';
+
 import { StyleSheet, Touchable } from 'react-native';
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 import UserRow from '@/components/UserRow';
 import { View } from 'react-native';
 import { SubpageHeader } from '@/components/SubpageHeader';
@@ -14,12 +10,31 @@ import { Text } from 'react-native';
 import { RatingButton } from '@/components/RatingButton';
 import SwipeCards from 'react-native-swipe-cards';
 import { ImageBackground } from 'react-native';
+import axios from 'axios';
 
 import Play from '@/assets/images/Icons/play.svg';
 import Info from '@/assets/images/Icons/info.svg';
 import { TouchableOpacity } from 'react-native';
 
 export default function RecommendationsScreen() {
+	const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+	const userId = '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d'; // Hardcoding - Get userId from navigation
+
+	const [reccomendations, setRecommendations] = useState<any[]>([]);
+
+	useEffect(() => {
+		const fetchUserProfile = async () => {
+			try {
+				const response = await axios.get(`${BASE_URL}/reccomendatoins/${userId}`);
+				setRecommendations(response.data);
+			} catch (error) {
+				console.error('Error fetching user profile:', error);
+			}
+		};
+
+		fetchUserProfile();
+	}, [userId]);
+
 	return (
 		<View
 			style={{

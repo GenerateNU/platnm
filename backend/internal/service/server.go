@@ -84,6 +84,8 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		m := spotify_middleware.NewMiddleware(config.Spotify, repository.UserAuth, sessionStore)
 		// Apply middleware only to the specific route
 		r.Get("/:name", m.WithSpotifyClient(), mediaHandler.GetMediaByName)
+		r.Get("/track/:id", mediaHandler.GetTrackById)
+		r.Get("/album/:id", mediaHandler.GetAlbumById)
 		r.Get("/", mediaHandler.GetMedia)
 	})
 
