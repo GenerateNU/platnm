@@ -145,12 +145,19 @@ func (r *MediaRepository) AddArtist(ctx context.Context, artist *models.Artist) 
 	query :=
 		`INSERT INTO artist (name, spotify_id, photo, bio)
 		 VALUES ($1, $2, $3, $4)
+		 ON CONFLICT (spotify_id) DO NOTHING
 		 RETURNING id;`
 
-	if err := r.QueryRow(ctx, query, artist.Name, artist.SpotifyID, artist.Photo, artist.Bio).Scan(&artist.ID); err != nil {
+	var id int
+	if err := r.QueryRow(ctx, query, artist.Name, artist.SpotifyID, artist.Photo, artist.Bio).Scan(&id); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			artist.ID = id
+			return artist, nil // No new row was inserted because one existed
+		}
 		return nil, err
 	}
 
+	artist.ID = id
 	return artist, nil
 }
 
@@ -180,6 +187,28 @@ func (r *MediaRepository) AddAlbum(ctx context.Context, album *models.Album) (*m
 	return album, nil
 }
 
+func (r *MediaRepository) AddTrack(ctx context.Context, track *models.Track) (*models.Track, error) {
+	query :=
+		`
+		 INSERT INTO track (album_id, title, duration_seconds, spotify_id)
+		 VALUES ($1, $2, $3, $4)
+		 ON CONFLICT (spotify_id) DO NOTHING
+		 RETURNING id;`
+
+	var id int
+	err := r.QueryRow(ctx, query, track.AlbumID, track.Title, track.Duration, track.SpotifyID).Scan(&id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			track.ID = id
+			return track, nil // No new row was inserted because one existed
+		}
+		return nil, err
+	}
+
+	track.ID = id
+	return track, nil
+}
+
 func (r *MediaRepository) AddAlbumArtist(ctx context.Context, albumId int, artistId int) error {
 	query :=
 		`INSERT INTO album_artist (album_id, artist_id)
@@ -196,8 +225,22 @@ func (r *MediaRepository) AddAlbumArtist(ctx context.Context, albumId int, artis
 	return nil
 }
 
-func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, mediaType models.MediaType) ([]models.Media, error) {
+func (r *MediaRepository) AddTrackArtist(ctx context.Context, trackId int, artistId int) error {
+	query :=
+		`INSERT INTO track_artist (track_id, artist_id)
+		 VALUES ($1, $2)`
+	result, err := r.Exec(ctx, query, trackId, artistId)
+	if err != nil {
+		return err
+	}
+	if result.RowsAffected() == 0 {
+		return errors.New("no rows affected")
+	}
 
+	return nil
+}
+
+func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, mediaType models.MediaType) ([]models.Media, error) {
 	// Select all rows where either the input string is in the title of the media, or if the string matches one of the titles fuzzily
 	var albumQuery = "SELECT * FROM album WHERE levenshtein(title, $1) <= 5 OR title ILIKE '%' || $1 || '%' LIMIT 20;"
 	var trackQuery = `
@@ -274,57 +317,68 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, media
 
 }
 
-func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset int) ([]models.MediaWithReviewCount, error) {
+func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset int, mediaType *string) ([]models.MediaWithReviewCount, error) {
 	// store nullable columns as pointers
 	// if the column is null, the pointer will be nil
 	// fields need to be exported so pgx can access them via reflection
 	type columns struct {
-		MediaType   string `db:"media_type"`
-		ReviewCount int    `db:"review_count"`
-
-		// album columns
-		AlbumID     *int       `db:"album_id"`
-		AlbumTitle  *string    `db:"album_title"`
-		ReleaseDate *time.Time `db:"release_date"`
+		MediaType   string     `db:"media_type"`
+		MediaId     int        `db:"media_id"`
+		ReviewCount int        `db:"review_count"`
+		Title       string     `db:"title"`
+		ArtistName  string     `db:"artist_name"`
 		Cover       *string    `db:"cover"`
-		Country     *string    `db:"country"`
-		GenreID     *int       `db:"genre_id"`
+		ReleaseDate *time.Time `db:"release_date"`
 
 		// track columns
-		TrackID      *int    `db:"track_id"`
-		TrackTitle   *string `db:"track_title"`
-		TrackAlbumID *int    `db:"track_album_id"`
-		Duration     *int    `db:"duration_seconds"`
+		TrackAlbumID *int `db:"track_album_id"`
+		Duration     *int `db:"duration_seconds"`
 	}
 
 	const query string = `
-	WITH MostReviewed AS (
-		SELECT media_id, media_type, COUNT(*) AS review_count
-		FROM review
-		GROUP BY media_id, media_type
-		ORDER BY review_count DESC
-		LIMIT $1 OFFSET $2
-	)
-	SELECT 
-		m.media_type,
-		m.review_count,
-		a.id AS album_id,
-		a.title AS album_title,
-		a.release_date,
-		a.cover,
-		a.country,
-		a.genre_id,
-		t.id AS track_id,
-		t.title AS track_title,
-		t.album_id AS track_album_id,
-		t.duration_seconds
-	FROM MostReviewed m
-	LEFT JOIN album a ON m.media_id = a.id AND m.media_type = 'album'
-	LEFT JOIN track t ON m.media_id = t.id AND m.media_type = 'track'
-	ORDER BY m.review_count DESC;
+		WITH MostReviewed AS (
+				SELECT media_id, media_type, COUNT(*) AS review_count
+				FROM review
+				GROUP BY media_id, media_type
+				ORDER BY review_count DESC
+				LIMIT $1 OFFSET $2
+			)
+			SELECT 
+				m.media_type,
+				m.media_id,
+				m.review_count,
+				COALESCE(a.title, t.title) AS title, 
+				COALESCE(a.artists, t.artists) AS artist_name,
+				COALESCE(a.cover, t.cover) AS cover, 
+				COALESCE(a.release_date, t.release_date) AS release_date, 
+				t.album_id AS track_album_id,
+				t.duration_seconds
+			FROM MostReviewed m
+		LEFT JOIN (
+			SELECT t.title, t.id, STRING_AGG(ar.name, ', ') AS artists, cover, album_id, duration_seconds, release_date
+				FROM track t
+			LEFT JOIN track_artist ta on t.id = ta.track_id
+				JOIN artist ar ON ta.artist_id = ar.id
+			JOIN album a on t.album_id = a.id
+				GROUP BY t.id, cover, t.title, album_id, duration_seconds, release_date
+			) t ON m.media_type = 'track' AND m.media_id = t.id
+		LEFT JOIN (
+			SELECT a.id, a.title, STRING_AGG(ar.name, ', ') AS artists, cover, release_date
+				FROM album a
+				LEFT JOIN album_artist aa on a.id = aa.album_id
+				JOIN artist ar ON aa.artist_id = ar.id
+				GROUP BY a.id, cover, a.title
+		) a ON (m.media_type = 'album' AND m.media_id = a.id)
+        WHERE ($3::media_type IS NULL OR (m.media_type = $3::media_type))
+		ORDER BY m.review_count DESC;
 	`
-
-	rows, err := r.Query(ctx, query, limit, offset)
+	var rows pgx.Rows
+	var err error
+	if mediaType == nil || *mediaType == "" {
+		rows, err = r.Query(ctx, query, limit, offset, nil)
+	} else {
+		rows, err = r.Query(ctx, query, limit, offset, *mediaType)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -340,24 +394,24 @@ func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset i
 		case string(models.AlbumMedia):
 			album := &models.Album{
 				MediaType:   models.AlbumMedia,
-				ID:          *c.AlbumID,
-				Title:       *c.AlbumTitle,
+				ID:          c.MediaId,
+				Title:       c.Title,
 				ReleaseDate: *c.ReleaseDate,
 				Cover:       *c.Cover,
-				Country:     *c.Country,
-				GenreID:     *c.GenreID,
+				ArtistName:  c.ArtistName,
 			}
-
 			media = album
 		case string(models.TrackMedia):
 			track := &models.Track{
-				MediaType: models.TrackMedia,
-				ID:        *c.TrackID,
-				AlbumID:   *c.TrackAlbumID,
-				Title:     *c.TrackTitle,
-				Duration:  *c.Duration,
+				MediaType:   models.TrackMedia,
+				ID:          c.MediaId,
+				Title:       c.Title,
+				ReleaseDate: *c.ReleaseDate,
+				AlbumID:     *c.TrackAlbumID,
+				Duration:    *c.Duration,
+				Cover:       *c.Cover,
+				ArtistName:  c.ArtistName,
 			}
-
 			media = track
 		default:
 			return models.MediaWithReviewCount{}, fmt.Errorf("unknown media type: %s", c.MediaType)

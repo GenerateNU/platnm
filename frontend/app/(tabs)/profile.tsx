@@ -10,8 +10,8 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
 import axios from "axios";
-import TopReview from "@/components/media/TopReview";
 import Section from "@/components/profile/Section";
+import ReviewCard from "@/components/ReviewCard";
 
 export default function ProfileScreen() {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -165,26 +165,28 @@ export default function ProfileScreen() {
 
         {/* User Reviews Section */}
         {userReviews && userReviews.length > 0 ? (
-          userReviews.map((review) => {
-            const reviews = [review];
-            return <TopReview key={review.id} reviews={reviews} />;
+          userReviews.map((review, index) => {
+            return (
+              <ReviewCard
+                key={index}
+                rating={review.rating}
+                comment={review.comment}
+              />
+            );
           })
         ) : (
           <Text style={styles.noReviewsText}>No reviews found.</Text>
         )}
 
         {/* Sections */}
-        <Section
-          title="Section 1"
-          items={["Item title", "Item title", "Item title"]}
-          onEditPress={handleEditPress}
-        />
-
-        <Section
-          title="Section 2"
-          items={["Item title", "Item title", "Item title"]}
-          onEditPress={handleEditPress}
-        />
+        {sections.map((section, index) => (
+          <Section
+            key={index}
+            title={section.title}
+            items={section.items}
+            onEditPress={handleEditPress}
+          />
+        ))}
 
         {/* Button to Add a New Section */}
         <TouchableOpacity
@@ -205,6 +207,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+    paddingHorizontal: 15,
   },
   header: {
     alignItems: "center",

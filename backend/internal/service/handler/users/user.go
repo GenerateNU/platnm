@@ -1,20 +1,23 @@
 package users
 
 import (
-	"github.com/google/uuid"
 	"platnm/internal/errs"
 	"platnm/internal/storage"
+
+	"github.com/google/uuid"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 type Handler struct {
-	userRepository storage.UserRepository
+	userRepository     storage.UserRepository
+	playlistRepository storage.PlaylistRepository
 }
 
-func NewHandler(userRepository storage.UserRepository) *Handler {
+func NewHandler(userRepository storage.UserRepository, playlistRepository storage.PlaylistRepository) *Handler {
 	return &Handler{
 		userRepository,
+		playlistRepository,
 	}
 }
 
@@ -92,5 +95,34 @@ func (h *Handler) GetUserProfile(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(profile)
+
+}
+
+func (h *Handler) GetUserFeed(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	exists, err := h.userRepository.UserExists(c.Context(), id)
+	if err != nil {
+		print(err.Error())
+		return err
+	}
+
+	if !exists {
+		return errs.NotFound("User", "userID", id)
+	}
+
+	userUUID, err := uuid.Parse(id)
+	if err != nil {
+		print(err.Error())
+		return err
+	}
+
+	feed, err := h.userRepository.GetUserFeed(c.Context(), userUUID)
+	if err != nil {
+		print(err.Error(), "unable to fetch profile ")
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(feed)
 
 }
