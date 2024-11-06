@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { StyleSheet, ScrollView, View, Text } from "react-native";
-import SongChip from "@/components/search/SongChip"
-
+import SongChip from "@/components/search/SongChip";
 
 type SongCardProp = {
   songs: MediaResponse[];

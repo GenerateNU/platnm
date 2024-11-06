@@ -23,7 +23,7 @@ const TopAlbums = ({ albums }: AlbumCardProps) => {
       {albums?.map((album, index) => (
         <AlbumSearchCard
           rank={index + 1}
-          artist_name={"Adele"} // hardcoded
+          artist_name={album.media.artist_name} // hardcoded
           album_name={album.media.title}
           cover={album.media.cover}
         />
