@@ -16,17 +16,46 @@ import Play from '@/assets/images/Icons/play.svg';
 import Info from '@/assets/images/Icons/info.svg';
 import { TouchableOpacity } from 'react-native';
 
+type RecommendationsCard = {
+	songType: string;
+	since: string;
+	artist: string;
+	title: string;
+	url: string;
+	id: string;
+};
+
+type RecommendationResponse = {
+	id: number;
+	media_type: string;
+	media_id: string;
+	recommender_id: string;
+	recommendee_id: string;
+	created_at: string;
+	reaction: boolean;
+};
+
 export default function RecommendationsScreen() {
 	const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 	const userId = '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d'; // Hardcoding - Get userId from navigation
 
-	const [reccomendations, setRecommendations] = useState<any[]>([]);
+	const [reccomendations, setRecommendations] = useState<RecommendationsCard[]>([]);
 
 	useEffect(() => {
 		const fetchUserProfile = async () => {
 			try {
 				const response = await axios.get(`${BASE_URL}/recommendation/${userId}`);
-				setRecommendations(response.data);
+				setRecommendations(
+					response.data.map((recommendation: RecommendationResponse) => {
+						songType: recommendation.media_type;
+						since: recommendation.created_at;
+						artist: 'Artist';
+						title: 'Default Title';
+						url: 'https://i.scdn.co/image/ab67616d0000b2738d8573ea98ca706007a76d3d';
+						id: recommendation.id;
+					}),
+				);
+				console.log(response.data);
 			} catch (error) {
 				console.error('Error fetching user profile:', error);
 			}
@@ -51,10 +80,10 @@ export default function RecommendationsScreen() {
 					height: Dimensions.get('window').height * 0.4,
 				}}>
 				<SwipeCards
-					handleYup={(card) => reactToRecommendation(card.id, true)}
-					handleNope={(card) => reactToRecommendation(card.id, false)}
+					handleYup={(card: RecommendationsCard) => reactToRecommendation(card.id, true)}
+					handleNope={(card: RecommendationsCard) => reactToRecommendation(card.id, false)}
 					cards={[]}
-					renderCard={({ artist, title, songType, url }: string) => {
+					renderCard={({ artist, title, songType, url }: RecommendationsCard) => {
 						return (
 							<View
 								style={{
@@ -85,7 +114,6 @@ export default function RecommendationsScreen() {
 													<Text style={{ color: '#fff7', fontSize: 14 }}>{songType}</Text>
 												</View>
 											</View>
-
 											<TouchableOpacity style={{ marginLeft: '25%' }}>
 												<Play
 													width={32}
@@ -108,14 +136,7 @@ export default function RecommendationsScreen() {
 					}}
 				/>
 			</View>
-			<View
-				style={{
-					justifyContent: 'center',
-					alignItems: 'center',
-					paddingTop: 50,
-					flexDirection: 'row',
-					gap: 32,
-				}}>
+			<View style={styles.reactButtonWrapper}>
 				<RatingButton icon={'cross'} />
 				<RatingButton icon={'heart'} />
 			</View>
@@ -146,6 +167,13 @@ const styles = StyleSheet.create({
 		width: Dimensions.get('window').width * 0.85,
 		height: Dimensions.get('window').height * 0.4,
 		marginHorizontal: 'auto',
+	},
+	reactButtonWrapper: {
+		justifyContent: 'center',
+		alignItems: 'center',
+		paddingTop: 50,
+		flexDirection: 'row',
+		gap: 32,
 	},
 	cardBottom: {
 		backgroundColor: 'rgba(57, 62, 70, 0.70)',
