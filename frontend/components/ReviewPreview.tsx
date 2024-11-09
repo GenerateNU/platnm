@@ -6,11 +6,31 @@ import UpvoteIcon from "@/assets/images/upvote.svg";
 import DownvoteIcon from "@/assets/images/downvote.svg";
 const MusicDisk = require("../assets/images/music-disk.png");
 
-interface ReviewPreviewProps {
-  preview: Preview;
+
+interface PreviewProps {
+  preview: Preview
 }
 
-const ReviewPreview: React.FC<ReviewPreviewProps> = ({ preview }) => {
+const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
+  const handleUpvotePress = () => {
+    console.log("upvote icon pressed");
+    // Add share icon press handling logic here
+  };
+
+  const handleDownvotePress = () => {
+    console.log("downvote icon pressed");
+    // Add edit icon press handling logic here
+  };
+
+  const handleCommentPress = () => {
+    console.log("comment icon pressed");
+    // Add share icon press handling logic here
+  };
+
+  const handleViewMorePress = () => {
+    console.log("view more pressed");
+    // Add edit icon press handling logic here
+  };
   
   return (
     <View style={styles.card}>
@@ -35,13 +55,13 @@ const ReviewPreview: React.FC<ReviewPreviewProps> = ({ preview }) => {
         <View style={styles.voteContainer}>
           <IconButton
             style={styles.vote}
-            onPress={() => console.log("upvote")}
+            onPress={handleUpvotePress}
             icon={UpvoteIcon}
           />
           <Text>{4}</Text>
           <IconButton
             style={styles.vote}
-            onPress={() => console.log("downvote")}
+            onPress={handleDownvotePress}
             icon={DownvoteIcon}
           />
         </View>

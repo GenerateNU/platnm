@@ -1,4 +1,4 @@
-import { Image, StyleSheet, View } from "react-native";
+import { Image, StyleSheet, View, Text, ScrollView, TouchableOpacity, Dimensions } from "react-native";
 import { router } from "expo-router";
 
 import { HelloWave } from "@/components/HelloWave";
@@ -8,59 +8,132 @@ import { ThemedView } from "@/components/ThemedView";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import ReviewPreview from "@/components/ReviewPreview";
+import Icon from "react-native-vector-icons/Feather";
 
 export default function HomeScreen() {
-  const [users, setUsers] = useState<User[]>([]);
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-  const [previews, setPreviews] = useState<Preview[]>([]);
+
+  const [feedReviews, setFeedReviews] = useState<Preview[]>();
+  const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
+  const hasNotification = true; // Hardcoding - Get notification status from somewhere else
+
 
   useEffect(() => {
-    axios
-      .get(`${BASE_URL}/users`)
-      .then((response) => {
-        setUsers(response.data);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-
-    const fetchPreviews = async () => {
+    const fetchFeedReviews = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/feed`);
-        setPreviews(response.data);
+        const response = await axios.get(`${BASE_URL}/users/feed/${userId}`);
+        setFeedReviews(response.data);
       } catch (error) {
-        console.error(error);
+        console.error("Error fetching feed reviews:", error);
       }
-    }
-  }, []);
+    };
+
+    fetchFeedReviews();
+  }, [userId]);
+
+  const handleNotifPress = () => {
+    console.log("Notif icon pressed");
+    // Add activity icon press handling logic here
+  };
+
+  const handleMusicPress = () => {
+    console.log("music icon pressed");
+    // Add settings icon press handling logic here
+  };
 
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
-      headerImage={
-        <Image
-          source={require("@/assets/images/partial-react-logo.png")}
-          style={styles.reactLogo}
-        />
-      }
-    >
-    <View>
-        {previews.map((preview) => (
-          <ReviewPreview key={preview.review_id} {...preview} />
-        ))}
-      </View>
+    <ScrollView style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          {/* Top icons */}
+          <View style={styles.topIconsContainer}>
+            {/* Activity icon with notification badge */}
+            <Text style={[styles.titleContainer, styles.titleText]}>
+              <ThemedText type="title" style={styles.titleText}>Platnm</ThemedText>
+            </Text>
+
+
+            {/* Grouping the settings and share icons on the right */}
+            <View style={styles.rightIconsContainer}>
+            <TouchableOpacity onPress={handleNotifPress} style={styles.rightIcon}>
+              <Icon name="bell" size={24} color="#000" style={styles.rightIcon} />
+              {hasNotification && <View style={styles.notificationBadge} />}
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleMusicPress} style={styles.rightIcon}>
+              <Icon name="music" size={24} color="#000" style={styles.rightIcon} />
+              {hasNotification && <View style={styles.notificationBadge} />}
+            </TouchableOpacity>
+            </View>
+          </View>
+          <View>
+              {feedReviews && feedReviews.length > 0 ? (
+                feedReviews.map((review, index) => {
+                  return (
+                    <ReviewPreview
+                      key={index}
+                      preview={review}
+                    />
+                  );
+                })
+              ) : (
+                <Text style={styles.noReviewsText}>No reviews found.</Text>
+              )}
+            </View>
+        
+            </View>
       
 
       
-    </ParallaxScrollView>
+    </ScrollView>
   );
 }
 
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    paddingHorizontal: 15,
+  },
+  header: {
+    alignItems: "center",
+    paddingVertical: 20,
+  },
+  topIconsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: SCREEN_WIDTH,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    marginRight: 20,
+  },
   titleContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+  },
+  rightIconsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  rightIcon: {
+    margin: 7,
+    padding: 0,
+    backgroundColor: "#F0F0F0",
+    borderRadius: 50,
+  },
+  activityIconContainer: {
+    position: "relative",
+  },
+  notificationBadge: {
+    position: "absolute",
+    top: 2,
+    right: 2,
+    width: 7,
+    height: 7,
+    borderRadius: 5,
+    backgroundColor: "red",
   },
   stepContainer: {
     gap: 8,
@@ -72,5 +145,15 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     position: "absolute",
+  },
+  noReviewsText: {
+    textAlign: "center",
+    color: "#888",
+    marginVertical: 20,
+  },
+  titleText: {
+    color: "#F28037",
+    fontSize: 24, // Adjust font size if needed
+    fontWeight: "bold",
   },
 });
