@@ -1,4 +1,4 @@
-import { Image, StyleSheet } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 
 import { HelloWave } from "@/components/HelloWave";
@@ -7,10 +7,12 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import ReviewPreview from "@/components/ReviewPreview";
 
 export default function HomeScreen() {
   const [users, setUsers] = useState<User[]>([]);
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+  const [previews, setPreviews] = useState<Preview[]>([]);
 
   useEffect(() => {
     axios
@@ -21,6 +23,15 @@ export default function HomeScreen() {
       .catch((error) => {
         console.error(error);
       });
+
+    const fetchPreviews = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/feed`);
+        setPreviews(response.data);
+      } catch (error) {
+        console.error(error);
+      }
+    }
   }, []);
 
   return (
@@ -33,35 +44,14 @@ export default function HomeScreen() {
         />
       }
     >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome to Platnm!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Backend Setup</ThemedText>
-        <ThemedText>
-          Make sure the database is connected and the backend server is running.
-          Go to {BASE_URL}/users to see the list of users.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Frontend Setup</ThemedText>
-        <ThemedText>
-          If frontend and backend are connected, you should see a username here:{" "}
-          {users[0]?.username}.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Spotify Setup</ThemedText>
-        <ThemedText>
-          When you're ready, run{" "}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText>{" "}
-          to get a fresh <ThemedText type="defaultSemiBold">app</ThemedText>{" "}
-          directory. This will move the current{" "}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{" "}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
+    <View>
+        {previews.map((preview) => (
+          <ReviewPreview key={preview.review_id} {...preview} />
+        ))}
+      </View>
+      
+
+      
     </ParallaxScrollView>
   );
 }
