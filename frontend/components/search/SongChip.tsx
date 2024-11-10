@@ -14,7 +14,6 @@ const SongChip: React.FC<SongChipProps> = ({
   artist_name,
   cover,
 }) => {
-  console.log(id);
   return (
     <TouchableOpacity style={styles.container}>
       <Text style={styles.id}>{id}.</Text>
