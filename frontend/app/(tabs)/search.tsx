@@ -1,6 +1,7 @@
 import { StyleSheet, View, Image, TouchableOpacity, Text } from "react-native";
 import TopAlbums from "@/components/search/TopAlbums";
 import TopSongs from "@/components/search/TopSongs";
+import SearchBar from "@/components/search/SearchBar"
 import axios from "axios";
 import { useEffect, useState } from "react";
 
@@ -23,6 +24,7 @@ export default function SearchScreen() {
 
   return (
     <View style={styles.container}>
+      <SearchBar/>
       <TopSongs songs={songs} />
       <TopAlbums albums={albums} />
     </View>
