@@ -4,18 +4,14 @@ import Vinyl from "@/assets/images/vinyl.svg";
 export default function TrackBubble({
   track,
 }: {
-  track: { name: string; artist: string, imageUrl: string; selected: boolean };
+  track: { name: string; artist: string; imageUrl: string; selected: boolean };
 }) {
-
   return (
     <View style={styles.container}>
       <View style={styles.imagesContainer}>
         <Image
           source={{ uri: track.imageUrl }}
-          style={[
-            styles.profilePicture,
-            track.selected && styles.selected,
-          ]}
+          style={[styles.profilePicture, track.selected && styles.selected]}
         />
         <Vinyl style={styles.vinyl} />
       </View>
@@ -50,5 +46,5 @@ const styles = StyleSheet.create({
   vinyl: {
     marginLeft: -50,
     zIndex: -1,
-  }
+  },
 });

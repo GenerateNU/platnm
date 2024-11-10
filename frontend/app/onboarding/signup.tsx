@@ -73,7 +73,7 @@ const slides = [
     id: 8,
     title: "All Set!",
     question: "Explore PLATNM",
-  }
+  },
 ];
 
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -166,8 +166,8 @@ const OnboardingCarousel: React.FC = () => {
         return;
       }
 
-      updateAccessToken(res.data['access_token']);
-      updateSession(res.headers['x-session']);
+      updateAccessToken(res.data["access_token"]);
+      updateSession(res.headers["x-session"]);
     } catch (error) {
       console.log(error);
       alert("Signup Error");
@@ -181,11 +181,11 @@ const OnboardingCarousel: React.FC = () => {
           return status == 302;
         },
         headers: {
-          'X-Session': sessionToken,
-        }
+          "X-Session": sessionToken,
+        },
       });
 
-      const redirectUrl = res.headers['x-redirect'];
+      const redirectUrl = res.headers["x-redirect"];
 
       router.push(redirectUrl);
     } catch (error) {
@@ -198,8 +198,8 @@ const OnboardingCarousel: React.FC = () => {
     try {
       const res = await axios.get(`${BASE_URL}/spotify/top-items`, {
         headers: {
-          'X-Session': sessionToken,
-        }
+          "X-Session": sessionToken,
+        },
       });
 
       if (res.data.error) {
@@ -227,7 +227,7 @@ const OnboardingCarousel: React.FC = () => {
       }
 
       setTopArtists(artists);
-      setTopTracks(tracks)
+      setTopTracks(tracks);
     } catch (error) {
       console.log(error);
       alert("Error fetching top artists and tracks");
@@ -291,13 +291,18 @@ const OnboardingCarousel: React.FC = () => {
             <ScrollView>
               <View style={styles.artistGrid}>
                 {topArtists.map((artist, index) => (
-                  <Pressable style={styles.artistContainer}
+                  <Pressable
+                    style={styles.artistContainer}
                     key={index}
                     onPress={(event) => {
-                      event.preventDefault()
-                      setTopArtists((prev) => prev.map((a, i) => i === index ? { ...a, selected: !a.selected } : a))
-                    }
-                  }>
+                      event.preventDefault();
+                      setTopArtists((prev) =>
+                        prev.map((a, i) =>
+                          i === index ? { ...a, selected: !a.selected } : a,
+                        ),
+                      );
+                    }}
+                  >
                     <ArtistBubble artist={artist} />
                   </Pressable>
                 ))}
@@ -309,13 +314,18 @@ const OnboardingCarousel: React.FC = () => {
             <ScrollView style={styles.idk}>
               <View style={styles.trackGrid}>
                 {topTracks.map((track, index) => (
-                  <Pressable style={styles.trackContainer}
+                  <Pressable
+                    style={styles.trackContainer}
                     key={index}
                     onPress={(event) => {
-                      event.preventDefault()
-                      setTopTracks((prev) => prev.map((t, i) => i === index ? { ...t, selected: !t.selected } : t))
-                    }
-                  }>
+                      event.preventDefault();
+                      setTopTracks((prev) =>
+                        prev.map((t, i) =>
+                          i === index ? { ...t, selected: !t.selected } : t,
+                        ),
+                      );
+                    }}
+                  >
                     <TrackBubble track={track} />
                   </Pressable>
                 ))}

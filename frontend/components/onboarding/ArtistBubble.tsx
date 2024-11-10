@@ -5,15 +5,11 @@ export default function ArtistBubble({
 }: {
   artist: { name: string; profilePictureUrl: string; selected: boolean };
 }) {
-
   return (
     <View style={styles.container}>
       <Image
         source={{ uri: artist.profilePictureUrl }}
-        style={[
-          styles.profilePicture,
-          artist.selected && styles.selected,
-        ]}
+        style={[styles.profilePicture, artist.selected && styles.selected]}
       />
       <Text style={styles.name}>{artist.name}</Text>
     </View>
