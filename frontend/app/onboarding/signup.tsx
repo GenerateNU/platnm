@@ -108,7 +108,8 @@ const OnboardingCarousel: React.FC = () => {
   const navigation = useNavigation();
 
   const [enthusiasm, setEnthusiasm] = useState("");
-  const { sessionToken, updateAccessToken, updateSession, updateUserId } = useAuthContext();
+  const { sessionToken, updateAccessToken, updateSession, updateUserId } =
+    useAuthContext();
 
   const progressBar1 = useSharedValue(0);
   const progressBar2 = useSharedValue(0);

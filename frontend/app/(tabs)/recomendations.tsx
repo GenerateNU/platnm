@@ -78,7 +78,7 @@ export default function RecommendationsScreen() {
         console.error("Error fetching reccomendation:", error);
       }
     };
-    console.log('rerunning')
+    console.log("rerunning");
     fetchUserProfile();
   }, [userId]);
 
