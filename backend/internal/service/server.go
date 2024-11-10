@@ -81,6 +81,9 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Get("/track/:id", func(c *fiber.Ctx) error {
 			return reviewHandler.GetReviewsById(c, "track")
 		})
+		r.Get("/track/:userId/:mediaId", func(c *fiber.Ctx) error {
+			return reviewHandler.GetUserReviewOfTrack(c)
+		})
 		r.Post("/comment", reviewHandler.CreateComment)
 		r.Get("/social/song/:songid", func(c *fiber.Ctx) error {
 			return reviewHandler.GetSocialReviews(c, "track")
@@ -88,6 +91,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Get("/social/album/:albumid", func(c *fiber.Ctx) error {
 			return reviewHandler.GetSocialReviews(c, "album")
 		})
+		r.Get("/comments/:id", reviewHandler.GetComments)
 	})
 
 	mediaHandler := media.NewHandler(repository.Media)

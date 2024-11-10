@@ -153,6 +153,34 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 	return reviews, nil
 }
 
+func (r *ReviewRepository) GetUserReviewOfTrack(ctx context.Context, mediaId string, userId string) (*models.Review, error) {
+
+	row := r.QueryRow(ctx, "SELECT * FROM review WHERE user_id = $1 AND media_id = $2", userId, mediaId)
+
+	var review models.Review
+	err := row.Scan(
+		&review.ID,
+		&review.UserID,
+		&review.MediaID,
+		&review.MediaType,
+		&review.Rating,
+		&review.Comment,
+		&review.CreatedAt,
+		&review.UpdatedAt,
+		&review.Draft,
+	)
+
+	if err == sql.ErrNoRows {
+		// Return nil if no review exists for this user and track.
+		return nil, nil
+	} else if err != nil {
+		// Return error if there's a problem with the query.
+		return nil, err
+	}
+
+	return &review, nil
+}
+
 func (r *ReviewRepository) UpdateReview(ctx context.Context, review *models.Review) (*models.Review, error) {
 
 	// Declare these variables first to allow for assignment inside if statement body
@@ -391,6 +419,24 @@ func (r *ReviewRepository) GetSocialReviews(ctx context.Context, mediaType strin
 	}
 
 	return friendReviews, ratingCount, nil
+}
+
+func (r *ReviewRepository) GetCommentsByReviewID(ctx context.Context, reviewID string) ([]models.Comment, error) {
+	rows, err := r.Query(ctx, `SELECT id, text, review_id, user_id, created_at FROM comment WHERE review_id = $1`, reviewID)
+	if err != nil {
+		return nil, err
+	}
+
+	var comments []models.Comment = []models.Comment{}
+	for rows.Next() {
+		var comment models.Comment
+		if err := rows.Scan(&comment.ID, &comment.Text, &comment.ReviewID, &comment.UserID, &comment.CreatedAt); err != nil {
+			return nil, err
+		}
+		comments = append(comments, comment)
+	}
+
+	return comments, nil
 }
 
 func NewReviewRepository(db *pgxpool.Pool) *ReviewRepository {
