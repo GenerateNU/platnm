@@ -318,6 +318,7 @@ WHERE
 
 func (r *ReviewRepository) GetSocialReviews(ctx context.Context, mediaType string, mediaID string, myID string) ([]models.FriendReview, int, error) {
 	var ratingCount int
+	// Validating the user exists
 	rows, err := r.Query(ctx, `SELECT * FROM "user" WHERE id = $1`, myID)
 	if err != nil {
 		return nil, 0, err
@@ -328,12 +329,30 @@ func (r *ReviewRepository) GetSocialReviews(ctx context.Context, mediaType strin
 		return nil, 0, errs.NotFound("User not found", "userID", myID)
 	}
 
-	query := `
+	// Validating the media exists
+	query := ``
+	if mediaType == "track" {
+		query = `SELECT * FROM track WHERE id = $1`
+	} else if mediaType == "album" {
+		query = `SELECT * FROM album WHERE id = $1`
+
+	}
+	rows2, err4 := r.Query(ctx, query, mediaID)
+	if err4 != nil {
+		return nil, 0, err4
+	}
+	defer rows2.Close()
+
+	if !rows2.Next() {
+		return nil, 0, errs.NotFound(mediaType, "id", mediaID)
+	}
+
+	query2 := `
 		SELECT COUNT(*)
 		FROM review
 		WHERE user_id = $1 AND media_id = $2 AND media_type = $3
 	`
-	err2 := r.QueryRow(ctx, query, myID, mediaID, mediaType).Scan(&ratingCount)
+	err2 := r.QueryRow(ctx, query2, myID, mediaID, mediaType).Scan(&ratingCount)
 	if err2 != nil {
 		return nil, 0, err2
 	}

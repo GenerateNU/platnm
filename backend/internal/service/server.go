@@ -80,7 +80,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Get("/social/song/:songid", func(c *fiber.Ctx) error {
 			return reviewHandler.GetSocialReviews(c, "track")
 		})
-		r.Get("/social/song/:albumid", func(c *fiber.Ctx) error {
+		r.Get("/social/album/:albumid", func(c *fiber.Ctx) error {
 			return reviewHandler.GetSocialReviews(c, "album")
 		})
 	})
