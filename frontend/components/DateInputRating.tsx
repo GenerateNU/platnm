@@ -29,9 +29,11 @@ const styles = StyleSheet.create({
     fontFamily: "Roboto",
     justifyContent: "space-between",
     flexDirection: "row",
-    padding: 20,
+    paddingVertical: 20,
     color: "#434343",
     fontSize: 19,
+    borderBottomColor: "##00000080",
+    borderBottomWidth: 1,
   },
 
   dateText: {

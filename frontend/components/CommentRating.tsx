@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, View, TextInput } from "react-native";
+import {
+  StyleSheet,
+  View,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  TouchableWithoutFeedback,
+} from "react-native";
 
 interface CommentRatingProps {
   onReviewChange: (value: string) => void;
@@ -14,7 +22,7 @@ const CommentRating = ({ onReviewChange }: CommentRatingProps) => {
   };
 
   return (
-    <View style={styles.comment}>
+    <TouchableWithoutFeedback style={styles.comment} onPress={Keyboard.dismiss}>
       <TextInput
         style={styles.input}
         multiline={true}
@@ -23,18 +31,17 @@ const CommentRating = ({ onReviewChange }: CommentRatingProps) => {
         value={comment}
         onChangeText={handleReview}
       />
-    </View>
+    </TouchableWithoutFeedback>
   );
 };
 
 const styles = StyleSheet.create({
   comment: {
+    marginTop: 20,
     backgroundColor: "#ffffff",
     fontFamily: "Roboto",
-    padding: 20,
     color: "#434343",
     fontSize: 19,
-    height: "35%",
   },
   input: {
     flex: 1,

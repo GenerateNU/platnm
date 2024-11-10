@@ -75,6 +75,8 @@ export default function MediaPage() {
                     mediaName: media.media.title,
                     mediaType: media.media.media_type,
                     mediaId: media.media.id,
+                    cover: media.media.cover,
+                    artistName: media.media.artist_name,
                   })
                 }
                 color={"white"}
