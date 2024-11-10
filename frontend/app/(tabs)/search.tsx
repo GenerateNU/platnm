@@ -1,29 +1,39 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { StyleSheet } from "react-native";
-
-import { Collapsible } from "@/components/Collapsible";
-import { ExternalLink } from "@/components/ExternalLink";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import { StyleSheet, View, Image, TouchableOpacity, Text } from "react-native";
+import TopAlbums from "@/components/search/TopAlbums";
+import TopSongs from "@/components/search/TopSongs";
+import axios from "axios";
+import { useEffect, useState } from "react";
 
 export default function SearchScreen() {
+  const [songs, setSongs] = useState<MediaResponse[]>([]);
+  const [albums, setAlbums] = useState<MediaResponse[]>([]);
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
+  useEffect(() => {
+    axios
+      .get(`${BASE_URL}/media?sort=review&type=album`)
+      .then((response) => setAlbums(response.data))
+      .catch((error) => console.error(error));
+
+    axios
+      .get(`${BASE_URL}/media?sort=review&type=track`)
+      .then((response) => setSongs(response.data))
+      .catch((error) => console.error(error));
+  }, []);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#D0D0D0", dark: "#353636" }}
-      headerImage={
-        <Ionicons size={310} name="code-slash" style={styles.headerImage} />
-      }
-    >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Search</ThemedText>
-      </ThemedView>
-      <ThemedText>This is where search goes.</ThemedText>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      <TopSongs songs={songs} />
+      <TopAlbums albums={albums} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    paddingTop: 80,
+    paddingLeft: 30,
+  },
   headerImage: {
     color: "#808080",
     bottom: -90,

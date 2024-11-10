@@ -9,6 +9,7 @@ interface Album {
   country: string;
   genre_id: number;
   media_type: string;
+  artist_name: string;
 }
 
 interface Track {
@@ -21,6 +22,7 @@ interface Track {
   release_date: Date;
   cover: string;
   media_type: string;
+  artist_name: string;
 }
 
 type Media = Album | Track;
@@ -56,4 +58,9 @@ type UserProfile = {
   followers: number;
   followed: number;
   score: number;
+};
+
+type MediaResponse = {
+  media: Media;
+  reviewCount: number;
 };
