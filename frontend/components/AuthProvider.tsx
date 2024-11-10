@@ -37,9 +37,7 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
   };
 
   const updateSession = (session: string) => {
-    console.log("session is..." + session); // Check if this is printed
     setSessionToken(session);
-    console.log("Updated sessionToken: " + sessionToken); // Check updated state
   };
 
   return (
