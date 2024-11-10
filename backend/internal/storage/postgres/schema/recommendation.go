@@ -72,7 +72,39 @@ func (r *RecommendationRepository) GetRecommendation(ctx context.Context, id str
 }
 
 func (r *RecommendationRepository) GetRecommendations(ctx context.Context, id string) ([]*models.Recommendation, error) {
-	rows, err := r.Query(ctx, "SELECT * from recommendation WHERE recommendee_id = $1", id)
+	rows, err := r.Query(ctx, `
+	SELECT 
+		r.id, 
+		r.media_type, 
+		r.media_id, 
+		COALESCE(a.title, t.title) AS title, 
+		COALESCE(a.artists, t.artists) AS artist_name,
+		COALESCE(a.cover, t.cover) AS cover, 
+		r.recommendee_id, 
+		r.recommender_id, 
+		r.reaction,
+		r.created_at,
+		u.username AS recommender_username,
+		u.display_name AS recommender_name,
+		u.profile_picture AS recommender_picture
+	FROM recommendation r
+	JOIN "user" u ON r.recommender_id = u.id
+	LEFT JOIN (
+			SELECT t.title, t.id, STRING_AGG(ar.name, ', ') AS artists, cover, album_id, duration_seconds, release_date
+				FROM track t
+			LEFT JOIN track_artist ta on t.id = ta.track_id
+				JOIN artist ar ON ta.artist_id = ar.id
+			JOIN album a on t.album_id = a.id
+				GROUP BY t.id, cover, t.title, album_id, duration_seconds, release_date
+			) t ON r.media_type = 'track' AND r.media_id = t.id
+		LEFT JOIN (
+			SELECT a.id, a.title, STRING_AGG(ar.name, ', ') AS artists, cover, release_date
+				FROM album a
+				LEFT JOIN album_artist aa on a.id = aa.album_id
+				JOIN artist ar ON aa.artist_id = ar.id
+				GROUP BY a.id, cover, a.title
+		) a ON (r.media_type = 'album' AND r.media_id = a.id)
+	WHERE recommendee_id = $1`, id)
 
 	if err != nil {
 		return []*models.Recommendation{}, err
@@ -86,12 +118,18 @@ func (r *RecommendationRepository) GetRecommendations(ctx context.Context, id st
 
 		if err := rows.Scan(
 			&recommendation.ID,
-			&recommendation.MediaID,
 			&recommendation.MediaType,
-			&recommendation.RecommenderId,
+			&recommendation.MediaID,
+			&recommendation.Title,
+			&recommendation.ArtistName,
+			&recommendation.Cover,
 			&recommendation.RecommendeeId,
+			&recommendation.RecommenderId,
+			&recommendation.Reaction,
 			&recommendation.CreatedAt,
-			&recommendation.Reaction); err != nil {
+			&recommendation.RecommenderUsername,
+			&recommendation.RecommenderName,
+			&recommendation.RecommenderPicture); err != nil {
 			return nil, err
 		}
 		recs = append(recs, &recommendation)
