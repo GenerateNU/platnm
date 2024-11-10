@@ -2,10 +2,11 @@ import React from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
 
 interface AlbumSearchCardProps {
-  rank: number;
+  rank?: number;
   artist_name: string;
   album_name: string;
-  cover: string;
+  cover?: string;
+  track_name?: string;
 }
 
 const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({
@@ -13,6 +14,7 @@ const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({
   artist_name,
   album_name,
   cover,
+  track_name,
 }) => {
   const placeholderImage =
     "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png";
@@ -21,10 +23,10 @@ const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({
     <View style={styles.cardContainer}>
       <View style={styles.albumContainer}>
         {/* Rank */}
-        <Text style={styles.rank}>{rank}.</Text>
+        {rank && <Text style={styles.rank}>{rank}.</Text>}
 
         {/* Album Cover */}
-        <View style={styles.coverContainer}>
+        <View style={[styles.coverContainer, rank ? null : { left: "15%" }]}>
           <Image
             source={{ uri: cover || placeholderImage }}
             style={styles.albumCover}
@@ -41,7 +43,11 @@ const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({
       </View>
 
       {/* Album and Artist Name */}
-      <Text style={styles.albumName}>{album_name}</Text>
+      {track_name ? (
+        <Text style={styles.albumName}>{track_name}</Text>
+      ) : (
+        <Text style={styles.albumName}>{album_name}</Text>
+      )}
       <Text style={styles.artistName}>{artist_name}</Text>
     </View>
   );

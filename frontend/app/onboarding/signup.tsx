@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useReducer, useEffect } from "react";
 import {
   View,
   TextInput,
@@ -15,7 +15,6 @@ import { useAuthContext } from "@/components/AuthProvider";
 import Header from "@/components/onboarding/Header";
 import { useSharedValue, withTiming } from "react-native-reanimated";
 import ProgressBar from "@/components/onboarding/ProgressBar";
-// import GrayCircle from "@/assets/images/gray-circle.svg"
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import EnthusiasmSlider from "@/components/onboarding/EnthusiasmSlider";
@@ -91,74 +90,115 @@ interface TopTrack {
   selected: boolean;
 }
 
+const initialState = {
+  currentSlide: 0,
+  name: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+  username: "",
+  passwordMatch: true,
+  inputValid: false,
+  tried: false,
+  passwordVisible: false,
+  enthusiasm: "",
+  topTracks: [],
+  topArtists: [],
+};
+
+type State = typeof initialState;
+
+type Action =
+  | { type: "UPDATE_FIELD"; field: keyof State; value: any }
+  | { type: "SET_SLIDE"; slide: number }
+  | { type: "TOGGLE_PASSWORD_VISIBILITY" }
+  | { type: "SET_PASSWORD_MATCH"; match: boolean }
+  | { type: "SET_TRIED"; tried: boolean }
+  | { type: "SET_INPUT_VALID"; valid: boolean }
+  | { type: "SET_TOP_TRACKS"; topTracks: any }
+  | { type: "SET_TOP_ARTISTS"; topArtists: any };
+
+const reducer = (state: State, action: Action): State => {
+  switch (action.type) {
+    case "UPDATE_FIELD":
+      return {
+        ...state,
+        [action.field]: action.value,
+      };
+    case "SET_SLIDE":
+      return {
+        ...state,
+        currentSlide: action.slide,
+        passwordVisible: false,
+        tried: false,
+      };
+    case "TOGGLE_PASSWORD_VISIBILITY":
+      return { ...state, passwordVisible: !state.passwordVisible };
+    case "SET_PASSWORD_MATCH":
+      return { ...state, passwordMatch: action.match };
+    case "SET_TRIED":
+      return { ...state, tried: action.tried };
+    case "SET_INPUT_VALID":
+      return { ...state, inputValid: action.valid };
+    case "SET_TOP_TRACKS":
+      return { ...state, topTracks: action.topTracks };
+    case "SET_TOP_ARTISTS":
+      return { ...state, topArtists: action.topArtists };
+    default:
+      return state;
+  }
+};
+
 const OnboardingCarousel: React.FC = () => {
   const router = useRouter();
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [username, setUsername] = useState("");
-  const [passwordMatch, setPasswordMatch] = useState(true);
-  const [inputValid, setInputValid] = useState(false);
-  const [tried, setTried] = useState(false);
-  const [passwordVisible, setPasswordVisible] = useState(false);
-  const [topArtists, setTopArtists] = useState<TopArtist[]>([]);
-  const [topTracks, setTopTracks] = useState<TopTrack[]>([]);
-  const navigation = useNavigation();
-
-  const [enthusiasm, setEnthusiasm] = useState("");
+  const [state, dispatch] = useReducer(reducer, initialState);
   const { sessionToken, updateAccessToken, updateSession } = useAuthContext();
 
-  const progressBar1 = useSharedValue(0);
-  const progressBar2 = useSharedValue(0);
-  const progressBar3 = useSharedValue(0);
-  const progressBar4 = useSharedValue(0);
-  const progressBar5 = useSharedValue(0);
+  const progressBars = [
+    useSharedValue(0),
+    useSharedValue(0),
+    useSharedValue(0),
+    useSharedValue(0),
+    useSharedValue(0),
+  ];
 
   const emailFormat = /^[ ]*([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})[ ]*$/i;
-
-  useEffect(() => {
-    if (currentSlide === 2) {
-      setPasswordMatch(password === confirmPassword);
-    }
-  }, [password, confirmPassword, currentSlide]);
-
   const handleSlideChange = (newSlideIndex: number) => {
-    setPasswordVisible(false);
-    setCurrentSlide(newSlideIndex);
-
-    progressBar1.value = withTiming(newSlideIndex > 0 ? 1 : 0, {
+    dispatch({ type: "SET_SLIDE", slide: newSlideIndex });
+    progressBars[0].value = withTiming(newSlideIndex > 0 ? 1 : 0, {
       duration: 500,
     });
-
-    progressBar2.value = withTiming(
+    progressBars[1].value = withTiming(
       newSlideIndex > 1 ? (newSlideIndex - 1) / 3 : 0,
-      {
-        duration: 500,
-      },
+      { duration: 500 }
     );
-
-    progressBar3.value = withTiming(newSlideIndex >= 5 ? 1 : 0, {
+    progressBars[2].value = withTiming(newSlideIndex >= 5 ? 1 : 0, {
+      duration: 500,
+    });
+    progressBars[3].value = withTiming(newSlideIndex >= 6 ? 1 : 0, {
       duration: 500,
     });
 
-    progressBar4.value = withTiming(newSlideIndex >= 6 ? 1 : 0, {
-      duration: 500,
-    });
-
-    progressBar5.value = withTiming(newSlideIndex >= 7 ? 1 : 0, {
+    progressBars[4].value = withTiming(newSlideIndex >= 7 ? 1 : 0, {
       duration: 500,
     });
   };
 
   const handleSignUp = async (): Promise<void> => {
     try {
+      console.log(
+        "Creating user: $1, $2, $3, $4",
+        state.name,
+        state.email,
+        state.password,
+        state.username
+      );
+
       const res = await axios.post(`${BASE_URL}/users`, {
-        display_name: name,
-        email: email,
-        password: password,
-        username: username,
+        display_name: state.name,
+        email: state.email,
+        password: state.password,
+        username: state.username,
       });
 
       if (res.data.error) {
@@ -186,6 +226,7 @@ const OnboardingCarousel: React.FC = () => {
       });
 
       const redirectUrl = res.headers["x-redirect"];
+      console.log(redirectUrl);
 
       router.push(redirectUrl);
     } catch (error) {
@@ -226,8 +267,8 @@ const OnboardingCarousel: React.FC = () => {
         });
       }
 
-      setTopArtists(artists);
-      setTopTracks(tracks);
+      dispatch({ type: "SET_TOP_ARTISTS", topArtists: artists });
+      dispatch({ type: "SET_TOP_TRACKS", topTracks: tracks });
     } catch (error) {
       console.log(error);
       alert("Error fetching top artists and tracks");
@@ -235,36 +276,40 @@ const OnboardingCarousel: React.FC = () => {
   };
 
   const handleNext = async () => {
-    if (currentSlide === 3) {
-      handleSlideChange(currentSlide + 1);
-      handleSignUp();
-      return;
-    }
-    if (currentSlide === 2 && !passwordMatch) {
-      setTried(true);
-      setInputValid(false);
-      return;
-    }
+    console.log(
+      "slide: " +
+        state.currentSlide +
+        " tried: " +
+        state.tried +
+        " valid: " +
+        state.inputValid
+    );
 
-    if (currentSlide < slides.length - 1 && currentSlide > 4) {
-      handleSlideChange(currentSlide + 1);
-    }
-
-    if (currentSlide === 4) {
+    if (state.currentSlide === 4) {
       await populateTopArtistsAndTopTracks();
-      handleSlideChange(currentSlide + 1);
+      if (sessionToken !== "sessionStartsLikeThis") {
+        dispatch({ type: "SET_INPUT_VALID", valid: true });
+      }
+      handleSlideChange(state.currentSlide + 1);
+      return;
     }
 
-    if (currentSlide === 6 || currentSlide === 7) {
-      handleSlideChange(currentSlide + 1);
+    if (state.currentSlide === 1 && !emailFormat.test(state.email)) {
+      dispatch({ type: "SET_TRIED", tried: true });
+      dispatch({ type: "SET_INPUT_VALID", valid: false });
+      return;
     }
 
-    if (inputValid) {
-      handleSlideChange(currentSlide + 1);
-      setInputValid(false);
+    if (state.inputValid) {
+      if (state.currentSlide === 3) {
+        console.log("called signup");
+        handleSignUp();
+      }
+      handleSlideChange(state.currentSlide + 1);
+      dispatch({ type: "SET_INPUT_VALID", valid: false });
     } else {
-      setTried(true);
-      setInputValid(false);
+      dispatch({ type: "SET_TRIED", tried: true });
+      dispatch({ type: "SET_INPUT_VALID", valid: false });
     }
   };
 
@@ -273,11 +318,22 @@ const OnboardingCarousel: React.FC = () => {
       <View style={styles.outerContainer}>
         <View style={styles.container}>
           <Header
-            title={slides[currentSlide].title}
-            subtitle={slides[currentSlide].question}
+            title={slides[state.currentSlide].title}
+            subtitle={slides[state.currentSlide].question}
           />
+          {state.tried &&
+            !state.inputValid &&
+            (state.currentSlide === 2 ? (
+              !state.passwordMatch ? (
+                <Text style={styles.errorText}>Passwords do not match.</Text>
+              ) : (
+                <Text style={styles.errorText}>Minimum Length: 8</Text>
+              )
+            ) : (
+              <Text style={styles.errorText}>Is this correct?</Text>
+            ))}
 
-          {currentSlide === 8 ? (
+          {state.currentSlide === 8 ? (
             <View style={styles.allSetContainer}>
               <CustomButton
                 text={"Let's Go ->"}
@@ -287,20 +343,21 @@ const OnboardingCarousel: React.FC = () => {
             </View>
           ) : null}
 
-          {currentSlide === 6 ? (
+          {state.currentSlide === 6 ? (
             <ScrollView>
               <View style={styles.artistGrid}>
-                {topArtists.map((artist, index) => (
+                {state.topArtists.map((artist, index) => (
                   <Pressable
                     style={styles.artistContainer}
                     key={index}
                     onPress={(event) => {
                       event.preventDefault();
-                      setTopArtists((prev) =>
-                        prev.map((a, i) =>
-                          i === index ? { ...a, selected: !a.selected } : a,
+                      dispatch({
+                        type: "SET_TOP_ARTISTS",
+                        topArtists: state.topArtists.map((a, i) =>
+                          i === index ? { ...a, selected: !a.selected } : a
                         ),
-                      );
+                      });
                     }}
                   >
                     <ArtistBubble artist={artist} />
@@ -310,20 +367,21 @@ const OnboardingCarousel: React.FC = () => {
             </ScrollView>
           ) : null}
 
-          {currentSlide === 7 ? (
+          {state.currentSlide === 7 ? (
             <ScrollView style={styles.idk}>
               <View style={styles.trackGrid}>
-                {topTracks.map((track, index) => (
+                {state.topTracks.map((track, index) => (
                   <Pressable
                     style={styles.trackContainer}
                     key={index}
                     onPress={(event) => {
                       event.preventDefault();
-                      setTopTracks((prev) =>
-                        prev.map((t, i) =>
-                          i === index ? { ...t, selected: !t.selected } : t,
+                      dispatch({
+                        type: "SET_TOP_TRACKS",
+                        topTracks: state.topTracks.map((t, i) =>
+                          i === index ? { ...t, selected: !t.selected } : t
                         ),
-                      );
+                      });
                     }}
                   >
                     <TrackBubble track={track} />
@@ -332,68 +390,9 @@ const OnboardingCarousel: React.FC = () => {
               </View>
             </ScrollView>
           ) : null}
-
-          {currentSlide === 5 ? (
-            <EnthusiasmSlider email={email} />
-          ) : currentSlide === 2 ? (
-            <View>
-              <TextInput
-                style={[
-                  styles.input,
-                  (!inputValid || passwordMatch) &&
-                    tried && { borderColor: "#8b0000" },
-                ]}
-                placeholder="Enter Password"
-                placeholderTextColor="#808080"
-                secureTextEntry={!passwordVisible}
-                value={password}
-                onChangeText={setPassword}
-              />
-              <TouchableOpacity
-                style={styles.eyeIcon}
-                onPress={() => setPasswordVisible(!passwordVisible)}
-              >
-                <Ionicons
-                  name={passwordVisible ? "eye-off" : "eye"}
-                  size={24}
-                  color="gray"
-                />
-              </TouchableOpacity>
-              <TextInput
-                style={[
-                  styles.input,
-                  (!inputValid || passwordMatch) &&
-                    tried && { borderColor: "#8b0000" },
-                ]}
-                placeholder="Confirm Password"
-                placeholderTextColor="#808080"
-                secureTextEntry={!passwordVisible}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                onBlur={
-                  password.length > 5
-                    ? () => {
-                        setInputValid(true);
-                        setTried(false);
-                      }
-                    : () => setTried(true)
-                }
-              />
-              {!passwordMatch && (
-                <Text style={styles.errorText}>Passwords do not match.</Text>
-              )}
-              {tried && !inputValid && (
-                <Text
-                  style={[
-                    styles.errorText,
-                    currentSlide === 2 ? { bottom: 140 } : {},
-                  ]}
-                >
-                  Is this correct?
-                </Text>
-              )}
-            </View>
-          ) : currentSlide === 4 ? (
+          {state.currentSlide === 5 ? (
+            <EnthusiasmSlider email={state.email} />
+          ) : state.currentSlide === 4 ? (
             <View style={styles.buttonGroup}>
               <CustomButton
                 text={"Log in with Spotify"}
@@ -406,63 +405,113 @@ const OnboardingCarousel: React.FC = () => {
                 backgroundColor="#000000"
               />
             </View>
-          ) : (
+          ) : state.currentSlide === 2 ? (
             <View>
-              {tried && !inputValid && currentSlide < 6 && (
-                <Text
-                  style={[
-                    styles.errorText,
-                    currentSlide === 2 ? { bottom: 10 } : {},
-                  ]}
-                >
-                  Is this correct?
-                </Text>
-              )}
-              {currentSlide < 4 ? (
-                <TextInput
-                  style={[
-                    styles.input,
-                    !inputValid && tried && { borderColor: "#8b0000" },
-                  ]}
-                  inputMode={currentSlide === 1 ? "email" : "text"}
-                  placeholder={slides[currentSlide].placeholder}
-                  placeholderTextColor="#808080"
-                  autoComplete={currentSlide === 1 ? "email" : "off"}
-                  value={
-                    currentSlide === 0
-                      ? name
-                      : currentSlide === 1
-                        ? email
-                        : currentSlide === 3
-                          ? username
-                          : ""
-                  }
-                  onChangeText={
-                    currentSlide === 0
-                      ? setName
-                      : currentSlide === 1
-                        ? setEmail
-                        : setUsername
-                  }
-                  onBlur={() => {
-                    if (currentSlide === 1) {
-                      setInputValid(emailFormat.test(email));
-                    } else if (
-                      (currentSlide === 0 && name.length > 1) ||
-                      (currentSlide === 2 && password.length > 5) ||
-                      (currentSlide === 3 && username.length > 0)
-                    ) {
-                      setInputValid(true);
-                    }
-                    setTried(false);
-                  }}
+              <TextInput
+                style={[
+                  styles.input,
+                  (!state.inputValid || !state.passwordMatch) &&
+                    state.tried && { borderColor: "#8b0000" },
+                ]}
+                placeholder="Enter Password"
+                placeholderTextColor="#808080"
+                secureTextEntry={!state.passwordVisible}
+                value={state.password}
+                onChangeText={(text) =>
+                  dispatch({
+                    type: "UPDATE_FIELD",
+                    field: "password",
+                    value: text,
+                  })
+                }
+                onBlur={() => {
+                  dispatch({
+                    type: "SET_PASSWORD_MATCH",
+                    match: state.password === state.confirmPassword,
+                  });
+                  dispatch({
+                    type: "SET_INPUT_VALID",
+                    valid:
+                      state.password === state.confirmPassword &&
+                      state.password.length >= 8,
+                  });
+                }}
+              />
+              <TouchableOpacity
+                style={styles.eyeIcon}
+                onPress={() => dispatch({ type: "TOGGLE_PASSWORD_VISIBILITY" })}
+              >
+                <Ionicons
+                  name={state.passwordVisible ? "eye-off" : "eye"}
+                  size={24}
+                  color="gray"
                 />
-              ) : null}
+              </TouchableOpacity>
+              <TextInput
+                style={[
+                  styles.input,
+                  (!state.inputValid || !state.passwordMatch) &&
+                    state.tried && { borderColor: "#8b0000" },
+                ]}
+                placeholder="Confirm Password"
+                placeholderTextColor="#808080"
+                secureTextEntry={!state.passwordVisible}
+                value={state.confirmPassword}
+                onChangeText={(text) => {
+                  dispatch({
+                    type: "UPDATE_FIELD",
+                    field: "confirmPassword",
+                    value: text,
+                  });
+                }}
+                onBlur={() => {
+                  dispatch({
+                    type: "SET_PASSWORD_MATCH",
+                    match: state.password === state.confirmPassword,
+                  });
+                  dispatch({
+                    type: "SET_INPUT_VALID",
+                    valid:
+                      state.password === state.confirmPassword &&
+                      state.password.length >= 8,
+                  });
+                }}
+              />
             </View>
-          )}
-
+          ) : state.currentSlide < 4 ? (
+            <TextInput
+              style={[
+                styles.input,
+                !state.inputValid && state.tried && { borderColor: "#8b0000" },
+              ]}
+              placeholder={slides[state.currentSlide].placeholder}
+              placeholderTextColor="#808080"
+              autoComplete={state.currentSlide === 1 ? "email" : "off"}
+              inputMode={state.currentSlide === 1 ? "email" : "text"}
+              value={
+                state.currentSlide === 0
+                  ? state.name
+                  : state.currentSlide === 1
+                    ? state.email
+                    : state.username
+              }
+              onChangeText={(text) => {
+                dispatch({
+                  type: "UPDATE_FIELD",
+                  field:
+                    state.currentSlide === 0
+                      ? "name"
+                      : state.currentSlide === 1
+                        ? "email"
+                        : "username",
+                  value: text,
+                });
+                dispatch({ type: "SET_INPUT_VALID", valid: text.length > 0 });
+              }}
+            />
+          ) : null}
           <View style={styles.stickyContainer}>
-            {currentSlide < 8 ? (
+            {state.currentSlide < 8 ? (
               <CustomButton
                 text={"Continue"}
                 onPress={handleNext}
@@ -470,12 +519,12 @@ const OnboardingCarousel: React.FC = () => {
               />
             ) : null}
             <ProgressBar
-              progress1={progressBar1}
-              progress2={progressBar2}
-              progress3={progressBar3}
-              progress4={progressBar4}
-              progress5={progressBar5}
-              currentSlide={currentSlide}
+              progress1={progressBars[0]}
+              progress2={progressBars[1]}
+              progress3={progressBars[2]}
+              progress4={progressBars[3]}
+              progress5={progressBars[4]}
+              currentSlide={state.currentSlide}
               handleSlideChange={handleNext}
             />
           </View>
@@ -486,10 +535,7 @@ const OnboardingCarousel: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  outerContainer: {
-    flex: 1,
-    backgroundColor: "#FFFFFF",
-  },
+  outerContainer: { flex: 1, backgroundColor: "#FFFFFF" },
   container: {
     flex: 1,
     marginTop: 230,
@@ -527,7 +573,7 @@ const styles = StyleSheet.create({
     color: "#8b0000",
     fontSize: 14,
     position: "absolute",
-    bottom: 72,
+    top: 100,
     paddingHorizontal: 5,
   },
   artistGrid: {
