@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 
 const MusicDisk = require("../assets/images/music-disk.png");
 const Comments = require("../assets/images/ReviewPreview/comments.png");
@@ -20,7 +27,6 @@ const ratingImages = {
   9: require("../assets/images/Ratings/9Rating.png"),
   10: require("../assets/images/Ratings/10Rating.png"),
 };
-
 
 interface PreviewProps {
   preview: Preview;
@@ -52,19 +58,20 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
   return (
     <View style={styles.card}>
       <Image source={MusicDisk} style={styles.musicDisk} />
-      
+
       <View style={styles.container}>
         {/* Top Section with Profile Picture and Name */}
         <View style={styles.topContainer}>
           <View style={styles.leftSection}>
-            <Image style={styles.profilePicture} source={{ uri: preview.profile_picture }} />
+            <Image
+              style={styles.profilePicture}
+              source={{ uri: preview.profile_picture }}
+            />
             <View style={styles.textContainer}>
               <Text style={styles.displayName}>{preview.display_name}</Text>
               <Text style={styles.username}>@{preview.username}</Text>
             </View>
           </View>
-
-          
         </View>
 
         {/* Song Name and Artist Name */}
@@ -73,19 +80,24 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
             <Text style={styles.songName}>{preview.media_title}</Text>
             <Text style={styles.artistName}>{preview.media_artist}</Text>
           </View>
-          
+
           {/* Rating Image on the right side of the song title */}
           <View>
-            <Image source={getRatingImage(preview.rating as keyof typeof ratingImages)} />
+            <Image
+              source={getRatingImage(
+                preview.rating as keyof typeof ratingImages,
+              )}
+            />
           </View>
         </View>
       </View>
-      
 
       {/* Comment Section */}
       <Text style={styles.commentText}>
         {preview.comment && preview.comment.length > 100
-          ? (showFullComment ? preview.comment : `${preview.comment.slice(0, 100)}...`)
+          ? showFullComment
+            ? preview.comment
+            : `${preview.comment.slice(0, 100)}...`
           : preview.comment}
       </Text>
       {preview.comment && preview.comment.length > 100 && (
@@ -98,7 +110,11 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
 
       {/* Tags Section */}
       {preview.tags && preview.tags.length > 0 && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tagsContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.tagsContainer}
+        >
           {preview.tags.map((tag, index) => (
             <View key={index} style={styles.tag}>
               <Text style={styles.tagText}>{tag}</Text>
@@ -137,8 +153,8 @@ const styles = StyleSheet.create({
     padding: 15,
     marginVertical: 20,
     borderRadius: 15,
-    width: '90%',
-    alignSelf: 'center',
+    width: "90%",
+    alignSelf: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,

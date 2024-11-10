@@ -81,5 +81,4 @@ type Preview = {
   media_artist: string;
   tags: string[];
   review_stat: ReviewStat;
-}
-
+};

@@ -1,4 +1,11 @@
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Dimensions } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Dimensions,
+} from "react-native";
 
 import { ThemedText } from "@/components/ThemedText";
 import { useEffect, useState } from "react";
@@ -13,15 +20,14 @@ export default function HomeScreen() {
   const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
   const hasNotification = true; // Hardcoding - Get notification status from somewhere else
 
-
   useEffect(() => {
     const fetchFeedReviews = async () => {
-      console.log('fetchFeedReviews');
+      console.log("fetchFeedReviews");
       try {
         const response = await axios.get(`${BASE_URL}/users/feed/${userId}`);
         setFeedReviews(response.data);
         // console.log('feed after set', feedReviews);
-        console.log('response', response.data);
+        console.log("response", response.data);
         // console.log('setFeedReviews', fe edReviews);
       } catch (error) {
         console.error("Error fetching feed reviews:", error);
@@ -43,43 +49,58 @@ export default function HomeScreen() {
 
   return (
     <ScrollView style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          {/* Top icons */}
-          <View style={styles.topIconsContainer}>
-            {/* Activity icon with notification badge */}
-            <Text style={[styles.titleContainer, styles.titleText]}>
-              <ThemedText type="title" style={styles.titleText}>Platnm</ThemedText>
-            </Text>
+      {/* Header */}
+      <View style={styles.header}>
+        {/* Top icons */}
+        <View style={styles.topIconsContainer}>
+          {/* Activity icon with notification badge */}
+          <Text style={[styles.titleContainer, styles.titleText]}>
+            <ThemedText type="title" style={styles.titleText}>
+              Platnm
+            </ThemedText>
+          </Text>
 
-            {/* Grouping the settings and share icons on the right */}
-            <View style={styles.rightIconsContainer}>
-            <TouchableOpacity onPress={handleNotifPress} style={styles.rightIcon}>
-              <Icon name="bell" size={24} color="#000" style={styles.rightIcon} />
+          {/* Grouping the settings and share icons on the right */}
+          <View style={styles.rightIconsContainer}>
+            <TouchableOpacity
+              onPress={handleNotifPress}
+              style={styles.rightIcon}
+            >
+              <Icon
+                name="bell"
+                size={24}
+                color="#000"
+                style={styles.rightIcon}
+              />
               {hasNotification && <View style={styles.notificationBadge} />}
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleMusicPress} style={styles.rightIcon}>
-              <Icon name="music" size={24} color="#000" style={styles.rightIcon} />
+            <TouchableOpacity
+              onPress={handleMusicPress}
+              style={styles.rightIcon}
+            >
+              <Icon
+                name="music"
+                size={24}
+                color="#000"
+                style={styles.rightIcon}
+              />
               {hasNotification && <View style={styles.notificationBadge} />}
             </TouchableOpacity>
-            </View>
           </View>
-          <View>
-              {feedReviews && feedReviews.length > 0 ? (
-                feedReviews.map((review, index) => {
-                  return (
-                    console.log("Review: ", review),
-                    <ReviewPreview
-                      key={index}
-                      preview={review}
-                    />
-                  );
-                })
-              ) : (
-                <Text style={styles.noReviewsText}>No reviews found.</Text>
-              )}
-            </View>
-          </View>
+        </View>
+        <View>
+          {feedReviews && feedReviews.length > 0 ? (
+            feedReviews.map((review, index) => {
+              return (
+                console.log("Review: ", review),
+                (<ReviewPreview key={index} preview={review} />)
+              );
+            })
+          ) : (
+            <Text style={styles.noReviewsText}>No reviews found.</Text>
+          )}
+        </View>
+      </View>
     </ScrollView>
   );
 }
