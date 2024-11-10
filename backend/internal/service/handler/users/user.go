@@ -1,7 +1,9 @@
 package users
 
 import (
+	"platnm/internal/config"
 	"platnm/internal/errs"
+	"platnm/internal/service/session"
 	"platnm/internal/storage"
 
 	"fmt"
@@ -14,12 +16,21 @@ import (
 type Handler struct {
 	userRepository     storage.UserRepository
 	playlistRepository storage.PlaylistRepository
+	config             config.Supabase
+	store              *session.SessionStore
 }
 
-func NewHandler(userRepository storage.UserRepository, playlistRepository storage.PlaylistRepository) *Handler {
+type UpdateUserOnboardRequest struct {
+	Email      string `json:"email" validate:"required,email"`
+	Enthusiasm string `json:"music_enthusiasm" validate:"required"`
+}
+
+func NewHandler(userRepository storage.UserRepository, playlistRepository storage.PlaylistRepository, config config.Supabase, store *session.SessionStore) *Handler {
 	return &Handler{
 		userRepository,
 		playlistRepository,
+		config,
+		store,
 	}
 }
 
@@ -30,6 +41,23 @@ func (h *Handler) GetUsers(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(users)
+}
+
+func (h *Handler) UpdateUserOnboard(c *fiber.Ctx) error {
+	var request UpdateUserOnboardRequest
+
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	result, err := h.userRepository.UpdateUserOnboard(c.Context(), request.Email, request.Enthusiasm)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(result)
 }
 
 func (h *Handler) GetUserById(c *fiber.Ctx) error {

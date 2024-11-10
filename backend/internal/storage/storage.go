@@ -18,6 +18,7 @@ type UserRepository interface {
 	CalculateScore(ctx context.Context, id uuid.UUID) (int, error)
 	CreateUser(ctx context.Context, user models.User) (models.User, error)
 	GetUserFeed(ctx context.Context, id uuid.UUID) ([]*models.Preview, error)
+	UpdateUserOnboard(ctx context.Context, email string, enthusiasm string) (string, error)
 }
 
 type ReviewRepository interface {
@@ -30,12 +31,13 @@ type ReviewRepository interface {
 	GetReviewsByID(ctx context.Context, id string, media_type string) ([]*models.Review, error)
 	CreateComment(ctx context.Context, comment *models.Comment) (*models.Comment, error)
 	GetTags(ctx context.Context) ([]string, error)
+	GetSocialReviews(ctx context.Context, media_type string, mediaID string, userID string) ([]models.FriendReview, int, error)
 }
 
 type MediaRepository interface {
 	GetMediaByName(ctx context.Context, name string, mediaType models.MediaType) ([]models.Media, error)
 	GetMediaByDate(ctx context.Context) ([]models.Media, error)
-	GetMediaByReviews(ctx context.Context, limit, offset int) ([]models.MediaWithReviewCount, error)
+	GetMediaByReviews(ctx context.Context, limit, offset int, mediaType *string) ([]models.MediaWithReviewCount, error)
 	GetExistingArtistBySpotifyID(ctx context.Context, id string) (*int, error)
 	AddArtist(ctx context.Context, artist *models.Artist) (*models.Artist, error)
 	GetExistingAlbumBySpotifyID(ctx context.Context, id string) (*int, error)

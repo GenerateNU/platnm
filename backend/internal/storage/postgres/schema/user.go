@@ -140,12 +140,28 @@ func (r *UserRepository) CalculateScore(ctx context.Context, id uuid.UUID) (int,
 }
 
 func (r *UserRepository) CreateUser(ctx context.Context, user models.User) (models.User, error) {
-	if err := r.db.QueryRow(ctx, `INSERT INTO "user" (username, display_name, email) VALUES ($1, $2, $3) RETURNING id`, user.Username, user.DisplayName, user.Email).Scan(&user.ID); err != nil {
+	if err := r.db.QueryRow(ctx, `INSERT INTO "user" (id, username, display_name, email) VALUES ($1, $2, $3, $4) RETURNING id`, user.ID, user.Username, user.DisplayName, user.Email).Scan(&user.ID); err != nil {
 		return models.User{}, err
 	}
 
 	return user, nil
 }
+
+func (r *UserRepository) UpdateUserOnboard(ctx context.Context, email string, enthusiasm string) (string, error) {
+    result, err := r.db.Exec(ctx, `UPDATE "user" SET "enthusiasm" = $1 WHERE email = $2`, enthusiasm, email)
+    if err != nil {
+        return "", err
+    }
+
+    rowsAffected := result.RowsAffected();
+    
+    if rowsAffected == 0 {
+        return "user not found", nil 
+    }
+
+    return enthusiasm, nil
+}
+
 
 func (r *UserRepository) GetUserProfile(ctx context.Context, id uuid.UUID) (*models.Profile, error) {
 	profile := &models.Profile{}

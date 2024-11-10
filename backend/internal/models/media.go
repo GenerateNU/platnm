@@ -34,6 +34,7 @@ type Album struct {
 	Cover       string    `json:"cover"`
 	Country     string    `json:"country"`
 	GenreID     int       `json:"genre_id"`
+	ArtistName  string    `json:"artist_name"`
 }
 
 type Track struct {
@@ -45,6 +46,7 @@ type Track struct {
 	Title       string    `json:"title"`
 	Duration    int       `json:"duration_seconds"`
 	ReleaseDate time.Time `json:"release_date"`
+	ArtistName  string    `json:"artist_name"`
 	Cover       string    `json:"cover"`
 }
 

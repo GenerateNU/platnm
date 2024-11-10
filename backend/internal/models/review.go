@@ -21,3 +21,10 @@ type ReviewStat struct {
 	Upvotes      int `json:"upvotes"`
 	Downvotes    int `json:"downvotes"`
 }
+
+type FriendReview struct {
+	Rating      int    `json:"rating"`
+	Comment     string `json:"comment"`
+	Displayname string `json:"display_name"`
+	Username    string `json:"username"`
+}
