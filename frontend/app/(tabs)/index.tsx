@@ -23,12 +23,14 @@ export default function HomeScreen() {
       try {
         const response = await axios.get(`${BASE_URL}/users/feed/${userId}`);
         setFeedReviews(response.data);
+        console.log(feedReviews);
       } catch (error) {
         console.error("Error fetching feed reviews:", error);
       }
     };
 
     fetchFeedReviews();
+    console.log(feedReviews);
   }, [userId]);
 
   const handleNotifPress = () => {
@@ -51,7 +53,6 @@ export default function HomeScreen() {
             <Text style={[styles.titleContainer, styles.titleText]}>
               <ThemedText type="title" style={styles.titleText}>Platnm</ThemedText>
             </Text>
-
 
             {/* Grouping the settings and share icons on the right */}
             <View style={styles.rightIconsContainer}>
@@ -79,11 +80,7 @@ export default function HomeScreen() {
                 <Text style={styles.noReviewsText}>No reviews found.</Text>
               )}
             </View>
-        
-            </View>
-      
-
-      
+          </View>
     </ScrollView>
   );
 }
