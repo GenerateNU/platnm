@@ -20,18 +20,20 @@ export default function HomeScreen() {
 
   useEffect(() => {
     const fetchFeedReviews = async () => {
+      console.log('fetchFeedReviews');
       try {
         const response = await axios.get(`${BASE_URL}/users/feed/${userId}`);
         setFeedReviews(response.data);
-        console.log(feedReviews);
+        // console.log('feed after set', feedReviews);
+        console.log('response', response.data);
+        // console.log('setFeedReviews', fe edReviews);
       } catch (error) {
         console.error("Error fetching feed reviews:", error);
       }
     };
 
     fetchFeedReviews();
-    console.log(feedReviews);
-  }, [userId]);
+  }, []);
 
   const handleNotifPress = () => {
     console.log("Notif icon pressed");
@@ -70,6 +72,7 @@ export default function HomeScreen() {
               {feedReviews && feedReviews.length > 0 ? (
                 feedReviews.map((review, index) => {
                   return (
+                    console.log("Review: ", review),
                     <ReviewPreview
                       key={index}
                       preview={review}

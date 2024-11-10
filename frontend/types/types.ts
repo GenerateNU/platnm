@@ -61,11 +61,11 @@ type UserProfile = {
 type ReviewStat = {
   upvotes: number;
   downvotes: number;
-  commentCount: number;
+  comment_count: number;
 };
 
 type Preview = {
-  review_id: number;
+  id: number;
   user_id: string;
   username: string;
   display_name: string;
