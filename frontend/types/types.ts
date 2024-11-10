@@ -9,6 +9,7 @@ interface Album {
   country: string;
   genre_id: number;
   media_type: string;
+  artist_name: string;
 }
 
 interface Track {
@@ -21,6 +22,7 @@ interface Track {
   release_date: Date;
   cover: string;
   media_type: string;
+  artist_name: string;
 }
 
 type Media = Album | Track;
@@ -70,3 +72,29 @@ interface SectionItem {
   media_type: string;
   cover: string;
 }
+
+type ReviewStat = {
+  upvotes: number;
+  downvotes: number;
+  comment_count: number;
+};
+
+type Preview = {
+  id: number;
+  user_id: string;
+  username: string;
+  display_name: string;
+  profile_picture: string;
+  media_type: MediaType;
+  media_id: number;
+  rating: number;
+  comment?: string;
+  created_at: Date;
+  updated_at: Date;
+  media_cover: string;
+  media_title: string;
+  media_artist: string;
+  tags: string[];
+  review_stat: ReviewStat;
+};
+

@@ -7,32 +7,50 @@ import {
 } from "react-native";
 import Animated, {
   useAnimatedStyle,
-  withSpring,
+  SharedValue,
 } from "react-native-reanimated";
 
 interface ProgressBarProps {
-  progress1: any; // First progress bar value (Reanimated shared value)
-  progress2: any; // Second progress bar value (Reanimated shared value) -- TRY TO REMOVE ANY
-  currentSlide: number; // The current slide index
-  handleSlideChange: (slideIndex: number) => void; // Function to handle click on the progress bar
+  progress1: SharedValue<number>;
+  progress2: SharedValue<number>;
+  progress3: SharedValue<number>;
+  progress4: SharedValue<number>;
+  progress5: SharedValue<number>;
+  currentSlide: number;
+  handleSlideChange: (slideIndex: number) => void;
 }
 
 const ProgressBar: React.FC<ProgressBarProps> = ({
   progress1,
   progress2,
+  progress3,
+  progress4,
+  progress5,
   currentSlide,
   handleSlideChange,
 }) => {
   const progressBar1Style = useAnimatedStyle(() => ({
-    width: `${progress1.value * 100}%`,
+    width: `${Math.min(progress1.value, 1) * 100}%`,
   }));
 
   const progressBar2Style = useAnimatedStyle(() => ({
-    width: `${progress2.value * 100}%`,
+    width: `${Math.min(progress2.value, 1) * 100}%`,
+  }));
+
+  const progressBar3Style = useAnimatedStyle(() => ({
+    width: `${Math.min(progress3.value, 1) * 100}%`,
+  }));
+
+  const progressBar4Style = useAnimatedStyle(() => ({
+    width: `${Math.min(progress4.value, 1) * 100}%`,
+  }));
+
+  const progressBar5Style = useAnimatedStyle(() => ({
+    width: `${Math.min(progress5.value, 1) * 100}%`,
   }));
 
   const handleProgressBarClick = (event: GestureResponderEvent) => {
-    const width = 60; // Width of the bar
+    const width = 60; // Width of each progress bar
     const x = event.nativeEvent.locationX;
     const newSlideIndex = Math.floor((x / width) * 5);
     if (newSlideIndex < currentSlide) {
@@ -44,7 +62,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
     <View style={styles.barsContainer}>
       <TouchableOpacity
         style={styles.barContainer}
-        onPress={(event) => handleProgressBarClick(event)}
+        onPress={handleProgressBarClick}
       >
         <View style={styles.backgroundBar} />
         <Animated.View style={[styles.overlayBar, progressBar1Style]} />
@@ -52,7 +70,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
 
       <TouchableOpacity
         style={styles.barContainer}
-        onPress={(event) => handleProgressBarClick(event)}
+        onPress={handleProgressBarClick}
       >
         <View style={styles.backgroundBar} />
         <Animated.View style={[styles.overlayBar, progressBar2Style]} />
@@ -60,23 +78,26 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
 
       <TouchableOpacity
         style={styles.barContainer}
-        onPress={(event) => handleProgressBarClick(event)}
+        onPress={handleProgressBarClick}
       >
         <View style={styles.backgroundBar} />
+        <Animated.View style={[styles.overlayBar, progressBar3Style]} />
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.barContainer}
-        onPress={(event) => handleProgressBarClick(event)}
+        onPress={handleProgressBarClick}
       >
         <View style={styles.backgroundBar} />
+        <Animated.View style={[styles.overlayBar, progressBar4Style]} />
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.barContainer}
-        onPress={(event) => handleProgressBarClick(event)}
+        onPress={handleProgressBarClick}
       >
         <View style={styles.backgroundBar} />
+        <Animated.View style={[styles.overlayBar, progressBar5Style]} />
       </TouchableOpacity>
     </View>
   );
@@ -108,7 +129,7 @@ const styles = StyleSheet.create({
   },
   overlayBar: {
     height: "100%",
-    backgroundColor: "#000000", // Black overlay for progress
+    backgroundColor: "#000000",
     borderRadius: 2,
   },
 });

@@ -67,6 +67,28 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 		return nil, err
 	}
 
+	// Fetch or create tag IDs and add them to the review_tags table
+	for _, label := range review.Tags {
+		var tagID int
+
+		// Check if the tag already exists
+		tagQuery := `SELECT id FROM tag WHERE name = $1`
+		err := r.QueryRow(ctx, tagQuery, label).Scan(&tagID)
+
+		// If the tag doesn't exist, error
+		if err == pgx.ErrNoRows {
+			return nil, errs.NotFound("tag", "name", label)
+		} else if err != nil {
+			return nil, err
+		}
+
+		// Insert the tag-review relationship into review_tags
+		reviewTagQuery := `INSERT INTO review_tag (review_id, tag_id) VALUES ($1, $2)`
+		if _, err := r.Exec(ctx, reviewTagQuery, review.ID, tagID); err != nil {
+			return nil, err
+		}
+	}
+
 	return review, nil
 }
 
@@ -226,6 +248,149 @@ func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaT
 	}
 
 	return reviews, nil
+}
+
+func (r *ReviewRepository) GetTags(ctx context.Context) ([]string, error) {
+	rows, err := r.Query(ctx, "SELECT name FROM tag")
+	if err != nil {
+		return nil, err
+	}
+
+	var tags []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		tags = append(tags, name)
+	}
+
+	return tags, nil
+}
+
+// Gets the stats (upvote count, downvote count, and comment count) of a review
+func (r *ReviewRepository) GetReviewStats(ctx context.Context, id string) (*models.ReviewStat, error) {
+	var reviewStat models.ReviewStat
+
+	row := r.QueryRow(ctx, `SELECT 
+    r.id, 
+    COALESCE(vote_counts.upvotes, 0) AS upvotes,
+    COALESCE(vote_counts.downvotes, 0) AS downvotes,
+    COALESCE(comment_counts.comments, 0) AS comments_count
+FROM 
+    review r
+LEFT JOIN (
+    SELECT 
+        review_id,
+        SUM(CASE WHEN upvote = TRUE THEN 1 ELSE 0 END) AS upvotes,
+        SUM(CASE WHEN upvote = FALSE THEN 1 ELSE 0 END) AS downvotes
+    FROM 
+        user_review_vote
+    GROUP BY 
+        review_id
+) vote_counts ON r.id = vote_counts.review_id
+LEFT JOIN (
+    SELECT 
+        review_id,
+        COUNT(id) AS comments
+    FROM 
+        comment
+    GROUP BY 
+        review_id
+) comment_counts ON r.id = comment_counts.review_id
+WHERE 
+    r.id = $1;`, id)
+
+	// Scan the row into the review object
+	err := row.Scan(&reviewStat.ID, &reviewStat.Upvotes, &reviewStat.Downvotes, &reviewStat.CommentCount)
+	if err != nil {
+		// If no rows were found, return nil, no error
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		// If there is an error, return nil, error
+		return nil, err
+	}
+
+	// If there are rows and no error, return &review, nil
+	return &reviewStat, nil
+}
+
+func (r *ReviewRepository) GetSocialReviews(ctx context.Context, mediaType string, mediaID string, myID string) ([]models.FriendReview, int, error) {
+	var ratingCount int
+	// Validating the user exists
+	rows, err := r.Query(ctx, `SELECT * FROM "user" WHERE id = $1`, myID)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return nil, 0, errs.NotFound("User not found", "userID", myID)
+	}
+
+	// Validating the media exists
+	query := ``
+	if mediaType == "track" {
+		query = `SELECT * FROM track WHERE id = $1`
+	} else if mediaType == "album" {
+		query = `SELECT * FROM album WHERE id = $1`
+
+	}
+	rows2, err4 := r.Query(ctx, query, mediaID)
+	if err4 != nil {
+		return nil, 0, err4
+	}
+	defer rows2.Close()
+
+	if !rows2.Next() {
+		return nil, 0, errs.NotFound(mediaType, "id", mediaID)
+	}
+
+	query2 := `
+		SELECT COUNT(*)
+		FROM review
+		WHERE user_id = $1 AND media_id = $2 AND media_type = $3
+	`
+	err2 := r.QueryRow(ctx, query2, myID, mediaID, mediaType).Scan(&ratingCount)
+	if err2 != nil {
+		return nil, 0, err2
+	}
+
+	// Fetch reviews from people the user follows
+	friendReviews := []models.FriendReview{}
+	friendsQuery := `
+        SELECT 
+            r.rating,
+            r.comment,
+            u.display_name AS displayname,
+            u.username
+        FROM 
+            review r
+        JOIN 
+            "user" u ON r.user_id = u.id
+        JOIN 
+            follower f ON f.followee_id = r.user_id
+        WHERE 
+            f.follower_id = $1
+            AND r.media_id = $2 
+            AND r.media_type = $3
+    `
+	rows, err3 := r.Query(ctx, friendsQuery, myID, mediaID, mediaType)
+	if err3 != nil {
+		return nil, 0, err3
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var review models.FriendReview
+		if err := rows.Scan(&review.Rating, &review.Comment, &review.Displayname, &review.Username); err != nil {
+			return nil, 0, err
+		}
+		friendReviews = append(friendReviews, review)
+	}
+
+	return friendReviews, ratingCount, nil
 }
 
 func NewReviewRepository(db *pgxpool.Pool) *ReviewRepository {
