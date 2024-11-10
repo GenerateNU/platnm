@@ -60,6 +60,31 @@ type UserProfile = {
   score: number;
 };
 
+type ReviewStat = {
+  upvotes: number;
+  downvotes: number;
+  comment_count: number;
+};
+
+type Preview = {
+  id: number;
+  user_id: string;
+  username: string;
+  display_name: string;
+  profile_picture: string;
+  media_type: MediaType;
+  media_id: number;
+  rating: number;
+  comment?: string;
+  created_at: Date;
+  updated_at: Date;
+  media_cover: string;
+  media_title: string;
+  media_artist: string;
+  tags: string[];
+  review_stat: ReviewStat;
+};
+
 type MediaResponse = {
   media: Media;
   reviewCount: number;
