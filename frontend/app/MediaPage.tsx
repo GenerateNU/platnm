@@ -1,16 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button, StyleSheet, ScrollView, View } from "react-native";
-
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
+import { useFocusEffect, useNavigation } from "expo-router";
+import axios from "axios";
+import ReviewCard from "@/components/ReviewCard";
+import Histogram from "@/components/media/Histogram";
+import YourRatings from "@/components/media/YourRatings";
+import FriendRatings from "@/components/media/FriendRatings";
 import MediaCard from "@/components/media/MediaCard";
 import ReviewStats from "@/components/media/ReviewStats";
-import axios from "axios";
-import { useFocusEffect, useNavigation } from "expo-router";
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
-
-import ReviewCard from "@/components/ReviewCard";
-import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
-import Histogram from "@/components/media/Histogram";
 
 type MediaResponse = {
   media: Media;
@@ -75,6 +75,8 @@ export default function MediaPage() {
                     mediaName: media.media.title,
                     mediaType: media.media.media_type,
                     mediaId: media.media.id,
+                    cover: media.media.cover,
+                    artistName: media.media.artist_name,
                   })
                 }
                 color={"white"}
@@ -89,6 +91,10 @@ export default function MediaPage() {
             {rating && <ReviewStats rating={rating} reviews={reviews} />}
           </View>
           <Histogram />
+          <View style={styles.socialContainer}>
+            <YourRatings count={3} />
+            <FriendRatings count={5} />
+          </View>
           <View>
             {reviews?.map((review) => (
               <ReviewCard
@@ -117,6 +123,10 @@ const styles = StyleSheet.create({
     width: "100%",
     flexDirection: "row",
     alignSelf: "center",
+  },
+  socialContainer: {
+    flexDirection: "column",
+    gap: 8,
   },
 
   buttonContainer: {
