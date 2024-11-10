@@ -147,6 +147,24 @@ func (r *UserRepository) CreateUser(ctx context.Context, user models.User) (mode
 	return user, nil
 }
 
+
+func (r *UserRepository) UpdateUserBio(ctx context.Context, user uuid.UUID, bio string) error {
+	query := `
+		UPDATE "user"
+		SET bio = $1 
+		WHERE id = $2;
+	`
+
+	_, err := r.db.Exec(ctx, query, bio, user)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+
 func (r *UserRepository) UpdateUserOnboard(ctx context.Context, email string, enthusiasm string) (string, error) {
     result, err := r.db.Exec(ctx, `UPDATE "user" SET "enthusiasm" = $1 WHERE email = $2`, enthusiasm, email)
     if err != nil {

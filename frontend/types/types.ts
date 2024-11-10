@@ -60,6 +60,19 @@ type UserProfile = {
   score: number;
 };
 
+type Section = {
+  id: number;
+  title: string;
+  items: SectionItem[];
+};
+
+interface SectionItem {
+  id: number;
+  title: string;
+  media_type: string;
+  cover: string;
+}
+
 type ReviewStat = {
   upvotes: number;
   downvotes: number;
@@ -84,3 +97,4 @@ type Preview = {
   tags: string[];
   review_stat: ReviewStat;
 };
+

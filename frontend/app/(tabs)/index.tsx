@@ -16,6 +16,7 @@ import Icon from "react-native-vector-icons/Feather";
 export default function HomeScreen() {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
+
   const [feedReviews, setFeedReviews] = useState<Preview[]>();
   const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
   const hasNotification = true; // Hardcoding - Get notification status from somewhere else

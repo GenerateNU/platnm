@@ -2,6 +2,7 @@ package schema
 
 import (
 	"context"
+	"fmt"
 	"platnm/internal/errs"
 	"platnm/internal/models"
 
@@ -58,6 +59,45 @@ func (r *PlaylistRepository) AddToUserOnQueue(ctx context.Context, id string, tr
 
 	return nil
 
+}
+
+func (r *PlaylistRepository) GetUserOnQueue(ctx context.Context, id string) ([]*models.OnQueueData, error) {
+	fmt.Print("id", id)
+
+	var onQueuePlaylist []*models.OnQueueData
+
+	findQuery := `
+        SELECT track.id, track.title, artist.name, album.cover
+        FROM track
+        JOIN playlist_track ON track.id = playlist_track.track_id
+        JOIN playlist ON playlist_track.playlist_id = playlist.id
+        JOIN track_artist ON track.id = track_artist.track_id
+        JOIN artist ON track_artist.artist_id = artist.id
+		JOIN album ON track.album_id = album.id
+        WHERE user_id = $1
+        AND playlist.title = 'On Queue'`
+
+	rows, err := r.Query(ctx, findQuery, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var data models.OnQueueData
+		if err := rows.Scan(&data.TrackId, &data.TrackTitle, &data.ArtistName, &data.Cover); err != nil {
+			return nil, err
+		}
+		onQueuePlaylist = append(onQueuePlaylist, &data)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	fmt.Println("onQueuePlaylist", onQueuePlaylist)
+
+	return onQueuePlaylist, nil
 }
 
 func NewPlaylistRepository(db *pgxpool.Pool) *PlaylistRepository {

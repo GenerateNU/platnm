@@ -18,7 +18,8 @@
         "image": "./assets/images/splash-transition.gif",
         "resizeMode": "cover",
         "backgroundColor": "#000"
-      }
+      },
+      "bundleIdentifier": "com.generate.platnm"
     },
     "android": {
       "adaptiveIcon": {
@@ -34,6 +35,11 @@
     "plugins": ["expo-router"],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2ade4389-2c02-473b-a3c5-46830434a83e"
+      }
     }
   }
 }
