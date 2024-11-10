@@ -98,3 +98,7 @@ type Preview = {
   review_stat: ReviewStat;
 };
 
+type MediaResponse = {
+  media: Media;
+  reviewCount: number;
+};
