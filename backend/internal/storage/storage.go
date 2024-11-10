@@ -17,7 +17,9 @@ type UserRepository interface {
 	UnFollow(ctx context.Context, follower uuid.UUID, following uuid.UUID) (bool, error)
 	CalculateScore(ctx context.Context, id uuid.UUID) (int, error)
 	CreateUser(ctx context.Context, user models.User) (models.User, error)
-	GetUserFeed(ctx context.Context, id uuid.UUID) ([]*models.FeedPost, error)
+	UpdateUserBio(ctx context.Context, user uuid.UUID, bio string) error
+	GetUserFeed(ctx context.Context, id uuid.UUID) ([]*models.Preview, error)
+	UpdateUserOnboard(ctx context.Context, email string, enthusiasm string) (string, error)
 }
 
 type ReviewRepository interface {
@@ -29,7 +31,10 @@ type ReviewRepository interface {
 	ReviewBelongsToUser(ctx context.Context, reviewID string, userID string) (bool, error)
 	GetReviewsByID(ctx context.Context, id string, media_type string) ([]*models.Review, error)
 	CreateComment(ctx context.Context, comment *models.Comment) (*models.Comment, error)
+	GetUserReviewOfTrack(ctx context.Context, id string, id2 string) (*models.Review, error)
 	GetTags(ctx context.Context) ([]string, error)
+	GetSocialReviews(ctx context.Context, media_type string, mediaID string, userID string) ([]models.FriendReview, int, error)
+	GetCommentsByReviewID(ctx context.Context, id string) ([]models.Comment, error)
 }
 
 type MediaRepository interface {
@@ -69,6 +74,7 @@ type UserAuthRepository interface {
 type PlaylistRepository interface {
 	CreatePlaylist(ctx context.Context, playlist models.Playlist) error
 	AddToUserOnQueue(ctx context.Context, id string, track models.Track) error
+	GetUserOnQueue(ctx context.Context, id string) ([]*models.OnQueueData, error)
 }
 
 // Repository storage of all repositories.

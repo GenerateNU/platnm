@@ -16,8 +16,15 @@ type Review struct {
 }
 
 type ReviewStat struct {
-	ID        int `json:"id"`
-	Comments  int `json:"comments"`
-	Upvotes   int `json:"upvotes"`
-	Downvotes int `json:"downvotes"`
+	ID           int `json:"id"`
+	CommentCount int `json:"comment_count"`
+	Upvotes      int `json:"upvotes"`
+	Downvotes    int `json:"downvotes"`
+}
+
+type FriendReview struct {
+	Rating      int    `json:"rating"`
+	Comment     string `json:"comment"`
+	Displayname string `json:"display_name"`
+	Username    string `json:"username"`
 }
