@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View, Text, ScrollView} from "react-native";
+import { StyleSheet, View, Text, ScrollView } from "react-native";
 import SongChip from "@/components/search/SongChip";
 import AlbumSearchCard from "@/components/search/AlbumSearchCard";
 
@@ -10,16 +10,15 @@ interface SearchResultsProps {
   filter: FilterOption;
 }
 
-const SearchResults: React.FC<SearchResultsProps> = ({ 
-  songs, 
-  albums, 
+const SearchResults: React.FC<SearchResultsProps> = ({
+  songs,
+  albums,
   isLoading,
-  filter 
+  filter,
 }) => {
   if (isLoading) {
     return <Text style={styles.loadingText}>Searching...</Text>;
   }
-
 
   if (songs.length === 0 && albums.length === 0) {
     return <Text style={styles.noResults}>No results found</Text>;
@@ -27,38 +26,37 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 
   return (
     <View style={styles.container}>
-       <View style={styles.headerContainer}>
+      <View style={styles.headerContainer}>
         <Text style={styles.resultsText}>Results</Text>
         <View style={styles.underline} />
       </View>
-        <View style={styles.albumsGrid}>
-          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
-              {albums.map((album, index) => (
-                <AlbumSearchCard
-                  key={album.media.id}
-                  rank={index + 1}
-                  artist_name={album.media.artist_name}
-                  album_name={album.media.title}
-                  cover={album.media.cover}
+      <View style={styles.albumsGrid}>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
+          {albums.map((album, index) => (
+            <AlbumSearchCard
+              key={album.media.id}
+              rank={index + 1}
+              artist_name={album.media.artist_name}
+              album_name={album.media.title}
+              cover={album.media.cover}
+            />
+          ))}
+          <View />
+          {(filter === "all" || filter === "songs") && (
+            <View style={styles.songsList}>
+              {songs.map((song, index) => (
+                <SongChip
+                  key={song.media.id}
+                  id={index + 1}
+                  title={song.media.title}
+                  artist_name={song.media.artist_name}
+                  cover={song.media.cover}
                 />
               ))}
-        <View/>
-        {(filter === 'all' || filter === 'songs') && (
-            <View style={styles.songsList}>
-            {songs.map((song, index) => (
-              <SongChip
-                key={song.media.id}
-                id={index + 1}
-                title={song.media.title}
-                artist_name={song.media.artist_name}
-                cover={song.media.cover}
-              />
-            ))}
             </View>
-        )}
-            </ScrollView>
-        </View>
-
+          )}
+        </ScrollView>
+      </View>
     </View>
   );
 };
@@ -111,7 +109,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 20,
     color: "#666666",
-  }
+  },
 });
 
 export default SearchResults;

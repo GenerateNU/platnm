@@ -44,16 +44,16 @@ const SearchPage: React.FC = () => {
     try {
       const [songsResponse, albumsResponse] = await Promise.all([
         axios.get(`${BASE_URL}/media?name=${query}&type=track`),
-        axios.get(`${BASE_URL}/media?name=${query}&type=album`)
+        axios.get(`${BASE_URL}/media?name=${query}&type=album`),
       ]);
 
       setSearchResults({
         songs: songsResponse.data,
-        albums: albumsResponse.data
+        albums: albumsResponse.data,
       });
       setIsSearchActive(true);
     } catch (error) {
-      console.error('Search error:', error);
+      console.error("Search error:", error);
       setSearchResults({ songs: [], albums: [] });
     } finally {
       setIsLoading(false);
@@ -63,9 +63,9 @@ const SearchPage: React.FC = () => {
   return (
     <View style={styles.container}>
       <SearchBar onSearch={handleSearch} />
-      
+
       {isSearchActive ? (
-        <SearchResults 
+        <SearchResults
           songs={searchResults.songs}
           albums={searchResults.albums}
           isLoading={isLoading}

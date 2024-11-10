@@ -12,7 +12,7 @@ function usePublishReview() {
     comment: string,
     rating: number,
     tags: string[],
-    draft: boolean
+    draft: boolean,
   ) => {
     const body = {
       user_id: "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d",

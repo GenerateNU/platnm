@@ -11,11 +11,11 @@ const TopSongs = ({ songs }: SongCardProp) => {
       <Text style={styles.title}>Your Top Tracks</Text>
       <ScrollView horizontal={true}>
         {songs?.map((song, id) => (
-          <SongChip 
-          id={id+1}
-          title={song.media.title}
-          artist_name={song.media.artist_name}
-          cover={song.media.cover}
+          <SongChip
+            id={id + 1}
+            title={song.media.title}
+            artist_name={song.media.artist_name}
+            cover={song.media.cover}
           />
         ))}
       </ScrollView>
