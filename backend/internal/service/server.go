@@ -93,6 +93,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	playlistHandler := playlist.NewHandler(repository.Playlist)
 	app.Route("/playlist", func(r fiber.Router) {
 		r.Post("/on_queue/:userId", playlistHandler.AddToUserOnQueue)
+		r.Get("/on_queue/:userId", playlistHandler.GetUserOnQueue)
 	})
 
 	// change to /oauth once its changed in spotify dashboard

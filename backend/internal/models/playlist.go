@@ -7,3 +7,9 @@ type Playlist struct {
 	Bio        string `json:"bio"`
 	CoverPhoto string `json:"cover_photo"`
 }
+
+type OnQueueData struct {
+	TrackId    string `json:"id"`
+	TrackTitle string `json:"title"`
+	ArtistName string `json:"name"`
+}

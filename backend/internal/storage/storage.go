@@ -65,6 +65,7 @@ type UserAuthRepository interface {
 type PlaylistRepository interface {
 	CreatePlaylist(ctx context.Context, playlist models.Playlist) error
 	AddToUserOnQueue(ctx context.Context, id string, track models.Track) error
+	GetUserOnQueue(ctx context.Context, id string) ([]*models.OnQueueData, error)
 }
 
 // Repository storage of all repositories.
