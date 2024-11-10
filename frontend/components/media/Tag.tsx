@@ -1,4 +1,4 @@
-import { StyleSheet, Text, Button } from "react-native";
+import { StyleSheet, Text, TouchableOpacity } from "react-native";
 import React from "react";
 
 export type TagProps = {
@@ -9,9 +9,12 @@ export type TagProps = {
 
 const Tag = ({ name, selected, handleTagSelect }: TagProps) => {
   return (
-    <Button style={styles.tag} onPress={() => handleTagSelect(name)}>
+    <TouchableOpacity
+      style={{ ...styles.tag, backgroundColor: selected ? "#F28037" : "white" }}
+      onPress={() => handleTagSelect(name)}
+    >
       <Text style={styles.tagText}>{name}</Text>
-    </Button>
+    </TouchableOpacity>
   );
 };
 

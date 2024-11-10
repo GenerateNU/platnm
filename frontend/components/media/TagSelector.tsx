@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from "react-native";
 import React from "react";
 import Tag from "./Tag";
 
-const tags = [
+const TAGS = [
   "Experimental",
   "Head Scratcher",
   "Magnum Opus",
@@ -17,17 +17,21 @@ const tags = [
 ];
 
 export type TagSelectorProps = {
-  //   tags: string[];
+  tags: string[];
   handleTagSelect: (tag: string) => void;
 };
 
-const TagSelector = ({ handleTagSelect }: TagSelectorProps) => {
+const TagSelector = ({ handleTagSelect, tags }: TagSelectorProps) => {
   return (
     <View>
       <Text style={styles.text}>Tags</Text>
       <View style={styles.tags}>
-        {tags.map((tag) => (
-          <Tag name={tag} selected={false} handleTagSelect={handleTagSelect} />
+        {TAGS.map((tag) => (
+          <Tag
+            name={tag}
+            selected={tags.includes(tag)}
+            handleTagSelect={handleTagSelect}
+          />
         ))}
       </View>
     </View>

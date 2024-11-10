@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import {
   View,
@@ -9,6 +9,7 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  PanResponder,
 } from "react-native";
 
 import DateInputRating from "@/components/DateInputRating";
@@ -50,12 +51,43 @@ const CreateReview = () => {
   };
 
   const handleDraftSubmit = () => {
-    publishReview(mediaType, parseInt(mediaId), review, rating, true);
+    publishReview(
+      mediaType,
+      parseInt(mediaId),
+      review,
+      rating,
+      selectedTags,
+      true,
+    );
   };
 
   const handlePublish = () => {
-    publishReview(mediaType, parseInt(mediaId), review, rating, false);
+    publishReview(
+      mediaType,
+      parseInt(mediaId),
+      review,
+      rating,
+      selectedTags,
+      false,
+    );
   };
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true, // Start responder on touch
+      onMoveShouldSetPanResponder: (e, gestureState) => {
+        // Allow horizontal gestures only
+        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy); // Ignore vertical movement
+      },
+      onPanResponderMove: (e, gestureState) => {
+        // Handle the slider movement here
+        handleRatingChange(gestureState.moveX); // Update the rating based on horizontal movement
+      },
+      onPanResponderRelease: (e, gestureState) => {
+        // Optionally, handle when the user releases the slider
+      },
+    }),
+  ).current;
 
   return (
     <KeyboardAvoidingView
@@ -72,7 +104,12 @@ const CreateReview = () => {
               cover={cover}
               artistName={artistName}
             />
-            <RatingSlider onRatingChange={handleRatingChange} />
+            <View style={styles.sliderWrapper} {...panResponder.panHandlers}>
+              <View style={styles.slider}>
+                {/* Render your slider here, adjust based on touch */}
+                <RatingSlider onRatingChange={handleRatingChange} />
+              </View>
+            </View>
             <DateInputRating />
             <Divider />
             <TextInput
@@ -85,7 +122,10 @@ const CreateReview = () => {
             />
             <Divider />
 
-            <TagSelector handleTagSelect={handleTagSelect} />
+            <TagSelector
+              tags={selectedTags}
+              handleTagSelect={handleTagSelect}
+            />
             <View style={styles.buttonContainer}>
               <DraftButton handleClick={() => handleDraftSubmit()} />
               <PublishButton handleClick={handlePublish} />
@@ -118,15 +158,23 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     paddingBottom: 30,
+    paddingTop: 15,
   },
   textInput: {
-    height: 50,
+    height: 80,
     backgroundColor: "#ffffff",
     fontFamily: "Roboto",
     color: "#434343",
     fontSize: 16,
     textAlignVertical: "top",
     justifyContent: "flex-end",
+  },
+  sliderWrapper: {
+    marginBottom: 20,
+    width: "100%",
+  },
+  slider: {
+    //  flexDirection: "row", // Ensures horizontal scrolling
   },
 });
 

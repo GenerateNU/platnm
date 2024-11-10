@@ -40,7 +40,7 @@ export default function MediaPage() {
       if (media) {
         axios
           .get(
-            `${BASE_URL}/reviews/${media.media.media_type}/${media.media.id}`
+            `${BASE_URL}/reviews/${media.media.media_type}/${media.media.id}`,
           )
           .then((response) => {
             setReviews(response.data.reviews);
@@ -49,7 +49,7 @@ export default function MediaPage() {
           })
           .catch((error) => console.error(error));
       }
-    }, [media])
+    }, [media]),
   );
 
   return (
