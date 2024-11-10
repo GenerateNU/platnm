@@ -85,8 +85,7 @@ func (r *RecommendationRepository) GetRecommendations(ctx context.Context, id st
 		r.reaction,
 		r.created_at,
 		u.username AS recommender_username,
-		u.display_name AS recommender_name,
-		u.profile_picture AS recommender_picture
+		u.display_name AS recommender_name
 	FROM recommendation r
 	JOIN "user" u ON r.recommender_id = u.id
 	LEFT JOIN (
@@ -128,8 +127,7 @@ func (r *RecommendationRepository) GetRecommendations(ctx context.Context, id st
 			&recommendation.Reaction,
 			&recommendation.CreatedAt,
 			&recommendation.RecommenderUsername,
-			&recommendation.RecommenderName,
-			&recommendation.RecommenderPicture); err != nil {
+			&recommendation.RecommenderName); err != nil {
 			return nil, err
 		}
 		recs = append(recs, &recommendation)

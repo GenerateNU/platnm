@@ -15,7 +15,7 @@ import { useAuthContext } from "@/components/AuthProvider";
 import { router } from "expo-router";
 
 export default function Login() {
-  const { sessionToken, updateAccessToken, updateSession } = useAuthContext();
+  const { sessionToken, updateAccessToken, updateSession, updateUserId } = useAuthContext();
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
   const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
@@ -43,6 +43,7 @@ export default function Login() {
         updateAccessToken(res.data.token);
         const sessionHeader = res.headers["x-session"];
         updateSession(sessionHeader);
+        updateUserId(res.data.user.id);
         Alert.alert("Success", "You are now signed in!");
       })
       .catch((error) => {
