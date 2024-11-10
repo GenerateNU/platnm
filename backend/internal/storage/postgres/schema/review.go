@@ -399,7 +399,7 @@ func (r *ReviewRepository) GetCommentsByReviewID(ctx context.Context, reviewID s
 		return nil, err
 	}
 
-	var comments []models.Comment
+	var comments []models.Comment = []models.Comment{}
 	for rows.Next() {
 		var comment models.Comment
 		if err := rows.Scan(&comment.ID, &comment.Text, &comment.ReviewID, &comment.UserID, &comment.CreatedAt); err != nil {

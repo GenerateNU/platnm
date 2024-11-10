@@ -5,7 +5,9 @@ import (
 )
 
 func (h *Handler) GetComments(c *fiber.Ctx) error {
-	tags, err := h.reviewRepository.GetCommentsByReviewID(c.Context())
+	id := c.Params("id")
+
+	tags, err := h.reviewRepository.GetCommentsByReviewID(c.Context(), id)
 
 	if err != nil {
 		return err
