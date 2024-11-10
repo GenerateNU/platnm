@@ -2,16 +2,25 @@ import React, { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { RadialSlider } from "react-native-radial-slider";
 
-const RatingSlider = () => {
-  const [speed, setSpeed] = useState(0);
+type RatingSliderProps = {
+  onRatingChange: (value: number) => void;
+};
+
+const RatingSlider = ({ onRatingChange }: RatingSliderProps) => {
+  const [value, setValue] = useState(0);
+
+  const handleRating = (value: number) => {
+    setValue(value);
+    onRatingChange(value);
+  };
 
   return (
     <View style={styles.container}>
       <RadialSlider
-        value={speed}
+        value={value}
         min={0}
         max={10}
-        onChange={setSpeed}
+        onChange={handleRating}
         unit={""}
         subTitle={""}
         isHideLines={true}
@@ -24,14 +33,14 @@ const RatingSlider = () => {
           { offset: "0%", color: "#FD5200" },
           { offset: "100%", color: "#FD5200" },
         ]}
-        radius={150}
+        radius={125}
         openingRadian={Math.PI / 2}
         valueStyle={{ color: "#FD5200", fontSize: 50 }}
         centerContentStyle={{
           backgroundColor: "black",
-          borderRadius: 60,
-          width: 120,
-          height: 120,
+          borderRadius: 50,
+          width: 100,
+          height: 100,
           paddingLeft: 5,
           marginBottom: 40,
         }}
@@ -42,7 +51,8 @@ const RatingSlider = () => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 250,
+    alignItems: "center",
+    height: 175,
   },
 });
 

@@ -32,8 +32,6 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     color: "#434343",
     fontSize: 19,
-    borderBottomColor: "##00000080",
-    borderBottomWidth: 1,
   },
 
   dateText: {

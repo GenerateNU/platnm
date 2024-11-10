@@ -2,25 +2,24 @@ import React, { useState } from "react";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import {
   View,
+  TextInput,
+  ScrollView,
   StyleSheet,
   TouchableWithoutFeedback,
   Keyboard,
-  ScrollView,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
-import { Divider } from "react-native-paper";
 
 import DateInputRating from "@/components/DateInputRating";
-import CommentRating from "@/components/CommentRating";
 import SongCard from "@/components/SongCard";
 import HeaderComponent from "@/components/HeaderComponent";
 import DraftButton from "@/components/DraftButton";
-import NextButton from "@/components/NextButton";
+import PublishButton from "@/components/PublishButton";
 import RatingSlider from "@/components/media/RatingSlider";
 import { usePublishReview } from "@/hooks/usePublishReview";
-import { Double } from "react-native/Libraries/Types/CodegenTypes";
+import TagSelector from "@/components/media/TagSelector";
+import Divider from "@/components/Divider";
 
 const CreateReview = () => {
   const { mediaName, mediaType, mediaId, cover, artistName } =
@@ -32,70 +31,66 @@ const CreateReview = () => {
       artistName: string;
     }>();
 
-  console.log(mediaName, mediaType, mediaId, cover, artistName);
   const [rating, setRating] = useState(1);
   const [review, setReview] = useState("");
-  const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const { publishReview } = usePublishReview();
+
+  const handleRatingChange = (newRating: number) => {
+    setRating(newRating);
+  };
+
+  const handleTagSelect = (tag: string) => {
+    if (selectedTags.includes(tag)) {
+      const newTags = selectedTags.filter((selectedTag) => selectedTag !== tag);
+      setSelectedTags(newTags);
+    } else {
+      setSelectedTags([...selectedTags, tag]);
+    }
+  };
 
   const handleDraftSubmit = () => {
     publishReview(mediaType, parseInt(mediaId), review, rating, true);
   };
 
-  const handleRatingChange = (newRating: Double) => {
-    setRating(newRating);
-  };
-
-  const handleReviewChange = (newReview: string) => {
-    setReview(newReview);
-  };
-
-  const handleNextClick = () => {
-    if (rating !== 0) {
-      navigation.navigate("PreviewReview", {
-        rating: rating * 2, // to handle current 1-5 vs. 1-10 scale
-        review,
-        mediaName,
-        mediaType,
-        mediaId,
-      });
-    }
+  const handlePublish = () => {
+    publishReview(mediaType, parseInt(mediaId), review, rating, false);
   };
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0} // Adjusted offset as needed
     >
-      <TouchableWithoutFeedback
-        style={styles.innerContainer}
-        onPress={Keyboard.dismiss}
-      >
-        <View>
-          <HeaderComponent title="Log Song" />
-          <ScrollView
-            contentContainerStyle={styles.scrollview}
-            keyboardShouldPersistTaps="handled"
-          >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.inner}>
+          <ScrollView contentContainerStyle={styles.scrollview}>
+            <HeaderComponent title="Log Song" />
             <SongCard
               mediaName={mediaName}
               mediaType={mediaType}
               cover={cover}
               artistName={artistName}
             />
-            <Divider />
-            <RatingSlider />
+            <RatingSlider onRatingChange={handleRatingChange} />
             <DateInputRating />
-            <CommentRating onReviewChange={handleReviewChange} />
-          </ScrollView>
-          <View style={styles.buttonContainer}>
-            <DraftButton handleClick={() => handleDraftSubmit()} />
-            <NextButton
-              completed={rating !== 0}
-              handleClick={handleNextClick}
+            <Divider />
+            <TextInput
+              style={styles.textInput}
+              multiline={true}
+              placeholderTextColor="#434343"
+              placeholder="Provide your thoughts..."
+              value={review}
+              onChangeText={setReview}
             />
-          </View>
+            <Divider />
+
+            <TagSelector handleTagSelect={handleTagSelect} />
+            <View style={styles.buttonContainer}>
+              <DraftButton handleClick={() => handleDraftSubmit()} />
+              <PublishButton handleClick={handlePublish} />
+            </View>
+          </ScrollView>
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
@@ -107,9 +102,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#ffffff",
   },
-  innerContainer: {
+  inner: {
     flex: 1,
-    justifyContent: "flex-end",
+    paddingTop: 20,
   },
   scrollview: {
     flexGrow: 1,
@@ -122,7 +117,16 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    padding: 20,
+    paddingBottom: 30,
+  },
+  textInput: {
+    height: 50,
+    backgroundColor: "#ffffff",
+    fontFamily: "Roboto",
+    color: "#434343",
+    fontSize: 16,
+    textAlignVertical: "top",
+    justifyContent: "flex-end",
   },
 });
 

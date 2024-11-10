@@ -22,32 +22,28 @@ const CommentRating = ({ onReviewChange }: CommentRatingProps) => {
   };
 
   return (
-    <TouchableWithoutFeedback style={styles.comment} onPress={Keyboard.dismiss}>
-      <TextInput
-        style={styles.input}
-        multiline={true}
-        placeholderTextColor="#434343"
-        placeholder="Provide your thoughts..."
-        value={comment}
-        onChangeText={handleReview}
-      />
-    </TouchableWithoutFeedback>
+    <TextInput
+      style={styles.input}
+      multiline
+      placeholderTextColor="#434343"
+      placeholder="Provide your thoughts..."
+      value={comment}
+      onChangeText={handleReview}
+    />
   );
 };
 
+export default CommentRating;
+
 const styles = StyleSheet.create({
-  comment: {
-    marginTop: 20,
+  input: {
+    flex: 1,
+    padding: 10, // Add padding for better interaction
     backgroundColor: "#ffffff",
     fontFamily: "Roboto",
     color: "#434343",
     fontSize: 19,
-  },
-  input: {
-    flex: 1,
     textAlignVertical: "top",
-    padding: 0,
+    justifyContent: "flex-end",
   },
 });
-
-export default CommentRating;
