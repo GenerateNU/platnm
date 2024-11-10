@@ -92,6 +92,56 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 	return review, nil
 }
 
+func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int, offset int) ([]*models.Review, error) {
+
+	query := `
+	SELECT review.id, COUNT(user_review_vote.review_id) AS vote_count
+	FROM review
+	LEFT JOIN user_review_vote ON review.id = user_review_vote.review_id
+	GROUP BY review.id
+	ORDER BY vote_count DESC
+	LIMIT $1
+	OFFSET $2
+	`
+	rows, err := r.Query(ctx, query, limit, offset)
+
+	if !rows.Next() {
+		return []*models.Review{}, nil
+	}
+
+	if err != nil {
+		return []*models.Review{}, err
+	}
+
+	defer rows.Close()
+
+	var reviews []*models.Review
+	for rows.Next() {
+		var review models.Review
+		if err := rows.Scan(
+			&review.ID,
+			&review.UserID,
+			&review.MediaID,
+			&review.MediaType,
+			&review.Rating,
+			&review.Comment,
+			&review.CreatedAt,
+			&review.UpdatedAt,
+			&review.Draft,
+		); err != nil {
+			return nil, err
+		}
+		reviews = append(reviews, &review)
+	}
+
+	if err := rows.Err(); err != nil {
+		return []*models.Review{}, err
+	}
+
+	return reviews, nil
+
+}
+
 func (r *ReviewRepository) CreateComment(ctx context.Context, comment *models.Comment) (*models.Comment, error) {
 	query := `
     INSERT INTO comment (text, review_id, user_id, created_at)
