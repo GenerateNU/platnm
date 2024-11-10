@@ -47,6 +47,7 @@
     "react-native-svg-transformer": "^1.5.0",
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "~0.19.10",
+    "@react-native-community/slider": "4.5.2",
     "victory-native": "^37.3.1"
   },
   "devDependencies": {
