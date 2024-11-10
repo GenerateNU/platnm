@@ -69,6 +69,7 @@ const SearchPage: React.FC = () => {
           songs={searchResults.songs}
           albums={searchResults.albums}
           isLoading={isLoading}
+          filter={"all"}
         />
       ) : (
         <View>

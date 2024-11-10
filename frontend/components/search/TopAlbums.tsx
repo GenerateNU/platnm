@@ -25,7 +25,8 @@ const TopAlbums = ({ albums }: AlbumCardProps) => {
       >
         {albums?.map((album, index) => (
           <AlbumSearchCard
-            key={index}
+            key={album.media.id}
+            id={album.media.id}
             rank={index + 1}
             artist_name={album.media.artist_name} // hardcoded
             album_name={album.media.title}
@@ -45,6 +46,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flexDirection: "row",
+    paddingHorizontal: 16,
   },
   songName: {
     fontSize: 18,

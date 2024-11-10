@@ -1,9 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button, StyleSheet, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
-import { useFocusEffect, useNavigation } from "expo-router";
+import {
+  useFocusEffect,
+  useLocalSearchParams,
+  useNavigation,
+} from "expo-router";
 import axios from "axios";
 import ReviewCard from "@/components/ReviewCard";
 import Histogram from "@/components/media/Histogram";
@@ -11,6 +14,7 @@ import YourRatings from "@/components/media/YourRatings";
 import FriendRatings from "@/components/media/FriendRatings";
 import MediaCard from "@/components/media/MediaCard";
 import ReviewStats from "@/components/media/ReviewStats";
+import HeaderComponent from "@/components/HeaderComponent";
 
 type MediaResponse = {
   media: Media;
@@ -18,20 +22,28 @@ type MediaResponse = {
 };
 
 export default function MediaPage() {
-  const [media, setMedia] = useState<MediaResponse>();
+  const [media, setMedia] = useState<Media>();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [rating, setReviewAvgRating] = useState<number | null>(null);
 
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  const { mediaId, mediaType } = useLocalSearchParams<{
+    mediaId: string;
+    mediaType: string;
+  }>();
+
+  console.log(mediaId, mediaType);
 
   const insets = useSafeAreaInsets();
-  const height = useBottomTabBarHeight();
 
   useEffect(() => {
     axios
-      .get(`${BASE_URL}/media?sort=review`)
-      .then((response) => setMedia(response.data[0])) // TODO: update this hardcoding
+      .get(`${BASE_URL}/media/${mediaType}/${mediaId}`)
+      .then((response) => {
+        console.log(response);
+        setMedia(response.data);
+      }) // TODO: update this hardcoding
       .catch((error) => console.error(error));
   }, []);
 
@@ -39,44 +51,34 @@ export default function MediaPage() {
     useCallback(() => {
       if (media) {
         axios
-          .get(
-            `${BASE_URL}/reviews/${media.media.media_type}/${media.media.id}`,
-          )
+          .get(`${BASE_URL}/reviews/${mediaType}/${mediaId}`)
           .then((response) => {
             setReviews(response.data.reviews);
-            // convert to
             setReviewAvgRating(response.data.avgRating.toFixed(2) / 2 || null);
           })
           .catch((error) => console.error(error));
       }
-    }, [media]),
+    }, [media])
   );
 
   return (
     media && (
       <View style={{ backgroundColor: "#FFF" }}>
-        <ScrollView
-          style={{
-            ...styles.scrollView,
-            marginTop: insets.top,
-          }}
-          contentContainerStyle={{
-            paddingBottom: height - insets.top, // Add padding at the bottom equal to the height of the bottom tab bar
-          }}
-        >
+        <HeaderComponent title="" />
+        <ScrollView style={styles.scrollView}>
           <View>
-            <MediaCard media={media.media} />
+            <MediaCard media={media} />
           </View>
           <View style={styles.buttonContainer}>
             <View style={styles.addReviewContainer}>
               <Button
                 onPress={() =>
                   navigation.navigate("CreateReview", {
-                    mediaName: media.media.title,
-                    mediaType: media.media.media_type,
-                    mediaId: media.media.id,
-                    cover: media.media.cover,
-                    artistName: media.media.artist_name,
+                    mediaName: media.title,
+                    mediaType: media.media_type,
+                    mediaId: media.id,
+                    cover: media.cover,
+                    artistName: media.artist_name,
                   })
                 }
                 color={"white"}
