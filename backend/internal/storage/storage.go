@@ -17,6 +17,7 @@ type UserRepository interface {
 	UnFollow(ctx context.Context, follower uuid.UUID, following uuid.UUID) (bool, error)
 	CalculateScore(ctx context.Context, id uuid.UUID) (int, error)
 	CreateUser(ctx context.Context, user models.User) (models.User, error)
+	UpdateUserBio(ctx context.Context, user uuid.UUID, bio string) error
 	GetUserFeed(ctx context.Context, id uuid.UUID) ([]*models.Preview, error)
 	UpdateUserOnboard(ctx context.Context, email string, enthusiasm string) (string, error)
 }
@@ -70,6 +71,7 @@ type UserAuthRepository interface {
 type PlaylistRepository interface {
 	CreatePlaylist(ctx context.Context, playlist models.Playlist) error
 	AddToUserOnQueue(ctx context.Context, id string, track models.Track) error
+	GetUserOnQueue(ctx context.Context, id string) ([]*models.OnQueueData, error)
 }
 
 // Repository storage of all repositories.
