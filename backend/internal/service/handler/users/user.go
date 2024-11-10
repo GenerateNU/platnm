@@ -1,9 +1,10 @@
 package users
 
 import (
-	"github.com/google/uuid"
 	"platnm/internal/errs"
 	"platnm/internal/storage"
+
+	"github.com/google/uuid"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -94,5 +95,46 @@ func (h *Handler) GetUserProfile(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(profile)
+}
 
+func (h *Handler) UpdateUserBio(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	exists, err := h.userRepository.UserExists(c.Context(), id)
+	if err != nil {
+		print(err.Error())
+		return err
+	}
+
+	if !exists {
+		return errs.NotFound("User", "userID", id)
+	}
+
+	userUUID, err := uuid.Parse(id)
+	if err != nil {
+		print(err.Error())
+		return err
+	}
+
+	var requestBody struct {
+		Bio string `json:"bio"`
+	}
+
+	if err := c.BodyParser(&requestBody); err != nil {
+		print(err.Error())
+		return err
+	}
+
+	if err := h.userRepository.UpdateUserBio(c.Context(), userUUID, requestBody.Bio); err != nil {
+		print(err.Error())
+		return err
+	}
+
+	profile, err := h.userRepository.GetUserProfile(c.Context(), userUUID)
+	if err != nil {
+		print(err.Error(), "unable to fetch profile ")
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(profile)
 }

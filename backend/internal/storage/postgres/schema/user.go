@@ -145,6 +145,22 @@ func (r *UserRepository) CreateUser(ctx context.Context, user models.User) (mode
 	return user, nil
 }
 
+func (r *UserRepository) UpdateUserBio(ctx context.Context, user uuid.UUID, bio string) error {
+	query := `
+		UPDATE "user"
+		SET bio = $1 
+		WHERE id = $2;
+	`
+
+	_, err := r.db.Exec(ctx, query, bio, user)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *UserRepository) GetUserProfile(ctx context.Context, id uuid.UUID) (*models.Profile, error) {
 	profile := &models.Profile{}
 	query := `SELECT u.id, u.username, u.display_name, u.profile_picture, u.bio, COUNT(DISTINCT followers.follower_id) AS follower_count, COUNT(DISTINCT followed.followee_id) AS followed_count

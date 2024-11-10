@@ -1,26 +1,24 @@
-import { View, Text, TouchableOpacity, StyleSheet, TextInput } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image} from "react-native";
 import Icon from "react-native-vector-icons/Feather";
 import React, { useState, useEffect } from "react";
 
 interface SectionProps {
   title: string;
-  items: string[];
+  items: SectionItem[];
   isEditing: boolean;
+  sectionId: number;
   onAddItem: () => void;
-  onDelete: () => void;
+  onDeleteSection: () => void;
+  onDeleteItem: (index: number) => void;
 }
 
-const Section: React.FC<SectionProps> = ({ title, items, isEditing, onAddItem, onDelete }) => {
+const Section: React.FC<SectionProps> = ({ title, items, isEditing, sectionId, onAddItem, onDeleteSection, onDeleteItem }) => {
   const [sectionTitle, setsectionTitle] = useState(title);
   const [editedItems, setEditedItems] = useState(items);
   const [editItem, setEditItem] = useState("");
 
 
-  const handleItemChange = (text: string, index: number) => {
-    const newItems = [...editedItems];
-    newItems[index] = text;
-    setEditedItems(newItems);
-  };
+  const addItemImage = require("@/assets/images/add-item-placeholder.png");
   
   return (
     <View style={styles.section}>
@@ -32,27 +30,42 @@ const Section: React.FC<SectionProps> = ({ title, items, isEditing, onAddItem, o
             <TouchableOpacity onPress={onAddItem} style={styles.plusIcon}>
               <Icon name="plus" size={20} color="#F28037" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={onDelete} style={styles.trashIcon}>
+            <TouchableOpacity onPress={onDeleteSection} style={styles.trashIcon}>
               <Icon name="trash" size={20} color="#F28037" />
             </TouchableOpacity>
           </>
         }
         </View>
       </View>
-      <View style={styles.itemsRow}>
-        {items.map((item, index) => (
-          <View key={index} style={styles.item}>
-            {isEditing ? (
-              <TextInput
-                value={item}
-                onChangeText={(text) => handleItemChange(text, index)}
-                style={styles.editText}
-                multiline
-              />) :
-              (<Text style={styles.itemTitle}>{item}</Text>)}
-          </View>
-        ))}
-      </View>
+    
+      <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          {items.map((item, index) => (
+            <View key={index} style={{ marginHorizontal: 10, alignItems: 'center' }}>
+              <View style={{ position: 'relative' }}>
+                <Image
+                  source={ addItemImage }
+                  style={{ width: 100, height: 100, borderRadius: 10 }}
+                />
+                {isEditing &&
+                  <TouchableOpacity
+                    onPress={() => onDeleteItem(item.id)}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      right: 0,
+                      backgroundColor: '#D9D9D9',
+                      borderRadius: 100,
+                    }}
+                  >
+                     <Text style={{ fontSize: 16 }}>✖</Text>
+                  </TouchableOpacity>}
+              </View>
+              <Text style={{ marginTop: 5, textAlign: 'center' }}>{item.title}</Text>
+            </View>
+          ))}
+        </View>
+      </ScrollView>
     </View>
   );
 };

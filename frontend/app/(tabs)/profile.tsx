@@ -23,17 +23,26 @@ export default function ProfileScreen() {
   const [userReviews, setUserReviews] = useState<Review[]>();
   const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
 
-
-  const [sections, setSections] = useState([
-    { id: 1, title: "Section 1", items: ["Item title", "Item title", "Item title"] },
-    { id: 2, title: "Section 2", items: ["Item title", "Item title", "Item title"] },
+  const [sections, setSections] = useState<Section[]>([
+    {
+      id: 0,
+      title: "Section 1",
+      items: [
+        {
+          id: 0,
+          title: 'Add Item',
+          media_type: 'placeholder',
+          cover: 'path_to_placeholder_image_or_url'
+        }
+      ]
+    }
   ]); //TODO depending on what we do with sections
+
   const [selectSectionVisible, setSelectSectionVisible] = useState(false);
   const [selectedOption, setSelectedOption] = useState('');
   const [options, setOptions] = useState([
     'Favorite Artists',
     'Peak Albums',
-    'Top Genres',
     'Featured Tracks',
   ]);
   
@@ -85,18 +94,25 @@ export default function ProfileScreen() {
   };
 
   const handleEditPress = () => {
+    
+    if (isEditing) {
+      axios.patch(`${BASE_URL}/users/bio/${userId}`, { bio });
+    }
     setIsEditing(!isEditing);
-    console.log("Edit icon pressed");
   };
 
   const handleSelect = (option: string) => {
     setSelectedOption(option);
     setSelectSectionVisible(false);
-    const newSectionIndex = sections.length + 1;
     const newSection = {
       id: nextId,
       title: `${option}`,
-      items: ["New item title 1", "New item title 2", "New item title 3"],
+      items: [{
+        id: 0,
+        title: 'Add Item',
+        media_type: 'placeholder',
+        cover: 'path_to_placeholder_image_or_url'
+      }]
     };
     setOptions(prevOptions => prevOptions.filter(item => item !== option));
     setSections([...sections, newSection]);
@@ -112,11 +128,29 @@ export default function ProfileScreen() {
       if (section.id === sectionId) {
         return {
           ...section,
-          items: [...section.items, `New item title ${section.items.length + 1}`]
+          items: [...section.items,           {
+            id: Math.floor(Math.random() * 1000),
+            title: 'Add Item',
+            media_type: 'placeholder',
+            cover: "../../assets/images/add-item-placeholder.png"
+          }]
         };
       }
       return section;
     }));
+  };
+
+  const handleDeleteItem = (sectionId: number, itemId: number) => {
+    setSections((prevSections) =>
+      prevSections.map((section) =>
+        section.id === sectionId
+          ? {
+              ...section,
+              items: section.items.filter((item) => item.id !== itemId)
+            }
+          : section
+      )
+    );
   };
 
   const handleDeleteSection = (id: number) => {
@@ -224,8 +258,10 @@ export default function ProfileScreen() {
               title={section.title}
               items={section.items}
               isEditing={isEditing}
+              sectionId={section.id}
               onAddItem={() => handleAddItem(section.id)}
-              onDelete={() => handleDeleteSection(section.id)}
+              onDeleteSection={() => handleDeleteSection(section.id)}
+              onDeleteItem={(itemIndex) => handleDeleteItem(section.id, itemIndex)}
             />
           </View>
         ))}

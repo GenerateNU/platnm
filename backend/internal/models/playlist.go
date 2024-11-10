@@ -11,5 +11,6 @@ type Playlist struct {
 type OnQueueData struct {
 	TrackId    string `json:"id"`
 	TrackTitle string `json:"title"`
+	Cover      string `json:"cover"`
 	ArtistName string `json:"name"`
 }

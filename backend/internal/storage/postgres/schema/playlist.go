@@ -67,12 +67,13 @@ func (r *PlaylistRepository) GetUserOnQueue(ctx context.Context, id string) ([]*
 	var onQueuePlaylist []*models.OnQueueData
 
 	findQuery := `
-        SELECT track.id, track.title, artist.name
+        SELECT track.id, track.title, artist.name, album.cover
         FROM track
         JOIN playlist_track ON track.id = playlist_track.track_id
         JOIN playlist ON playlist_track.playlist_id = playlist.id
         JOIN track_artist ON track.id = track_artist.track_id
         JOIN artist ON track_artist.artist_id = artist.id
+		JOIN album ON track.album_id = album.id
         WHERE user_id = $1
         AND playlist.title = 'On Queue'`
 
@@ -84,7 +85,7 @@ func (r *PlaylistRepository) GetUserOnQueue(ctx context.Context, id string) ([]*
 
 	for rows.Next() {
 		var data models.OnQueueData
-		if err := rows.Scan(&data.TrackId, &data.TrackTitle, &data.ArtistName); err != nil {
+		if err := rows.Scan(&data.TrackId, &data.TrackTitle, &data.ArtistName, &data.Cover); err != nil {
 			return nil, err
 		}
 		onQueuePlaylist = append(onQueuePlaylist, &data)

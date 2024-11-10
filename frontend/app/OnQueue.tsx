@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, SafeAreaView, FlatList } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from "expo-router";
+import { useNavigation, router } from "expo-router";
 import { NativeStackNavigationProp } from 'react-native-screens/lib/typescript/native-stack/types';
 import axios from 'axios';
 
@@ -13,25 +13,28 @@ const OnQueue = () => {
     const userId = "c9bd4c67-7937-4ee3-959d-21a1b3db70eb"; // Hardcoding - Get userId from navigation
 
     const [songs, setSongs] = useState([
-        { id: '1', title: 'Song Name', name: 'Artist Name' },
-        { id: '2', title: 'Song Name', name: 'Artist Name' },
-        { id: '3', title: 'Song Name', name: 'Artist Name' },
-        { id: '4', title: 'Song Name', name: 'Artist Name' },
-        { id: '5', title: 'Song Name', name: 'Artist Name' },
+        { id: '1', title: 'Song Name', name: 'Artist Name', cover: 'https://i.scdn.co/image/ab67616d00001e02a56f5696231c1ad328fc9445' },
+        { id: '2', title: 'Song Name', name: 'Artist Name', cover: 'https://i.scdn.co/image/ab67616d00001e02a56f5696231c1ad328fc9445' },
+        { id: '3', title: 'Song Name', name: 'Artist Name', cover: 'https://i.scdn.co/image/ab67616d00001e02a56f5696231c1ad328fc9445' },
+        { id: '4', title: 'Song Name', name: 'Artist Name', cover: 'https://i.scdn.co/image/ab67616d00001e02a56f5696231c1ad328fc9445' },
+        { id: '5', title: 'Song Name', name: 'Artist Name', cover: 'https://i.scdn.co/image/ab67616d00001e02a56f5696231c1ad328fc9445' },
     ]);
 
+    const goToSongPage = () => {
+        router.push('/explore');
+    };
 
-
-    const renderSongItem = ({ item }: { item: { id: string; title: string; name: string } }) => (
-        <View style={styles.itemContainer}>
-            <View style={styles.thumbnail}>
+    const renderSongItem = ({ item }: { item: { id: string; title: string; name: string; cover: string } }) => (
+        <TouchableOpacity style={styles.itemContainer} onPress={goToSongPage}>
+            {/* <View style={styles.thumbnail}>
                 
-            </View>
+            </View> */}
+            <Image source={{ uri: item.cover }} style={styles.albumCover}/>
             <View style={styles.textContainer}>
                 <Text style={styles.title}>{item.title}</Text>
                 <Text style={styles.subtitle}>{item.name}</Text>
             </View>
-        </View>
+        </TouchableOpacity>
     );
 
     useEffect(() => {
@@ -134,6 +137,14 @@ const styles = StyleSheet.create({
         backgroundColor: '#eee',
         marginVertical: 8,
     },
+    albumCover: {
+        width: 50, 
+        height: 50,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 4,
+        marginRight: 16,
+    }
 });
 
 export default OnQueue;
