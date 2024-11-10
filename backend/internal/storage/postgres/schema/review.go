@@ -318,14 +318,24 @@ WHERE
 
 func (r *ReviewRepository) GetSocialReviews(ctx context.Context, mediaType string, mediaID string, myID string) ([]models.FriendReview, int, error) {
 	var ratingCount int
+	rows, err := r.Query(ctx, `SELECT * FROM "user" WHERE id = $1`, myID)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return nil, 0, errs.NotFound("User not found", "userID", myID)
+	}
+
 	query := `
 		SELECT COUNT(*)
 		FROM review
 		WHERE user_id = $1 AND media_id = $2 AND media_type = $3
 	`
-	err := r.QueryRow(ctx, query, myID, mediaID, mediaType).Scan(&ratingCount)
-	if err != nil {
-		return nil, 0, err
+	err2 := r.QueryRow(ctx, query, myID, mediaID, mediaType).Scan(&ratingCount)
+	if err2 != nil {
+		return nil, 0, err2
 	}
 
 	// Fetch reviews from people the user follows
@@ -347,9 +357,9 @@ func (r *ReviewRepository) GetSocialReviews(ctx context.Context, mediaType strin
             AND r.media_id = $2 
             AND r.media_type = $3
     `
-	rows, err := r.Query(ctx, friendsQuery, myID, mediaID, mediaType)
-	if err != nil {
-		return nil, 0, err
+	rows, err3 := r.Query(ctx, friendsQuery, myID, mediaID, mediaType)
+	if err3 != nil {
+		return nil, 0, err3
 	}
 	defer rows.Close()
 
@@ -361,8 +371,6 @@ func (r *ReviewRepository) GetSocialReviews(ctx context.Context, mediaType strin
 		friendReviews = append(friendReviews, review)
 	}
 
-	print("RATING COUNT: ")
-	print(ratingCount)
 	return friendReviews, ratingCount, nil
 }
 

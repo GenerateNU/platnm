@@ -25,6 +25,6 @@ type ReviewStat struct {
 type FriendReview struct {
 	Rating      int    `json:"rating"`
 	Comment     string `json:"comment"`
-	Displayname string `json:"displayname"`
+	Displayname string `json:"display_name"`
 	Username    string `json:"username"`
 }
