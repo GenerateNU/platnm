@@ -30,28 +30,28 @@ export default function ProfileScreen() {
       items: [
         {
           id: 0,
-          title: 'Add Item',
-          media_type: 'placeholder',
-          cover: 'path_to_placeholder_image_or_url'
-        }
-      ]
-    }
+          title: "Add Item",
+          media_type: "placeholder",
+          cover: "path_to_placeholder_image_or_url",
+        },
+      ],
+    },
   ]); //TODO depending on what we do with sections
 
   const [selectSectionVisible, setSelectSectionVisible] = useState(false);
-  const [selectedOption, setSelectedOption] = useState('');
+  const [selectedOption, setSelectedOption] = useState("");
   const [options, setOptions] = useState([
-    'Favorite Artists',
-    'Peak Albums',
-    'Featured Tracks',
+    "Favorite Artists",
+    "Peak Albums",
+    "Featured Tracks",
   ]);
-  
+
   const hasNotification = true; // Hardcoding - Get notification status from somewhere else
 
   const [isEditing, setIsEditing] = useState(false);
   const [bio, setBio] = useState(userProfile?.bio);
   const [nextId, setNextId] = useState(0);
-   
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -84,7 +84,6 @@ export default function ProfileScreen() {
     router.push("/OnQueue");
   };
 
-
   const handleSettingsPress = () => {
     router.push("/Settings");
   };
@@ -94,7 +93,6 @@ export default function ProfileScreen() {
   };
 
   const handleEditPress = () => {
-    
     if (isEditing) {
       axios.patch(`${BASE_URL}/users/bio/${userId}`, { bio });
     }
@@ -107,14 +105,16 @@ export default function ProfileScreen() {
     const newSection = {
       id: nextId,
       title: `${option}`,
-      items: [{
-        id: 0,
-        title: 'Add Item',
-        media_type: 'placeholder',
-        cover: 'path_to_placeholder_image_or_url'
-      }]
+      items: [
+        {
+          id: 0,
+          title: "Add Item",
+          media_type: "placeholder",
+          cover: "path_to_placeholder_image_or_url",
+        },
+      ],
     };
-    setOptions(prevOptions => prevOptions.filter(item => item !== option));
+    setOptions((prevOptions) => prevOptions.filter((item) => item !== option));
     setSections([...sections, newSection]);
     setNextId(nextId + 1);
   };
@@ -124,20 +124,25 @@ export default function ProfileScreen() {
   };
 
   const handleAddItem = (sectionId: number) => {
-    setSections(sections.map(section => {
-      if (section.id === sectionId) {
-        return {
-          ...section,
-          items: [...section.items,           {
-            id: Math.floor(Math.random() * 1000),
-            title: 'Add Item',
-            media_type: 'placeholder',
-            cover: "../../assets/images/add-item-placeholder.png"
-          }]
-        };
-      }
-      return section;
-    }));
+    setSections(
+      sections.map((section) => {
+        if (section.id === sectionId) {
+          return {
+            ...section,
+            items: [
+              ...section.items,
+              {
+                id: Math.floor(Math.random() * 1000),
+                title: "Add Item",
+                media_type: "placeholder",
+                cover: "../../assets/images/add-item-placeholder.png",
+              },
+            ],
+          };
+        }
+        return section;
+      }),
+    );
   };
 
   const handleDeleteItem = (sectionId: number, itemId: number) => {
@@ -146,15 +151,15 @@ export default function ProfileScreen() {
         section.id === sectionId
           ? {
               ...section,
-              items: section.items.filter((item) => item.id !== itemId)
+              items: section.items.filter((item) => item.id !== itemId),
             }
-          : section
-      )
+          : section,
+      ),
     );
   };
 
   const handleDeleteSection = (id: number) => {
-    setSections(sections.filter(section => section.id !== id));
+    setSections(sections.filter((section) => section.id !== id));
   };
 
   return (
@@ -247,7 +252,10 @@ export default function ProfileScreen() {
         </View>
 
         {/* On Queue Button */}
-        <TouchableOpacity style={styles.queueButton} onPress={handleOnQueuePress}>
+        <TouchableOpacity
+          style={styles.queueButton}
+          onPress={handleOnQueuePress}
+        >
           <Text style={styles.queueButtonText}>▶ On Queue</Text>
         </TouchableOpacity>
 
@@ -261,12 +269,14 @@ export default function ProfileScreen() {
               sectionId={section.id}
               onAddItem={() => handleAddItem(section.id)}
               onDeleteSection={() => handleDeleteSection(section.id)}
-              onDeleteItem={(itemIndex) => handleDeleteItem(section.id, itemIndex)}
+              onDeleteItem={(itemIndex) =>
+                handleDeleteItem(section.id, itemIndex)
+              }
             />
           </View>
         ))}
         {/* Button to Add a New Section */}
-        {isEditing &&
+        {isEditing && (
           <TouchableOpacity
             onPress={handleAddSection}
             style={styles.addSectionButton}
@@ -274,7 +284,7 @@ export default function ProfileScreen() {
             <Text style={styles.addSectionButtonText}>Add Section</Text>
             <Icon name="plus-circle" size={24} color="#000" />
           </TouchableOpacity>
-        }
+        )}
         {/* <SelectSection/> */}
         <SelectSection
           visible={selectSectionVisible}
@@ -403,7 +413,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderColor: "#ccc",
     borderWidth: 1,
-    borderRadius: 20, 
+    borderRadius: 20,
     fontSize: 16,
     color: "#666",
     backgroundColor: "#ddd",

@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal } from 'react-native';
+import React from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Modal } from "react-native";
 
 interface SelectSectionProps {
   visible: boolean;
@@ -8,14 +8,14 @@ interface SelectSectionProps {
   options: string[];
 }
 
-const SelectSection: React.FC<SelectSectionProps> = ({ visible, onClose, onSelect, options }) => {
-
+const SelectSection: React.FC<SelectSectionProps> = ({
+  visible,
+  onClose,
+  onSelect,
+  options,
+}) => {
   return (
-    <Modal
-      visible={visible}
-      transparent={true}
-      animationType="slide"
-    >
+    <Modal visible={visible} transparent={true} animationType="slide">
       <View style={styles.modalOverlay}>
         <View style={styles.menuContainer}>
           {options.map((option, index) => (
@@ -27,10 +27,7 @@ const SelectSection: React.FC<SelectSectionProps> = ({ visible, onClose, onSelec
               <Text style={styles.menuItemText}>{option}</Text>
             </TouchableOpacity>
           ))}
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={onClose}
-          >
+          <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
             <Text style={styles.cancelButtonText}>Cancel</Text>
           </TouchableOpacity>
         </View>
@@ -42,13 +39,13 @@ const SelectSection: React.FC<SelectSectionProps> = ({ visible, onClose, onSelec
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)', // Dimmed background
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.3)", // Dimmed background
   },
   menuContainer: {
     width: 250,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 5,
@@ -56,18 +53,18 @@ const styles = StyleSheet.create({
   menuItem: {
     padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: "#ccc",
   },
   menuItemText: {
     fontSize: 16,
-    color: '#000',
+    color: "#000",
   },
   cancelButton: {
     padding: 15,
-    alignItems: 'center',
+    alignItems: "center",
   },
   cancelButtonText: {
-    color: 'red',
+    color: "red",
     fontSize: 16,
   },
 });

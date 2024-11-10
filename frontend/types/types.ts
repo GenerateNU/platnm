@@ -69,4 +69,4 @@ interface SectionItem {
   title: string;
   media_type: string;
   cover: string;
-};
+}

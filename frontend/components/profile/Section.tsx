@@ -1,4 +1,11 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image} from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Image,
+} from "react-native";
 import Icon from "react-native-vector-icons/Feather";
 import React, { useState, useEffect } from "react";
 
@@ -12,56 +19,72 @@ interface SectionProps {
   onDeleteItem: (index: number) => void;
 }
 
-const Section: React.FC<SectionProps> = ({ title, items, isEditing, sectionId, onAddItem, onDeleteSection, onDeleteItem }) => {
+const Section: React.FC<SectionProps> = ({
+  title,
+  items,
+  isEditing,
+  sectionId,
+  onAddItem,
+  onDeleteSection,
+  onDeleteItem,
+}) => {
   const [sectionTitle, setsectionTitle] = useState(title);
   const [editedItems, setEditedItems] = useState(items);
   const [editItem, setEditItem] = useState("");
 
-
   const addItemImage = require("@/assets/images/add-item-placeholder.png");
-  
+
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{title}</Text>
+        <Text style={styles.sectionTitle}>{title}</Text>
         <View style={styles.container}>
-        {isEditing &&
-          <>
-            <TouchableOpacity onPress={onAddItem} style={styles.plusIcon}>
-              <Icon name="plus" size={20} color="#F28037" />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={onDeleteSection} style={styles.trashIcon}>
-              <Icon name="trash" size={20} color="#F28037" />
-            </TouchableOpacity>
-          </>
-        }
+          {isEditing && (
+            <>
+              <TouchableOpacity onPress={onAddItem} style={styles.plusIcon}>
+                <Icon name="plus" size={20} color="#F28037" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={onDeleteSection}
+                style={styles.trashIcon}
+              >
+                <Icon name="trash" size={20} color="#F28037" />
+              </TouchableOpacity>
+            </>
+          )}
         </View>
       </View>
-    
+
       <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
           {items.map((item, index) => (
-            <View key={index} style={{ marginHorizontal: 10, alignItems: 'center' }}>
-              <View style={{ position: 'relative' }}>
+            <View
+              key={index}
+              style={{ marginHorizontal: 10, alignItems: "center" }}
+            >
+              <View style={{ position: "relative" }}>
                 <Image
-                  source={ addItemImage }
+                  source={addItemImage}
                   style={{ width: 100, height: 100, borderRadius: 10 }}
                 />
-                {isEditing &&
+                {isEditing && (
                   <TouchableOpacity
                     onPress={() => onDeleteItem(item.id)}
                     style={{
-                      position: 'absolute',
+                      position: "absolute",
                       top: 0,
                       right: 0,
-                      backgroundColor: '#D9D9D9',
+                      backgroundColor: "#D9D9D9",
                       borderRadius: 100,
                     }}
                   >
-                     <Text style={{ fontSize: 16 }}>✖</Text>
-                  </TouchableOpacity>}
+                    <Text style={{ fontSize: 16 }}>✖</Text>
+                  </TouchableOpacity>
+                )}
               </View>
-              <Text style={{ marginTop: 5, textAlign: 'center' }}>{item.title}</Text>
+              <Text style={{ marginTop: 5, textAlign: "center" }}>
+                {item.title}
+              </Text>
             </View>
           ))}
         </View>
@@ -75,7 +98,7 @@ export default Section;
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    alignItems: 'center',
+    alignItems: "center",
   },
   plusIcon: {
     position: "absolute",
@@ -133,7 +156,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderColor: "#ccc",
     borderWidth: 1,
-    borderRadius: 20, 
+    borderRadius: 20,
     fontSize: 16,
     color: "#666",
     backgroundColor: "#ddd",

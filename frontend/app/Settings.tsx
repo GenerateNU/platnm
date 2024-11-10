@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Switch, SafeAreaView } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Switch,
+  SafeAreaView,
+} from "react-native";
 import { useNavigation } from "expo-router";
 import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -12,15 +20,14 @@ function Settings() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
   return (
-
     <ScrollView style={styles.container}>
       {/* Header */}
       <SafeAreaView style={styles.header}>
         <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backContainer}
+          onPress={() => navigation.goBack()}
+          style={styles.backContainer}
         >
-            <Icon name="arrow-back" size={24} color="#1C1B1F" />
+          <Icon name="arrow-back" size={24} color="#1C1B1F" />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
           <Text style={styles.headerText}>Settings</Text>
@@ -141,7 +148,7 @@ const styles = StyleSheet.create({
   },
   headerCenter: {
     flex: 1,
-    alignItems: 'center', // Center horizontally
+    alignItems: "center", // Center horizontally
     left: -30,
   },
   backContainer: {
