@@ -14,6 +14,7 @@ import axios from "axios";
 import Section from "@/components/profile/Section";
 import ReviewCard from "@/components/ReviewCard";
 import { router } from "expo-router";
+import SelectSection from "@/components/profile/SelectSection";
 
 export default function ProfileScreen() {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -21,16 +22,27 @@ export default function ProfileScreen() {
   const [userProfile, setUserProfile] = useState<UserProfile>();
   const [userReviews, setUserReviews] = useState<Review[]>();
   const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
+
+
   const [sections, setSections] = useState([
     { id: 1, title: "Section 1", items: ["Item title", "Item title", "Item title"] },
     { id: 2, title: "Section 2", items: ["Item title", "Item title", "Item title"] },
   ]); //TODO depending on what we do with sections
+  const [selectSectionVisible, setSelectSectionVisible] = useState(false);
+  const [selectedOption, setSelectedOption] = useState('');
+  const [options, setOptions] = useState([
+    'Favorite Artists',
+    'Peak Albums',
+    'Top Genres',
+    'Featured Tracks',
+  ]);
+  
   const hasNotification = true; // Hardcoding - Get notification status from somewhere else
 
   const [isEditing, setIsEditing] = useState(false);
   const [bio, setBio] = useState(userProfile?.bio);
   const [nextId, setNextId] = useState(0);
-
+   
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -57,44 +69,42 @@ export default function ProfileScreen() {
 
   const handleActivityPress = () => {
     router.push("/Activity");
-    console.log("Activity icon pressed");
-    // Add activity icon press handling logic here
   };
 
   const handleOnQueuePress = () => {
     router.push("/OnQueue");
-    console.log("On Queue button pressed");
-    // Add activity icon press handling logic here
   };
 
 
   const handleSettingsPress = () => {
     router.push("/Settings");
-    console.log("Settings icon pressed");
-    // Add settings icon press handling logic here
   };
 
   const handleSharePress = () => {
     console.log("Share icon pressed");
-    // Add share icon press handling logic here
   };
 
   const handleEditPress = () => {
     setIsEditing(!isEditing);
     console.log("Edit icon pressed");
-    console.log("isEditingBio:", isEditing);
-    // Add edit icon press handling logic here
   };
 
-  const handleAddSection = () => {
+  const handleSelect = (option: string) => {
+    setSelectedOption(option);
+    setSelectSectionVisible(false);
     const newSectionIndex = sections.length + 1;
     const newSection = {
       id: nextId,
-      title: `Section ${newSectionIndex}`,
+      title: `${option}`,
       items: ["New item title 1", "New item title 2", "New item title 3"],
     };
+    setOptions(prevOptions => prevOptions.filter(item => item !== option));
     setSections([...sections, newSection]);
     setNextId(nextId + 1);
+  };
+
+  const handleAddSection = () => {
+    setSelectSectionVisible(true);
   };
 
   const handleAddItem = (sectionId: number) => {
@@ -228,7 +238,14 @@ export default function ProfileScreen() {
             <Text style={styles.addSectionButtonText}>Add Section</Text>
             <Icon name="plus-circle" size={24} color="#000" />
           </TouchableOpacity>
-  }
+        }
+        {/* <SelectSection/> */}
+        <SelectSection
+          visible={selectSectionVisible}
+          onClose={() => setSelectSectionVisible(false)}
+          onSelect={handleSelect}
+          options={options}
+        />
       </ScrollView>
     )
   );

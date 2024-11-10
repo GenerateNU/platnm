@@ -15,6 +15,7 @@ const Section: React.FC<SectionProps> = ({ title, items, isEditing, onAddItem, o
   const [editedItems, setEditedItems] = useState(items);
   const [editItem, setEditItem] = useState("");
 
+
   const handleItemChange = (text: string, index: number) => {
     const newItems = [...editedItems];
     newItems[index] = text;
@@ -24,16 +25,7 @@ const Section: React.FC<SectionProps> = ({ title, items, isEditing, onAddItem, o
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
-          {isEditing ? (
-            <TextInput
-              value={sectionTitle}
-              onChangeText={setsectionTitle}
-              style={styles.sectionInput}
-              multiline
-            />
-          ) : (
             <Text style={styles.sectionTitle}>{title}</Text>
-          )}
         <View style={styles.container}>
         {isEditing &&
           <>

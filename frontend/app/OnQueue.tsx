@@ -4,55 +4,48 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from "expo-router";
 import { NativeStackNavigationProp } from 'react-native-screens/lib/typescript/native-stack/types';
 import axios from 'axios';
-import ReviewCard from '@/components/ReviewCard';
 
 
 const OnQueue = () => {
     const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
     const navigation = useNavigation<NativeStackNavigationProp<any>>();
     const [userReviews, setUserReviews] = useState<Review[]>();
-    const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
+    const userId = "c9bd4c67-7937-4ee3-959d-21a1b3db70eb"; // Hardcoding - Get userId from navigation
 
-    const songs = [
-        { id: '1', title: 'Song Name', artist: 'Artist Name' },
-        { id: '2', title: 'Song Name', artist: 'Artist Name' },
-        { id: '3', title: 'Song Name', artist: 'Artist Name' },
-        { id: '4', title: 'Song Name', artist: 'Artist Name' },
-        { id: '5', title: 'Song Name', artist: 'Artist Name' },
-    ];
+    const [songs, setSongs] = useState([
+        { id: '1', title: 'Song Name', name: 'Artist Name' },
+        { id: '2', title: 'Song Name', name: 'Artist Name' },
+        { id: '3', title: 'Song Name', name: 'Artist Name' },
+        { id: '4', title: 'Song Name', name: 'Artist Name' },
+        { id: '5', title: 'Song Name', name: 'Artist Name' },
+    ]);
 
-    const albums = [
-        { id: '1', title: 'Album Name', tracks: '# of tracks' },
-        { id: '2', title: 'Album Name', tracks: '# of tracks' },
-        { id: '3', title: 'Album Name', tracks: '# of tracks' },
-    ];
 
-    const renderSongItem = ({ item }: { item: { id: string; title: string; artist: string } }) => (
+
+    const renderSongItem = ({ item }: { item: { id: string; title: string; name: string } }) => (
         <View style={styles.itemContainer}>
             <View style={styles.thumbnail}>
                 
             </View>
             <View style={styles.textContainer}>
                 <Text style={styles.title}>{item.title}</Text>
-                <Text style={styles.subtitle}>{item.artist}</Text>
+                <Text style={styles.subtitle}>{item.name}</Text>
             </View>
         </View>
     );
 
-    const renderAlbumItem = ({ item }: { item: { id: string; title: string; tracks: string } }) => (
-        <View style={styles.itemContainer}>
-            <View style={styles.thumbnail}>
-
-            </View>
-            <View style={styles.textContainer}>
-                <Text style={styles.title}>{item.title}</Text>
-                <Text style={styles.subtitle}>{item.tracks}</Text>
-            </View>
-        </View>
-    );
+    useEffect(() => {
+        axios.get(`${BASE_URL}/playlist/on_queue/${userId}`)
+            .then(response => {
+                setSongs(response.data);
+            })
+            .catch(error => {
+                console.error(error);
+            });
+    }, []);
     
     return (
-        <ScrollView style={styles.container}>
+        <View style={styles.container}>
             {/* Header */}
             <SafeAreaView style={styles.header}>
                 <TouchableOpacity
@@ -74,17 +67,7 @@ const OnQueue = () => {
                 keyExtractor={item => item.id}
                 ItemSeparatorComponent={() => <View style={styles.separator} />}
             />
-
-            {/* Albums Section */}
-            <Text style={styles.sectionTitle}>Albums</Text>
-            <FlatList
-                data={albums}
-                renderItem={renderAlbumItem}
-                keyExtractor={item => item.id}
-                ItemSeparatorComponent={() => <View style={styles.separator} />}
-            />
-
-        </ScrollView> 
+        </View> 
     );
 };
 
