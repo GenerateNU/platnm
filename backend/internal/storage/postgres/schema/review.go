@@ -393,6 +393,24 @@ func (r *ReviewRepository) GetSocialReviews(ctx context.Context, mediaType strin
 	return friendReviews, ratingCount, nil
 }
 
+func (r *ReviewRepository) GetCommentsByReviewID(ctx context.Context, reviewID string) ([]models.Comment, error) {
+	rows, err := r.Query(ctx, `SELECT id, text, review_id, user_id, created_at FROM comment WHERE review_id = $1`, reviewID)
+	if err != nil {
+		return nil, err
+	}
+
+	var comments []models.Comment = []models.Comment{}
+	for rows.Next() {
+		var comment models.Comment
+		if err := rows.Scan(&comment.ID, &comment.Text, &comment.ReviewID, &comment.UserID, &comment.CreatedAt); err != nil {
+			return nil, err
+		}
+		comments = append(comments, comment)
+	}
+
+	return comments, nil
+}
+
 func NewReviewRepository(db *pgxpool.Pool) *ReviewRepository {
 	return &ReviewRepository{
 		db,
