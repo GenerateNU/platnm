@@ -1,6 +1,7 @@
 package spotify
 
 import (
+	"fmt"
 	"platnm/internal/config"
 	"platnm/internal/service/ctxt"
 	"platnm/internal/service/handler/oauth"
@@ -41,6 +42,7 @@ func (m *Middleware) WithAuthenticatedSpotifyClient() fiber.Handler {
 
 		if token == nil {
 			user, err := m.sessionStore.GetUser(c)
+			fmt.Printf("user: %v\n", user)
 			if err != nil {
 				return err
 			}

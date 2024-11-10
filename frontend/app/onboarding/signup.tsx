@@ -20,6 +20,9 @@ import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import EnthusiasmSlider from "@/components/onboarding/EnthusiasmSlider";
 import ArtistBubble from "@/components/onboarding/ArtistBubble";
+import TrackBubble from "@/components/onboarding/TrackBubble";
+import { useNavigation } from "expo-router";
+import { router } from "expo-router";
 
 const slides = [
   {
@@ -66,9 +69,27 @@ const slides = [
     title: "Favorite Songs",
     question: "Pick up to 5 of your favorite songs.",
   },
+  {
+    id: 8,
+    title: "All Set!",
+    question: "Explore PLATNM",
+  }
 ];
 
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
+interface TopArtist {
+  name: string;
+  profilePictureUrl: string;
+  selected: boolean;
+}
+
+interface TopTrack {
+  name: string;
+  artist: string;
+  imageUrl: string;
+  selected: boolean;
+}
 
 const OnboardingCarousel: React.FC = () => {
   const router = useRouter();
@@ -82,6 +103,9 @@ const OnboardingCarousel: React.FC = () => {
   const [inputValid, setInputValid] = useState(false);
   const [tried, setTried] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [topArtists, setTopArtists] = useState<TopArtist[]>([]);
+  const [topTracks, setTopTracks] = useState<TopTrack[]>([]);
+  const navigation = useNavigation();
 
   const [enthusiasm, setEnthusiasm] = useState("");
   const { sessionToken, updateAccessToken, updateSession } = useAuthContext();
@@ -115,15 +139,15 @@ const OnboardingCarousel: React.FC = () => {
       },
     );
 
-    progressBar3.value = withTiming(newSlideIndex === 5 ? 1 : 0, {
+    progressBar3.value = withTiming(newSlideIndex >= 5 ? 1 : 0, {
       duration: 500,
     });
 
-    progressBar4.value = withTiming(newSlideIndex === 6 ? 1 : 0, {
+    progressBar4.value = withTiming(newSlideIndex >= 6 ? 1 : 0, {
       duration: 500,
     });
 
-    progressBar5.value = withTiming(newSlideIndex === 7 ? 1 : 0, {
+    progressBar5.value = withTiming(newSlideIndex >= 7 ? 1 : 0, {
       duration: 500,
     });
   };
@@ -142,21 +166,16 @@ const OnboardingCarousel: React.FC = () => {
         return;
       }
 
-      console.log('data:', res.data);
-      console.log('access token:', res.data['access_token']);
-      console.log('headers:', res.headers);
-      console.log('session header:', res.headers['x-session']);
-
       updateAccessToken(res.data['access_token']);
       updateSession(res.headers['x-session']);
     } catch (error) {
+      console.log(error);
       alert("Signup Error");
     }
   };
 
   const handleSpotifyLogin = async (): Promise<void> => {
     try {
-      console.log("session", sessionToken);
       const res = await axios.get(`${BASE_URL}/auth/spotify/begin`, {
         validateStatus: function (status) {
           return status == 302;
@@ -167,7 +186,6 @@ const OnboardingCarousel: React.FC = () => {
       });
 
       const redirectUrl = res.headers['x-redirect'];
-      console.log(redirectUrl);
 
       router.push(redirectUrl);
     } catch (error) {
@@ -176,7 +194,47 @@ const OnboardingCarousel: React.FC = () => {
     }
   };
 
-  const handleNext = () => {
+  const populateTopArtistsAndTopTracks = async (): Promise<void> => {
+    try {
+      const res = await axios.get(`${BASE_URL}/spotify/top-items`, {
+        headers: {
+          'X-Session': sessionToken,
+        }
+      });
+
+      if (res.data.error) {
+        alert("Error fetching top artists and tracks");
+        return;
+      }
+
+      const artists: TopArtist[] = [];
+      for (const artist of res.data.topArtists) {
+        artists.push({
+          name: artist.name,
+          profilePictureUrl: artist.images[0].url,
+          selected: false,
+        });
+      }
+
+      const tracks: TopTrack[] = [];
+      for (const track of res.data.topTracks) {
+        tracks.push({
+          name: track.name,
+          artist: track.artists[0].name,
+          imageUrl: track.album.images[0].url,
+          selected: false,
+        });
+      }
+
+      setTopArtists(artists);
+      setTopTracks(tracks)
+    } catch (error) {
+      console.log(error);
+      alert("Error fetching top artists and tracks");
+    }
+  };
+
+  const handleNext = async () => {
     if (currentSlide === 3) {
       handleSlideChange(currentSlide + 1);
       handleSignUp();
@@ -192,6 +250,15 @@ const OnboardingCarousel: React.FC = () => {
       handleSlideChange(currentSlide + 1);
     }
 
+    if (currentSlide === 4) {
+      await populateTopArtistsAndTopTracks();
+      handleSlideChange(currentSlide + 1);
+    }
+
+    if (currentSlide === 6 || currentSlide === 7) {
+      handleSlideChange(currentSlide + 1);
+    }
+
     if (inputValid) {
       handleSlideChange(currentSlide + 1);
       setInputValid(false);
@@ -199,12 +266,6 @@ const OnboardingCarousel: React.FC = () => {
       setTried(true);
       setInputValid(false);
     }
-  };
-
-  const artist = {
-    name: "Artist Name",
-    profilePictureUrl: "@/assets/images/gray-circle.svg",
-    selected: false,
   };
 
   return (
@@ -215,9 +276,50 @@ const OnboardingCarousel: React.FC = () => {
             title={slides[currentSlide].title}
             subtitle={slides[currentSlide].question}
           />
+
+          {currentSlide === 8 ? (
+            <View style={styles.allSetContainer}>
+              <CustomButton
+                text={"Let's Go ->"}
+                onPress={() => router.push("/(tabs)/profile")}
+                backgroundColor="#000000"
+              />
+            </View>
+          ) : null}
+
           {currentSlide === 6 ? (
             <ScrollView>
-              <ArtistBubble artist={artist} />
+              <View style={styles.artistGrid}>
+                {topArtists.map((artist, index) => (
+                  <Pressable style={styles.artistContainer}
+                    key={index}
+                    onPress={(event) => {
+                      event.preventDefault()
+                      setTopArtists((prev) => prev.map((a, i) => i === index ? { ...a, selected: !a.selected } : a))
+                    }
+                  }>
+                    <ArtistBubble artist={artist} />
+                  </Pressable>
+                ))}
+              </View>
+            </ScrollView>
+          ) : null}
+
+          {currentSlide === 7 ? (
+            <ScrollView style={styles.idk}>
+              <View style={styles.trackGrid}>
+                {topTracks.map((track, index) => (
+                  <Pressable style={styles.trackContainer}
+                    key={index}
+                    onPress={(event) => {
+                      event.preventDefault()
+                      setTopTracks((prev) => prev.map((t, i) => i === index ? { ...t, selected: !t.selected } : t))
+                    }
+                  }>
+                    <TrackBubble track={track} />
+                  </Pressable>
+                ))}
+              </View>
             </ScrollView>
           ) : null}
 
@@ -296,7 +398,7 @@ const OnboardingCarousel: React.FC = () => {
             </View>
           ) : (
             <View>
-              {tried && !inputValid && (
+              {tried && !inputValid && currentSlide < 6 && (
                 <Text
                   style={[
                     styles.errorText,
@@ -350,11 +452,13 @@ const OnboardingCarousel: React.FC = () => {
           )}
 
           <View style={styles.stickyContainer}>
-            <CustomButton
-              text={"Continue"}
-              onPress={handleNext}
-              backgroundColor="#000000"
-            />
+            {currentSlide < 8 ? (
+              <CustomButton
+                text={"Continue"}
+                onPress={handleNext}
+                backgroundColor="#000000"
+              />
+            ) : null}
             <ProgressBar
               progress1={progressBar1}
               progress2={progressBar2}
@@ -415,6 +519,28 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 72,
     paddingHorizontal: 5,
+  },
+  artistGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-around",
+  },
+  artistContainer: {
+    width: "30%",
+  },
+  trackGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-around",
+  },
+  trackContainer: {
+    width: "40%",
+  },
+  allSetContainer: {
+    marginTop: 80,
+  },
+  idk: {
+    marginBottom: 100,
   },
 });
 

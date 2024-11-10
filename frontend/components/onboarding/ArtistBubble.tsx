@@ -5,13 +5,14 @@ export default function ArtistBubble({
 }: {
   artist: { name: string; profilePictureUrl: string; selected: boolean };
 }) {
+
   return (
     <View style={styles.container}>
       <Image
-        source={{ uri: "@/assets/images/gray-circle.svg" }}
+        source={{ uri: artist.profilePictureUrl }}
         style={[
           styles.profilePicture,
-          artist.selected && styles.profilePictureSelected,
+          artist.selected && styles.selected,
         ]}
       />
       <Text style={styles.name}>{artist.name}</Text>
@@ -22,14 +23,16 @@ export default function ArtistBubble({
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    flexDirection: "column",
+    paddingBottom: 12,
   },
   profilePicture: {
-    borderColor: "black",
+    borderRadius: 36,
+    width: 72,
+    height: 72,
   },
-  profilePictureSelected: {
-    borderColor: "blue",
-    borderWidth: 2,
+  selected: {
+    borderColor: "black",
+    borderWidth: 4,
   },
   name: {
     textAlign: "center",
