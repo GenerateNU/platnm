@@ -30,6 +30,7 @@ type ReviewRepository interface {
 	GetReviewsByID(ctx context.Context, id string, media_type string) ([]*models.Review, error)
 	CreateComment(ctx context.Context, comment *models.Comment) (*models.Comment, error)
 	GetTags(ctx context.Context) ([]string, error)
+	GetSocialReviews(ctx context.Context, media_type string, mediaID string, userID string) ([]models.FriendReview, int, error)
 }
 
 type MediaRepository interface {

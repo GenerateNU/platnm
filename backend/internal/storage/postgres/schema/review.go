@@ -316,6 +316,56 @@ WHERE
 	return &reviewStat, nil
 }
 
+func (r *ReviewRepository) GetSocialReviews(ctx context.Context, mediaType string, mediaID string, myID string) ([]models.FriendReview, int, error) {
+	var ratingCount int
+	query := `
+		SELECT COUNT(*)
+		FROM review
+		WHERE user_id = $1 AND media_id = $2 AND media_type = $3
+	`
+	err := r.QueryRow(ctx, query, myID, mediaID, mediaType).Scan(&ratingCount)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Fetch reviews from people the user follows
+	friendReviews := []models.FriendReview{}
+	friendsQuery := `
+        SELECT 
+            r.rating,
+            r.comment,
+            u.display_name AS displayname,
+            u.username
+        FROM 
+            review r
+        JOIN 
+            "user" u ON r.user_id = u.id
+        JOIN 
+            follower f ON f.followee_id = r.user_id
+        WHERE 
+            f.follower_id = $1
+            AND r.media_id = $2 
+            AND r.media_type = $3
+    `
+	rows, err := r.Query(ctx, friendsQuery, myID, mediaID, mediaType)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var review models.FriendReview
+		if err := rows.Scan(&review.Rating, &review.Comment, &review.Displayname, &review.Username); err != nil {
+			return nil, 0, err
+		}
+		friendReviews = append(friendReviews, review)
+	}
+
+	print("RATING COUNT: ")
+	print(ratingCount)
+	return friendReviews, ratingCount, nil
+}
+
 func NewReviewRepository(db *pgxpool.Pool) *ReviewRepository {
 	return &ReviewRepository{
 		db,
