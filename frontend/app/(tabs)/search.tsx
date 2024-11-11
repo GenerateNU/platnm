@@ -32,16 +32,16 @@ const SearchPage: React.FC = () => {
       .get(`${BASE_URL}/media?sort=review&type=track`)
       .then((response) => setInitialSongs(response.data))
       .catch((error) => console.error(error));
-    
+
     axios
       .get(`${BASE_URL}/reviews/popular`)
       .then((response) => setInitialReviews(response.data))
-      .catch((error) => console.error(error))
+      .catch((error) => console.error(error));
   }, []);
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) {
-      setSearchResults({ songs: [], albums: []});
+      setSearchResults({ songs: [], albums: [] });
       setIsSearchActive(false);
       return;
     }
@@ -60,7 +60,7 @@ const SearchPage: React.FC = () => {
       setIsSearchActive(true);
     } catch (error) {
       console.error("Search error:", error);
-      setSearchResults({ songs: [], albums: []});
+      setSearchResults({ songs: [], albums: [] });
     } finally {
       setIsLoading(false);
     }
@@ -76,8 +76,8 @@ const SearchPage: React.FC = () => {
         <SearchResults
           songs={searchResults.songs}
           albums={searchResults.albums}
-          isLoading={isLoading} 
-          filter={undefined}        
+          isLoading={isLoading}
+          filter={undefined}
         />
       ) : (
         <View>

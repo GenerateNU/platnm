@@ -16,6 +16,7 @@ import Play from "@/assets/images/Icons/play.svg";
 import Info from "@/assets/images/Icons/info.svg";
 import { TouchableOpacity } from "react-native";
 import { useAuthContext } from "@/components/AuthProvider";
+import HeaderComponent from "@/components/HeaderComponent";
 
 export type RecommendationsCard = {
   songType: string;
@@ -110,7 +111,7 @@ export default function RecommendationsScreen() {
         minHeight: Dimensions.get("window").height,
       }}
     >
-      <SubpageHeader title="Recommendations" />
+      <HeaderComponent title="Recommendations" />
       <UserRow recomendations={reccomendations} />
       <View
         style={{
