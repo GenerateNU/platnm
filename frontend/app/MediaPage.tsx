@@ -58,7 +58,7 @@ export default function MediaPage() {
           })
           .catch((error) => console.error(error));
       }
-    }, [media])
+    }, [media]),
   );
 
   return (
