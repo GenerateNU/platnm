@@ -25,7 +25,7 @@ export default function ProfileScreen() {
   const [userReviews, setUserReviews] = useState<Review[]>();
   const { userId } = useAuthContext();
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
-  
+
   const [sections, setSections] = useState<Section[]>([
     {
       id: 0,
@@ -60,7 +60,7 @@ export default function ProfileScreen() {
       if (!userId) {
         router.push("/(tabs)/login");
       }
-    }, [userId])
+    }, [userId]),
   );
 
   useEffect(() => {
