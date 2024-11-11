@@ -8,11 +8,13 @@ type SongCardProp = {
 const TopSongs = ({ songs }: SongCardProp) => {
   return (
     <View>
-      <Text style={styles.title}>Your Top Tracks</Text>
-      <ScrollView horizontal={true}>
+      <Text style={styles.title}>Top Tracks</Text>
+      <ScrollView horizontal={true} style={styles.container}>
         {songs?.map((song, id) => (
           <SongChip
-            id={id + 1}
+            key={song.media.id}
+            rank={id + 1}
+            id={song.media.id}
             title={song.media.title}
             artist_name={song.media.artist_name}
             cover={song.media.cover}
@@ -24,6 +26,9 @@ const TopSongs = ({ songs }: SongCardProp) => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 16,
+  },
   title: {
     fontSize: 24,
     fontWeight: "bold",

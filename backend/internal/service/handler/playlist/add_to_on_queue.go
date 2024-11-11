@@ -11,7 +11,6 @@ type addToOnQueueRequest struct {
 	models.Track
 }
 
-
 func (h *Handler) AddToUserOnQueue(c *fiber.Ctx) error {
 
 	id := c.Params("userId")

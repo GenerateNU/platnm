@@ -45,7 +45,7 @@ export default function Login() {
         const sessionHeader = res.headers["x-session"];
         updateSession(sessionHeader);
         updateUserId(res.data.user.id);
-        Alert.alert("Success", "You are now signed in!");
+        router.push("/(tabs)/profile");
       })
       .catch((error) => {
         console.error("Error logging in:", error);

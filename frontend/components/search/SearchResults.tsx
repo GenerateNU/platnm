@@ -7,7 +7,7 @@ interface SearchResultsProps {
   songs: MediaResponse[];
   albums: MediaResponse[];
   isLoading: boolean;
-  filter: FilterOption;
+  filter: "all" | "songs" | "albums";
 }
 
 const SearchResults: React.FC<SearchResultsProps> = ({
@@ -34,6 +34,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
           {albums.map((album, index) => (
             <AlbumSearchCard
+              id={album.media.id}
               key={album.media.id}
               rank={index + 1}
               artist_name={album.media.artist_name}
@@ -46,8 +47,9 @@ const SearchResults: React.FC<SearchResultsProps> = ({
             <View style={styles.songsList}>
               {songs.map((song, index) => (
                 <SongChip
-                  key={song.media.id}
-                  id={index + 1}
+                  key={index}
+                  rank={index + 1}
+                  id={song.media.id}
                   title={song.media.title}
                   artist_name={song.media.artist_name}
                   cover={song.media.cover}

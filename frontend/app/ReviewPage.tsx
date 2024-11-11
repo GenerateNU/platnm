@@ -1,9 +1,14 @@
+
 import HeaderComponent from "@/components/HeaderComponent";
 import axios from "axios";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Image, ScrollView } from "react-native";
 import Comment from "@/components/comment";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, Image, ScrollView } from "react-native";
+
 interface ReviewPageProps {
   route: {
     params: {
@@ -38,14 +43,22 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
     return ratingImages[rating]; // Access the image from the preloaded images object
   };
 
+  const { review_id } = route.params; // Access the review data passed from the previous screen
+  const [review, setReview] = useState<Preview>();
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
   // Fetch the review data using the review_id
   useEffect(() => {
     const fetchReview = async () => {
       console.log("fetchReviews");
+
       console.log("review_id", review_id);
       try {
         const response = await axios.get(`${BASE_URL}/reviews/${review_id}`);
         console.log("response", response.data);
+
+      try {
+        const response = await axios.get(`${BASE_URL}/review/${review_id}`);
         setReview(response.data);
       } catch (error) {
         console.error("Error fetching review:", error);
@@ -107,6 +120,20 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
         </View>
       </ScrollView>
     </View>
+    fetchReview();
+  }, []);
+
+  return review ? (
+    <ScrollView style={styles.container}>
+      <View style={styles.reviewContainer}>
+        <Image source={{ uri: review.media_cover }} style={styles.coverImage} />
+        <Text style={styles.songName}>{review.media_title}</Text>
+        <Text style={styles.artistName}>{review.media_artist}</Text>
+        <Text style={styles.comment}>{review.comment}</Text>
+        <Text style={styles.rating}>Rating: {review.rating}</Text>
+        {/* {/* {* Add any other review details you want to show */}
+      </View>
+    </ScrollView>
   ) : (
     <Text>Loading...</Text>
   );
@@ -117,6 +144,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: "#fff",
+
   },
   reviewContainer: {
     alignItems: "center",
