@@ -111,4 +111,4 @@ type UserComment = {
   created_at: string;
   // upvotes: number;
   // downvotes: number;
-}
+};

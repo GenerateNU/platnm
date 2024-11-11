@@ -56,7 +56,9 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
       console.log("fetchReviews");
       console.log("review_id", review_id);
       try {
-        const response = await axios.get(`${BASE_URL}/reviews/comments/${review_id}`);
+        const response = await axios.get(
+          `${BASE_URL}/reviews/comments/${review_id}`,
+        );
         console.log("response", response.data);
         setComments(response.data);
       } catch (error) {
@@ -75,7 +77,10 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
         <View style={styles.reviewContainer}>
           <Text style={styles.songName}>{review.display_name}</Text>
           <Text style={styles.artistName}>{review.username}</Text>
-          <Image source={{ uri: review.media_cover }} style={styles.coverImage} />
+          <Image
+            source={{ uri: review.media_cover }}
+            style={styles.coverImage}
+          />
           <Text style={styles.songName}>{review.media_title}</Text>
           <Text style={styles.artistName}>{review.media_artist}</Text>
           <Text style={styles.comment}>{review.comment}</Text>
@@ -88,17 +93,17 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
             />
           </View>
           <View>
-          {comments && comments.length > 0 ? (
-            comments.map((comment, index) => {
-              return (
-                //<Comment key={index} comment={comment} />
-                null
-              );
-            })
-          ) : (
-            <Text style={styles.noReviewsText}>No comments found.</Text>
-          )}
-        </View>
+            {comments && comments.length > 0 ? (
+              comments.map((comment, index) => {
+                return (
+                  //<Comment key={index} comment={comment} />
+                  null
+                );
+              })
+            ) : (
+              <Text style={styles.noReviewsText}>No comments found.</Text>
+            )}
+          </View>
         </View>
       </ScrollView>
     </View>

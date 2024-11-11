@@ -6,9 +6,8 @@ import UpvoteIcon from "@/assets/images/upvote.svg";
 import DownvoteIcon from "@/assets/images/downvote.svg";
 const MusicDisk = require("../assets/images/music-disk.png");
 
-
 interface ReviewCardProps {
-  comment: UserComment
+  comment: UserComment;
   // upvotes: number;
   // downvotes: number;
 }
