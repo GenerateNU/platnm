@@ -91,7 +91,8 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
           {comments && comments.length > 0 ? (
             comments.map((comment, index) => {
               return (
-                <Comment key={index} comment={comment} />
+                //<Comment key={index} comment={comment} />
+                null
               );
             })
           ) : (
