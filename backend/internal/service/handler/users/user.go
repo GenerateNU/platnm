@@ -6,7 +6,6 @@ import (
 	"platnm/internal/service/session"
 	"platnm/internal/storage"
 
-
 	"github.com/google/uuid"
 
 	"github.com/gofiber/fiber/v2"
@@ -192,8 +191,6 @@ func (h *Handler) GetUserFeed(c *fiber.Ctx) error {
 		print(err.Error(), "unable to fetch profile ")
 		return err
 	}
-	fmt.Print(feed)
 
 	return c.Status(fiber.StatusOK).JSON(feed)
-
 }

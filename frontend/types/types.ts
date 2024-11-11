@@ -97,4 +97,3 @@ type Preview = {
   tags: string[];
   review_stat: ReviewStat;
 };
-
