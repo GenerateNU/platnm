@@ -1,6 +1,6 @@
-import axios from 'axios';
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, Image, ScrollView } from "react-native";
 
 interface ReviewPageProps {
   route: {
@@ -30,21 +30,19 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
     fetchReview();
   }, []);
 
-  return (
-    review ? (
-      <ScrollView style={styles.container}>
-        <View style={styles.reviewContainer}>
-          <Image source={{ uri: review.media_cover }} style={styles.coverImage} />
-          <Text style={styles.songName}>{review.media_title}</Text>
-          <Text style={styles.artistName}>{review.media_artist}</Text>
-          <Text style={styles.comment}>{review.comment}</Text>
-          <Text style={styles.rating}>Rating: {review.rating}</Text>
-          {/* {/* {* Add any other review details you want to show */}
-        </View>
-      </ScrollView>
-    ) : (
-      <Text>Loading...</Text>
-    )
+  return review ? (
+    <ScrollView style={styles.container}>
+      <View style={styles.reviewContainer}>
+        <Image source={{ uri: review.media_cover }} style={styles.coverImage} />
+        <Text style={styles.songName}>{review.media_title}</Text>
+        <Text style={styles.artistName}>{review.media_artist}</Text>
+        <Text style={styles.comment}>{review.comment}</Text>
+        <Text style={styles.rating}>Rating: {review.rating}</Text>
+        {/* {/* {* Add any other review details you want to show */}
+      </View>
+    </ScrollView>
+  ) : (
+    <Text>Loading...</Text>
   );
 };
 
@@ -54,7 +52,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   reviewContainer: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   coverImage: {
     width: 200,
@@ -64,11 +62,11 @@ const styles = StyleSheet.create({
   },
   songName: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   artistName: {
     fontSize: 18,
-    color: '#888',
+    color: "#888",
   },
   comment: {
     fontSize: 16,
@@ -76,7 +74,7 @@ const styles = StyleSheet.create({
   },
   rating: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
 
