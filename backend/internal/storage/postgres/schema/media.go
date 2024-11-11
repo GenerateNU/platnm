@@ -127,7 +127,6 @@ LIMIT 20;`
 	}
 	return medias, nil
 }
-
 func (r *MediaRepository) GetExistingArtistBySpotifyID(ctx context.Context, id string) (*int, error) {
 	var artistId int
 	err := r.QueryRow(ctx, `SELECT id FROM artist WHERE spotify_id = $1`, id).Scan(&artistId)
@@ -139,6 +138,62 @@ func (r *MediaRepository) GetExistingArtistBySpotifyID(ctx context.Context, id s
 	}
 
 	return &artistId, nil
+}
+
+func (r *MediaRepository) GetAlbumById(ctx context.Context, id string) (*models.Album, error) {
+	var album models.Album
+	err := r.QueryRow(ctx, `SELECT * FROM album WHERE id = $1`, id).Scan(
+		&album.ID,
+		&album.Title,
+		&album.ReleaseDate,
+		&album.Cover,
+		&album.Country,
+		&album.GenreID,
+		&album.SpotifyID,		
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &album, nil
+}
+
+func (r *MediaRepository) GetTrackById(ctx context.Context, id string) (*models.Track, error) {
+	var track models.Track
+	err := r.QueryRow(ctx, `SELECT * FROM track WHERE id = $1`, id).Scan(
+		&track.ID,
+		&track.AlbumID,
+		&track.Title,
+		&track.Duration,
+		&track.SpotifyID,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+		err = r.QueryRow(ctx, `SELECT cover, title FROM album WHERE id = $1`, track.AlbumID).Scan(
+		&track.Cover,
+		&track.AlbumTitle,
+	)
+
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	track.MediaType = "track";
+
+	return &track, nil
 }
 
 func (r *MediaRepository) AddArtist(ctx context.Context, artist *models.Artist) (*models.Artist, error) {

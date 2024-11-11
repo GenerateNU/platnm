@@ -8,6 +8,29 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+func (h *Handler) GetTrackById(c *fiber.Ctx) error {
+	id := c.Params("id")
+	print(id)
+	media, err := h.mediaRepository.GetTrackById(c.Context(), id)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(media)
+}
+
+func (h *Handler) GetAlbumById(c *fiber.Ctx) error {
+	id := c.Params("id")
+	print(id)
+	media, err := h.mediaRepository.GetAlbumById(c.Context(), id)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(media)
+}
+
+
 func (h *Handler) GetMediaByName(c *fiber.Ctx) error {
 	name := c.Params("name")
 	typeString := c.Query("media_type")
@@ -25,6 +48,8 @@ func (h *Handler) GetMediaByName(c *fiber.Ctx) error {
 	medias, _ := h.mediaRepository.GetMediaByName(c.Context(), name, mediaType)
 	return c.Status(fiber.StatusOK).JSON(medias)
 }
+
+
 
 func (h *Handler) GetMedia(c *fiber.Ctx) error {
 	type request struct {
