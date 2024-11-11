@@ -73,14 +73,17 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Post("/", reviewHandler.CreateReview)
 		r.Get("/popular", reviewHandler.GetReviewsByPopularity)
 		r.Get("/tags", reviewHandler.GetTags)
-		r.Get("/:id", reviewHandler.GetReviewsByUserID)
+
+		// Get Reviews by ID which can be used to populate a preview
+		r.Get("/:id", reviewHandler.GetReviewByID)
+		r.Get("/user/:id", reviewHandler.GetReviewsByUserID)
 		r.Post("/vote/:rating", reviewHandler.VoteReview)
 		r.Patch("/:id", reviewHandler.UpdateReviewByReviewID)
 		r.Get("/album/:id", func(c *fiber.Ctx) error {
-			return reviewHandler.GetReviewsById(c, "album")
+			return reviewHandler.GetReviewsByMediaId(c, "album")
 		})
 		r.Get("/track/:id", func(c *fiber.Ctx) error {
-			return reviewHandler.GetReviewsById(c, "track")
+			return reviewHandler.GetReviewsByMediaId(c, "track")
 		})
 		r.Get("/track/:userId/:mediaId", func(c *fiber.Ctx) error {
 			return reviewHandler.GetUserReviewOfTrack(c)

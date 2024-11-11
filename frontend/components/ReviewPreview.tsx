@@ -7,6 +7,8 @@ import {
   ScrollView,
   TouchableOpacity,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
 
 const MusicDisk = require("../assets/images/music-disk.png");
 const Comments = require("../assets/images/ReviewPreview/comments.png");
@@ -34,6 +36,7 @@ interface PreviewProps {
 
 const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
   const [showFullComment, setShowFullComment] = useState(false);
+  const navigation = useNavigation<NativeStackNavigationProp<any>>(); // Initialize navigation
 
   const getRatingImage = (rating: keyof typeof ratingImages) => {
     return ratingImages[rating]; // Access the image from the preloaded images object
@@ -55,9 +58,24 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
     setShowFullComment(!showFullComment);
   };
 
+  const handlePreviewPress = () => {
+    // Navigate to the ReviewPage when the preview is clicked
+    navigation.navigate("ReviewPage", { review: preview.id });
+  };
+
   return (
+    //<TouchableOpacity onPress={handlePreviewPress}> {/* Wrap the card with TouchableOpacity */}
     <View style={styles.card}>
-      <Image source={MusicDisk} style={styles.musicDisk} />
+      <View style={styles.vinyl}>
+        <Image source={MusicDisk} style={styles.musicDisk} />
+        {preview.media_cover ? (
+          <Image
+            source={{ uri: preview.media_cover }} // Use uri for remote images
+            style={styles.mediaCover}
+            resizeMode="cover"
+          />
+        ) : null}
+      </View>
 
       <View style={styles.container}>
         {/* Top Section with Profile Picture and Name */}
@@ -93,20 +111,22 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
       </View>
 
       {/* Comment Section */}
-      <Text style={styles.commentText}>
-        {preview.comment && preview.comment.length > 100
-          ? showFullComment
-            ? preview.comment
-            : `${preview.comment.slice(0, 100)}...`
-          : preview.comment}
-      </Text>
-      {preview.comment && preview.comment.length > 100 && (
-        <TouchableOpacity onPress={handleViewMorePress}>
-          <Text style={styles.readMore}>
-            {showFullComment ? "Show less" : "Read more"}
-          </Text>
-        </TouchableOpacity>
-      )}
+      <TouchableOpacity onPress={handlePreviewPress}>
+        <Text style={styles.commentText}>
+          {preview.comment && preview.comment.length > 100
+            ? showFullComment
+              ? preview.comment
+              : `${preview.comment.slice(0, 100)}...`
+            : preview.comment}
+        </Text>
+        {preview.comment && preview.comment.length > 100 && (
+          <TouchableOpacity onPress={handleViewMorePress}>
+            <Text style={styles.readMore}>
+              {showFullComment ? "Show less" : "Read more"}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </TouchableOpacity>
 
       {/* Tags Section */}
       {preview.tags && preview.tags.length > 0 && (
@@ -144,6 +164,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
         </TouchableOpacity>
       </View>
     </View>
+    //</TouchableOpacity>
   );
 };
 
@@ -161,13 +182,28 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     alignItems: "flex-start",
   },
+  vinyl: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    alignItems: "center",
+  },
   musicDisk: {
     position: "absolute",
     top: 0,
     right: 0,
-    width: 70,
-    height: 70,
+    width: 80,
+    height: 80,
     borderTopRightRadius: 15,
+  },
+  mediaCover: {
+    position: "absolute",
+    width: 62,
+    height: 62,
+    top: -8,
+    right: -3,
+    borderRadius: 30,
+    overflow: "hidden",
   },
   container: {
     width: "100%",
