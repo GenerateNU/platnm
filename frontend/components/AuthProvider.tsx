@@ -7,21 +7,31 @@ import React, {
 
 interface AuthProviderProps {
   username: string;
+  userId: string;
   accessToken: string;
+  sessionToken: string;
   updateAccessToken: (token: string) => void;
   updateUsername: (username: string) => void;
+  updateSession: (session: string) => void;
+  updateUserId: (userId: string) => void;
 }
 
 const AuthContext = createContext<AuthProviderProps>({
   username: "",
+  userId: "",
   accessToken: "",
-  updateAccessToken: () => {},
-  updateUsername: () => {},
+  sessionToken: "",
+  updateAccessToken: (token: string) => {},
+  updateUsername: (username: string) => {},
+  updateSession: (session: string) => {},
+  updateUserId: (userId: string) => {},
 });
 
 export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const [username, setUsername] = useState("");
   const [accessToken, setAccessToken] = useState("");
+  const [sessionToken, setSessionToken] = useState("sessionStartsLikeThis");
+  const [userId, setUserId] = useState("");
 
   const updateAccessToken = (token: string) => {
     setAccessToken(token);
@@ -31,9 +41,26 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
     setUsername(username);
   };
 
+  const updateSession = (session: string) => {
+    setSessionToken(session);
+  };
+
+  const updateUserId = (userId: string) => {
+    setUserId(userId);
+  };
+
   return (
     <AuthContext.Provider
-      value={{ username, accessToken, updateAccessToken, updateUsername }}
+      value={{
+        username,
+        userId,
+        accessToken,
+        sessionToken,
+        updateAccessToken,
+        updateUsername,
+        updateSession,
+        updateUserId,
+      }}
     >
       {children}
     </AuthContext.Provider>

@@ -140,16 +140,47 @@ func (r *UserRepository) CalculateScore(ctx context.Context, id uuid.UUID) (int,
 }
 
 func (r *UserRepository) CreateUser(ctx context.Context, user models.User) (models.User, error) {
-	if err := r.db.QueryRow(ctx, `INSERT INTO "user" (username, display_name, email) VALUES ($1, $2, $3) RETURNING id`, user.Username, user.DisplayName, user.Email).Scan(&user.ID); err != nil {
+	if err := r.db.QueryRow(ctx, `INSERT INTO "user" (id, username, display_name, email) VALUES ($1, $2, $3, $4) RETURNING id`, user.ID, user.Username, user.DisplayName, user.Email).Scan(&user.ID); err != nil {
 		return models.User{}, err
 	}
 
 	return user, nil
 }
 
+func (r *UserRepository) UpdateUserBio(ctx context.Context, user uuid.UUID, bio string) error {
+	query := `
+		UPDATE "user"
+		SET bio = $1 
+		WHERE id = $2;
+	`
+
+	_, err := r.db.Exec(ctx, query, bio, user)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *UserRepository) UpdateUserOnboard(ctx context.Context, email string, enthusiasm string) (string, error) {
+	result, err := r.db.Exec(ctx, `UPDATE "user" SET "enthusiasm" = $1 WHERE email = $2`, enthusiasm, email)
+	if err != nil {
+		return "", err
+	}
+
+	rowsAffected := result.RowsAffected()
+
+	if rowsAffected == 0 {
+		return "user not found", nil
+	}
+
+	return enthusiasm, nil
+}
+
 func (r *UserRepository) GetUserProfile(ctx context.Context, id uuid.UUID) (*models.Profile, error) {
 	profile := &models.Profile{}
-	query := `SELECT u.id, u.username, u.display_name, u.profile_picture, u.bio, COUNT(DISTINCT followers.follower_id) AS follower_count, COUNT(DISTINCT followed.followee_id) AS followed_count
+	query := `SELECT u.id, u.username, u.display_name, COUNT(DISTINCT followers.follower_id) AS follower_count, COUNT(DISTINCT followed.followee_id) AS followed_count
 		FROM "user" u
 		LEFT JOIN follower followers ON followers.followee_id = u.id
 		LEFT JOIN follower followed ON followed.follower_id = u.id
@@ -162,7 +193,7 @@ func (r *UserRepository) GetUserProfile(ctx context.Context, id uuid.UUID) (*mod
 		return nil, err
 	}
 
-	err = r.db.QueryRow(ctx, query, id).Scan(&profile.UserID, &profile.Username, &profile.DisplayName, &profile.ProfilePicture, &profile.Bio, &profile.Followers, &profile.Followed)
+	err = r.db.QueryRow(ctx, query, id).Scan(&profile.UserID, &profile.Username, &profile.DisplayName, &profile.Followers, &profile.Followed)
 	if err != nil {
 		print(err.Error(), "unable to find profile")
 		return nil, err
@@ -177,7 +208,7 @@ func (r *UserRepository) GetUserProfile(ctx context.Context, id uuid.UUID) (*mod
 	return profile, nil
 }
 
-func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*models.FeedPost, error) {
+func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*models.Preview, error) {
 
 	exists, err := r.UserExists(ctx, id.String())
 	if !exists {
@@ -185,7 +216,7 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 		return nil, err
 	}
 
-	var feedPosts []*models.FeedPost
+	var previews []*models.Preview
 	reviewRepo := NewReviewRepository(r.db)
 
 	query := `
@@ -193,6 +224,7 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 		r.id, 
 		r.user_id, 
 		u.username,
+		u.display_name,
     u.profile_picture,
 		r.media_type, 
 		r.media_id, 
@@ -202,7 +234,8 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 		r.updated_at,
 		COALESCE(a.cover, t.cover) AS media_cover, 
 		COALESCE(a.title, t.title) AS media_title, 
-		COALESCE(a.artists, t.artists) AS media_artist
+		COALESCE(a.artists, t.artists) AS media_artist,
+		ARRAY_AGG(tag.name) FILTER (WHERE tag.name IS NOT NULL) AS tags
 	FROM review r
 	INNER JOIN follower f ON f.followee_id = r.user_id
 	INNER JOIN "user" u ON u.id = r.user_id
@@ -221,7 +254,10 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 		JOIN artist ar ON aa.artist_id = ar.id
 		GROUP BY a.id, cover, a.title
   ) a ON r.media_type = 'album' AND r.media_id = a.id
+	LEFT JOIN review_tag rt ON r.id = rt.review_id
+	LEFT JOIN tag tag ON rt.tag_id = tag.id
 	WHERE f.follower_id = $1
+	GROUP BY r.id, r.user_id, u.username, u.display_name, u.profile_picture, r.media_type, r.media_id, r.rating, r.comment, r.created_at, r.updated_at, media_cover, media_title, media_artist
 	ORDER BY r.updated_at DESC;`
 
 	// Execute the query
@@ -233,22 +269,24 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 
 	// Scan results into the feedPosts slice
 	for rows.Next() {
-		var feedPost models.FeedPost
+		var preview models.Preview
 		var comment sql.NullString // Use sql.NullString for nullable strings
 		err := rows.Scan(
-			&feedPost.ID,
-			&feedPost.UserID,
-			&feedPost.Username,
-			&feedPost.ProfilePicture,
-			&feedPost.MediaType,
-			&feedPost.MediaID,
-			&feedPost.Rating,
+			&preview.ReviewID,
+			&preview.UserID,
+			&preview.Username,
+			&preview.DisplayName,
+			&preview.ProfilePicture,
+			&preview.MediaType,
+			&preview.MediaID,
+			&preview.Rating,
 			&comment, // Scan into comment first
-			&feedPost.CreatedAt,
-			&feedPost.UpdatedAt,
-			&feedPost.MediaCover,
-			&feedPost.MediaTitle,
-			&feedPost.MediaArtist,
+			&preview.CreatedAt,
+			&preview.UpdatedAt,
+			&preview.MediaCover,
+			&preview.MediaTitle,
+			&preview.MediaArtist,
+			&preview.Tags,
 		)
 		if err != nil {
 			return nil, err
@@ -256,26 +294,29 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 
 		// Assign comment to feedPost.Comment, handling null case
 		if comment.Valid {
-			feedPost.Comment = &comment.String // Point to the string if valid
+			preview.Comment = &comment.String // Point to the string if valid
 		} else {
-			feedPost.Comment = nil // Set to nil if null
+			preview.Comment = nil // Set to nil if null
+		}
+
+		// Ensure tags is an empty array if null
+		if preview.Tags == nil {
+			preview.Tags = []string{}
 		}
 
 		// Fetch review statistics for the current review
-		reviewStat, err := reviewRepo.GetReviewStats(ctx, strconv.Itoa(feedPost.ID))
+		reviewStat, err := reviewRepo.GetReviewStats(ctx, strconv.Itoa(preview.ReviewID))
 		if err != nil {
 			return nil, err
 		}
 
 		// If reviewStat is not nil, populate the corresponding fields in FeedPost
 		if reviewStat != nil {
-			feedPost.Upvotes = reviewStat.Upvotes
-			feedPost.Downvotes = reviewStat.Downvotes
-			feedPost.CommentCount = reviewStat.Comments
+			preview.ReviewStat = *reviewStat
 		}
 
 		// Append the populated FeedPost to the feedPosts slice
-		feedPosts = append(feedPosts, &feedPost)
+		previews = append(previews, &preview)
 	}
 
 	// Check for errors after looping through rows
@@ -283,7 +324,7 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 		return nil, err
 	}
 
-	return feedPosts, nil
+	return previews, nil
 
 }
 

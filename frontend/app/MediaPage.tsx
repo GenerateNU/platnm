@@ -1,16 +1,20 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button, StyleSheet, ScrollView, View } from "react-native";
-
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
+import {
+  useFocusEffect,
+  useLocalSearchParams,
+  useNavigation,
+} from "expo-router";
+import axios from "axios";
+import Histogram from "@/components/media/Histogram";
+import YourRatings from "@/components/media/YourRatings";
+import FriendRatings from "@/components/media/FriendRatings";
 import MediaCard from "@/components/media/MediaCard";
 import ReviewStats from "@/components/media/ReviewStats";
-import axios from "axios";
-import { useFocusEffect, useNavigation } from "expo-router";
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
-
-import ReviewCard from "@/components/ReviewCard";
-import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
-import Histogram from "@/components/media/Histogram";
+import HeaderComponent from "@/components/HeaderComponent";
+import ReviewPreview from "@/components/ReviewPreview";
 
 type MediaResponse = {
   media: Media;
@@ -18,20 +22,23 @@ type MediaResponse = {
 };
 
 export default function MediaPage() {
-  const [media, setMedia] = useState<MediaResponse>();
+  const [media, setMedia] = useState<Media>();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [rating, setReviewAvgRating] = useState<number | null>(null);
 
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  const { mediaId, mediaType } = useLocalSearchParams<{
+    mediaId: string;
+    mediaType: string;
+  }>();
 
   const insets = useSafeAreaInsets();
-  const height = useBottomTabBarHeight();
 
   useEffect(() => {
     axios
-      .get(`${BASE_URL}/media?sort=review`)
-      .then((response) => setMedia(response.data[0])) // TODO: update this hardcoding
+      .get(`${BASE_URL}/media/${mediaType}/${mediaId}`)
+      .then((response) => setMedia(response.data))
       .catch((error) => console.error(error));
   }, []);
 
@@ -39,12 +46,9 @@ export default function MediaPage() {
     useCallback(() => {
       if (media) {
         axios
-          .get(
-            `${BASE_URL}/reviews/${media.media.media_type}/${media.media.id}`,
-          )
+          .get(`${BASE_URL}/reviews/${mediaType}/${mediaId}`)
           .then((response) => {
             setReviews(response.data.reviews);
-            // convert to
             setReviewAvgRating(response.data.avgRating.toFixed(2) / 2 || null);
           })
           .catch((error) => console.error(error));
@@ -55,26 +59,29 @@ export default function MediaPage() {
   return (
     media && (
       <View style={{ backgroundColor: "#FFF" }}>
+        <HeaderComponent title="" />
         <ScrollView
           style={{
             ...styles.scrollView,
-            marginTop: insets.top,
+            marginTop: 15,
           }}
           contentContainerStyle={{
-            paddingBottom: height - insets.top, // Add padding at the bottom equal to the height of the bottom tab bar
+            paddingBottom: 80, // Add padding at the bottom equal to the height of the bottom tab bar
           }}
         >
           <View>
-            <MediaCard media={media.media} />
+            <MediaCard media={media} />
           </View>
           <View style={styles.buttonContainer}>
             <View style={styles.addReviewContainer}>
               <Button
                 onPress={() =>
                   navigation.navigate("CreateReview", {
-                    mediaName: media.media.title,
-                    mediaType: media.media.media_type,
-                    mediaId: media.media.id,
+                    mediaName: media.title,
+                    mediaType: media.media_type,
+                    mediaId: media.id,
+                    cover: media.cover,
+                    artistName: media.artist_name,
                   })
                 }
                 color={"white"}
@@ -89,12 +96,25 @@ export default function MediaPage() {
             {rating && <ReviewStats rating={rating} reviews={reviews} />}
           </View>
           <Histogram />
+          <View style={styles.socialContainer}>
+            <YourRatings count={3} />
+            <FriendRatings count={5} />
+          </View>
           <View>
             {reviews?.map((review) => (
-              <ReviewCard
+              <ReviewPreview
                 key={review.id}
-                rating={review.rating}
-                comment={review.comment}
+                preview={{
+                  ...review,
+                  created_at: new Date(review.created_at),
+                  updated_at: new Date(review.updated_at),
+                  media_title: media.title,
+                  tags: ["Excitement"],
+                  review_stat: { comment_count: 5, upvotes: 4, downvotes: 2 },
+                  media_artist: "Taylor Swift",
+                  media_cover:
+                    "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png",
+                }}
               />
             ))}
           </View>
@@ -108,6 +128,7 @@ const styles = StyleSheet.create({
   scrollView: {
     paddingHorizontal: 16,
     backgroundColor: "#FFF",
+    paddingBottom: 100,
   },
   titleContainer: {
     flexDirection: "row",
@@ -117,6 +138,10 @@ const styles = StyleSheet.create({
     width: "100%",
     flexDirection: "row",
     alignSelf: "center",
+  },
+  socialContainer: {
+    flexDirection: "column",
+    gap: 8,
   },
 
   buttonContainer: {

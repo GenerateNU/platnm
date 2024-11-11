@@ -1,79 +1,166 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLocalSearchParams, useNavigation } from "expo-router";
+import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
+
 import {
   View,
+  TextInput,
+  ScrollView,
   StyleSheet,
   TouchableWithoutFeedback,
   Keyboard,
-  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  PanResponder,
 } from "react-native";
-import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
-import { Divider } from "react-native-paper";
 
 import DateInputRating from "@/components/DateInputRating";
-import StarRate from "@/components/StarRate";
-import CommentRating from "@/components/CommentRating";
 import SongCard from "@/components/SongCard";
 import HeaderComponent from "@/components/HeaderComponent";
 import DraftButton from "@/components/DraftButton";
-import NextButton from "@/components/NextButton";
+import PublishButton from "@/components/PublishButton";
+import RatingSlider from "@/components/media/RatingSlider";
 import { usePublishReview } from "@/hooks/usePublishReview";
-import { Double } from "react-native/Libraries/Types/CodegenTypes";
+import TagSelector from "@/components/media/TagSelector";
+import Divider from "@/components/Divider";
+import NudgePage from "@/components/NudgePage";
 
 const CreateReview = () => {
-  const { mediaName, mediaType, mediaId } = useLocalSearchParams<{
-    mediaName: string;
-    mediaType: string;
-    mediaId: string;
-  }>();
+  const { mediaName, mediaType, mediaId, cover, artistName } =
+    useLocalSearchParams<{
+      mediaName: string;
+      mediaType: string;
+      mediaId: string;
+      cover: string;
+      artistName: string;
+    }>();
+
   const [rating, setRating] = useState(1);
   const [review, setReview] = useState("");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  const [showNudges, setShowNudges] = useState(false);
+
   const { publishReview } = usePublishReview();
-  const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
-  const handleDraftSubmit = () => {
-    publishReview(mediaType, parseInt(mediaId), review, rating, true);
-  };
-
-  const handleRatingChange = (newRating: Double) => {
+  const handleRatingChange = (newRating: number) => {
     setRating(newRating);
   };
 
-  const handleReviewChange = (newReview: string) => {
-    setReview(newReview);
-  };
-
-  const handleNextClick = () => {
-    if (rating !== 0) {
-      navigation.navigate("PreviewReview", {
-        rating: rating * 2, // to handle current 1-5 vs. 1-10 scale
-        review,
-        mediaName,
-        mediaType,
-        mediaId,
-      });
+  const handleTagSelect = (tag: string) => {
+    if (selectedTags.includes(tag)) {
+      const newTags = selectedTags.filter((selectedTag) => selectedTag !== tag);
+      setSelectedTags(newTags);
+    } else {
+      setSelectedTags([...selectedTags, tag]);
     }
   };
 
-  return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <View style={styles.container}>
-        <HeaderComponent title="Log Song" />
-        <ScrollView>
-          <SongCard mediaName={mediaName} />
-          <DateInputRating />
-          <Divider />
-          <StarRate onRatingChange={handleRatingChange} />
-          <Divider />
-          <CommentRating onReviewChange={handleReviewChange} />
-        </ScrollView>
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
-        <View style={styles.buttonContainer}>
-          <DraftButton handleClick={() => handleDraftSubmit()} />
-          <NextButton completed={rating !== 0} handleClick={handleNextClick} />
-        </View>
-      </View>
-    </TouchableWithoutFeedback>
+  const handleDraftSubmit = () => {
+    publishReview(
+      mediaType,
+      parseInt(mediaId),
+      review,
+      rating,
+      selectedTags,
+      true,
+    );
+  };
+
+  const handlePublish = () => {
+    publishReview(
+      mediaType,
+      parseInt(mediaId),
+      review,
+      rating,
+      selectedTags,
+      false,
+    );
+    setShowNudges(true);
+    // navigation.navigate("NudgePage");
+  };
+
+  const handleOutsideClick = () => {
+    if (showNudges) {
+      setShowNudges(false);
+      navigation.navigate("explore");
+      console.log("outside click");
+    }
+  };
+
+  // useEffect(() => {
+  //   if (showNudges) {
+  //       navigation.navigate("explore");
+  //     };
+  //   }, [showNudges]);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true, // Start responder on touch
+      onMoveShouldSetPanResponder: (e, gestureState) => {
+        // Allow horizontal gestures only
+        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy); // Ignore vertical movement
+      },
+      onPanResponderMove: (e, gestureState) => {
+        // Handle the slider movement here
+        handleRatingChange(gestureState.moveX); // Update the rating based on horizontal movement
+      },
+      onPanResponderRelease: (e, gestureState) => {
+        // Optionally, handle when the user releases the slider
+      },
+    }),
+  ).current;
+
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <TouchableWithoutFeedback onPress={handleOutsideClick}>
+          <View style={styles.inner}>
+            <ScrollView contentContainerStyle={styles.scrollview}>
+              <HeaderComponent title="Log Song" />
+              <SongCard
+                mediaName={mediaName}
+                mediaType={mediaType}
+                cover={cover}
+                artistName={artistName}
+              />
+              <View style={styles.sliderWrapper} {...panResponder.panHandlers}>
+                <View style={styles.slider}>
+                  {/* Render your slider here, adjust based on touch */}
+                  <RatingSlider onRatingChange={handleRatingChange} />
+                </View>
+              </View>
+              <DateInputRating />
+              <Divider />
+              <TextInput
+                style={styles.textInput}
+                multiline={true}
+                placeholderTextColor="#434343"
+                placeholder="Provide your thoughts..."
+                value={review}
+                onChangeText={setReview}
+              />
+              <Divider />
+
+              <TagSelector
+                tags={selectedTags}
+                handleTagSelect={handleTagSelect}
+              />
+              <View style={styles.buttonContainer}>
+                <DraftButton handleClick={() => handleDraftSubmit()} />
+                <PublishButton handleClick={handlePublish} />
+              </View>
+            </ScrollView>
+            {showNudges && <NudgePage />}
+          </View>
+        </TouchableWithoutFeedback>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -82,10 +169,39 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#ffffff",
   },
+  inner: {
+    flex: 1,
+    paddingTop: 20,
+  },
+  scrollview: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingTop: 24,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    padding: 20,
+    paddingBottom: 30,
+    paddingTop: 15,
+  },
+  textInput: {
+    height: 80,
+    backgroundColor: "#ffffff",
+    fontFamily: "Roboto",
+    color: "#434343",
+    fontSize: 16,
+    textAlignVertical: "top",
+    justifyContent: "flex-end",
+  },
+  sliderWrapper: {
+    marginBottom: 20,
+    width: "100%",
+  },
+  slider: {
+    //  flexDirection: "row", // Ensures horizontal scrolling
   },
 });
 
