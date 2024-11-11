@@ -180,7 +180,7 @@ func (r *UserRepository) UpdateUserOnboard(ctx context.Context, email string, en
 
 func (r *UserRepository) GetUserProfile(ctx context.Context, id uuid.UUID) (*models.Profile, error) {
 	profile := &models.Profile{}
-	query := `SELECT u.id, u.username, u.display_name, u.profile_picture, u.bio, COUNT(DISTINCT followers.follower_id) AS follower_count, COUNT(DISTINCT followed.followee_id) AS followed_count
+	query := `SELECT u.id, u.username, u.display_name, COUNT(DISTINCT followers.follower_id) AS follower_count, COUNT(DISTINCT followed.followee_id) AS followed_count
 		FROM "user" u
 		LEFT JOIN follower followers ON followers.followee_id = u.id
 		LEFT JOIN follower followed ON followed.follower_id = u.id
@@ -193,7 +193,7 @@ func (r *UserRepository) GetUserProfile(ctx context.Context, id uuid.UUID) (*mod
 		return nil, err
 	}
 
-	err = r.db.QueryRow(ctx, query, id).Scan(&profile.UserID, &profile.Username, &profile.DisplayName, &profile.ProfilePicture, &profile.Bio, &profile.Followers, &profile.Followed)
+	err = r.db.QueryRow(ctx, query, id).Scan(&profile.UserID, &profile.Username, &profile.DisplayName, &profile.Followers, &profile.Followed)
 	if err != nil {
 		print(err.Error(), "unable to find profile")
 		return nil, err

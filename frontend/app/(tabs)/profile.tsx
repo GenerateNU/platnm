@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -13,16 +13,19 @@ import Icon from "react-native-vector-icons/Feather";
 import axios from "axios";
 import Section from "@/components/profile/Section";
 import ReviewCard from "@/components/ReviewCard";
-import { router } from "expo-router";
+import { router, useFocusEffect, useNavigation } from "expo-router";
 import SelectSection from "@/components/profile/SelectSection";
+import { useAuthContext } from "@/components/AuthProvider";
+import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
 
 export default function ProfileScreen() {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
   const [userProfile, setUserProfile] = useState<UserProfile>();
   const [userReviews, setUserReviews] = useState<Review[]>();
-  const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
-
+  const { userId } = useAuthContext();
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  
   const [sections, setSections] = useState<Section[]>([
     {
       id: 0,
@@ -51,6 +54,14 @@ export default function ProfileScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [bio, setBio] = useState(userProfile?.bio);
   const [nextId, setNextId] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!userId) {
+        router.push("/(tabs)/login");
+      }
+    }, [userId])
+  );
 
   useEffect(() => {
     const fetchUserProfile = async () => {
