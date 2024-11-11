@@ -8,7 +8,7 @@ type SongCardProp = {
 const TopSongs = ({ songs }: SongCardProp) => {
   return (
     <View>
-      <Text style={styles.title}>Your Top Tracks</Text>
+      <Text style={styles.title}>Top Tracks</Text>
       <ScrollView horizontal={true} style={styles.container}>
         {songs?.map((song, id) => (
           <SongChip

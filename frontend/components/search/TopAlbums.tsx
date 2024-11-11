@@ -16,7 +16,7 @@ const TopAlbums = ({ albums }: AlbumCardProps) => {
 
   return (
     <View>
-      <Text style={styles.title}>Your Top Albums</Text>
+      <Text style={styles.title}>Top Albums</Text>
 
       <ScrollView
         horizontal
