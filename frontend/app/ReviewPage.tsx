@@ -38,12 +38,14 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
   const getRatingImage = (rating: keyof typeof ratingImages) => {
     return ratingImages[rating]; // Access the image from the preloaded images object
   };
+
   // Fetch the review data using the review_id
   useEffect(() => {
     const fetchReview = async () => {
       console.log("fetchReviews");
 
       console.log("review_id", review_id);
+
       try {
         const response = await axios.get(`${BASE_URL}/reviews/${review_id}`);
         console.log("response", response.data);

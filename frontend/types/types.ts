@@ -84,6 +84,7 @@ type ReviewStat = {
 
 type Preview = {
   review_id: number;
+  review_id: number;
   user_id: string;
   username: string;
   display_name: string;
