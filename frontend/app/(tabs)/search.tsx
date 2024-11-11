@@ -18,7 +18,7 @@ const SearchPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [initialSongs, setInitialSongs] = useState<MediaResponse[]>([]);
   const [initialAlbums, setInitialAlbums] = useState<MediaResponse[]>([]);
-  // const [initialReviews, setInitialReviews] = useState<MediaResponse[]>([]);
+  const [initialReviews, setInitialReviews] = useState<MediaResponse[]>([]);
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
   // Fetch initial top songs and albums
@@ -33,10 +33,10 @@ const SearchPage: React.FC = () => {
       .then((response) => setInitialSongs(response.data))
       .catch((error) => console.error(error));
     
-    // axios
-    //   .get(`${BASE_URL}/reviews/popular`)
-    //   .then((response) => setInitialReviews(response.data))
-    //   .catch((error) => console.error(error))
+    axios
+      .get(`${BASE_URL}/reviews/popular`)
+      .then((response) => setInitialReviews(response.data))
+      .catch((error) => console.error(error))
   }, []);
 
   const handleSearch = async (query: string) => {
@@ -65,6 +65,8 @@ const SearchPage: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  // TODO: ADD THE FRONTEND AND BACKEND FOR THE REVIEW
 
   return (
     <View style={styles.container}>

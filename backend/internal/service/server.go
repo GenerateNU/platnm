@@ -71,6 +71,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	app.Route("/reviews", func(r fiber.Router) {
 		reviewHandler := reviews.NewHandler(repository.Review, repository.User, repository.UserReviewVote)
 		r.Post("/", reviewHandler.CreateReview)
+		r.Get("/popular", reviewHandler.GetReviewsByPopularity)
 		r.Get("/tags", reviewHandler.GetTags)
 		r.Get("/:id", reviewHandler.GetReviewsByUserID)
 		r.Post("/vote/:rating", reviewHandler.VoteReview)
@@ -92,7 +93,6 @@ func setupRoutes(app *fiber.App, config config.Config) {
 			return reviewHandler.GetSocialReviews(c, "album")
 		})
 		r.Get("/comments/:id", reviewHandler.GetComments)
-		r.Get("/popular", reviewHandler.GetReviewsByPopularity)
 	})
 
 	mediaHandler := media.NewHandler(repository.Media)

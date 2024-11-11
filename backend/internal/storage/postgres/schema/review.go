@@ -95,7 +95,7 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int, offset int) ([]*models.Review, error) {
 
 	query := `
-	SELECT review.id, COUNT(user_review_vote.review_id) AS vote_count
+	SELECT review.*, COUNT(user_review_vote.review_id) AS vote_count
 	FROM review
 	LEFT JOIN user_review_vote ON review.id = user_review_vote.review_id
 	GROUP BY review.id
@@ -103,7 +103,7 @@ func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int
 	LIMIT $1
 	OFFSET $2
 	`
-	rows, err := r.Query(ctx, query, limit, offset)
+	rows, err := r.Query(ctx, query, limit + 1, offset) // for some reason this +1 for the limit is needed 
 
 	if !rows.Next() {
 		return []*models.Review{}, nil
@@ -116,6 +116,7 @@ func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int
 	defer rows.Close()
 
 	var reviews []*models.Review
+	var voteCount int // a variable used to capture the number from the vote count but not use it
 	for rows.Next() {
 		var review models.Review
 		if err := rows.Scan(
@@ -128,6 +129,7 @@ func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int
 			&review.CreatedAt,
 			&review.UpdatedAt,
 			&review.Draft,
+			&voteCount,
 		); err != nil {
 			return nil, err
 		}

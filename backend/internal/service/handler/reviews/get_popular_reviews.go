@@ -21,7 +21,7 @@ func (h *Handler) GetReviewsByPopularity(c *fiber.Ctx) error {
 		return errs.InvalidRequestData(errMap)
 	}
 
-	reviews, err := h.reviewRepository.GetReviewsByPopularity(c.Context(), req.Page, req.GetOffset())
+	reviews, err := h.reviewRepository.GetReviewsByPopularity(c.Context(), req.Limit, req.GetOffset())
 
 	if err != nil {
 		return err
