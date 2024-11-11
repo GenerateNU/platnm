@@ -1,7 +1,10 @@
+import { useNavigation } from "expo-router";
 import React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
 
 interface SongChipProps {
+  rank: number;
   id: number;
   title: string;
   artist_name: string;
@@ -9,14 +12,25 @@ interface SongChipProps {
 }
 
 const SongChip: React.FC<SongChipProps> = ({
+  rank,
   id,
   title,
   artist_name,
   cover,
 }) => {
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
+
   return (
-    <TouchableOpacity style={styles.container}>
-      <Text style={styles.id}>{id}.</Text>
+    <TouchableOpacity
+      style={styles.container}
+      onPress={() =>
+        navigation.navigate("MediaPage", {
+          mediaType: "track",
+          mediaId: id,
+        })
+      }
+    >
+      <Text style={styles.id}>{rank}.</Text>
       <Image style={styles.cover} source={{ uri: cover }} />
       <View style={styles.textContainer}>
         <Text style={styles.title}>{title}</Text>
