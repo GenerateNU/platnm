@@ -60,7 +60,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
 
   const handlePreviewPress = () => {
     // Navigate to the ReviewPage when the preview is clicked
-    navigation.navigate("ReviewPage", { review: preview.id });
+    navigation.navigate("ReviewPage", { review_id: preview.review_id });
   };
 
   return (

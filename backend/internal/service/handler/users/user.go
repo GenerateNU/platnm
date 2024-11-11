@@ -1,7 +1,6 @@
 package users
 
 import (
-	"fmt"
 	"platnm/internal/config"
 	"platnm/internal/errs"
 	"platnm/internal/service/session"
@@ -192,8 +191,6 @@ func (h *Handler) GetUserFeed(c *fiber.Ctx) error {
 		print(err.Error(), "unable to fetch profile ")
 		return err
 	}
-	fmt.Print(feed)
 
 	return c.Status(fiber.StatusOK).JSON(feed)
-
 }

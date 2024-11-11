@@ -1,7 +1,10 @@
+import { useNavigation } from "expo-router";
 import React from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
 
 interface AlbumSearchCardProps {
+  id: number;
   rank: number;
   artist_name: string;
   album_name: string;
@@ -9,6 +12,7 @@ interface AlbumSearchCardProps {
 }
 
 const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({
+  id,
   rank,
   artist_name,
   album_name,
@@ -16,9 +20,18 @@ const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({
 }) => {
   const placeholderImage =
     "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png";
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
   return (
-    <View style={styles.cardContainer}>
+    <TouchableOpacity
+      style={styles.cardContainer}
+      onPress={() =>
+        navigation.navigate("MediaPage", {
+          mediaType: "album",
+          mediaId: id,
+        })
+      }
+    >
       <View style={styles.albumContainer}>
         {/* Rank */}
         <Text style={styles.rank}>{rank}.</Text>
@@ -43,7 +56,7 @@ const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({
       {/* Album and Artist Name */}
       <Text style={styles.albumName}>{album_name}</Text>
       <Text style={styles.artistName}>{artist_name}</Text>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -61,10 +74,9 @@ const styles = StyleSheet.create({
   },
   rank: {
     color: "#000",
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: "600",
     lineHeight: 20,
-    fontFamily: "Inter",
     marginRight: 6, // Spacing between rank and cover image
     marginTop: -85,
   },
