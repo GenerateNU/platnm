@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, ScrollView } from "react-native";
 import SearchBar from "@/components/search/SearchBar";
 import SearchResults from "@/components/search/SearchResults";
 import TopAlbums from "@/components/search/TopAlbums";
 import TopSongs from "@/components/search/TopSongs";
+import TopReviews from "@/components/search/TopReviews";
 import axios from "axios";
+
 
 const SearchPage: React.FC = () => {
   const [searchResults, setSearchResults] = useState<{
@@ -18,7 +20,7 @@ const SearchPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [initialSongs, setInitialSongs] = useState<MediaResponse[]>([]);
   const [initialAlbums, setInitialAlbums] = useState<MediaResponse[]>([]);
-  const [initialReviews, setInitialReviews] = useState<MediaResponse[]>([]);
+  const [initialReviews, setInitialReviews] = useState<Preview[]>([]);
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
   // Fetch initial top songs and albums
@@ -66,10 +68,9 @@ const SearchPage: React.FC = () => {
     }
   };
 
-  // TODO: ADD THE FRONTEND AND BACKEND FOR THE REVIEW
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <SearchBar onSearch={handleSearch} />
 
       {isSearchActive ? (
@@ -83,10 +84,10 @@ const SearchPage: React.FC = () => {
         <View>
           <TopSongs songs={initialSongs} />
           <TopAlbums albums={initialAlbums} />
-          {/* <TopReviews reviews={initialReviews} />  */}
+          <TopReviews reviews={initialReviews} /> 
         </View>
       )}
-    </View>
+    </ScrollView>
   );
 };
 

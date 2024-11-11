@@ -36,7 +36,7 @@ type ReviewRepository interface {
 	GetSocialReviews(ctx context.Context, media_type string, mediaID string, userID string) ([]models.FriendReview, int, error)
 	GetCommentsByReviewID(ctx context.Context, id string) ([]models.Comment, error)
 	GetReviewByID(ctx context.Context, id string) (*models.Preview, error)
-	GetReviewsByPopularity(ctx context.Context, limit int, offset int) ([]*models.Review, error)
+	GetReviewsByPopularity(ctx context.Context, limit int, offset int) ([]*models.Preview, error)
 }
 
 type MediaRepository interface {

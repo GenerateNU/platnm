@@ -93,55 +93,122 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 	return review, nil
 }
 
-func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int, offset int) ([]*models.Review, error) {
+func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int, offset int) ([]*models.Preview, error) {
 
+	// shoutout to ally for this legendary query, and like 90% of this code
 	query := `
-	SELECT review.*, COUNT(user_review_vote.review_id) AS vote_count
-	FROM review
-	LEFT JOIN user_review_vote ON review.id = user_review_vote.review_id
-	GROUP BY review.id
+	SELECT 
+		r.id, 
+		r.user_id, 
+		u.username,
+		u.display_name,
+    u.profile_picture,
+		r.media_type, 
+		r.media_id, 
+		r.rating, 
+		r.comment,
+		r.created_at, 
+		r.updated_at,
+		COALESCE(a.cover, t.cover) AS media_cover, 
+		COALESCE(a.title, t.title) AS media_title, 
+		COALESCE(a.artists, t.artists) AS media_artist,
+		ARRAY_AGG(tag.name) FILTER (WHERE tag.name IS NOT NULL) AS tags,
+		COUNT(user_review_vote.review_id) AS vote_count
+	FROM review r
+	INNER JOIN "user" u ON u.id = r.user_id
+  LEFT JOIN (
+    SELECT t.title, t.id, STRING_AGG(ar.name, ', ') AS artists, cover
+		FROM track t
+    JOIN track_artist ta on t.id = ta.track_id
+		JOIN artist ar ON ta.artist_id = ar.id
+    JOIN album a on t.album_id = a.id
+		GROUP BY t.id, cover, t.title
+    ) t ON r.media_type = 'track' AND r.media_id = t.id
+  LEFT JOIN (
+    SELECT a.id, a.title, STRING_AGG(ar.name, ', ') AS artists, cover
+		FROM album a
+    JOIN album_artist aa on a.id = aa.album_id
+		JOIN artist ar ON aa.artist_id = ar.id
+		GROUP BY a.id, cover, a.title
+  ) a ON r.media_type = 'album' AND r.media_id = a.id
+	LEFT JOIN review_tag rt ON r.id = rt.review_id
+	LEFT JOIN tag tag ON rt.tag_id = tag.id
+	LEFT JOIN user_review_vote ON r.id = user_review_vote.review_id
+	GROUP BY r.id, r.user_id, u.username, u.display_name, u.profile_picture, r.media_type, r.media_id, r.rating, r.comment, r.created_at, r.updated_at, media_cover, media_title, media_artist
 	ORDER BY vote_count DESC
 	LIMIT $1
-	OFFSET $2
+	OFFSET $2;
 	`
+
 	rows, err := r.Query(ctx, query, limit + 1, offset) // for some reason this +1 for the limit is needed 
 
-	if !rows.Next() {
-		return []*models.Review{}, nil
-	}
-
 	if err != nil {
-		return []*models.Review{}, err
+		return nil, err
 	}
-
 	defer rows.Close()
 
-	var reviews []*models.Review
-	var voteCount int // a variable used to capture the number from the vote count but not use it
+	var previews []*models.Preview
+	var voteCount int
+
+	// Scan results into the feedPosts slice
 	for rows.Next() {
-		var review models.Review
-		if err := rows.Scan(
-			&review.ID,
-			&review.UserID,
-			&review.MediaID,
-			&review.MediaType,
-			&review.Rating,
-			&review.Comment,
-			&review.CreatedAt,
-			&review.UpdatedAt,
-			&review.Draft,
+		var preview models.Preview
+		var comment sql.NullString // Use sql.NullString for nullable strings
+		err := rows.Scan(
+			&preview.ReviewID,
+			&preview.UserID,
+			&preview.Username,
+			&preview.DisplayName,
+			&preview.ProfilePicture,
+			&preview.MediaType,
+			&preview.MediaID,
+			&preview.Rating,
+			&comment, // Scan into comment first
+			&preview.CreatedAt,
+			&preview.UpdatedAt,
+			&preview.MediaCover,
+			&preview.MediaTitle,
+			&preview.MediaArtist,
+			&preview.Tags,
 			&voteCount,
-		); err != nil {
+		)
+		if err != nil {
 			return nil, err
 		}
-		reviews = append(reviews, &review)
+
+		// Assign comment to feedPost.Comment, handling null case
+		if comment.Valid {
+			preview.Comment = &comment.String // Point to the string if valid
+		} else {
+			preview.Comment = nil // Set to nil if null
+		}
+
+		// Ensure tags is an empty array if null
+		if preview.Tags == nil {
+			preview.Tags = []string{}
+		}
+
+		// Fetch review statistics for the current review
+		reviewStat, err := r.GetReviewStats(ctx, strconv.Itoa(preview.ReviewID))
+		if err != nil {
+			return nil, err
+		}
+
+		// If reviewStat is not nil, populate the corresponding fields in FeedPost
+		if reviewStat != nil {
+			preview.ReviewStat = *reviewStat
+		}
+
+		// Append the populated FeedPost to the feedPosts slice
+		previews = append(previews, &preview)
 	}
 
+	// Check for errors after looping through rows
 	if err := rows.Err(); err != nil {
-		return []*models.Review{}, err
+		return nil, err
 	}
 
-	return reviews, nil
+	return previews, nil
 
 }
 
