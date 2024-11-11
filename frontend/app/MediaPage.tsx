@@ -8,13 +8,13 @@ import {
   useNavigation,
 } from "expo-router";
 import axios from "axios";
-import ReviewCard from "@/components/ReviewCard";
 import Histogram from "@/components/media/Histogram";
 import YourRatings from "@/components/media/YourRatings";
 import FriendRatings from "@/components/media/FriendRatings";
 import MediaCard from "@/components/media/MediaCard";
 import ReviewStats from "@/components/media/ReviewStats";
 import HeaderComponent from "@/components/HeaderComponent";
+import ReviewPreview from "@/components/ReviewPreview";
 
 type MediaResponse = {
   media: Media;
@@ -99,11 +99,27 @@ export default function MediaPage() {
           </View>
           <View>
             {reviews?.map((review) => (
-              <ReviewCard
-                key={review.id}
-                rating={review.rating}
-                comment={review.comment}
+              <ReviewPreview
+                preview={{
+                  ...review,
+                  created_at: new Date(review.created_at),
+                  updated_at: new Date(review.updated_at),
+                  username: "john_doe",
+                  display_name: "John Doe",
+                  profile_picture: "https://i.pravatar.cc/150?u=john_doe",
+                  media_title: media.title,
+                  tags: ["Excitement"],
+                  review_stat: { comment_count: 5, upvotes: 4, downvotes: 2 },
+                  media_artist: "Taylor Swift",
+                  media_cover:
+                    "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png",
+                }}
               />
+              // <ReviewCard
+              //   key={review.id}
+              //   rating={review.rating}
+              //   comment={review.comment}
+              // />
             ))}
           </View>
         </ScrollView>
