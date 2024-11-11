@@ -80,7 +80,7 @@ type ReviewStat = {
 };
 
 type Preview = {
-  id: number;
+  review_id: number;
   user_id: string;
   username: string;
   display_name: string;
@@ -102,3 +102,13 @@ type MediaResponse = {
   media: Media;
   reviewCount: number;
 };
+
+type UserComment = {
+  id: number;
+  user_id: string;
+  review_id: number;
+  comment: string;
+  created_at: string;
+  // upvotes: number;
+  // downvotes: number;
+}
