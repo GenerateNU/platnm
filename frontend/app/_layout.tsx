@@ -45,7 +45,10 @@ export default function RootLayout() {
           <Stack.Screen name="Settings" options={{ headerShown: false }} />
           <Stack.Screen name="Activity" options={{ headerShown: false }} />
           <Stack.Screen name="OnQueue" options={{ headerShown: false }} />
-          <Stack.Screen name="Recommendations" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="Recommendations"
+            options={{ headerShown: false }}
+          />
           <Stack.Screen name="+not-found" />
         </Stack>
       </ThemeProvider>

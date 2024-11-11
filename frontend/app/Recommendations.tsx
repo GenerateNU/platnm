@@ -111,7 +111,7 @@ export default function RecommendationsScreen() {
         minHeight: Dimensions.get("window").height,
       }}
     >
-      <HeaderComponent title="Recommendations"/>
+      <HeaderComponent title="Recommendations" />
       <UserRow recomendations={reccomendations} />
       <View
         style={{
