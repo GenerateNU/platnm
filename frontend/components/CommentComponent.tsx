@@ -30,7 +30,10 @@ const CommentComponent: React.FC<CommentProps> = ({ comment }) => {
     <View style={styles.card}>
       <Image source={MusicDisk} style={styles.musicDisk} />
       <View style={styles.topLeftContainer}>
-        <Image style={styles.profilePicture} source={{ uri: comment.profile_picture }} />
+        <Image
+          style={styles.profilePicture}
+          source={{ uri: comment.profile_picture }}
+        />
         <View style={styles.textContainer}>
           <Text style={styles.displayName}>{comment.display_name}</Text>
           <Text style={styles.username}>{comment.username}</Text>
