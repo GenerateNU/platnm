@@ -3,11 +3,10 @@ import { View, Text, StyleSheet } from "react-native";
 import ReviewPreview from "@/components/ReviewPreview";
 
 interface TopReviewsProps {
-  reviews: Preview[]; 
+  reviews: Preview[];
 }
 
 const TopReviews = ({ reviews }: TopReviewsProps) => {
-
   return (
     <View>
       <Text style={styles.title}>Top Reviews</Text>

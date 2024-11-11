@@ -7,7 +7,6 @@ import TopSongs from "@/components/search/TopSongs";
 import TopReviews from "@/components/search/TopReviews";
 import axios from "axios";
 
-
 const SearchPage: React.FC = () => {
   const [searchResults, setSearchResults] = useState<{
     songs: MediaResponse[];
@@ -68,7 +67,6 @@ const SearchPage: React.FC = () => {
     }
   };
 
-
   return (
     <ScrollView style={styles.container}>
       <SearchBar onSearch={handleSearch} />
@@ -84,7 +82,7 @@ const SearchPage: React.FC = () => {
         <View>
           <TopSongs songs={initialSongs} />
           <TopAlbums albums={initialAlbums} />
-          <TopReviews reviews={initialReviews} /> 
+          <TopReviews reviews={initialReviews} />
         </View>
       )}
     </ScrollView>

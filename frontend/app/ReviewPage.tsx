@@ -57,7 +57,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
       console.log("review_id", review_id);
       try {
         const response = await axios.get(
-          `${BASE_URL}/reviews/comments/${review_id}`
+          `${BASE_URL}/reviews/comments/${review_id}`,
         );
         console.log("response", response.data);
         setComments(response.data);
@@ -88,7 +88,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
           <View>
             <Image
               source={getRatingImage(
-                review.rating as keyof typeof ratingImages
+                review.rating as keyof typeof ratingImages,
               )}
             />
           </View>
