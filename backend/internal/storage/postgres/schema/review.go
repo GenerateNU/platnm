@@ -549,19 +549,48 @@ func (r *ReviewRepository) GetSocialReviews(ctx context.Context, mediaType strin
 	return friendReviews, ratingCount, nil
 }
 
-func (r *ReviewRepository) GetCommentsByReviewID(ctx context.Context, reviewID string) ([]models.Comment, error) {
-	rows, err := r.Query(ctx, `SELECT id, text, review_id, user_id, created_at FROM comment WHERE review_id = $1`, reviewID)
+func (r *ReviewRepository) GetCommentsByReviewID(ctx context.Context, reviewID string) ([]*models.UserComment, error) {
+	rows, err := r.Query(ctx, `
+		SELECT c.id, text, review_id, c.user_id, username, display_name, profile_picture, c.created_at
+		FROM comment c
+		JOIN "user" u ON c.user_id = u.id
+		WHERE review_id = $1`, reviewID)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close() // Make sure to close rows after we're done with it
 
-	var comments []models.Comment = []models.Comment{}
+	var comments []*models.UserComment
 	for rows.Next() {
-		var comment models.Comment
-		if err := rows.Scan(&comment.ID, &comment.Text, &comment.ReviewID, &comment.UserID, &comment.CreatedAt); err != nil {
+		var comment models.UserComment
+		if err := rows.Scan(
+			&comment.CommentID,
+			&comment.Comment,
+			&comment.ReviewID,
+			&comment.UserID,
+			&comment.Username,
+			&comment.DisplayName,
+			&comment.ProfilePicture,
+			&comment.CreatedAt,
+		); err != nil {
 			return nil, err
 		}
-		comments = append(comments, comment)
+
+		// Convert nullable fields to empty strings if they are NULL
+		if !comment.Comment.Valid {
+			comment.Comment.String = ""
+		}
+		if !comment.Username.Valid {
+			comment.Username.String = ""
+		}
+		if !comment.DisplayName.Valid {
+			comment.DisplayName.String = ""
+		}
+		if !comment.ProfilePicture.Valid {
+			comment.ProfilePicture.String = ""
+		}
+
+		comments = append(comments, &comment)
 	}
 
 	return comments, nil

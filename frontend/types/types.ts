@@ -107,8 +107,11 @@ type MediaResponse = {
 };
 
 type UserComment = {
-  id: number;
+  comment_id: number;
   user_id: string;
+  username: string;
+  display_name: string;
+  profile_picture: string;
   review_id: number;
   comment: string;
   created_at: string;

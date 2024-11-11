@@ -181,6 +181,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 5,
     alignItems: "flex-start",
+    overflow: "scroll",
   },
   vinyl: {
     position: "absolute",

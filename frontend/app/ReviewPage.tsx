@@ -1,4 +1,5 @@
 import HeaderComponent from "@/components/HeaderComponent";
+import CommentComponent from "@/components/CommentComponent";
 import axios from "axios";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -17,7 +18,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
     review_id: string;
   }>();
   const [review, setReview] = useState<Preview>();
-  const [comments, setComments] = useState<Comment[]>();
+  const [comments, setComments] = useState<UserComment[]>();
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
   const ratingImages = {
@@ -53,13 +54,13 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
     };
 
     const fetchComments = async () => {
-      console.log("fetchReviews");
+      console.log("fetchComments");
       console.log("review_id", review_id);
       try {
         const response = await axios.get(
           `${BASE_URL}/reviews/comments/${review_id}`,
         );
-        console.log("response", response.data);
+        console.log("comments", response.data);
         setComments(response.data);
       } catch (error) {
         console.error("Error fetching comments:", error);
@@ -89,15 +90,14 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
             <Image
               source={getRatingImage(
                 review.rating as keyof typeof ratingImages,
-              )}
+              )} style={styles.ratingImage}
             />
           </View>
           <View>
             {comments && comments.length > 0 ? (
               comments.map((comment, index) => {
                 return (
-                  //<Comment key={index} comment={comment} />
-                  null
+                  <CommentComponent key={index} comment={comment} />
                 );
               })
             ) : (
@@ -144,6 +144,10 @@ const styles = StyleSheet.create({
   rating: {
     fontSize: 16,
     fontWeight: "bold",
+  },
+  ratingImage: {
+    width: 150,
+    height: 150,
   },
   noReviewsText: {
     textAlign: "center",

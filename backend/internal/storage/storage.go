@@ -34,7 +34,7 @@ type ReviewRepository interface {
 	GetUserReviewOfTrack(ctx context.Context, id string, id2 string) (*models.Review, error)
 	GetTags(ctx context.Context) ([]string, error)
 	GetSocialReviews(ctx context.Context, media_type string, mediaID string, userID string) ([]models.FriendReview, int, error)
-	GetCommentsByReviewID(ctx context.Context, id string) ([]models.Comment, error)
+	GetCommentsByReviewID(ctx context.Context, id string) ([]*models.UserComment, error)
 	GetReviewByID(ctx context.Context, id string) (*models.Preview, error)
 	GetReviewsByPopularity(ctx context.Context, limit int, offset int) ([]*models.Preview, error)
 }

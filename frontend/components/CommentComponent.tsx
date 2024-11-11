@@ -1,38 +1,45 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { IconButton } from "react-native-paper";
 import StarRating from "react-native-star-rating-widget";
 import UpvoteIcon from "@/assets/images/upvote.svg";
 import DownvoteIcon from "@/assets/images/downvote.svg";
 const MusicDisk = require("../assets/images/music-disk.png");
 
-interface ReviewCardProps {
+interface CommentProps {
   comment: UserComment;
-  // upvotes: number;
-  // downvotes: number;
 }
 
-const ReviewCard: React.FC<ReviewCardProps> = ({ comment }) => {
-  const [profilePicture, setProfilePicture] = useState(
-    require("@/assets/images/placeholder-profile.png"),
-  );
-  const [displayName, setDisplayName] = useState("John Doe");
-  const [username, setUsername] = useState("@john_doe");
+const CommentComponent: React.FC<CommentProps> = ({ comment }) => {
+  const Upvotes = require("../assets/images/ReviewPreview/upvote.png");
+  const Downvotes = require("../assets/images/ReviewPreview/downvote.png");
+
+  const handleUpvotePress = () => {
+    console.log("upvote icon pressed");
+  };
+
+  const handleDownvotePress = () => {
+    console.log("downvote icon pressed");
+  };
+
+  const handleReplyPress = () => {
+    console.log("reply pressed");
+  };
 
   return (
     <View style={styles.card}>
       <Image source={MusicDisk} style={styles.musicDisk} />
       <View style={styles.topLeftContainer}>
-        <Image style={styles.profilePicture} source={profilePicture} />
+        <Image style={styles.profilePicture} source={{ uri: comment.profile_picture }} />
         <View style={styles.textContainer}>
-          <Text style={styles.displayName}>{displayName}</Text>
-          <Text style={styles.username}>{username}</Text>
+          <Text style={styles.displayName}>{comment.display_name}</Text>
+          <Text style={styles.username}>{comment.username}</Text>
         </View>
       </View>
       <View style={styles.review}>
         <Text style={styles.commentText}>{comment.comment}</Text>
-        {/* <View style={styles.voteContainer}>
-          <IconButton
+        <View style={styles.voteContainer}>
+          {/* <IconButton
             style={styles.vote}
             onPress={() => console.log("upvote")}
             icon={UpvoteIcon}
@@ -42,8 +49,19 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ comment }) => {
             style={styles.vote}
             onPress={() => console.log("downvote")}
             icon={DownvoteIcon}
-          />
-        </View> */}
+          /> */}
+          <TouchableOpacity onPress={handleUpvotePress}>
+            <Image source={Upvotes} style={styles.voteIcon} />
+          </TouchableOpacity>
+          <Text>{2}</Text>
+          <TouchableOpacity onPress={handleDownvotePress}>
+            <Image source={Downvotes} style={styles.voteIcon} />
+          </TouchableOpacity>
+          <Text>{3}</Text>
+          <TouchableOpacity onPress={handleReplyPress}>
+            <Text style={styles.reply}>Reply</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -51,13 +69,17 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ comment }) => {
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: "column",
-    backgroundColor: "#C4C4C4",
-    padding: 10,
-    flex: 1,
+    backgroundColor: "#F0F0F0",
+    padding: 15,
     marginVertical: 20,
-    alignItems: "center",
     borderRadius: 15,
+    width: "90%",
+    alignSelf: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    alignItems: "flex-start",
   },
   musicDisk: {
     position: "absolute",
@@ -110,6 +132,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+  voteIcon: {
+    width: 24,
+    height: 24,
+    marginHorizontal: 10,
+  },
+  reply: {
+    marginHorizontal: 10,
+  },
 });
 
-export default ReviewCard;
+export default CommentComponent;
