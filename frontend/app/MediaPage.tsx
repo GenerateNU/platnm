@@ -40,10 +40,7 @@ export default function MediaPage() {
   useEffect(() => {
     axios
       .get(`${BASE_URL}/media/${mediaType}/${mediaId}`)
-      .then((response) => {
-        console.log(response);
-        setMedia(response.data);
-      }) // TODO: update this hardcoding
+      .then((response) => setMedia(response.data))
       .catch((error) => console.error(error));
   }, []);
 
@@ -65,7 +62,15 @@ export default function MediaPage() {
     media && (
       <View style={{ backgroundColor: "#FFF" }}>
         <HeaderComponent title="" />
-        <ScrollView style={styles.scrollView}>
+        <ScrollView
+          style={{
+            ...styles.scrollView,
+            marginTop: 15,
+          }}
+          contentContainerStyle={{
+            paddingBottom: 80, // Add padding at the bottom equal to the height of the bottom tab bar
+          }}
+        >
           <View>
             <MediaCard media={media} />
           </View>
@@ -104,9 +109,6 @@ export default function MediaPage() {
                   ...review,
                   created_at: new Date(review.created_at),
                   updated_at: new Date(review.updated_at),
-                  username: "john_doe",
-                  display_name: "John Doe",
-                  profile_picture: "https://i.pravatar.cc/150?u=john_doe",
                   media_title: media.title,
                   tags: ["Excitement"],
                   review_stat: { comment_count: 5, upvotes: 4, downvotes: 2 },
@@ -115,11 +117,6 @@ export default function MediaPage() {
                     "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png",
                 }}
               />
-              // <ReviewCard
-              //   key={review.id}
-              //   rating={review.rating}
-              //   comment={review.comment}
-              // />
             ))}
           </View>
         </ScrollView>
@@ -132,6 +129,7 @@ const styles = StyleSheet.create({
   scrollView: {
     paddingHorizontal: 16,
     backgroundColor: "#FFF",
+    paddingBottom: 100,
   },
   titleContainer: {
     flexDirection: "row",
