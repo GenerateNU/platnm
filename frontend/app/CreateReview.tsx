@@ -1,5 +1,7 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLocalSearchParams, useNavigation } from "expo-router";
+import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
+
 import {
   View,
   TextInput,
@@ -21,6 +23,7 @@ import RatingSlider from "@/components/media/RatingSlider";
 import { usePublishReview } from "@/hooks/usePublishReview";
 import TagSelector from "@/components/media/TagSelector";
 import Divider from "@/components/Divider";
+import NudgePage from "@/components/NudgePage";
 
 const CreateReview = () => {
   const { mediaName, mediaType, mediaId, cover, artistName } =
@@ -35,6 +38,9 @@ const CreateReview = () => {
   const [rating, setRating] = useState(1);
   const [review, setReview] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  const [showNudges, setShowNudges] = useState(false);
+
   const { publishReview } = usePublishReview();
 
   const handleRatingChange = (newRating: number) => {
@@ -49,6 +55,8 @@ const CreateReview = () => {
       setSelectedTags([...selectedTags, tag]);
     }
   };
+
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
   const handleDraftSubmit = () => {
     publishReview(
@@ -70,7 +78,23 @@ const CreateReview = () => {
       selectedTags,
       false,
     );
+    setShowNudges(true);
+    // navigation.navigate("NudgePage");
   };
+
+  const handleOutsideClick = () => {
+    if (showNudges) {
+      setShowNudges(false);
+      navigation.navigate("explore");
+      console.log("outside click");
+    }
+  };
+
+  // useEffect(() => {
+  //   if (showNudges) {
+  //       navigation.navigate("explore");
+  //     };
+  //   }, [showNudges]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -95,43 +119,46 @@ const CreateReview = () => {
       style={styles.container}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.inner}>
-          <ScrollView contentContainerStyle={styles.scrollview}>
-            <HeaderComponent title="Log Song" />
-            <SongCard
-              mediaName={mediaName}
-              mediaType={mediaType}
-              cover={cover}
-              artistName={artistName}
-            />
-            <View style={styles.sliderWrapper} {...panResponder.panHandlers}>
-              <View style={styles.slider}>
-                {/* Render your slider here, adjust based on touch */}
-                <RatingSlider onRatingChange={handleRatingChange} />
+        <TouchableWithoutFeedback onPress={handleOutsideClick}>
+          <View style={styles.inner}>
+            <ScrollView contentContainerStyle={styles.scrollview}>
+              <HeaderComponent title="Log Song" />
+              <SongCard
+                mediaName={mediaName}
+                mediaType={mediaType}
+                cover={cover}
+                artistName={artistName}
+              />
+              <View style={styles.sliderWrapper} {...panResponder.panHandlers}>
+                <View style={styles.slider}>
+                  {/* Render your slider here, adjust based on touch */}
+                  <RatingSlider onRatingChange={handleRatingChange} />
+                </View>
               </View>
-            </View>
-            <DateInputRating />
-            <Divider />
-            <TextInput
-              style={styles.textInput}
-              multiline={true}
-              placeholderTextColor="#434343"
-              placeholder="Provide your thoughts..."
-              value={review}
-              onChangeText={setReview}
-            />
-            <Divider />
+              <DateInputRating />
+              <Divider />
+              <TextInput
+                style={styles.textInput}
+                multiline={true}
+                placeholderTextColor="#434343"
+                placeholder="Provide your thoughts..."
+                value={review}
+                onChangeText={setReview}
+              />
+              <Divider />
 
-            <TagSelector
-              tags={selectedTags}
-              handleTagSelect={handleTagSelect}
-            />
-            <View style={styles.buttonContainer}>
-              <DraftButton handleClick={() => handleDraftSubmit()} />
-              <PublishButton handleClick={handlePublish} />
-            </View>
-          </ScrollView>
-        </View>
+              <TagSelector
+                tags={selectedTags}
+                handleTagSelect={handleTagSelect}
+              />
+              <View style={styles.buttonContainer}>
+                <DraftButton handleClick={() => handleDraftSubmit()} />
+                <PublishButton handleClick={handlePublish} />
+              </View>
+            </ScrollView>
+            {showNudges && <NudgePage />}
+          </View>
+        </TouchableWithoutFeedback>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
