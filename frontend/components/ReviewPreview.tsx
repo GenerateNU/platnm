@@ -7,6 +7,9 @@ import {
   ScrollView,
   TouchableOpacity,
 } from "react-native";
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
+
 
 const MusicDisk = require("../assets/images/music-disk.png");
 const Comments = require("../assets/images/ReviewPreview/comments.png");
@@ -34,6 +37,8 @@ interface PreviewProps {
 
 const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
   const [showFullComment, setShowFullComment] = useState(false);
+  const navigation = useNavigation<NativeStackNavigationProp<any>>(); // Initialize navigation
+
 
   const getRatingImage = (rating: keyof typeof ratingImages) => {
     return ratingImages[rating]; // Access the image from the preloaded images object
@@ -55,95 +60,113 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
     setShowFullComment(!showFullComment);
   };
 
+  const handlePreviewPress = () => {
+    // Navigate to the ReviewPage when the preview is clicked
+    navigation.navigate('ReviewPage', { review: preview.id });
+  };
+
   return (
-    <View style={styles.card}>
-      <Image source={MusicDisk} style={styles.musicDisk} />
-
-      <View style={styles.container}>
-        {/* Top Section with Profile Picture and Name */}
-        <View style={styles.topContainer}>
-          <View style={styles.leftSection}>
+    //<TouchableOpacity onPress={handlePreviewPress}> {/* Wrap the card with TouchableOpacity */}
+      <View style={styles.card}>
+        <View style={styles.vinyl}>
+          <Image source={MusicDisk} style={styles.musicDisk} />
+          {preview.media_cover ? (
             <Image
-              style={styles.profilePicture}
-              source={{ uri: preview.profile_picture }}
+              source={{ uri: preview.media_cover }} // Use uri for remote images
+              style={styles.mediaCover}
+              resizeMode="cover"
             />
-            <View style={styles.textContainer}>
-              <Text style={styles.displayName}>{preview.display_name}</Text>
-              <Text style={styles.username}>@{preview.username}</Text>
+          ) : null}
+        </View>
+
+        <View style={styles.container}>
+          {/* Top Section with Profile Picture and Name */}
+          <View style={styles.topContainer}>
+            <View style={styles.leftSection}>
+              <Image
+                style={styles.profilePicture}
+                source={{ uri: preview.profile_picture }}
+              />
+              <View style={styles.textContainer}>
+                <Text style={styles.displayName}>{preview.display_name}</Text>
+                <Text style={styles.username}>@{preview.username}</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Song Name and Artist Name */}
+          <View style={styles.mediaContainer}>
+            <View style={styles.ratingContainer}>
+              <Text style={styles.songName}>{preview.media_title}</Text>
+              <Text style={styles.artistName}>{preview.media_artist}</Text>
+            </View>
+
+            {/* Rating Image on the right side of the song title */}
+            <View>
+              <Image
+                source={getRatingImage(
+                  preview.rating as keyof typeof ratingImages,
+                )}
+              />
             </View>
           </View>
         </View>
 
-        {/* Song Name and Artist Name */}
-        <View style={styles.mediaContainer}>
-          <View style={styles.ratingContainer}>
-            <Text style={styles.songName}>{preview.media_title}</Text>
-            <Text style={styles.artistName}>{preview.media_artist}</Text>
-          </View>
-
-          {/* Rating Image on the right side of the song title */}
-          <View>
-            <Image
-              source={getRatingImage(
-                preview.rating as keyof typeof ratingImages,
-              )}
-            />
-          </View>
-        </View>
-      </View>
-
-      {/* Comment Section */}
-      <Text style={styles.commentText}>
-        {preview.comment && preview.comment.length > 100
-          ? showFullComment
-            ? preview.comment
-            : `${preview.comment.slice(0, 100)}...`
-          : preview.comment}
-      </Text>
-      {preview.comment && preview.comment.length > 100 && (
-        <TouchableOpacity onPress={handleViewMorePress}>
-          <Text style={styles.readMore}>
-            {showFullComment ? "Show less" : "Read more"}
+        {/* Comment Section */}
+        <TouchableOpacity onPress={handlePreviewPress}>
+          <Text style={styles.commentText}>
+            {preview.comment && preview.comment.length > 100
+              ? showFullComment
+                ? preview.comment
+                : `${preview.comment.slice(0, 100)}...`
+              : preview.comment}
           </Text>
+          {preview.comment && preview.comment.length > 100 && (
+            <TouchableOpacity onPress={handleViewMorePress}>
+              <Text style={styles.readMore}>
+                {showFullComment ? "Show less" : "Read more"}
+              </Text>
+            </TouchableOpacity>
+          )}
         </TouchableOpacity>
-      )}
 
-      {/* Tags Section */}
-      {preview.tags && preview.tags.length > 0 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.tagsContainer}
-        >
-          {preview.tags.map((tag, index) => (
-            <View key={index} style={styles.tag}>
-              <Text style={styles.tagText}>{tag}</Text>
-            </View>
-          ))}
-        </ScrollView>
-      )}
+        {/* Tags Section */}
+        {preview.tags && preview.tags.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.tagsContainer}
+          >
+            {preview.tags.map((tag, index) => (
+              <View key={index} style={styles.tag}>
+                <Text style={styles.tagText}>{tag}</Text>
+              </View>
+            ))}
+          </ScrollView>
+        )}
 
-      {/* Action Buttons */}
-      <View style={styles.actionsContainer}>
-        <View style={styles.voteContainer}>
-          <TouchableOpacity onPress={handleUpvotePress}>
-            <Image source={Upvotes} style={styles.voteIcon} />
+        {/* Action Buttons */}
+        <View style={styles.actionsContainer}>
+          <View style={styles.voteContainer}>
+            <TouchableOpacity onPress={handleUpvotePress}>
+              <Image source={Upvotes} style={styles.voteIcon} />
+            </TouchableOpacity>
+            <Text>{preview.review_stat.upvotes}</Text>
+            <TouchableOpacity onPress={handleDownvotePress}>
+              <Image source={Downvotes} style={styles.voteIcon} />
+            </TouchableOpacity>
+            <Text>{preview.review_stat.downvotes}</Text>
+            <TouchableOpacity onPress={handleCommentPress}>
+              <Image source={Comments} style={styles.voteIcon} />
+            </TouchableOpacity>
+            <Text>{preview.review_stat.comment_count}</Text>
+          </View>
+          <TouchableOpacity onPress={() => console.log("share pressed")}>
+            <Image source={Share} style={styles.voteIcon} />
           </TouchableOpacity>
-          <Text>{preview.review_stat.upvotes}</Text>
-          <TouchableOpacity onPress={handleDownvotePress}>
-            <Image source={Downvotes} style={styles.voteIcon} />
-          </TouchableOpacity>
-          <Text>{preview.review_stat.downvotes}</Text>
-          <TouchableOpacity onPress={handleCommentPress}>
-            <Image source={Comments} style={styles.voteIcon} />
-          </TouchableOpacity>
-          <Text>{preview.review_stat.comment_count}</Text>
         </View>
-        <TouchableOpacity onPress={() => console.log("share pressed")}>
-          <Image source={Share} style={styles.voteIcon} />
-        </TouchableOpacity>
       </View>
-    </View>
+    //</TouchableOpacity>
   );
 };
 
@@ -161,13 +184,28 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     alignItems: "flex-start",
   },
+  vinyl: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    alignItems: "center",
+  },
   musicDisk: {
     position: "absolute",
     top: 0,
     right: 0,
-    width: 70,
-    height: 70,
+    width: 80,
+    height: 80,
     borderTopRightRadius: 15,
+  },
+  mediaCover: {
+    position: "absolute",
+    width: 62,
+    height: 62,
+    top: -8,
+    right: -3,
+    borderRadius: 30,
+    overflow: "hidden",
   },
   container: {
     width: "100%",
@@ -274,3 +312,4 @@ const styles = StyleSheet.create({
 });
 
 export default ReviewPreview;
+

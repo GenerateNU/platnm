@@ -65,7 +65,7 @@ export default function ProfileScreen() {
 
     const fetchUserReviews = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/reviews/${userId}`);
+        const response = await axios.get(`${BASE_URL}/reviews/user/${userId}`);
         setUserReviews(response.data);
       } catch (error) {
         console.error("Error fetching user reviews:", error);

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"platnm/internal/errs"
 	"platnm/internal/models"
+	"strconv"
 
 	"github.com/jackc/pgx/v5"
 
@@ -241,7 +242,7 @@ func (r *ReviewRepository) ReviewBelongsToUser(ctx context.Context, reviewID str
 	return false, nil
 }
 
-func (r *ReviewRepository) GetReviewsByID(ctx context.Context, id string, mediaType string) ([]*models.Review, error) {
+func (r *ReviewRepository) GetReviewsByMediaID(ctx context.Context, id string, mediaType string) ([]*models.Review, error) {
 
 	rows, err := r.Query(ctx, "SELECT id, user_id, media_id, media_type, rating, comment, created_at, updated_at FROM review WHERE media_id = $1 and media_type = $2 ORDER BY updated_at DESC", id, mediaType)
 
@@ -437,6 +438,98 @@ func (r *ReviewRepository) GetCommentsByReviewID(ctx context.Context, reviewID s
 	}
 
 	return comments, nil
+}
+
+func (r *ReviewRepository) GetReviewByID(ctx context.Context, id string) (*models.Preview, error) {
+
+	var preview models.Preview
+
+	query := `
+	SELECT 
+		r.id, 
+		r.user_id, 
+		u.username,
+		u.display_name,
+    u.profile_picture,
+		r.media_type, 
+		r.media_id, 
+		r.rating, 
+		r.comment,
+		r.created_at, 
+		r.updated_at,
+		COALESCE(a.cover, t.cover) AS media_cover, 
+		COALESCE(a.title, t.title) AS media_title, 
+		COALESCE(a.artists, t.artists) AS media_artist,
+		ARRAY_AGG(tag.name) FILTER (WHERE tag.name IS NOT NULL) AS tags
+	FROM review r
+	INNER JOIN "user" u ON u.id = r.user_id
+  LEFT JOIN (
+    SELECT t.title, t.id, STRING_AGG(ar.name, ', ') AS artists, cover
+		FROM track t
+    JOIN track_artist ta on t.id = ta.track_id
+		JOIN artist ar ON ta.artist_id = ar.id
+    JOIN album a on t.album_id = a.id
+		GROUP BY t.id, cover, t.title
+    ) t ON r.media_type = 'track' AND r.media_id = t.id
+  LEFT JOIN (
+    SELECT a.id, a.title, STRING_AGG(ar.name, ', ') AS artists, cover
+		FROM album a
+    JOIN album_artist aa on a.id = aa.album_id
+		JOIN artist ar ON aa.artist_id = ar.id
+		GROUP BY a.id, cover, a.title
+  ) a ON r.media_type = 'album' AND r.media_id = a.id
+	LEFT JOIN review_tag rt ON r.id = rt.review_id
+	LEFT JOIN tag tag ON rt.tag_id = tag.id
+	WHERE r.id = $1
+	GROUP BY r.id, r.user_id, u.username, u.display_name, u.profile_picture, r.media_type, r.media_id, r.rating, r.comment, r.created_at, r.updated_at, media_cover, media_title, media_artist;`
+
+	var comment sql.NullString // Use sql.NullString for nullable strings
+
+	err := r.QueryRow(ctx, query, id).Scan(&preview.ReviewID,
+		&preview.UserID,
+		&preview.Username,
+		&preview.DisplayName,
+		&preview.ProfilePicture,
+		&preview.MediaType,
+		&preview.MediaID,
+		&preview.Rating,
+		&comment, // Scan into comment first
+		&preview.CreatedAt,
+		&preview.UpdatedAt,
+		&preview.MediaCover,
+		&preview.MediaTitle,
+		&preview.MediaArtist,
+		&preview.Tags)
+
+	if err != nil {
+		print(err.Error(), "from transactions err ")
+		return nil, err
+	}
+
+	// Assign comment to feedPost.Comment, handling null case
+	if comment.Valid {
+		preview.Comment = &comment.String // Point to the string if valid
+	} else {
+		preview.Comment = nil // Set to nil if null
+	}
+
+	// Ensure tags is an empty array if null
+	if preview.Tags == nil {
+		preview.Tags = []string{}
+	}
+
+	// Fetch review statistics for the current review
+	reviewStat, err := r.GetReviewStats(ctx, strconv.Itoa(preview.ReviewID))
+	if err != nil {
+		return nil, err
+	}
+
+	// If reviewStat is not nil, populate the corresponding fields in FeedPost
+	if reviewStat != nil {
+		preview.ReviewStat = *reviewStat
+	}
+
+	return &preview, nil
 }
 
 func NewReviewRepository(db *pgxpool.Pool) *ReviewRepository {

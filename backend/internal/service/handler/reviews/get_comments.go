@@ -7,11 +7,11 @@ import (
 func (h *Handler) GetComments(c *fiber.Ctx) error {
 	id := c.Params("id")
 
-	tags, err := h.reviewRepository.GetCommentsByReviewID(c.Context(), id)
+	comments, err := h.reviewRepository.GetCommentsByReviewID(c.Context(), id)
 
 	if err != nil {
 		return err
 	}
 
-	return c.Status(fiber.StatusOK).JSON(tags)
+	return c.Status(fiber.StatusOK).JSON(comments)
 }
