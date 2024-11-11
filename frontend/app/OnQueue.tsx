@@ -53,8 +53,11 @@ const OnQueue = () => {
     },
   ]);
 
-  const goToSongPage = () => {
-    router.push("/explore");
+  const goToSongPage = (id: string) => {
+    navigation.navigate("MediaPage", {
+      mediaType: "track",
+      mediaId: id,
+    });
   };
 
   const renderSongItem = ({
@@ -62,7 +65,10 @@ const OnQueue = () => {
   }: {
     item: { id: string; title: string; name: string; cover: string };
   }) => (
-    <TouchableOpacity style={styles.itemContainer} onPress={goToSongPage}>
+    <TouchableOpacity
+      style={styles.itemContainer}
+      onPress={() => goToSongPage(item.id)}
+    >
       {/* <View style={styles.thumbnail}>
                 
             </View> */}
