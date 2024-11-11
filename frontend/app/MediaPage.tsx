@@ -33,8 +33,6 @@ export default function MediaPage() {
     mediaType: string;
   }>();
 
-  console.log(mediaId, mediaType);
-
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
@@ -105,6 +103,7 @@ export default function MediaPage() {
           <View>
             {reviews?.map((review) => (
               <ReviewPreview
+                key={review.id}
                 preview={{
                   ...review,
                   created_at: new Date(review.created_at),
