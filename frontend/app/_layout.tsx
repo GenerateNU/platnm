@@ -11,6 +11,7 @@ import "react-native-reanimated";
 import { AuthProvider } from "@/components/AuthProvider";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { LogBox } from "react-native";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -30,6 +31,9 @@ export default function RootLayout() {
   if (!loaded) {
     return null;
   }
+
+  // UNCOMMENT IF DEMOING SO THAT EMBARRASSING LOGS DONT APPEAR
+  // LogBox.ignoreAllLogs();
   return (
     <AuthProvider>
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
