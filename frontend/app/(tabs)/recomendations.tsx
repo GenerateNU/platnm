@@ -15,6 +15,7 @@ import axios from "axios";
 import Play from "@/assets/images/Icons/play.svg";
 import Info from "@/assets/images/Icons/info.svg";
 import { TouchableOpacity } from "react-native";
+import { useAuthContext } from "@/components/AuthProvider";
 
 export type RecommendationsCard = {
   songType: string;
@@ -43,7 +44,7 @@ type RecommendationResponse = {
 
 export default function RecommendationsScreen() {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-  const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
+  const { userId } = useAuthContext();
 
   const [reccomendations, setRecommendations] = useState<RecommendationsCard[]>(
     [],
@@ -55,25 +56,29 @@ export default function RecommendationsScreen() {
         const response = await axios.get(
           `${BASE_URL}/recommendation/${userId}`,
         );
-        setRecommendations(
-          response.data.map((recommendation: RecommendationResponse) => {
-            return {
-              songType: recommendation.media_type,
-              since: recommendation.created_at,
-              artist: recommendation.artist_name,
-              title: recommendation.title,
-              url: recommendation.cover,
-              id: recommendation.id,
-              recomender_name: recommendation.recommender_name,
-              recommender_picture: recommendation.recommender_picture,
-              media_id: recommendation.media_id,
-            };
-          }),
-        );
+
+        if (response.data) {
+          setRecommendations(
+            response.data.map((recommendation: RecommendationResponse) => {
+              return {
+                songType: recommendation.media_type,
+                since: recommendation.created_at,
+                artist: recommendation.artist_name,
+                title: recommendation.title,
+                url: recommendation.cover,
+                id: recommendation.id,
+                recomender_name: recommendation.recommender_name,
+                recommender_picture: recommendation.recommender_picture,
+                media_id: recommendation.media_id,
+              };
+            }),
+          );
+        }
       } catch (error) {
-        console.error("Error fetching user profile:", error);
+        console.error("Error fetching reccomendation:", error);
       }
     };
+    console.log("rerunning");
     fetchUserProfile();
   }, [userId]);
 
