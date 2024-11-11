@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flexDirection: "row",
-    paddingHorizontal: 16,
+    paddingHorizontal: 24,
   },
   songName: {
     fontSize: 18,
