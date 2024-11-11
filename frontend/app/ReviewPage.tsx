@@ -92,14 +92,15 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
             <Image
               source={getRatingImage(
                 review.rating as keyof typeof ratingImages,
-              )}
-              style={styles.ratingImage}
+              )} style={styles.ratingImage}
             />
           </View>
           <View>
             {comments && comments.length > 0 ? (
               comments.map((comment, index) => {
-                return <CommentComponent key={index} comment={comment} />;
+                return (
+                  <CommentComponent key={index} comment={comment} />
+                );
               })
             ) : (
               <Text style={styles.noReviewsText}>No comments found.</Text>
