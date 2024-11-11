@@ -34,6 +34,9 @@ type Review = {
   media_id: number;
   rating: number;
   comment: string;
+  username: string;
+  display_name: string;
+  profile_picture: string;
   created_at: string;
   updated_at: string;
 };
@@ -96,4 +99,9 @@ type Preview = {
   media_artist: string;
   tags: string[];
   review_stat: ReviewStat;
+};
+
+type MediaResponse = {
+  media: Media;
+  reviewCount: number;
 };

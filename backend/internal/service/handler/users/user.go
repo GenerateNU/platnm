@@ -1,6 +1,7 @@
 package users
 
 import (
+	"fmt"
 	"platnm/internal/config"
 	"platnm/internal/errs"
 	"platnm/internal/service/session"

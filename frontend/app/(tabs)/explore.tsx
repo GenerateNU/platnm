@@ -1,8 +1,8 @@
 import { StyleSheet } from "react-native";
-import MediaPage from "../MediaPage";
+import SearchPage from "./search";
 
 export default function ExploreScreen() {
-  return <MediaPage />;
+  return <SearchPage />;
 }
 
 const styles = StyleSheet.create({});

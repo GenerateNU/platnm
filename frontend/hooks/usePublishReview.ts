@@ -23,7 +23,6 @@ function usePublishReview() {
       tags,
       draft,
     };
-    console.log(body);
     return (
       axios
         .post(`${BASE_URL}/reviews`, {

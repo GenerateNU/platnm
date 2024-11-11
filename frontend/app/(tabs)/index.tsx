@@ -12,6 +12,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import ReviewPreview from "@/components/ReviewPreview";
 import Icon from "react-native-vector-icons/Feather";
+import { router, useNavigation } from "expo-router";
+import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
 
 export default function HomeScreen() {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -19,6 +21,7 @@ export default function HomeScreen() {
   const [feedReviews, setFeedReviews] = useState<Preview[]>();
   const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
   const hasNotification = true; // Hardcoding - Get notification status from somewhere else
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
   useEffect(() => {
     const fetchFeedReviews = async () => {
@@ -26,9 +29,6 @@ export default function HomeScreen() {
       try {
         const response = await axios.get(`${BASE_URL}/users/feed/${userId}`);
         setFeedReviews(response.data);
-        // console.log('feed after set', feedReviews);
-        console.log("response", response.data);
-        // console.log('setFeedReviews', fe edReviews);
       } catch (error) {
         console.error("Error fetching feed reviews:", error);
       }
@@ -44,7 +44,7 @@ export default function HomeScreen() {
 
   const handleMusicPress = () => {
     console.log("music icon pressed");
-    // Add settings icon press handling logic here
+    navigation.navigate("Recommendations");
   };
 
   return (

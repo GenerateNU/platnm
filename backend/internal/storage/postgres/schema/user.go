@@ -147,7 +147,6 @@ func (r *UserRepository) CreateUser(ctx context.Context, user models.User) (mode
 	return user, nil
 }
 
-
 func (r *UserRepository) UpdateUserBio(ctx context.Context, user uuid.UUID, bio string) error {
 	query := `
 		UPDATE "user"
@@ -164,22 +163,20 @@ func (r *UserRepository) UpdateUserBio(ctx context.Context, user uuid.UUID, bio 
 	return nil
 }
 
-
 func (r *UserRepository) UpdateUserOnboard(ctx context.Context, email string, enthusiasm string) (string, error) {
-    result, err := r.db.Exec(ctx, `UPDATE "user" SET "enthusiasm" = $1 WHERE email = $2`, enthusiasm, email)
-    if err != nil {
-        return "", err
-    }
+	result, err := r.db.Exec(ctx, `UPDATE "user" SET "enthusiasm" = $1 WHERE email = $2`, enthusiasm, email)
+	if err != nil {
+		return "", err
+	}
 
-    rowsAffected := result.RowsAffected();
-    
-    if rowsAffected == 0 {
-        return "user not found", nil 
-    }
+	rowsAffected := result.RowsAffected()
 
-    return enthusiasm, nil
+	if rowsAffected == 0 {
+		return "user not found", nil
+	}
+
+	return enthusiasm, nil
 }
-
 
 func (r *UserRepository) GetUserProfile(ctx context.Context, id uuid.UUID) (*models.Profile, error) {
 	profile := &models.Profile{}

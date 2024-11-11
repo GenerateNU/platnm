@@ -71,15 +71,22 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	app.Route("/reviews", func(r fiber.Router) {
 		reviewHandler := reviews.NewHandler(repository.Review, repository.User, repository.UserReviewVote)
 		r.Post("/", reviewHandler.CreateReview)
+		r.Get("/popular", reviewHandler.GetReviewsByPopularity)
 		r.Get("/tags", reviewHandler.GetTags)
-		r.Get("/:id", reviewHandler.GetReviewsByUserID)
+
+		// Get Reviews by ID which can be used to populate a preview
+		r.Get("/:id", reviewHandler.GetReviewByID)
+		r.Get("/user/:id", reviewHandler.GetReviewsByUserID)
 		r.Post("/vote/:rating", reviewHandler.VoteReview)
 		r.Patch("/:id", reviewHandler.UpdateReviewByReviewID)
 		r.Get("/album/:id", func(c *fiber.Ctx) error {
-			return reviewHandler.GetReviewsById(c, "album")
+			return reviewHandler.GetReviewsByMediaId(c, "album")
 		})
 		r.Get("/track/:id", func(c *fiber.Ctx) error {
-			return reviewHandler.GetReviewsById(c, "track")
+			return reviewHandler.GetReviewsByMediaId(c, "track")
+		})
+		r.Get("/track/:userId/:mediaId", func(c *fiber.Ctx) error {
+			return reviewHandler.GetUserReviewOfTrack(c)
 		})
 		r.Post("/comment", reviewHandler.CreateComment)
 		r.Get("/social/song/:songid", func(c *fiber.Ctx) error {
@@ -88,6 +95,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Get("/social/album/:albumid", func(c *fiber.Ctx) error {
 			return reviewHandler.GetSocialReviews(c, "album")
 		})
+		r.Get("/comments/:id", reviewHandler.GetComments)
 	})
 
 	mediaHandler := media.NewHandler(repository.Media)
@@ -95,6 +103,8 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		m := spotify_middleware.NewMiddleware(config.Spotify, repository.UserAuth, sessionStore)
 		// Apply middleware only to the specific route
 		r.Get("/:name", m.WithSpotifyClient(), mediaHandler.GetMediaByName)
+		r.Get("/track/:id", mediaHandler.GetTrackById)
+		r.Get("/album/:id", mediaHandler.GetAlbumById)
 		r.Get("/", mediaHandler.GetMedia)
 	})
 

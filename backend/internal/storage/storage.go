@@ -29,16 +29,22 @@ type ReviewRepository interface {
 	UpdateReview(ctx context.Context, update *models.Review) (*models.Review, error)
 	GetExistingReview(ctx context.Context, id string) (*models.Review, error)
 	ReviewBelongsToUser(ctx context.Context, reviewID string, userID string) (bool, error)
-	GetReviewsByID(ctx context.Context, id string, media_type string) ([]*models.Review, error)
+	GetReviewsByMediaID(ctx context.Context, id string, media_type string) ([]*models.Review, error)
 	CreateComment(ctx context.Context, comment *models.Comment) (*models.Comment, error)
+	GetUserReviewOfTrack(ctx context.Context, id string, id2 string) (*models.Review, error)
 	GetTags(ctx context.Context) ([]string, error)
 	GetSocialReviews(ctx context.Context, media_type string, mediaID string, userID string) ([]models.FriendReview, int, error)
+	GetCommentsByReviewID(ctx context.Context, id string) ([]models.Comment, error)
+	GetReviewByID(ctx context.Context, id string) (*models.Preview, error)
+	GetReviewsByPopularity(ctx context.Context, limit int, offset int) ([]*models.Review, error)
 }
 
 type MediaRepository interface {
 	GetMediaByName(ctx context.Context, name string, mediaType models.MediaType) ([]models.Media, error)
 	GetMediaByDate(ctx context.Context) ([]models.Media, error)
 	GetMediaByReviews(ctx context.Context, limit, offset int, mediaType *string) ([]models.MediaWithReviewCount, error)
+	GetTrackById(ctx context.Context, id string) (*models.Track, error)
+	GetAlbumById(ctx context.Context, id string) (*models.Album, error)
 	GetExistingArtistBySpotifyID(ctx context.Context, id string) (*int, error)
 	AddArtist(ctx context.Context, artist *models.Artist) (*models.Artist, error)
 	GetExistingAlbumBySpotifyID(ctx context.Context, id string) (*int, error)
