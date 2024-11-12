@@ -1,13 +1,13 @@
-import * as React from "react";
+import * as React from 'react';
 import { StyleSheet, View, Image, TouchableOpacity, Text } from "react-native";
-import { Searchbar } from "react-native-paper";
+import { Searchbar } from 'react-native-paper';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
-  const [searchQuery, setSearchQuery] = React.useState("");
+  const [searchQuery, setSearchQuery] = React.useState('');
 
   const handleSubmit = () => {
     onSearch(searchQuery);
@@ -28,11 +28,11 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingLeft: 15,
-  },
+  paddingLeft: 15,
+  },    
   searchBarContainer: {
-    marginRight: 20,
-  },
+      marginRight: 20,
+  }
 });
 
 export default SearchBar;

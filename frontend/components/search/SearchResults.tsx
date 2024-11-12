@@ -1,20 +1,23 @@
-import React from "react";
+import React, {useState} from "react";
 import { StyleSheet, View, Text, ScrollView } from "react-native";
 import SongChip from "@/components/search/SongChip";
 import AlbumSearchCard from "@/components/search/AlbumSearchCard";
+import Filter from "@/components/search/Filter";
+
 
 interface SearchResultsProps {
   songs: MediaResponse[];
   albums: MediaResponse[];
   isLoading: boolean;
-  filter: "all" | "songs" | "albums";
 }
+
+
+type FilterOption = 'all' | 'songs' | 'albums' | 'profile';
 
 const SearchResults: React.FC<SearchResultsProps> = ({
   songs,
   albums,
   isLoading,
-  filter,
 }) => {
   if (isLoading) {
     return <Text style={styles.loadingText}>Searching...</Text>;
@@ -24,26 +27,32 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     return <Text style={styles.noResults}>No results found</Text>;
   }
 
+  const [selectedFilter, setSelectedFilter] = useState<FilterOption>('all');
+
+  const handleFilterChange = (filter: FilterOption) => {
+    setSelectedFilter(filter);
+  };
+
   return (
     <View style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.resultsText}>Results</Text>
-        <View style={styles.underline} />
-      </View>
-      <View style={styles.albumsGrid}>
+      <Filter currentFilter={selectedFilter} onFilterChange={handleFilterChange}/>
+      <View style={styles.resultGrid}>
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
-          {albums.map((album, index) => (
-            <AlbumSearchCard
-              id={album.media.id}
-              key={album.media.id}
-              rank={index + 1}
-              artist_name={album.media.artist_name}
-              album_name={album.media.title}
-              cover={album.media.cover}
-            />
-          ))}
-          <View />
-          {(filter === "all" || filter === "songs") && (
+        {(selectedFilter === "all" || selectedFilter === "albums") && (
+          <View>
+            {albums.map((album, index) => (
+              <AlbumSearchCard
+                id={album.media.id}
+                key={album.media.id}
+                rank={index + 1}
+                artist_name={album.media.artist_name}
+                album_name={album.media.title}
+                cover={album.media.cover}
+              />
+            ))}
+          </View>
+        )}
+          {(selectedFilter === "all" || selectedFilter === "songs") && (
             <View style={styles.songsList}>
               {songs.map((song, index) => (
                 <SongChip
@@ -68,22 +77,13 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
   },
-  underline: {
-    height: 2,
-    backgroundColor: "#000000",
-    width: "100%",
-    opacity: 0.1,
-  },
   headerContainer: {
     marginTop: 10,
     marginBottom: 20,
-  },
-  resultsText: {
     fontSize: 16,
     textAlign: "center",
     fontWeight: "600",
     color: "#000000",
-    marginBottom: 8,
   },
   section: {
     marginTop: 20,
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     color: "#666666",
   },
-  albumsGrid: {
+  resultGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
