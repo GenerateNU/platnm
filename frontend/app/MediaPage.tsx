@@ -130,6 +130,7 @@ export default function MediaPage() {
                 key={review.id}
                 preview={{
                   ...review,
+                  review_id: review.id,
                   created_at: new Date(review.created_at),
                   updated_at: new Date(review.updated_at),
                   media_title: media.title,
