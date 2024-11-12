@@ -52,6 +52,7 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id string) (*models.Us
 	return &user, nil
 }
 
+
 func (r *UserRepository) UserExists(ctx context.Context, id string) (bool, error) {
 
 	rows, err := r.db.Query(ctx, `SELECT * FROM "user" WHERE id = $1`, id)
@@ -155,6 +156,22 @@ func (r *UserRepository) UpdateUserBio(ctx context.Context, user uuid.UUID, bio 
 	`
 
 	_, err := r.db.Exec(ctx, query, bio, user)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *UserRepository) UpdateUserProfilePicture(ctx context.Context, user uuid.UUID, pfp string) error {
+	query := `
+		UPDATE "user"
+		SET profile_picture = $1
+		WHERE id = $2;
+	`
+
+	_, err := r.db.Exec(ctx, query, pfp, user)
 
 	if err != nil {
 		return err
