@@ -1,19 +1,18 @@
 package models
 
 import (
-	"database/sql"
 	"time"
 )
 
 type UserComment struct {
-	CommentID      string
-	Comment        sql.NullString
-	ReviewID       string
-	UserID         string
-	Username       sql.NullString
-	DisplayName    sql.NullString
-	ProfilePicture sql.NullString
-	CreatedAt      time.Time
+	CommentID      string    `json:"comment_id"`
+	Comment        string    `json:"comment"`
+	ReviewID       string    `json:"review_id"`
+	UserID         string    `json:"user_id"`
+	Username       string    `json:"username"`
+	DisplayName    string    `json:"display_name"`
+	ProfilePicture *string   `json:"profile_picture"`
+	CreatedAt      time.Time `json:"created_at"`
 	// Upvotes        int       `json:"upvotes"`
 	// Downvotes      int       `json:"downvotes"`
 }

@@ -576,20 +576,6 @@ func (r *ReviewRepository) GetCommentsByReviewID(ctx context.Context, reviewID s
 			return nil, err
 		}
 
-		// Convert nullable fields to empty strings if they are NULL
-		if !comment.Comment.Valid {
-			comment.Comment.String = ""
-		}
-		if !comment.Username.Valid {
-			comment.Username.String = ""
-		}
-		if !comment.DisplayName.Valid {
-			comment.DisplayName.String = ""
-		}
-		if !comment.ProfilePicture.Valid {
-			comment.ProfilePicture.String = ""
-		}
-
 		comments = append(comments, &comment)
 	}
 
