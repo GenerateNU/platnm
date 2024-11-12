@@ -1,9 +1,8 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import { StyleSheet, View, Text, ScrollView } from "react-native";
 import SongChip from "@/components/search/SongChip";
 import AlbumSearchCard from "@/components/search/AlbumSearchCard";
 import Filter from "@/components/search/Filter";
-
 
 interface SearchResultsProps {
   songs: MediaResponse[];
@@ -11,8 +10,7 @@ interface SearchResultsProps {
   isLoading: boolean;
 }
 
-
-type FilterOption = 'all' | 'songs' | 'albums' | 'profile';
+type FilterOption = "all" | "songs" | "albums" | "profile";
 
 const SearchResults: React.FC<SearchResultsProps> = ({
   songs,
@@ -27,7 +25,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     return <Text style={styles.noResults}>No results found</Text>;
   }
 
-  const [selectedFilter, setSelectedFilter] = useState<FilterOption>('all');
+  const [selectedFilter, setSelectedFilter] = useState<FilterOption>("all");
 
   const handleFilterChange = (filter: FilterOption) => {
     setSelectedFilter(filter);
@@ -35,23 +33,26 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 
   return (
     <View style={styles.container}>
-      <Filter currentFilter={selectedFilter} onFilterChange={handleFilterChange}/>
+      <Filter
+        currentFilter={selectedFilter}
+        onFilterChange={handleFilterChange}
+      />
       <View style={styles.resultGrid}>
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
-        {(selectedFilter === "all" || selectedFilter === "albums") && (
-          <View>
-            {albums.map((album, index) => (
-              <AlbumSearchCard
-                id={album.media.id}
-                key={album.media.id}
-                rank={index + 1}
-                artist_name={album.media.artist_name}
-                album_name={album.media.title}
-                cover={album.media.cover}
-              />
-            ))}
-          </View>
-        )}
+          {(selectedFilter === "all" || selectedFilter === "albums") && (
+            <View>
+              {albums.map((album, index) => (
+                <AlbumSearchCard
+                  id={album.media.id}
+                  key={album.media.id}
+                  rank={index + 1}
+                  artist_name={album.media.artist_name}
+                  album_name={album.media.title}
+                  cover={album.media.cover}
+                />
+              ))}
+            </View>
+          )}
           {(selectedFilter === "all" || selectedFilter === "songs") && (
             <View style={styles.songsList}>
               {songs.map((song, index) => (
