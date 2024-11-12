@@ -116,7 +116,7 @@ type UserComment = {
   // downvotes: number;
 };
 
-type RatingDistribution {
+type RatingDistribution = {
   rating: number;
   count: number;
-}
+};
