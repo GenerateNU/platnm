@@ -96,13 +96,14 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int, offset int) ([]*models.Preview, error) {
 
 	// shoutout to ally for this legendary query, and like 90% of this code
+
 	query := `
 	SELECT 
 		r.id, 
 		r.user_id, 
 		u.username,
 		u.display_name,
-    u.profile_picture,
+		u.profile_picture,
 		r.media_type, 
 		r.media_id, 
 		r.rating, 
@@ -113,32 +114,37 @@ func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int
 		COALESCE(a.title, t.title) AS media_title, 
 		COALESCE(a.artists, t.artists) AS media_artist,
 		ARRAY_AGG(tag.name) FILTER (WHERE tag.name IS NOT NULL) AS tags,
-		COUNT(user_review_vote.review_id) AS vote_count
+		COALESCE(v.vote_count, 0) AS vote_count
 	FROM review r
 	INNER JOIN "user" u ON u.id = r.user_id
-  LEFT JOIN (
-    SELECT t.title, t.id, STRING_AGG(ar.name, ', ') AS artists, cover
+	LEFT JOIN (
+		SELECT t.title, t.id, STRING_AGG(ar.name, ', ') AS artists, cover
 		FROM track t
-    JOIN track_artist ta on t.id = ta.track_id
+		JOIN track_artist ta on t.id = ta.track_id
 		JOIN artist ar ON ta.artist_id = ar.id
-    JOIN album a on t.album_id = a.id
+		JOIN album a on t.album_id = a.id
 		GROUP BY t.id, cover, t.title
-    ) t ON r.media_type = 'track' AND r.media_id = t.id
-  LEFT JOIN (
-    SELECT a.id, a.title, STRING_AGG(ar.name, ', ') AS artists, cover
+	) t ON r.media_type = 'track' AND r.media_id = t.id
+	LEFT JOIN (
+		SELECT a.id, a.title, STRING_AGG(ar.name, ', ') AS artists, cover
 		FROM album a
-    JOIN album_artist aa on a.id = aa.album_id
+		JOIN album_artist aa on a.id = aa.album_id
 		JOIN artist ar ON aa.artist_id = ar.id
 		GROUP BY a.id, cover, a.title
-  ) a ON r.media_type = 'album' AND r.media_id = a.id
+	) a ON r.media_type = 'album' AND r.media_id = a.id
 	LEFT JOIN review_tag rt ON r.id = rt.review_id
 	LEFT JOIN tag tag ON rt.tag_id = tag.id
-	LEFT JOIN user_review_vote ON r.id = user_review_vote.review_id
-	GROUP BY r.id, r.user_id, u.username, u.display_name, u.profile_picture, r.media_type, r.media_id, r.rating, r.comment, r.created_at, r.updated_at, media_cover, media_title, media_artist
+	LEFT JOIN (
+		SELECT review_id, COUNT(*) AS vote_count
+		FROM user_review_vote
+		GROUP BY review_id
+	) v ON r.id = v.review_id
+	GROUP BY r.id, r.user_id, u.username, u.display_name, u.profile_picture, r.media_type, r.media_id, r.rating, r.comment, r.created_at, r.updated_at, media_cover, media_title, media_artist, v.vote_count
 	ORDER BY vote_count DESC
 	LIMIT $1
 	OFFSET $2;
 	`
+
 
 	rows, err := r.Query(ctx, query, limit+1, offset) // for some reason this +1 for the limit is needed
 
