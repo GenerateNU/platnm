@@ -10,7 +10,7 @@ import (
 type UserRepository interface {
 	GetUsers(ctx context.Context) ([]*models.User, error)
 	GetUserByID(ctx context.Context, id string) (*models.User, error)
-	GetUserProfile(ctx context.Context, id uuid.UUID, idType string) (*models.Profile, error)
+	GetUserProfile(ctx context.Context, id uuid.UUID) (*models.Profile, error)
 	UserExists(ctx context.Context, id string) (bool, error)
 	FollowExists(ctx context.Context, follower uuid.UUID, following uuid.UUID) (bool, error)
 	Follow(ctx context.Context, follower uuid.UUID, following uuid.UUID) (bool, error)
@@ -20,7 +20,7 @@ type UserRepository interface {
 	UpdateUserBio(ctx context.Context, user uuid.UUID, bio string) error
 	GetUserFeed(ctx context.Context, id uuid.UUID) ([]*models.Preview, error)
 	UpdateUserOnboard(ctx context.Context, email string, enthusiasm string) (string, error)
-	// GetProfileByDisplay(ctx context.Context, displayName string) (*models.Profile, error)
+	GetProfileByName(ctx context.Context, name string) ([]*models.Profile, error)
 	// GetProfileByUser(ctx context.Context, userName string) (*models.Profile, error)
 }
 
