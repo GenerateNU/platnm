@@ -66,7 +66,7 @@ export default function ProfileScreen() {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/users/profile/${userId}`);
+        const response = await axios.get(`${BASE_URL}/users/profile/${userId}/id`);
         setUserProfile(response.data);
         setBio(response.data.bio);
       } catch (error) {

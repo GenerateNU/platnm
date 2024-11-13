@@ -58,6 +58,18 @@ func (h *Handler) UpdateUserOnboard(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(result)
 }
 
+// func (h *Handler) GetProfileByDisplay(c *fiber.Ctx) error {
+// 	displayName := c.Params("displayName")
+// 	profile, err := h.userRepository.GetProfileByDisplay(c.Context(), displayName)
+
+// 	if err != nil {
+// 		print(err.Error(), "from transactions err ")
+// 		return err
+// 	}
+
+// 	return c.Status(fiber.StatusOK).JSON(profile)
+// }
+
 func (h *Handler) GetUserById(c *fiber.Ctx) error {
 	id := c.Params("id")
 	user, err := h.userRepository.GetUserByID(c.Context(), id)
@@ -99,7 +111,7 @@ func (h *Handler) CalculateScore(c *fiber.Ctx) error {
 
 func (h *Handler) GetUserProfile(c *fiber.Ctx) error {
 	id := c.Params("id")
-
+	flag := c.Params("flag")
 	exists, err := h.userRepository.UserExists(c.Context(), id)
 	if err != nil {
 		print(err.Error())
@@ -110,13 +122,22 @@ func (h *Handler) GetUserProfile(c *fiber.Ctx) error {
 		return errs.NotFound("User", "userID", id)
 	}
 
-	userUUID, err := uuid.Parse(id)
-	if err != nil {
-		print(err.Error())
-		return err
-	}
+	if flag == "id" {
+		userUUID, err := uuid.Parse(id)
+		if err != nil {
+			print(err.Error())
+			return err
+		}
 
-	profile, err := h.userRepository.GetUserProfile(c.Context(), userUUID)
+		profile, err := h.userRepository.GetUserProfile(c.Context(), userUUID, flag)
+		if err != nil {
+			print(err.Error(), "unable to fetch profile ")
+			return err
+		}
+		return c.Status(fiber.StatusOK).JSON(profile)
+	}	
+
+	profile, err := h.userRepository.GetUserProfile(c.Context(), id, flag)
 	if err != nil {
 		print(err.Error(), "unable to fetch profile ")
 		return err
@@ -158,7 +179,7 @@ func (h *Handler) UpdateUserBio(c *fiber.Ctx) error {
 		return err
 	}
 
-	profile, err := h.userRepository.GetUserProfile(c.Context(), userUUID)
+	profile, err := h.userRepository.GetUserProfile(c.Context(), userUUID, "id")
 	if err != nil {
 		print(err.Error(), "unable to fetch profile ")
 		return err

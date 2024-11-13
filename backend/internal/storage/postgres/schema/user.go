@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"platnm/internal/models"
 	"strconv"
-
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -52,6 +52,20 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id string) (*models.Us
 	return &user, nil
 }
 
+func (r *UserRepository) GetProfileByDisplay(ctx context.Context, displayName string) (*models.Profile, error) {
+	var profile models.Profile
+    err := r.db.QueryRow(ctx, `SELECT id, username, display_name, profile_picture, bio, score, followers, followed 
+                               0 FROM "user" WHERE display_name = $1`, displayName).
+        Scan(&profile.UserID, &profile.Username, &profile.DisplayName, &profile.ProfilePicture, &profile.Bio, &profile.Score, &profile.Followers, &profile.Followed)
+	if err != nil {
+		print(err.Error(), "from transactions err ")
+		return nil, err
+	}
+
+	return &profile, nil
+}
+
+
 func (r *UserRepository) UserExists(ctx context.Context, id string) (bool, error) {
 
 	rows, err := r.db.Query(ctx, `SELECT * FROM "user" WHERE id = $1`, id)
@@ -66,6 +80,20 @@ func (r *UserRepository) UserExists(ctx context.Context, id string) (bool, error
 
 	return false, nil
 }
+
+// func (r *UserRepository) UserExistsDisplay(ctx context.Context, displayName string) (bool, error) {
+// 	rows, err := r.db.Query(ctx, `SELECT * FROM "user" WHERE display_name = $1`, displayName)
+// 	if err != nil {
+// 		return false, err
+// 	}
+// 	defer rows.Close()
+
+// 	if rows.Next() {
+// 		return true, nil
+// 	}
+
+// 	return false, nil
+// }
 
 func (r *UserRepository) FollowExists(ctx context.Context, follower uuid.UUID, following uuid.UUID) (bool, error) {
 
@@ -178,14 +206,22 @@ func (r *UserRepository) UpdateUserOnboard(ctx context.Context, email string, en
 	return enthusiasm, nil
 }
 
-func (r *UserRepository) GetUserProfile(ctx context.Context, id uuid.UUID) (*models.Profile, error) {
+func (r *UserRepository) GetUserProfile(ctx context.Context, id uuid.UUID, idType string) (*models.Profile, error) {
 	profile := &models.Profile{}
-	query := `SELECT u.id, u.username, u.display_name, COUNT(DISTINCT followers.follower_id) AS follower_count, COUNT(DISTINCT followed.followee_id) AS followed_count
-		FROM "user" u
-		LEFT JOIN follower followers ON followers.followee_id = u.id
-		LEFT JOIN follower followed ON followed.follower_id = u.id
-		WHERE u.id = $1
-		GROUP BY u.id, u.username, u.display_name, u.profile_picture, u.bio;`
+	if !(idType == "id" || idType == "username" || idType == "displayName") {
+		print("idType must be 'username', 'displayName' or 'id'")
+		return nil, nil
+	}
+	query := fmt.Sprintf(`
+	SELECT u.id, u.username, u.display_name, 
+		   COUNT(DISTINCT followers.follower_id) AS follower_count, 
+		   COUNT(DISTINCT followed.followee_id) AS followed_count
+	FROM "user" u
+	LEFT JOIN follower followers ON followers.followee_id = u.id
+	LEFT JOIN follower followed ON followed.follower_id = u.id
+	WHERE u.%s = $1
+	GROUP BY u.id, u.username, u.display_name, u.profile_picture, u.bio;
+`, idType)
 
 	exists, err := r.UserExists(ctx, id.String())
 	if !exists {
