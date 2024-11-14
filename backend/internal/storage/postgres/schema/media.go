@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
+	"net/url"
 	"platnm/internal/models"
 	"time"
 
@@ -230,12 +232,20 @@ func (r *MediaRepository) AddAlbum(ctx context.Context, album *models.Album) (*m
 	query :=
 		`INSERT INTO album (title, release_date, cover, country, spotify_id)
 		 VALUES ($1, $2, $3, $4, $5)
+		 ON CONFLICT (spotify_id) DO NOTHING
 		 RETURNING id;`
 
-	if err := r.QueryRow(ctx, query, album.Title, album.ReleaseDate, album.Cover, album.Country, album.SpotifyID).Scan(&album.ID); err != nil {
+	var id int
+	if err := r.QueryRow(ctx, query, album.Title, album.ReleaseDate, album.Cover, album.Country, album.SpotifyID).Scan(&id); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			album.ID = id
+			return album, nil // No new row was inserted because one existed
+		}
+		slog.Error("error in AddAlbum: ", err)
 		return nil, err
 	}
 
+	album.ID = id
 	return album, nil
 }
 
@@ -293,8 +303,13 @@ func (r *MediaRepository) AddTrackArtist(ctx context.Context, trackId int, artis
 }
 
 func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, mediaType models.MediaType) ([]models.Media, error) {
+	decodedName, err := url.QueryUnescape(name) // handle URL encoding
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode name: %w", err)
+	}
+
 	// Select all rows where either the input string is in the title of the media, or if the string matches one of the titles fuzzily
-	var albumQuery = "SELECT * FROM album WHERE levenshtein(title, $1) <= 5 OR title ILIKE '%' || $1 || '%' LIMIT 20;"
+	var albumQuery = "SELECT id, title, release_date, cover, spotify_id FROM album WHERE levenshtein(title, $1) <= 5 OR title ILIKE '%' || $1 || '%' LIMIT 20;"
 	var trackQuery = `
 	SELECT 
 		track.id AS track_id,
@@ -314,8 +329,11 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, media
 
 	if mediaType == models.AlbumMedia || mediaType == models.BothMedia {
 
-		albumRows, albumErr := r.Query(ctx, albumQuery, name)
+		albumRows, albumErr := r.Query(ctx, albumQuery, decodedName)
+		fmt.Println("albumRows: ", albumRows)
 		if albumErr != nil {
+			fmt.Println("found an error", err)
+
 			return nil, albumErr
 		}
 		defer albumRows.Close()
@@ -327,8 +345,8 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, media
 				&album.Title,
 				&album.ReleaseDate,
 				&album.Cover,
-				&album.Country,
-				&album.GenreID,
+				// &album.Country,
+				// &album.GenreID,
 				&album.SpotifyID,
 			); err != nil {
 				return nil, err

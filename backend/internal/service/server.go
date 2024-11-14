@@ -151,7 +151,9 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Route("/", func(clientCredRoute fiber.Router) {
 			clientCredRoute.Use(m.WithSpotifyClient())
 			clientCredRoute.Get("/", h.GetPlatnmPlaylist)
-			clientCredRoute.Get("/new-releases", h.NewReleases)
+			clientCredRoute.Get("/import/new-releases", h.NewReleases)
+			clientCredRoute.Post("/import/recommendations", h.ImportRecommendations)
+			clientCredRoute.Post("/import/:name", h.GetMediaByName)
 		})
 	})
 
