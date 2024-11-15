@@ -287,6 +287,29 @@ func (r *MediaRepository) AddAlbumArtist(ctx context.Context, albumId int, artis
 	return nil
 }
 
+func (r *MediaRepository) AddArtistAndAlbumArtist(ctx context.Context, artist *models.Artist, albumId int) (*models.Artist, error) {
+	query := `
+        WITH inserted_artist AS (
+            INSERT INTO artist (name, spotify_id, photo, bio)
+            VALUES ($1, $2, $3, $4)
+            ON CONFLICT (spotify_id) DO NOTHING
+            RETURNING id
+        )
+        INSERT INTO album_artist (album_id, artist_id)
+        SELECT $5, id FROM inserted_artist
+        RETURNING id;
+    `
+
+	var artistId int
+	err := r.QueryRow(ctx, query, artist.Name, artist.SpotifyID, artist.Photo, artist.Bio, albumId).Scan(&artistId)
+	if err != nil {
+		return nil, err
+	}
+
+	artist.ID = artistId
+	return artist, nil
+}
+
 func (r *MediaRepository) AddTrackArtist(ctx context.Context, trackId int, artistId int) error {
 	query :=
 		`INSERT INTO track_artist (track_id, artist_id)
@@ -300,6 +323,29 @@ func (r *MediaRepository) AddTrackArtist(ctx context.Context, trackId int, artis
 	}
 
 	return nil
+}
+
+func (r *MediaRepository) AddArtistAndTrackArtist(ctx context.Context, artist *models.Artist, trackId int) (*models.Artist, error) {
+	query := `
+        WITH inserted_artist AS (
+            INSERT INTO artist (name, spotify_id, photo, bio)
+            VALUES ($1, $2, $3, $4)
+            ON CONFLICT (spotify_id) DO NOTHING
+            RETURNING id
+        )
+        INSERT INTO track_artist (album_id, artist_id)
+        SELECT $5, id FROM inserted_artist
+        RETURNING id;
+    `
+
+	var artistId int
+	err := r.QueryRow(ctx, query, artist.Name, artist.SpotifyID, artist.Photo, artist.Bio, trackId).Scan(&artistId)
+	if err != nil {
+		return nil, err
+	}
+
+	artist.ID = artistId
+	return artist, nil
 }
 
 func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, mediaType models.MediaType) ([]models.Media, error) {
