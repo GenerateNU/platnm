@@ -374,7 +374,6 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, media
 	var medias []models.Media
 
 	if mediaType == models.AlbumMedia || mediaType == models.BothMedia {
-
 		albumRows, albumErr := r.Query(ctx, albumQuery, decodedName)
 		fmt.Println("albumRows: ", albumRows)
 		if albumErr != nil {
@@ -403,8 +402,7 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, media
 	}
 
 	if mediaType == models.TrackMedia || mediaType == models.BothMedia {
-
-		trackRows, trackErr := r.Query(ctx, trackQuery, name)
+		trackRows, trackErr := r.Query(ctx, trackQuery, decodedName)
 		if trackErr != nil {
 			return nil, trackErr
 		}
@@ -428,6 +426,9 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, media
 		}
 
 	}
+
+	fmt.Println("medias: ", medias)
+	fmt.Println("mediaType: ", mediaType)
 
 	return medias, nil
 

@@ -101,6 +101,8 @@ func (h *SpotifyHandler) handleSearchResults(client *spotify.Client, ctx context
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
+
+			fmt.Println("I found a track!!!", track.Name)
 			h.handleSearchTrack(ctx, &wg, &track, errCh)
 		}()
 
