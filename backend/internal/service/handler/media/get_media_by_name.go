@@ -225,7 +225,10 @@ func (h *Handler) handleSearchTrack(ctx context.Context, wg *sync.WaitGroup, tra
 			SpotifyID: spotifyArtist.ID.String(),
 			Name:      spotifyArtist.Name,
 		}
-		h.mediaRepository.AddArtistAndTrackArtist(ctx, artist, addedTrack.ID)
+		_, err = h.mediaRepository.AddArtistAndTrackArtist(ctx, artist, addedTrack.ID)
+		if err != nil {
+			h.sendError(errCh, err)
+		}
 	}
 }
 

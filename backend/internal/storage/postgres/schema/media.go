@@ -242,10 +242,6 @@ func (r *MediaRepository) AddAlbum(ctx context.Context, album *models.Album) (*m
 
 	var id int
 	if err := r.QueryRow(ctx, query, album.Title, album.ReleaseDate, album.Cover, album.SpotifyID).Scan(&id); err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			album.ID = id
-			return album, nil // No new row was inserted because one existed
-		}
 		return nil, err
 	}
 
@@ -256,20 +252,26 @@ func (r *MediaRepository) AddAlbum(ctx context.Context, album *models.Album) (*m
 func (r *MediaRepository) AddTrack(ctx context.Context, track *models.Track) (*models.Track, error) {
 	query :=
 		`
+		WITH inserted_track AS (
 		 INSERT INTO track (album_id, title, duration_seconds, spotify_id)
 		 VALUES ($1, $2, $3, $4)
 		 ON CONFLICT (spotify_id) DO NOTHING
-		 RETURNING id;`
+		 RETURNING id
+		)
+		 SELECT id FROM inserted_track
+		 UNION
+		 SELECT id FROM track WHERE spotify_id = $4;
+		 `
 
 	var id int
 	err := r.QueryRow(ctx, query, track.AlbumID, track.Title, track.Duration, track.SpotifyID).Scan(&id)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			track.ID = id
-			return track, nil // No new row was inserted because one existed
-		}
+		fmt.Println("failed to add track: ", track.Title, err.Error())
+
 		return nil, err
 	}
+
+	fmt.Println("added track: ", track.Title)
 
 	track.ID = id
 	return track, nil
@@ -312,9 +314,6 @@ func (r *MediaRepository) AddArtistAndAlbumArtist(ctx context.Context, artist *m
 	var artistId int
 	err := r.QueryRow(ctx, query, artist.Name, artist.SpotifyID, artist.Photo, artist.Bio, albumId).Scan(&artistId)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
-		}
 		return nil, err
 	}
 
@@ -358,9 +357,6 @@ func (r *MediaRepository) AddArtistAndTrackArtist(ctx context.Context, artist *m
 	var artistId int
 	err := r.QueryRow(ctx, query, artist.Name, artist.SpotifyID, artist.Photo, artist.Bio, trackId).Scan(&artistId)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
-		}
 		return nil, err
 	}
 
@@ -369,7 +365,6 @@ func (r *MediaRepository) AddArtistAndTrackArtist(ctx context.Context, artist *m
 }
 
 func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, mediaType models.MediaType) ([]models.Media, error) {
-	// limit, offset int,
 	decodedName, err := url.QueryUnescape(name) // handle URL encoding
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode name: %w", err)
