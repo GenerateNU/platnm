@@ -266,12 +266,8 @@ func (r *MediaRepository) AddTrack(ctx context.Context, track *models.Track) (*m
 	var id int
 	err := r.QueryRow(ctx, query, track.AlbumID, track.Title, track.Duration, track.SpotifyID).Scan(&id)
 	if err != nil {
-		fmt.Println("failed to add track: ", track.Title, err.Error())
-
 		return nil, err
 	}
-
-	fmt.Println("added track: ", track.Title)
 
 	track.ID = id
 	return track, nil
