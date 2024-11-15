@@ -1,4 +1,4 @@
-package spotify
+package media
 
 import (
 	"context"
@@ -15,7 +15,7 @@ import (
 	"github.com/zmb3/spotify/v2"
 )
 
-func (h *SpotifyHandler) GetMediaByName(c *fiber.Ctx) error {
+func (h *Handler) GetMediaByName(c *fiber.Ctx) error {
 	name := c.Params("name")
 	typeString := c.Query("media_type")
 
@@ -55,7 +55,7 @@ func (h *SpotifyHandler) GetMediaByName(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(medias)
 }
 
-func (h *SpotifyHandler) searchAndHandleSpotifyMedia(c *fiber.Ctx, name string, mediaType models.MediaType) error {
+func (h *Handler) searchAndHandleSpotifyMedia(c *fiber.Ctx, name string, mediaType models.MediaType) error {
 	var searchType spotify.SearchType
 	switch mediaType {
 	case models.AlbumMedia:
@@ -75,7 +75,6 @@ func (h *SpotifyHandler) searchAndHandleSpotifyMedia(c *fiber.Ctx, name string, 
 
 	result, err := client.Search(c.Context(), name, searchType, spotify.Limit(10))
 
-	fmt.Println("result: ", result)
 	if err != nil {
 		return errs.InternalServerError()
 	}
@@ -84,7 +83,7 @@ func (h *SpotifyHandler) searchAndHandleSpotifyMedia(c *fiber.Ctx, name string, 
 	return c.Status(fiber.StatusOK).JSON(resp)
 }
 
-func (h *SpotifyHandler) handleSearchResults(client *spotify.Client, ctx context.Context, result *spotify.SearchResult) error {
+func (h *Handler) handleSearchResults(client *spotify.Client, ctx context.Context, result *spotify.SearchResult) error {
 	var wg sync.WaitGroup
 	var errCh = make(chan error, 100)
 
@@ -101,8 +100,6 @@ func (h *SpotifyHandler) handleSearchResults(client *spotify.Client, ctx context
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-
-			fmt.Println("I found a track!!!", track.Name)
 			h.handleSearchTrack(ctx, &wg, &track, errCh)
 		}()
 
@@ -127,13 +124,10 @@ func (h *SpotifyHandler) handleSearchResults(client *spotify.Client, ctx context
 	return nil
 }
 
-func (h *SpotifyHandler) handleSearchAlbum(ctx context.Context, wg *sync.WaitGroup, album spotify.SimpleAlbum, errCh chan<- error) *int {
+func (h *Handler) handleSearchAlbum(ctx context.Context, wg *sync.WaitGroup, album spotify.SimpleAlbum, errCh chan<- error) *int {
 	albumId, err := h.mediaRepository.GetExistingAlbumBySpotifyID(ctx, album.ID.String())
 	if err != nil {
-		select {
-		case errCh <- err:
-		default:
-		}
+		h.sendError(errCh, err)
 		return nil
 	}
 
@@ -141,7 +135,6 @@ func (h *SpotifyHandler) handleSearchAlbum(ctx context.Context, wg *sync.WaitGro
 		return albumId
 	}
 
-	fmt.Println("Adding album", album.Name)
 	addedAlbum, err := h.mediaRepository.AddAlbum(ctx, &models.Album{
 		MediaType:   models.AlbumMedia,
 		SpotifyID:   album.ID.String(),
@@ -149,11 +142,11 @@ func (h *SpotifyHandler) handleSearchAlbum(ctx context.Context, wg *sync.WaitGro
 		ReleaseDate: album.ReleaseDateTime(),
 		Cover:       album.Images[0].URL,
 	})
+
+	fmt.Println("Added album to database and got id: ", album.Name, addedAlbum.ID)
+
 	if err != nil {
-		select {
-		case errCh <- err:
-		default:
-		}
+		h.sendError(errCh, err)
 		return nil
 	}
 
@@ -161,11 +154,9 @@ func (h *SpotifyHandler) handleSearchAlbum(ctx context.Context, wg *sync.WaitGro
 		wg.Add(1)
 		go func(artist spotify.SimpleArtist) {
 			defer wg.Done()
+			fmt.Println("Adding artist to database", artist.Name)
 			if err := h.handleSearchArtist(ctx, artist, addedAlbum.ID); err != nil {
-				select {
-				case errCh <- err:
-				default:
-				}
+				h.sendError(errCh, err)
 			}
 
 		}(artist)
@@ -175,7 +166,7 @@ func (h *SpotifyHandler) handleSearchAlbum(ctx context.Context, wg *sync.WaitGro
 
 }
 
-func (h *SpotifyHandler) handleSearchArtist(ctx context.Context, spotifyArtist spotify.SimpleArtist, albumId int) error {
+func (h *Handler) handleSearchArtist(ctx context.Context, spotifyArtist spotify.SimpleArtist, albumId int) error {
 	/* TODO: it's possible that the artist can exist but not be detected by spotifyID lookup if it was
 	created through a future analogous Apple Music pathway.
 	we need more sophisticated artist search logic, but are limited by the overlap betweem the two APIs.
@@ -186,15 +177,17 @@ func (h *SpotifyHandler) handleSearchArtist(ctx context.Context, spotifyArtist s
 		Name:      spotifyArtist.Name,
 	}
 
+	fmt.Println("adding artist to database fr", artist.Name)
 	_, err := h.mediaRepository.AddArtistAndAlbumArtist(ctx, artist, albumId)
 	if err != nil {
+		fmt.Println("error in handleSearchArtist for artist and album", artist.Name, albumId, err)
 		return err
 	}
 
 	return nil
 }
 
-func (h *SpotifyHandler) handleSearchTracks(client *spotify.Client, ctx context.Context, wg *sync.WaitGroup, albumId int, spotifyID spotify.ID, errCh chan<- error) error {
+func (h *Handler) handleSearchTracks(client *spotify.Client, ctx context.Context, wg *sync.WaitGroup, albumId int, spotifyID spotify.ID, errCh chan<- error) error {
 	spotifyTracks, err := client.GetAlbumTracks(ctx, spotifyID)
 	if err != nil {
 		return err
@@ -213,17 +206,16 @@ func (h *SpotifyHandler) handleSearchTracks(client *spotify.Client, ctx context.
 			})
 
 			if err != nil {
-				select {
-				case errCh <- err:
-				default:
-				}
+				h.sendError(errCh, err)
 			}
+
+			fmt.Println("added track: ", t.Name)
 		}(t)
 	}
 	return nil
 }
 
-func (h *SpotifyHandler) handleSearchTrack(ctx context.Context, wg *sync.WaitGroup, track *spotify.FullTrack, errCh chan<- error) {
+func (h *Handler) handleSearchTrack(ctx context.Context, wg *sync.WaitGroup, track *spotify.FullTrack, errCh chan<- error) {
 	addedAlbum, err := h.mediaRepository.AddAlbum(ctx, &models.Album{
 		MediaType:   models.AlbumMedia,
 		SpotifyID:   track.Album.ID.String(),
@@ -232,10 +224,7 @@ func (h *SpotifyHandler) handleSearchTrack(ctx context.Context, wg *sync.WaitGro
 		Cover:       track.Album.Images[0].URL,
 	})
 	if err != nil {
-		select {
-		case errCh <- err:
-		default:
-		}
+		h.sendError(errCh, err)
 		return
 	}
 
@@ -248,18 +237,14 @@ func (h *SpotifyHandler) handleSearchTrack(ctx context.Context, wg *sync.WaitGro
 				Name:      track.Album.Artists[0].Name,
 			}, addedAlbum.ID)
 			if err != nil {
-				select {
-				case errCh <- err:
-				default:
-				}
+				h.sendError(errCh, err)
 			}
-
 		}(artist)
 	}
-	h.mediaRepository.AddArtistAndAlbumArtist(ctx, &models.Artist{
-		SpotifyID: track.Album.Artists[0].ID.String(),
-		Name:      track.Album.Artists[0].Name,
-	}, addedAlbum.ID)
+	// h.mediaRepository.AddArtistAndAlbumArtist(ctx, &models.Artist{
+	// 	SpotifyID: track.Album.Artists[0].ID.String(),
+	// 	Name:      track.Album.Artists[0].Name,
+	// }, addedAlbum.ID)
 
 	addedTrack, err := h.mediaRepository.AddTrack(ctx, &models.Track{
 		SpotifyID: track.ID.String(),
@@ -268,10 +253,7 @@ func (h *SpotifyHandler) handleSearchTrack(ctx context.Context, wg *sync.WaitGro
 		Duration:  int(track.Duration / 1000)})
 
 	if err != nil {
-		select {
-		case errCh <- err:
-		default:
-		}
+		h.sendError(errCh, err)
 		return
 	}
 
@@ -281,7 +263,13 @@ func (h *SpotifyHandler) handleSearchTrack(ctx context.Context, wg *sync.WaitGro
 			SpotifyID: spotifyArtist.ID.String(),
 			Name:      spotifyArtist.Name,
 		}
-
 		h.mediaRepository.AddArtistAndTrackArtist(ctx, artist, addedTrack.ID)
+	}
+}
+
+func (h *Handler) sendError(errCh chan<- error, err error) {
+	select {
+	case errCh <- err:
+	default:
 	}
 }
