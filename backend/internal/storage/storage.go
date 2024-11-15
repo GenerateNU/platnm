@@ -50,10 +50,10 @@ type MediaRepository interface {
 	GetExistingAlbumBySpotifyID(ctx context.Context, id string) (*int, error)
 	AddAlbum(ctx context.Context, artist *models.Album) (*models.Album, error)
 	AddAlbumArtist(ctx context.Context, albumId int, artistId int) error
-	AddArtistAndAlbumArtist(ctx context.Context, artist *models.Artist, albumId int) (*models.Artist, error)
+	AddArtistAndAlbumArtist(ctx context.Context, artist *models.Artist, albumId int) error
 	AddTrack(ctx context.Context, track *models.Track) (*models.Track, error)
 	AddTrackArtist(ctx context.Context, trackId int, artistId int) error
-	AddArtistAndTrackArtist(ctx context.Context, artist *models.Artist, trackId int) (*models.Artist, error)
+	AddArtistAndTrackArtist(ctx context.Context, artist *models.Artist, trackId int) error
 }
 
 type RecommendationRepository interface {

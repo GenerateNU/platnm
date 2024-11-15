@@ -238,7 +238,7 @@ func (r *MediaRepository) AddAlbum(ctx context.Context, album *models.Album) (*m
 		)
 		 SELECT id FROM inserted_album
 		 UNION
-		 SELECT id FROM album WHERE spotify_id = $4`
+		 SELECT id FROM album WHERE spotify_id = $4;`
 
 	var id int
 	if err := r.QueryRow(ctx, query, album.Title, album.ReleaseDate, album.Cover, album.SpotifyID).Scan(&id); err != nil {
@@ -289,7 +289,7 @@ func (r *MediaRepository) AddAlbumArtist(ctx context.Context, albumId int, artis
 	return nil
 }
 
-func (r *MediaRepository) AddArtistAndAlbumArtist(ctx context.Context, artist *models.Artist, albumId int) (*models.Artist, error) {
+func (r *MediaRepository) AddArtistAndAlbumArtist(ctx context.Context, artist *models.Artist, albumId int) error {
 	query := `
 		WITH inserted_artist AS (
 			INSERT INTO artist (name, spotify_id, photo, bio)
@@ -307,14 +307,12 @@ func (r *MediaRepository) AddArtistAndAlbumArtist(ctx context.Context, artist *m
 		SELECT $5, id FROM final_artist
 		ON CONFLICT DO NOTHING;`
 
-	var artistId int
-	err := r.QueryRow(ctx, query, artist.Name, artist.SpotifyID, artist.Photo, artist.Bio, albumId).Scan(&artistId)
+	_, err := r.Exec(ctx, query, artist.Name, artist.SpotifyID, artist.Photo, artist.Bio, albumId)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	artist.ID = artistId
-	return artist, nil
+	return nil
 }
 
 func (r *MediaRepository) AddTrackArtist(ctx context.Context, trackId int, artistId int) error {
@@ -332,7 +330,7 @@ func (r *MediaRepository) AddTrackArtist(ctx context.Context, trackId int, artis
 	return nil
 }
 
-func (r *MediaRepository) AddArtistAndTrackArtist(ctx context.Context, artist *models.Artist, trackId int) (*models.Artist, error) {
+func (r *MediaRepository) AddArtistAndTrackArtist(ctx context.Context, artist *models.Artist, trackId int) error {
 	query := `
 		WITH inserted_artist AS (
 			INSERT INTO artist (name, spotify_id, photo, bio)
@@ -350,14 +348,12 @@ func (r *MediaRepository) AddArtistAndTrackArtist(ctx context.Context, artist *m
 		SELECT $5, id FROM final_artist
 		ON CONFLICT DO NOTHING;`
 
-	var artistId int
-	err := r.QueryRow(ctx, query, artist.Name, artist.SpotifyID, artist.Photo, artist.Bio, trackId).Scan(&artistId)
+	_, err := r.Exec(ctx, query, artist.Name, artist.SpotifyID, artist.Photo, artist.Bio, trackId)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	artist.ID = artistId
-	return artist, nil
+	return nil
 }
 
 func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, mediaType models.MediaType) ([]models.Media, error) {
