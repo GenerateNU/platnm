@@ -1,13 +1,11 @@
 import { View, Text, StyleSheet } from "react-native";
 import { VictoryAxis, VictoryBar, VictoryChart } from "victory-native";
 
-// TODO: build backend endpoint to get this data
-const DATA = Array.from({ length: 11 }, (_, i) => ({
-  rating: i,
-  count: 20 + 30 * Math.random(),
-}));
+interface HistogramProps {
+  distribution: RatingDistribution[];
+}
 
-const Histogram = () => {
+const Histogram = ({ distribution }: HistogramProps) => {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Rating Overview</Text>
@@ -24,7 +22,7 @@ const Histogram = () => {
           tickValues={[0, 10]}
         />
         <VictoryBar
-          data={DATA}
+          data={distribution}
           x="rating"
           y="count"
           barRatio={1}

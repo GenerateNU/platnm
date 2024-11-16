@@ -1,12 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button, StyleSheet, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
-import {
-  useFocusEffect,
-  useLocalSearchParams,
-  useNavigation,
-} from "expo-router";
+import { useFocusEffect, useLocalSearchParams, router } from "expo-router";
 import axios from "axios";
 import Histogram from "@/components/media/Histogram";
 import YourRatings from "@/components/media/YourRatings";
@@ -25,9 +20,11 @@ export default function MediaPage() {
   const [media, setMedia] = useState<Media>();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [rating, setReviewAvgRating] = useState<number | null>(null);
+  const [ratingDistributions, setRatingDistributions] = useState<
+    RatingDistribution[]
+  >([]);
 
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-  const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const { mediaId, mediaType } = useLocalSearchParams<{
     mediaId: string;
     mediaType: string;
@@ -41,6 +38,32 @@ export default function MediaPage() {
       .then((response) => setMedia(response.data))
       .catch((error) => console.error(error));
   }, []);
+
+  // calculating the rating distribution from the reviews that we already have
+  useEffect(() => {
+    const calculateRatingDistribution = () => {
+      const distributionMap = new Map<number, number>();
+
+      reviews.forEach((review) => {
+        distributionMap.set(
+          review.rating,
+          (distributionMap.get(review.rating) || 0) + 1,
+        );
+      });
+
+      const distributionArray = Array.from(
+        distributionMap,
+        ([rating, count]) => ({
+          rating,
+          count,
+        }),
+      ).sort((a, b) => a.rating - b.rating);
+
+      setRatingDistributions(distributionArray);
+    };
+
+    calculateRatingDistribution();
+  }, [reviews]);
 
   useFocusEffect(
     useCallback(() => {
@@ -76,12 +99,15 @@ export default function MediaPage() {
             <View style={styles.addReviewContainer}>
               <Button
                 onPress={() =>
-                  navigation.navigate("CreateReview", {
-                    mediaName: media.title,
-                    mediaType: media.media_type,
-                    mediaId: media.id,
-                    cover: media.cover,
-                    artistName: media.artist_name,
+                  router.push({
+                    pathname: "/CreateReview",
+                    params: {
+                      mediaName: media.title,
+                      mediaType: media.media_type,
+                      mediaId: media.id,
+                      cover: media.cover,
+                      artistName: media.artist_name,
+                    },
                   })
                 }
                 color={"white"}
@@ -95,7 +121,7 @@ export default function MediaPage() {
           <View style={styles.titleContainer}>
             {rating && <ReviewStats rating={rating} reviews={reviews} />}
           </View>
-          <Histogram />
+          <Histogram distribution={ratingDistributions} />
           <View style={styles.socialContainer}>
             <YourRatings count={3} />
             <FriendRatings count={5} />
@@ -106,6 +132,7 @@ export default function MediaPage() {
                 key={review.id}
                 preview={{
                   ...review,
+                  review_id: review.id,
                   created_at: new Date(review.created_at),
                   updated_at: new Date(review.updated_at),
                   media_title: media.title,
