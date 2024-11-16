@@ -20,6 +20,11 @@ type UserRepository interface {
 	UpdateUserBio(ctx context.Context, user uuid.UUID, bio string) error
 	GetUserFeed(ctx context.Context, id uuid.UUID) ([]*models.Preview, error)
 	UpdateUserOnboard(ctx context.Context, email string, enthusiasm string) (string, error)
+	CreateSection(ctx context.Context, sectiontype models.SectionType) (models.SectionType, error)
+	CreateSectionItem(ctx context.Context, sectionitem models.SectionItem, user string, sectiontype string) (models.SectionItem, error)
+	UpdateSectionItem(ctx context.Context, sectionitem models.SectionItem) error
+	DeleteSectionItem(ctx context.Context, section_type_item models.SectionTypeItem) error
+	DeleteSection(ctx context.Context, section_type_item models.SectionTypeItem) error
 }
 
 type ReviewRepository interface {

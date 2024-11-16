@@ -31,6 +31,7 @@ const Section: React.FC<SectionProps> = ({
   const [sectionTitle, setsectionTitle] = useState(title);
   const [editedItems, setEditedItems] = useState(items);
   const [editItem, setEditItem] = useState("");
+  const ITEM_LIMIT = 5;
 
   const addItemImage = require("@/assets/images/add-item-placeholder.png");
 
@@ -39,7 +40,7 @@ const Section: React.FC<SectionProps> = ({
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>{title}</Text>
         <View style={styles.container}>
-          {isEditing && (
+          {isEditing && items.length < ITEM_LIMIT && (
             <>
               <TouchableOpacity onPress={onAddItem} style={styles.plusIcon}>
                 <Icon name="plus" size={20} color="#F28037" />

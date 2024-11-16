@@ -46,8 +46,14 @@ export default function ProfileScreen() {
   const [options, setOptions] = useState([
     "Favorite Artists",
     "Peak Albums",
-    "Featured Tracks",
-  ]);
+    "Featured Tracks"
+]);
+
+  const [optionData, setOptionData] = useState({
+    "Favorite Artists": [],
+    "Peak Albums": [],
+    "Featured Tracks": [],
+  });
 
   const hasNotification = true; // Hardcoding - Get notification status from somewhere else
 
