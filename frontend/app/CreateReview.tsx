@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useLocalSearchParams, useNavigation } from "expo-router";
-import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
+import React, { useRef, useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
 
 import {
   View,
@@ -56,8 +55,6 @@ const CreateReview = () => {
     }
   };
 
-  const navigation = useNavigation<NativeStackNavigationProp<any>>();
-
   const handleDraftSubmit = () => {
     publishReview(
       mediaType,
@@ -65,7 +62,7 @@ const CreateReview = () => {
       review,
       rating,
       selectedTags,
-      true,
+      true
     );
   };
 
@@ -76,7 +73,7 @@ const CreateReview = () => {
       review,
       rating,
       selectedTags,
-      false,
+      false
     );
     setShowNudges(true);
     // navigation.navigate("NudgePage");
@@ -85,7 +82,7 @@ const CreateReview = () => {
   const handleOutsideClick = () => {
     if (showNudges) {
       setShowNudges(false);
-      navigation.navigate("explore");
+      router.push("/explore");
       console.log("outside click");
     }
   };
@@ -110,7 +107,7 @@ const CreateReview = () => {
       onPanResponderRelease: (e, gestureState) => {
         // Optionally, handle when the user releases the slider
       },
-    }),
+    })
   ).current;
 
   return (

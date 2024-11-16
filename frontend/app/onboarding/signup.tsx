@@ -21,7 +21,6 @@ import axios from "axios";
 import EnthusiasmSlider from "@/components/onboarding/EnthusiasmSlider";
 import ArtistBubble from "@/components/onboarding/ArtistBubble";
 import TrackBubble from "@/components/onboarding/TrackBubble";
-import { useNavigation } from "expo-router";
 import { router } from "expo-router";
 
 const slides = [
@@ -105,7 +104,6 @@ const OnboardingCarousel: React.FC = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [topArtists, setTopArtists] = useState<TopArtist[]>([]);
   const [topTracks, setTopTracks] = useState<TopTrack[]>([]);
-  const navigation = useNavigation();
 
   const [enthusiasm, setEnthusiasm] = useState("");
   const { sessionToken, updateAccessToken, updateSession, updateUserId } =
@@ -137,7 +135,7 @@ const OnboardingCarousel: React.FC = () => {
       newSlideIndex > 1 ? (newSlideIndex - 1) / 3 : 0,
       {
         duration: 500,
-      },
+      }
     );
 
     progressBar3.value = withTiming(newSlideIndex >= 5 ? 1 : 0, {
@@ -300,8 +298,8 @@ const OnboardingCarousel: React.FC = () => {
                       event.preventDefault();
                       setTopArtists((prev) =>
                         prev.map((a, i) =>
-                          i === index ? { ...a, selected: !a.selected } : a,
-                        ),
+                          i === index ? { ...a, selected: !a.selected } : a
+                        )
                       );
                     }}
                   >
@@ -323,8 +321,8 @@ const OnboardingCarousel: React.FC = () => {
                       event.preventDefault();
                       setTopTracks((prev) =>
                         prev.map((t, i) =>
-                          i === index ? { ...t, selected: !t.selected } : t,
-                        ),
+                          i === index ? { ...t, selected: !t.selected } : t
+                        )
                       );
                     }}
                   >

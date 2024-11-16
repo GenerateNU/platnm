@@ -1,8 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
-import { useNavigation } from "expo-router";
-import axios from "axios";
 
 interface PublishButtonProps {
   handleClick: () => void;
