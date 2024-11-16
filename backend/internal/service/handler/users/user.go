@@ -194,3 +194,21 @@ func (h *Handler) GetUserFeed(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(feed)
 }
+
+func (h *Handler) GetUserFollowing(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	userUUID, err := uuid.Parse(id)
+	if err != nil {
+		return err
+	}
+
+	following, err := h.userRepository.GetUserFollowing(c.Context(), userUUID)
+	if err != nil {
+		// TODO: Catch user does not exist error.
+		// TODO: Make GetUserFollowing(ctx, uuid) throw user DNE error.
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(following)
+}

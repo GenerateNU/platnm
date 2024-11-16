@@ -20,6 +20,7 @@ type UserRepository interface {
 	UpdateUserBio(ctx context.Context, user uuid.UUID, bio string) error
 	GetUserFeed(ctx context.Context, id uuid.UUID) ([]*models.Preview, error)
 	UpdateUserOnboard(ctx context.Context, email string, enthusiasm string) (string, error)
+	GetUserFollowing(ctx context.Context, id uuid.UUID) ([]*models.User, error)
 }
 
 type ReviewRepository interface {

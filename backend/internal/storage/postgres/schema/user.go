@@ -3,6 +3,7 @@ package schema
 import (
 	"context"
 	"database/sql"
+	"platnm/internal/errs"
 	"platnm/internal/models"
 	"strconv"
 
@@ -326,6 +327,45 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 
 	return previews, nil
 
+}
+
+func (r *UserRepository) GetUserFollowing(ctx context.Context, id uuid.UUID) ([]*models.User, error) {
+	query := `SELECT u.*
+	FROM user u
+	JOIN follower f ON u.id = f.follower_id
+	WHERE f.followee_id = $1`
+
+	// Execute the query
+	rows, err := r.db.Query(ctx, query, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Create a slice to hold the result
+	var users []*models.User
+
+	// Iterate over the rows
+	for rows.Next() {
+		var user models.User
+		if err := rows.Scan(&user.ID, &user.Username, &user.Email, &user.DisplayName,
+			&user.Bio, &user.ProfilePicture, &user.LinkedAccount, &user.CreatedAt, &user.UpdatedAt); err != nil {
+			return nil, err
+		}
+		users = append(users, &user)
+	}
+
+	if len(users) == 0 {
+		return nil, errs.NotFound("User", "id", id)
+	}
+
+	// Check for errors that occurred during the iteration.
+	// Necessary because rows.Next() defers errors to rows.Err().
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }
 
 func NewUserRepository(db *pgxpool.Pool) *UserRepository {
