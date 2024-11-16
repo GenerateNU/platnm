@@ -1,7 +1,11 @@
 package models
 
-type UserReviewVote struct {
-	UserID   string `json:"user_id"`
-	ReviewID string `json:"review_id"`
-	Upvote   bool   `json:"upvote"`
+type PostType string
+
+type UserVote struct {
+	VoteID   string   `json:"vote_id"`
+	UserID   string   `json:"user_id"`
+	PostID   string   `json:"review_id"`
+	Upvote   bool     `json:"upvote"`
+	PostType PostType `json:"post_type"`
 }

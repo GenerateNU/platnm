@@ -31,6 +31,7 @@ type ReviewRepository interface {
 	ReviewBelongsToUser(ctx context.Context, reviewID string, userID string) (bool, error)
 	GetReviewsByMediaID(ctx context.Context, id string, media_type string) ([]*models.Review, error)
 	CreateComment(ctx context.Context, comment *models.Comment) (*models.Comment, error)
+	CommentExists(ctx context.Context, id string) (bool, error)
 	GetUserReviewOfTrack(ctx context.Context, id string, id2 string) (*models.Review, error)
 	GetTags(ctx context.Context) ([]string, error)
 	GetSocialReviews(ctx context.Context, media_type string, mediaID string, userID string) ([]models.FriendReview, int, error)
@@ -62,10 +63,10 @@ type RecommendationRepository interface {
 }
 
 type VoteRepository interface {
-	AddVote(ctx context.Context, vote *models.UserReviewVote) error
-	GetVoteIfExists(ctx context.Context, userID string, reviewID string) (*models.UserReviewVote, error)
-	UpdateVote(ctx context.Context, userID string, reviewID string, vote bool) error
-	DeleteVote(ctx context.Context, userID string, reviewID string) error
+	AddVote(ctx context.Context, vote *models.UserVote, postType string) error
+	GetVoteIfExists(ctx context.Context, userID string, reviewID string, postType string) (*models.UserVote, error)
+	UpdateVote(ctx context.Context, userID string, reviewID string, vote bool, postType string) error
+	DeleteVote(ctx context.Context, userID string, reviewID string, postType string) error
 }
 
 type UserAuthRepository interface {
