@@ -74,13 +74,26 @@ VALUES
   (2, 2),
   (3, 3);
 
-INSERT INTO user_review_vote (user_id, review_id, upvote)
+  INSERT INTO comment (user_id, review_id, text)
 VALUES
-  ('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 1, true),
-  ('2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e', 2, false),
-  ('3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f', 3, false),
-  ('4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9d', 4, false),
-  ('5e6f7a8b-9c0d-1e2f-3a4b-5c6d7e8f9d0e', 5, true);
+  ('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 1, 'I agree with this review.'),
+  ('2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e', 2, 'I like this album.'),
+  ('3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f', 1, 'This song is okay.'),
+  ('4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9d', 3, 'I don''t like this song.'),
+  ('4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9d', 5, 'This song is the best song ever');
+
+INSERT INTO user_vote (user_id, post_id, upvote, post_type)
+VALUES
+  ('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 1, true, 'review'),
+  ('2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e', 2, false, 'review'),
+  ('3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f', 3, false, 'review'),
+  ('4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9d', 4, false, 'review'),
+  ('5e6f7a8b-9c0d-1e2f-3a4b-5c6d7e8f9d0e', 5, true, 'review'),
+  ('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 1, true, 'comment'),
+  ('2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e', 2, false, 'comment'),
+  ('3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f', 3, false, 'comment'),
+  ('4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9d', 4, false, 'comment'),
+  ('5e6f7a8b-9c0d-1e2f-3a4b-5c6d7e8f9d0e', 5, true, 'comment');
 
   INSERT INTO recommendation (
     media_id,
