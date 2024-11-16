@@ -9,7 +9,7 @@ import Nudge from "@/components/Nudge";
 import ReviewCard from "@/components/ReviewCard";
 import DraftButton from "@/components/DraftButton";
 import PublishButton from "@/components/PublishButton";
-import { useLocalSearchParams, useNavigation } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { usePublishReview } from "@/hooks/usePublishReview";
 
 const PreviewReview = () => {
