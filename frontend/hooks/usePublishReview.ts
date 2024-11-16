@@ -9,7 +9,7 @@ function usePublishReview() {
     comment: string,
     rating: number,
     tags: string[],
-    draft: boolean
+    draft: boolean,
   ) => {
     console.log("rating");
     return (

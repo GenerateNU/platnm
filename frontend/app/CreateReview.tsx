@@ -62,7 +62,7 @@ const CreateReview = () => {
       review,
       rating,
       selectedTags,
-      true
+      true,
     );
   };
 
@@ -73,7 +73,7 @@ const CreateReview = () => {
       review,
       rating,
       selectedTags,
-      false
+      false,
     );
     setShowNudges(true);
     // navigation.navigate("NudgePage");
@@ -107,7 +107,7 @@ const CreateReview = () => {
       onPanResponderRelease: (e, gestureState) => {
         // Optionally, handle when the user releases the slider
       },
-    })
+    }),
   ).current;
 
   return (

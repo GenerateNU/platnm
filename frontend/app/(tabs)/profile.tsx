@@ -58,7 +58,7 @@ export default function ProfileScreen() {
       if (!userId) {
         router.push("/(tabs)/login");
       }
-    }, [userId])
+    }, [userId]),
   );
 
   useEffect(() => {
@@ -150,7 +150,7 @@ export default function ProfileScreen() {
           };
         }
         return section;
-      })
+      }),
     );
   };
 
@@ -162,8 +162,8 @@ export default function ProfileScreen() {
               ...section,
               items: section.items.filter((item) => item.id !== itemId),
             }
-          : section
-      )
+          : section,
+      ),
     );
   };
 

@@ -29,7 +29,7 @@ const PreviewReview = () => {
       review,
       parseFloat(rating),
       [],
-      draft
+      draft,
     );
   };
 

@@ -135,7 +135,7 @@ const OnboardingCarousel: React.FC = () => {
       newSlideIndex > 1 ? (newSlideIndex - 1) / 3 : 0,
       {
         duration: 500,
-      }
+      },
     );
 
     progressBar3.value = withTiming(newSlideIndex >= 5 ? 1 : 0, {
@@ -298,8 +298,8 @@ const OnboardingCarousel: React.FC = () => {
                       event.preventDefault();
                       setTopArtists((prev) =>
                         prev.map((a, i) =>
-                          i === index ? { ...a, selected: !a.selected } : a
-                        )
+                          i === index ? { ...a, selected: !a.selected } : a,
+                        ),
                       );
                     }}
                   >
@@ -321,8 +321,8 @@ const OnboardingCarousel: React.FC = () => {
                       event.preventDefault();
                       setTopTracks((prev) =>
                         prev.map((t, i) =>
-                          i === index ? { ...t, selected: !t.selected } : t
-                        )
+                          i === index ? { ...t, selected: !t.selected } : t,
+                        ),
                       );
                     }}
                   >

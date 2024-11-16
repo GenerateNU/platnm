@@ -105,7 +105,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
           <View>
             <Image
               source={getRatingImage(
-                preview.rating as keyof typeof ratingImages
+                preview.rating as keyof typeof ratingImages,
               )}
             />
           </View>
