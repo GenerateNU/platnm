@@ -66,7 +66,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Patch("/bio/:id", userHandler.UpdateUserBio)
 		r.Put("/enthusiasm", userHandler.UpdateUserOnboard)
 		r.Get("/feed/:id", userHandler.GetUserFeed)
-		r.Get("followers/:id", userHandler.GetUserFollowing)
+		r.Get("following/:id", userHandler.GetUserFollowing)
 	})
 
 	app.Route("/reviews", func(r fiber.Router) {
