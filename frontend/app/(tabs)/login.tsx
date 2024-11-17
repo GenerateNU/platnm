@@ -55,7 +55,7 @@ export default function Login() {
   };
 
   const forgotUsernamePassword = () => {
-    console.log("Forgot username or password");
+    router.push("../ResetPassword");
   };
 
   const handleSignUpPress = () => {
