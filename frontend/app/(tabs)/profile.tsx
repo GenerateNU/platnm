@@ -13,10 +13,9 @@ import Icon from "react-native-vector-icons/Feather";
 import axios from "axios";
 import Section from "@/components/profile/Section";
 import ReviewCard from "@/components/ReviewCard";
-import { router, useFocusEffect, useNavigation } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import SelectSection from "@/components/profile/SelectSection";
 import { useAuthContext } from "@/components/AuthProvider";
-import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
 
 export default function ProfileScreen() {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -24,7 +23,6 @@ export default function ProfileScreen() {
   const [userProfile, setUserProfile] = useState<UserProfile>();
   const [userReviews, setUserReviews] = useState<Review[]>();
   const { userId } = useAuthContext();
-  const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
   const [sections, setSections] = useState<Section[]>([
     {

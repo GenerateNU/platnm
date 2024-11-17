@@ -9,7 +9,6 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
 import { AuthProvider } from "@/components/AuthProvider";
-
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { LogBox } from "react-native";
 

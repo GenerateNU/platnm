@@ -21,7 +21,6 @@ import axios from "axios";
 import EnthusiasmSlider from "@/components/onboarding/EnthusiasmSlider";
 import ArtistBubble from "@/components/onboarding/ArtistBubble";
 import TrackBubble from "@/components/onboarding/TrackBubble";
-import { useNavigation } from "expo-router";
 import { router } from "expo-router";
 
 const slides = [
@@ -105,7 +104,6 @@ const OnboardingCarousel: React.FC = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [topArtists, setTopArtists] = useState<TopArtist[]>([]);
   const [topTracks, setTopTracks] = useState<TopTrack[]>([]);
-  const navigation = useNavigation();
 
   const [enthusiasm, setEnthusiasm] = useState("");
   const { sessionToken, updateAccessToken, updateSession, updateUserId } =
