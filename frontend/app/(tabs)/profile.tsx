@@ -94,7 +94,7 @@ export default function ProfileScreen() {
   };
 
   const handleSettingsPress = () => {
-    router.push("/Settings");
+    router.push("/settings");
   };
 
   const handleSharePress = () => {

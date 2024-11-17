@@ -1,3 +1,4 @@
+import axios from "axios";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -11,11 +12,27 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
 function Settings() {
   const [pushNotifications, setPushNotifications] = useState(false);
   const [recommendations, setRecommendations] = useState(false);
   const [reviewInteractions, setReviewInteractions] = useState(true);
   const [hideActivity, setHideActivity] = useState(false);
+
+  async function handleSignOut() {
+    axios.post(`${BASE_URL}/auth/signout`).then((response) => {
+      console.log(response.data);
+      router.push("/(tabs)/login");
+    });
+  }
+
+  async function handleDeactivate() {
+    axios.post(`${BASE_URL}/auth/deactivate`).then((response) => {
+      console.log(response.data);
+      router.push("/(tabs)/login");
+    });
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -41,7 +58,10 @@ function Settings() {
         <TouchableOpacity style={styles.item}>
           <Text style={styles.itemText}>Music Account</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.item}>
+        <TouchableOpacity
+          style={styles.item}
+          onPress={() => router.push("/reset")}
+        >
           <Text style={styles.itemText}>Reset Password</Text>
         </TouchableOpacity>
       </View>
@@ -118,12 +138,18 @@ function Settings() {
       </View>
 
       {/* Sign Out Button */}
-      <TouchableOpacity style={styles.signOutButton}>
+      <TouchableOpacity
+        style={styles.signOutButton}
+        onPress={() => handleDeactivate}
+      >
         <Text style={styles.signOutButtonText}>Sign Out</Text>
       </TouchableOpacity>
 
       {/* Deactivate Account Link */}
-      <TouchableOpacity style={styles.deactivateAccount}>
+      <TouchableOpacity
+        style={styles.deactivateAccount}
+        onPress={() => handleDeactivate}
+      >
         <Text style={styles.deactivateText}>Deactivate Account</Text>
       </TouchableOpacity>
     </ScrollView>

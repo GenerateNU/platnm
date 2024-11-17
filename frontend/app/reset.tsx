@@ -5,32 +5,45 @@ import OnboardButton from "@/components/onboarding/OnboardButton"; // Adjust the
 import { useRouter } from "expo-router";
 import OnboardingHeader from "@/components/onboarding/Header";
 
-const ForgotPassword = () => {
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
+const ResetPassword = () => {
   const router = useRouter();
-  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleResetPassword = async () => {
+    setMessage("");
     setLoading(true);
 
-    try {
-      const response = await axios.post(
-        `${BASE_URL}/auth/platnm/resetpassword`,
-        {
-          email: email,
-        }
-      );
+    // Validate inputs
+    if (!currentPassword || !newPassword) {
+      setMessage("Please fill in all fields");
+      setLoading(false);
+      return;
+    }
 
-      if (response.data.error) {
-        Alert.alert("Error", response.data.error);
-        return;
-      }
-      setMessage("Success! Check your email.");
-      router.push("/login");
+    if (newPassword.length < 8) {
+      setMessage("New password must be at least 8 characters");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await axios
+        .post(`${BASE_URL}}/auth/platnm/resetpassword`, {
+          currentPassword,
+          newPassword,
+        })
+        .then((response) => {
+          if (response.status === 200) {
+            router.back();
+          }
+        });
     } catch (error) {
-      console.error("Error resetting password:", error);
+      setMessage("Invalid current password.");
     } finally {
       setLoading(false);
     }
@@ -40,21 +53,29 @@ const ForgotPassword = () => {
     <View style={styles.container}>
       <OnboardingHeader title="Reset Password" subtitle="" />
 
+      <Text style={styles.message}>{message}</Text>
+
       <TextInput
         style={styles.input}
-        placeholder="Email"
+        placeholder="Current Password"
         placeholderTextColor="#aaa"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
+        value={currentPassword}
+        onChangeText={setCurrentPassword}
+        secureTextEntry
       />
 
-      <Text style={styles.message}>{message}</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="New Password"
+        placeholderTextColor="#aaa"
+        value={newPassword}
+        onChangeText={setNewPassword}
+        secureTextEntry
+      />
 
       <View style={styles.button}>
         <OnboardButton
-          text={loading ? "Sending..." : "Continue"}
+          text={loading ? "Resetting..." : "Continue"}
           onPress={handleResetPassword}
         />
       </View>
@@ -88,8 +109,9 @@ const styles = StyleSheet.create({
   },
   message: {
     fontSize: 13,
-    fontStyle: "italic",
-    color: "#000000",
+    color: "darkred",
+    marginTop: 8,
+    marginBottom: 20,
   },
   button: {
     height: 55,
@@ -101,4 +123,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ForgotPassword;
+export default ResetPassword;

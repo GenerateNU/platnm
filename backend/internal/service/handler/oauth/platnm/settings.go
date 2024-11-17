@@ -1,14 +1,14 @@
 package platnm
 
 import (
-    "platnm/internal/errs"
-    "platnm/internal/auth"
-    "github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2"
+	"platnm/internal/auth"
+	"platnm/internal/errs"
 )
 
 func (h *Handler) ResetPassword(c *fiber.Ctx) error {
 	var req struct {
-		Email          string `json:"email"`
+		Email           string `json:"email"`
 		CurrentPassword string `json:"current_password"`
 		NewPassword     string `json:"new_password"`
 	}
@@ -32,7 +32,7 @@ func (h *Handler) ResetPassword(c *fiber.Ctx) error {
 }
 
 func (h *Handler) SignOut(c *fiber.Ctx) error {
-    	// Get the access token from the request header or body
+	// Get the access token from the request header or body
 	accessToken := c.Get("Authorization") // Assuming it's passed as a Bearer token in the Authorization header
 	if accessToken == "" {
 		return errs.BadRequest("no authorization token provided")
@@ -43,20 +43,19 @@ func (h *Handler) SignOut(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-    
-    return c.SendStatus(fiber.StatusOK)
+
+	return c.SendStatus(fiber.StatusOK)
 }
-    
 
 func (h *Handler) DeactivateAccount(c *fiber.Ctx) error {
-    // Get the user ID from the request
-    userID := c.Locals("userID").(string)
+	// Get the user ID from the request
+	userID := c.Locals("userID").(string)
 
-    // Delete the user account
-    err := auth.DeleteUser(&h.config, userID)
-    if err != nil {
-        return errs.BadRequest("failed to delete user account")
-    }
+	// Delete the user account
+	err := auth.DeleteUser(&h.config, userID)
+	if err != nil {
+		return errs.BadRequest("failed to delete user account")
+	}
 
-    return c.SendStatus(fiber.StatusOK)
+	return c.SendStatus(fiber.StatusOK)
 }
