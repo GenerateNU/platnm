@@ -58,7 +58,7 @@ func (h *Handler) VoteReview(c *fiber.Ctx, postType string) error {
 	println("here")
 	voteValue, voteExistErr := h.voteRepository.GetVoteIfExists(c.Context(), req.UserVote.UserID, req.UserVote.PostID, postType)
 	println("vote:", voteValue)
-	println("vote:", voteExistErr)
+	//println("vote:", voteExistErr.Error())
 	if voteExistErr != nil {
 		print("erroring:")
 		return voteExistErr

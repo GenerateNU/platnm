@@ -47,7 +47,9 @@ func (r *VoteRepository) GetVoteIfExists(ctx context.Context, usrID string, revI
 	println("getting vote")
 	err := r.db.QueryRow(ctx, `SELECT user_id, post_id, upvote FROM user_vote WHERE user_id = $1 AND post_id = $2 AND post_type = $3`, usrID, revID, postType).Scan(&voteHolder.UserID, &voteHolder.PostID, &voteHolder.Upvote)
 	if err != nil {
-
+		if err.Error() == "no rows in result set" {
+			return nil, nil
+		}
 		println("error:", err)
 		return nil, err
 	}
