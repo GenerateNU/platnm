@@ -53,7 +53,7 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id string) (*models.Us
 }
 
 func (r *UserRepository) UserExists(ctx context.Context, id string) (bool, error) {
-
+	print(id)
 	rows, err := r.db.Query(ctx, `SELECT * FROM "user" WHERE id = $1`, id)
 	if err != nil {
 		return false, err
@@ -114,7 +114,7 @@ func (r *UserRepository) CalculateScore(ctx context.Context, id uuid.UUID) (int,
             SELECT 
                 SUM(CASE WHEN urv.upvote = TRUE THEN 1 ELSE -1 END)
             FROM 
-                user_review_vote urv
+                user_vote urv
             WHERE 
                 urv.user_id = $1
         ), 0) + 

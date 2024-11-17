@@ -148,7 +148,7 @@ func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int
 	LEFT JOIN tag tag ON rt.tag_id = tag.id
 	LEFT JOIN (
 		SELECT review_id, COUNT(*) AS vote_count
-		FROM user_review_vote
+		FROM user_vote
 		GROUP BY review_id
 	) v ON r.id = v.review_id
 	GROUP BY r.id, r.user_id, u.username, u.display_name, u.profile_picture, r.media_type, r.media_id, r.rating, r.comment, r.created_at, r.updated_at, media_cover, media_title, media_artist, v.vote_count
@@ -156,7 +156,6 @@ func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int
 	LIMIT $1
 	OFFSET $2;
 	`
-
 
 	rows, err := r.Query(ctx, query, limit+1, offset) // for some reason this +1 for the limit is needed
 
@@ -455,14 +454,15 @@ FROM
     review r
 LEFT JOIN (
     SELECT 
-        review_id,
+        post_id,
         SUM(CASE WHEN upvote = TRUE THEN 1 ELSE 0 END) AS upvotes,
         SUM(CASE WHEN upvote = FALSE THEN 1 ELSE 0 END) AS downvotes
     FROM 
-        user_review_vote
+        user_vote
+		WHERE post_type = 'review'
     GROUP BY 
-        review_id
-) vote_counts ON r.id = vote_counts.review_id
+        post_id
+) vote_counts ON r.id = vote_counts.post_id
 LEFT JOIN (
     SELECT 
         review_id,

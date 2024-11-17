@@ -77,7 +77,9 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		// Get Reviews by ID which can be used to populate a preview
 		r.Get("/:id", reviewHandler.GetReviewByID)
 		r.Get("/user/:id", reviewHandler.GetReviewsByUserID)
-		r.Post("/vote/:rating", func(c *fiber.Ctx) error {
+
+		// changed from /vote/:rating to /vote becuase the query parameter is not being used at al
+		r.Post("/vote", func(c *fiber.Ctx) error {
 			return reviewHandler.VoteReview(c, "review")
 		})
 		r.Patch("/:id", reviewHandler.UpdateReviewByReviewID)
@@ -91,7 +93,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 			return reviewHandler.GetUserReviewOfTrack(c)
 		})
 		r.Post("/comment", reviewHandler.CreateComment)
-		r.Post("comment/vote/:rating", func(c *fiber.Ctx) error {
+		r.Post("/comment/vote", func(c *fiber.Ctx) error {
 			return reviewHandler.VoteReview(c, "comment")
 		})
 		r.Get("/social/song/:songid", func(c *fiber.Ctx) error {
