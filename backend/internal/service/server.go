@@ -135,6 +135,9 @@ func setupRoutes(app *fiber.App, config config.Config) {
 			r.Get("/health", func(c *fiber.Ctx) error {
 				return c.SendStatus(http.StatusOK)
 			})
+			r.Post("/resetpassword", h.ResetPassword)
+			r.Post("/signout", h.SignOut)
+			r.Post("/deactivate", h.DeactivateAccount)
 		})
 	})
 
