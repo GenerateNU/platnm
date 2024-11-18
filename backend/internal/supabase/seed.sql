@@ -119,3 +119,7 @@ INSERT INTO section_type (title, search_type) VALUES
 ('Peak Albums', 'album'),
 ('Favorite Artists', 'artist'),
 ('Featured Tracks', 'track');
+
+INSERT INTO section_type_item (user_id, section_item_id, section_type_id) VALUES
+('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 1, 3),
+('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 2, 3);

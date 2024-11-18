@@ -407,6 +407,24 @@ func (r *UserRepository) DeleteSection(ctx context.Context, section_type_item mo
 	return nil
 }
 
+// func (r *UserRepository) GetUserSections(ctx context.Context, user_id string) (*models.Review, error) {
+// 	var review models.Review
+// 	err := r.db.QueryRow(ctx, `SELECT id, user_id, media_type, media_id, rating, comment, created_at, updated_at FROM review WHERE user_id = $1 AND media_id = $2 AND media_type = 'track'`, id, id2).Scan(&review.ID, &review.UserID, &review.MediaType, &review.MediaID, &review.Rating, &review.Comment, &review.CreatedAt, &review.UpdatedAt)
+
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	return &review, nil
+
+// 	SELECT *
+// FROM section_type_item
+// JOIN section_item on section_item.id = section_type_item.section_item_id
+// JOIN section_type on section_type.id = section_type_item.section_item_id
+// WHERE section_type_item.user_id = '095b0f67-b718-4ffa-a3f3-3d3b534836ad'
+
+// }
+
 func NewUserRepository(db *pgxpool.Pool) *UserRepository {
 	return &UserRepository{
 		db: db,

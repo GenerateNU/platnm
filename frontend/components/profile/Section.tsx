@@ -40,11 +40,13 @@ const Section: React.FC<SectionProps> = ({
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>{title}</Text>
         <View style={styles.container}>
-          {isEditing && items.length < ITEM_LIMIT && (
+          {isEditing && (
             <>
-              <TouchableOpacity onPress={onAddItem} style={styles.plusIcon}>
-                <Icon name="plus" size={20} color="#F28037" />
-              </TouchableOpacity>
+              {items.length < ITEM_LIMIT && (
+                <TouchableOpacity onPress={onAddItem} style={styles.plusIcon}>
+                  <Icon name="plus" size={20} color="#F28037" />
+                </TouchableOpacity>
+              )}
               <TouchableOpacity
                 onPress={onDeleteSection}
                 style={styles.trashIcon}

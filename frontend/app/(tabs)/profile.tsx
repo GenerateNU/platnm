@@ -26,20 +26,7 @@ export default function ProfileScreen() {
   const { userId } = useAuthContext();
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
-  const [sections, setSections] = useState<Section[]>([
-    {
-      id: 0,
-      title: "Section 1",
-      items: [
-        {
-          id: 0,
-          title: "Add Item",
-          media_type: "placeholder",
-          cover: "path_to_placeholder_image_or_url",
-        },
-      ],
-    },
-  ]); //TODO depending on what we do with sections
+  const [sections, setSections] = useState<Section[]>([]); //TODO depending on what we do with sections
 
   const [selectSectionVisible, setSelectSectionVisible] = useState(false);
   const [selectedOption, setSelectedOption] = useState("");
@@ -47,13 +34,7 @@ export default function ProfileScreen() {
     "Favorite Artists",
     "Peak Albums",
     "Featured Tracks"
-]);
-
-  const [optionData, setOptionData] = useState({
-    "Favorite Artists": [],
-    "Peak Albums": [],
-    "Featured Tracks": [],
-  });
+  ]);
 
   const hasNotification = true; // Hardcoding - Get notification status from somewhere else
 
@@ -122,14 +103,7 @@ export default function ProfileScreen() {
     const newSection = {
       id: nextId,
       title: `${option}`,
-      items: [
-        {
-          id: 0,
-          title: "Add Item",
-          media_type: "placeholder",
-          cover: "path_to_placeholder_image_or_url",
-        },
-      ],
+      items: [],
     };
     setOptions((prevOptions) => prevOptions.filter((item) => item !== option));
     setSections([...sections, newSection]);
@@ -141,20 +115,17 @@ export default function ProfileScreen() {
   };
 
   const handleAddItem = (sectionId: number) => {
+    console.log("Adding item to section", sectionId);
+    console.log("Selected option", selectedOption);
+    navigation.navigate("SectionResults", {
+      "type": "track"
+    });
     setSections(
       sections.map((section) => {
         if (section.id === sectionId) {
           return {
             ...section,
-            items: [
-              ...section.items,
-              {
-                id: Math.floor(Math.random() * 1000),
-                title: "Add Item",
-                media_type: "placeholder",
-                cover: "../../assets/images/add-item-placeholder.png",
-              },
-            ],
+            items: [...section.items],
           };
         }
         return section;
@@ -176,6 +147,10 @@ export default function ProfileScreen() {
   };
 
   const handleDeleteSection = (id: number) => {
+    const sectionToDelete = sections.find((section) => section.id === id);
+    if (sectionToDelete) {
+      setOptions([...options, sectionToDelete.title]);
+    }
     setSections(sections.filter((section) => section.id !== id));
   };
 

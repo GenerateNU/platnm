@@ -50,6 +50,7 @@ export default function RootLayout() {
           <Stack.Screen name="Activity" options={{ headerShown: false }} />
           <Stack.Screen name="OnQueue" options={{ headerShown: false }} />
           <Stack.Screen name="ReviewPage" options={{ headerShown: false }} />
+          <Stack.Screen name="SectionResults" options={{ headerShown: false }} />
           <Stack.Screen
             name="Recommendations"
             options={{ headerShown: false }}
