@@ -36,7 +36,7 @@ interface PreviewProps {
 
 const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
   const [showFullComment, setShowFullComment] = useState(false);
-  const navigation = useNavigation<NativeStackNavigationProp<any>>(); // Initialize navigation
+  // const navigation = useNavigation<NativeStackNavigationProp<any>>(); // Initialize navigation
 
   const getRatingImage = (rating: keyof typeof ratingImages) => {
     return ratingImages[rating]; // Access the image from the preloaded images object
@@ -60,7 +60,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
 
   const handlePreviewPress = () => {
     // Navigate to the ReviewPage when the preview is clicked
-    navigation.navigate("ReviewPage", { review_id: preview.review_id });
+    // navigation.navigate("ReviewPage", { review_id: preview.review_id });
   };
 
   return (

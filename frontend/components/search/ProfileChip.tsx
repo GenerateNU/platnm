@@ -16,69 +16,98 @@ const ProfileChip: React.FC<ProfileChipProps> = ({
 }) => {
 
       return (
-<TouchableOpacity
-      style={styles.container}
-      onPress={() =>
-        router.push({
-          pathname: "/profile",
-          params: {
-            userID: id,
-          },
-        })
-      }
-    >
-        <Image
-              source={require("@/assets/images/Profile/record.png")}
-              style={styles.recordImage}
-            />
+        <TouchableOpacity
+        style={styles.chipContainer}
+        onPress={() =>
+          router.push({
+            pathname: "/profile",
+            params: {
+              userID: id,
+            },
+          })
+        }
+      >
+        <View style={styles.profileContainer}>
+          {/* Record image background */}
+          <Image
+            source={require("@/assets/images/Profile/record.png")}
+            style={styles.recordImage}
+          />
+          
+          {/* Profile picture overlaid in the center */}
+          <View style={styles.profileImageContainer}>
             {profile_picture ? (
               <Image
                 source={{ uri: profile_picture }}
                 style={styles.profileImage}
                 resizeMode="cover"
               />
-            ) : null}
-        <Text>{display_name}</Text>
-        <Text>Profile</Text>
-    </TouchableOpacity>
-  );
-};
-
-const styles = StyleSheet.create({
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    padding: 16,
-  },
-  container: {
-    flexDirection: "row",
-    paddingHorizontal: 24,
-  },
-  songName: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#434343",
-    marginBottom: 4,
-  },
-  artistName: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#434343",
-    marginBottom: 4,
-  },
-  recordImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-  },
-  profileImage: {
-    position: "absolute", // Overlay the profile picture on the record
-    width: 60, // Adjust size to fit within the center of the record
-    height: 60, // Adjust size to fit within the center of the record
-    borderRadius: 30, // To make it circular
-    borderWidth: 2, // Optional: add a border around the profile image
-    borderColor: "#fff", // Optional: white border
-  },
-});
-
-export default ProfileChip;
+            ) : (
+              <View style={[styles.profileImage, { backgroundColor: '#333' }]} />
+            )}
+          </View>
+          
+          <Text style={styles.nameText}>{display_name}</Text>
+          <Text style={styles.profileText}>Profile</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+  
+  const styles = StyleSheet.create({
+    chipContainer: {
+      width: '50%', // Takes up half the width for 2 per row
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingBottom: 30,
+      marginVertical: 10,
+    },
+    profileContainer: {
+      width: 120,
+      height: 120,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    recordImage: {
+      width: '100%',
+      height: '100%',
+      position: 'absolute',
+    },
+    profileImageContainer: {
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: [
+        { translateX: -30 },
+        { translateY: -30 }
+      ],
+    },
+    profileImage: {
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      backgroundColor: '#000',
+    },
+    nameText: {
+      position: 'absolute',
+      bottom: -25,
+      width: '100%',
+      textAlign: 'left',
+      fontSize: 14,
+      fontWeight: '500',
+      color: '#1a1a1a',
+    },
+    profileText: {
+      position: 'absolute',
+      bottom: -40,
+      width: '100%',
+      textAlign: 'left',
+      fontSize: 12, // Slightly smaller
+      fontWeight: '400', // Lighter weight
+      fontStyle: 'italic', // Makes it italic
+      color: '#666666', // Lighter grey color
+      opacity: 0.8, // Adds slight transparency
+    }
+  });
+  
+  export default ProfileChip;
