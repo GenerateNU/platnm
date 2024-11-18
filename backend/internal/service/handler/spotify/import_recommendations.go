@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"platnm/internal/errs"
 	"platnm/internal/models"
 	"platnm/internal/service/ctxt"
 	"platnm/internal/storage"
@@ -392,7 +393,10 @@ func handleBridge(ctx context.Context, in <-chan handleArtistsResult, errChan ch
 					defer wg.Done()
 
 					if err := mr.AddTrackArtist(ctx, input.trackID, input.artistID); err != nil {
-						errChan <- err
+						// TODO: remove hardcode later
+						if !errs.IsUniqueViolation(err, "track_artist_pkey") {
+							errChan <- err
+						}
 					} else {
 						trackArtistResults <- ta
 						muTA.Lock()
@@ -416,7 +420,10 @@ func handleBridge(ctx context.Context, in <-chan handleArtistsResult, errChan ch
 					defer wg.Done()
 
 					if err := mr.AddAlbumArtist(ctx, input.albumID, input.artistID); err != nil {
-						errChan <- err
+						// TOOD: remove hardcode later
+						if !errs.IsUniqueViolation(err, "album_artist_pkey") {
+							errChan <- err
+						}
 					} else {
 						albumArtistResults <- aa
 						muAA.Lock()
