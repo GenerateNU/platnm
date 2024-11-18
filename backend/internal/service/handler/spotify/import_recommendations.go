@@ -41,7 +41,7 @@ type bridgeAlbumArtistResult struct {
 func (h *SpotifyHandler) ImportRecommendations(c *fiber.Ctx) error {
 	var req importRecommendationsRequest
 	if err := c.BodyParser(&req); err != nil {
-		return err
+		return errs.InvalidJSON()
 	}
 
 	client, err := ctxt.GetSpotifyClient(c)
