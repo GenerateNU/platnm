@@ -174,14 +174,29 @@ func handleAlbums(ctx context.Context, in <-chan spotify.SimpleTrack, errChan ch
 			id, ok := albums[input.Album.ID.String()]
 			mu.Unlock()
 
-			// if the album is already in the database, skip adding album to db
-			// and send track to next stage with corresponding album id
 			if ok {
 				out <- handleAlbumsResult{
 					track:   input,
 					albumID: id,
 				}
 			} else {
+				if albumId, err := mr.GetExistingAlbumBySpotifyID(ctx, input.Album.ID.String()); err != nil {
+					errChan <- err
+					continue
+				} else {
+					if albumId != nil {
+						out <- handleAlbumsResult{
+							track:   input,
+							albumID: *albumId,
+						}
+
+						mu.Lock()
+						albums[input.Album.ID.String()] = *albumId
+						mu.Unlock()
+						continue
+					}
+				}
+
 				var cover string
 				if len(input.Album.Images) > 0 {
 					cover = input.Album.Images[0].URL
@@ -229,6 +244,17 @@ func handleTracks(ctx context.Context, in <-chan handleAlbumsResult, errChan cha
 		}()
 
 		for input := range in {
+			if trackId, err := mr.GetExistingTrackBySpotifyID(ctx, input.track.ID.String()); err != nil {
+				errChan <- err
+				continue
+			} else if trackId != 0 {
+				out <- handleTracksResult{
+					handleAlbumsResult: input,
+					trackID:            trackId,
+				}
+				continue
+			}
+
 			var cover string
 			if len(input.track.Album.Images) > 0 {
 				cover = input.track.Album.Images[0].URL

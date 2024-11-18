@@ -419,6 +419,19 @@ func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset i
 	return results, nil
 }
 
+func (r *MediaRepository) GetExistingTrackBySpotifyID(ctx context.Context, id string) (int, error) {
+	var trackId int
+	err := r.QueryRow(ctx, `SELECT id FROM track WHERE spotify_id = $1`, id).Scan(&trackId)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return 0, nil
+		}
+		return 0, err
+	}
+
+	return trackId, nil
+}
+
 func NewMediaRepository(db *pgxpool.Pool) *MediaRepository {
 	return &MediaRepository{
 		db,
