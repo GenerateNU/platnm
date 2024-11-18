@@ -1,4 +1,4 @@
-import { useNavigation } from "expo-router";
+import { router } from "expo-router";
 import React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
@@ -18,15 +18,16 @@ const SongChip: React.FC<SongChipProps> = ({
   artist_name,
   cover,
 }) => {
-  const navigation = useNavigation<NativeStackNavigationProp<any>>();
-
   return (
     <TouchableOpacity
       style={styles.container}
       onPress={() =>
-        navigation.navigate("MediaPage", {
-          mediaType: "track",
-          mediaId: id,
+        router.push({
+          pathname: "/MediaPage",
+          params: {
+            mediaType: "track",
+            mediaId: id,
+          },
         })
       }
     >

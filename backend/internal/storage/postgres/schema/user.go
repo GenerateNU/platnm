@@ -189,7 +189,7 @@ func (r *UserRepository) GetUserProfile(ctx context.Context, id uuid.UUID) (*mod
 		WHERE u.id = $1
 		GROUP BY u.id, u.username, u.display_name, u.profile_picture, u.bio;`
 
-	err = r.db.QueryRow(ctx, query, id).Scan(&profile.UserID, &profile.Username, &profile.DisplayName, &profile.Followers, &profile.Followed)
+	err := r.db.QueryRow(ctx, query, id).Scan(&profile.UserID, &profile.Username, &profile.DisplayName, &profile.Followers, &profile.Followed)
 	if err != nil {
 		print(err.Error(), "unable to find profile")
 		return nil, err
@@ -205,7 +205,7 @@ func (r *UserRepository) GetUserProfile(ctx context.Context, id uuid.UUID) (*mod
 }
 
 func (r *UserRepository) GetProfileByName(ctx context.Context, name string) ([]*models.Profile, error) {
-	query := `SELECT u.id, u.username, u.display_name, COUNT(DISTINCT followers.follower_id) AS follower_count, COUNT(DISTINCT followed.followee_id) AS followed_count
+	query := `SELECT u.id, u.username, u.display_name, profile_picture, bio, COUNT(DISTINCT followers.follower_id) AS follower_count, COUNT(DISTINCT followed.followee_id) AS followed_count
 		FROM "user" u
 		LEFT JOIN follower followers ON followers.followee_id = u.id
 		LEFT JOIN follower followed ON followed.follower_id = u.id

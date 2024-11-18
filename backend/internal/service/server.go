@@ -59,14 +59,14 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	app.Route("/users", func(r fiber.Router) {
 		r.Get("/", userHandler.GetUsers)
 		r.Get("/:id", userHandler.GetUserById)
-		r.Get("/profile/:id", userHandler.GetUserProfile)
+		r.Get("/profile/id/:id", userHandler.GetUserProfile)
 		r.Post("/follow", userHandler.FollowUnfollowUser)
 		r.Get("/score/:id", userHandler.CalculateScore)
 		r.Post("/", userHandler.CreateUser)
 		r.Patch("/bio/:id", userHandler.UpdateUserBio)
 		r.Put("/enthusiasm", userHandler.UpdateUserOnboard)
 		r.Get("/feed/:id", userHandler.GetUserFeed)
-		r.Get("/profile/:name", userHandler.GetProfileByName)
+		r.Get("/profile/name/:name", userHandler.GetProfileByName)
 		// r.get("/:displayUser", userHandler.GetProfileByUser)
 
 	})
