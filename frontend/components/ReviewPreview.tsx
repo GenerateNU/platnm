@@ -1,5 +1,6 @@
+import axios from "axios";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -31,21 +32,74 @@ const ratingImages = {
 
 interface PreviewProps {
   preview: Preview;
+  userId: string;
 }
 
-const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
+const ReviewPreview: React.FC<PreviewProps> = ({ preview, userId }) => {
   const [showFullComment, setShowFullComment] = useState(false);
+
+  const [upVote, setupVote] = useState<Boolean>();
+  const [downVote, setdownVote] = useState<Boolean>();
+  const [upvoteCount, setUpvoteCount] = useState<number>(0);
+  const [downvoteCount, setDownvoteCount] = useState<number>(0);
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
   const getRatingImage = (rating: keyof typeof ratingImages) => {
     return ratingImages[rating]; // Access the image from the preloaded images object
   };
 
-  const handleUpvotePress = () => {
+  const handleUpvotePress = async () => {
     console.log("upvote icon pressed");
+    if (upVote) {
+      setupVote(false);
+      setUpvoteCount(upvoteCount - 1);
+    } else {
+      setupVote(true);
+      setUpvoteCount(upvoteCount + 1);
+      if (downVote) {
+        setdownVote(false);
+        setDownvoteCount(downvoteCount - 1);
+      }
+    }
+    console.log(upVote);
+    console.log(preview.review_id);
+    console.log(userId);
+    try {
+      await axios.post(`${BASE_URL}/reviews/vote`, {
+        user_id: userId,
+        post_id: String(preview.review_id),
+        upvote: true,
+      });
+    } catch (error) {
+      console.error("Error upvoting comment:", error);
+    }
+    
   };
 
-  const handleDownvotePress = () => {
+  const handleDownvotePress = async () => {
     console.log("downvote icon pressed");
+    console.log(preview.review_id);
+    if (downVote) {
+      setdownVote(false);
+      setDownvoteCount(downvoteCount - 1);
+    } else {
+      setdownVote(true);
+      setDownvoteCount(downvoteCount + 1);
+      if (upVote) {
+        setupVote(false);
+        setUpvoteCount(upvoteCount - 1);
+      }
+    }
+
+    try {
+      await axios.post(`${BASE_URL}/reviews/vote`, {
+        user_id: userId,
+        post_id: String(preview.review_id),
+        upvote: false,
+      });
+    } catch (error) {
+      console.error("Error downvoting comment:", error);
+    }
   };
 
   const handleCommentPress = () => {
@@ -61,9 +115,37 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
     // navigation.navigate("ReviewPage", { review_id: preview.review_id });
     router.push({
       pathname: "/ReviewPage",
-      params: { review_id: preview.review_id },
+      params: { review_id: preview.review_id, userId: userId },
     });
   };
+
+  useEffect(() => {
+    const fetchVote = async () => {
+      try {
+        console.log("Fetching vote");
+        console.log(userId)
+        console.log(preview.review_id)
+        const response = await axios.get(`${BASE_URL}/reviews/vote/${userId}/${preview.review_id}`);
+        console.log(response.data);
+        if (response.data) {
+          const { upvote } = response.data; // Assuming the API returns { user_id, post_id, upvote }
+          if (upvote === true) {
+            setupVote(true);
+            setdownVote(false);
+          } else if (upvote === false) {
+            setupVote(false);
+            setdownVote(true);
+          } else {
+            setupVote(false);
+            setdownVote(false);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching vote:", error);
+      }
+      };
+      fetchVote();
+    }, [preview.review_id, userId, downVote, upVote]);
 
   return (
     //<TouchableOpacity onPress={handlePreviewPress}> {/* Wrap the card with TouchableOpacity */}
@@ -149,13 +231,19 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
       <View style={styles.actionsContainer}>
         <View style={styles.voteContainer}>
           <TouchableOpacity onPress={handleUpvotePress}>
-            <Image source={Upvotes} style={styles.voteIcon} />
+            <Image source={Upvotes} style={[
+            styles.voteIcon,
+            { tintColor: upVote ? "#FFD700" : "#555" }, // Highlight if upvoted
+          ]} />
           </TouchableOpacity>
-          <Text>{preview.review_stat.upvotes}</Text>
+          <Text>{upvoteCount}</Text>
           <TouchableOpacity onPress={handleDownvotePress}>
-            <Image source={Downvotes} style={styles.voteIcon} />
+          <Image source={Downvotes} style={[
+            styles.voteIcon,
+            { tintColor: downVote ? "#FFD700" : "#555" }, // Highlight if upvoted
+          ]} />
           </TouchableOpacity>
-          <Text>{preview.review_stat.downvotes}</Text>
+          <Text>{downvoteCount}</Text>
           <TouchableOpacity onPress={handleCommentPress}>
             <Image source={Comments} style={styles.voteIcon} />
           </TouchableOpacity>

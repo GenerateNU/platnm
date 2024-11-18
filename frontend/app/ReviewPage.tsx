@@ -9,18 +9,20 @@ interface ReviewPageProps {
   route: {
     params: {
       review_id: string;
+      user_id: string;
     };
   };
 }
 
 const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
-  const { review_id } = useLocalSearchParams<{
+  const { review_id, user_id } = useLocalSearchParams<{
     review_id: string;
+    user_id: string;
   }>();
   const [review, setReview] = useState<Preview>();
   const [comments, setComments] = useState<UserComment[]>();
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-  const userId = "2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e"; // Hardcoding - Get userId from navigation
+  const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
   const Comments = require("../assets/images/ReviewPreview/comments.png");
   const Upvotes = require("../assets/images/ReviewPreview/upvote.png");
   const Downvotes = require("../assets/images/ReviewPreview/downvote.png");
@@ -153,7 +155,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
 
     fetchReview();
     fetchComments();
-  }, [review_id, userId]);
+  }, [review_id, userId, user_id]);
 
   const fetchComments = async () => {
     console.log("fetchComments");
