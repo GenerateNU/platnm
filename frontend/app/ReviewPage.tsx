@@ -3,7 +3,15 @@ import CommentComponent from "@/components/CommentComponent";
 import axios from "axios";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, TextInput } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+} from "react-native";
 
 interface ReviewPageProps {
   route: {
@@ -77,7 +85,6 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
     } catch (error) {
       console.error("Error upvoting comment:", error);
     }
-    
   };
 
   const handleDownvotePress = async () => {
@@ -115,15 +122,19 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
     setCommentCount(commentCount + 1);
 
     try {
-      await axios.post(`${BASE_URL}/reviews/comment`, {
-        user_id: userId,
-        review_id: parseInt(review_id, 10),
-        text: newComment,
-      }, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      await axios.post(
+        `${BASE_URL}/reviews/comment`,
+        {
+          user_id: userId,
+          review_id: parseInt(review_id, 10),
+          text: newComment,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
       setNewComment(""); // Clear the input after submitting
       // Fetch updated comments after submitting
       fetchComments();
@@ -175,9 +186,11 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
     const fetchVote = async () => {
       try {
         console.log("Fetching vote");
-        console.log(userId)
-        console.log(review_id)
-        const response = await axios.get(`${BASE_URL}/reviews/vote/${userId}/${review_id}`);
+        console.log(userId);
+        console.log(review_id);
+        const response = await axios.get(
+          `${BASE_URL}/reviews/vote/${userId}/${review_id}`,
+        );
         console.log(response.data);
         if (response.data) {
           const { upvote } = response.data; // Assuming the API returns { user_id, post_id, upvote }
@@ -195,9 +208,9 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
       } catch (error) {
         console.error("Error fetching vote:", error);
       }
-      };
-      fetchVote();
-    }, [review_id, userId, downVote, upVote]);
+    };
+    fetchVote();
+  }, [review_id, userId, downVote, upVote]);
 
   return review ? (
     <View style={styles.container}>
@@ -206,17 +219,17 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
         <View style={styles.reviewContainer}>
           <View style={styles.topSection}>
             <View style={styles.topContainer}>
-            <View style={styles.leftSection}>
-              <Image
-                style={styles.profilePicture}
-                source={{ uri: review.profile_picture }}
-              />
-              <View style={styles.textContainer}>
-                <Text style={styles.displayName}>{review.display_name}</Text>
-                <Text style={styles.username}>@{review.username}</Text>
+              <View style={styles.leftSection}>
+                <Image
+                  style={styles.profilePicture}
+                  source={{ uri: review.profile_picture }}
+                />
+                <View style={styles.textContainer}>
+                  <Text style={styles.displayName}>{review.display_name}</Text>
+                  <Text style={styles.username}>@{review.username}</Text>
+                </View>
               </View>
             </View>
-          </View>
             <View style={styles.vinyl}>
               <Image source={MusicDisk} style={styles.musicDisk} />
               {review.media_cover ? (
@@ -242,46 +255,52 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
 
           <Text style={styles.comment}>{review.comment}</Text>
           {/* Tags Section */}
-      {review.tags && review.tags.length > 0 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.tagsContainer}
-        >
-          {review.tags.map((tag, index) => (
-            <View key={index} style={styles.tag}>
-              <Text style={styles.tagText}>{tag}</Text>
-            </View>
-          ))}
-        </ScrollView>
-      )}
+          {review.tags && review.tags.length > 0 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.tagsContainer}
+            >
+              {review.tags.map((tag, index) => (
+                <View key={index} style={styles.tag}>
+                  <Text style={styles.tagText}>{tag}</Text>
+                </View>
+              ))}
+            </ScrollView>
+          )}
 
-      {/* Action Buttons */}
-      <View style={styles.actionsContainer}>
-        <View style={styles.voteContainer}>
-          <TouchableOpacity onPress={handleUpvotePress}>
-            <Image source={Upvotes} style={[
-            styles.voteIcon,
-            { tintColor: upVote ? "#FFD700" : "#555" }, // Highlight if upvoted
-          ]} />
-          </TouchableOpacity>
-          <Text>{upvoteCount}</Text>
-          <TouchableOpacity onPress={handleDownvotePress}>
-            <Image source={Downvotes} style={[
-            styles.voteIcon,
-            { tintColor: downVote ? "#FFD700" : "#555" }, // Highlight if upvoted
-          ]} />
-          </TouchableOpacity>
-          <Text>{downvoteCount}</Text>
-          <TouchableOpacity onPress={handleCommentPress}>
-            <Image source={Comments} style={styles.voteIcon} />
-          </TouchableOpacity>
-          <Text>{review.review_stat.comment_count}</Text>
-        </View>
-        <TouchableOpacity onPress={() => console.log("share pressed")}>
-          <Image source={Share} style={styles.voteIcon} />
-        </TouchableOpacity>
-        </View>
+          {/* Action Buttons */}
+          <View style={styles.actionsContainer}>
+            <View style={styles.voteContainer}>
+              <TouchableOpacity onPress={handleUpvotePress}>
+                <Image
+                  source={Upvotes}
+                  style={[
+                    styles.voteIcon,
+                    { tintColor: upVote ? "#FFD700" : "#555" }, // Highlight if upvoted
+                  ]}
+                />
+              </TouchableOpacity>
+              <Text>{upvoteCount}</Text>
+              <TouchableOpacity onPress={handleDownvotePress}>
+                <Image
+                  source={Downvotes}
+                  style={[
+                    styles.voteIcon,
+                    { tintColor: downVote ? "#FFD700" : "#555" }, // Highlight if upvoted
+                  ]}
+                />
+              </TouchableOpacity>
+              <Text>{downvoteCount}</Text>
+              <TouchableOpacity onPress={handleCommentPress}>
+                <Image source={Comments} style={styles.voteIcon} />
+              </TouchableOpacity>
+              <Text>{review.review_stat.comment_count}</Text>
+            </View>
+            <TouchableOpacity onPress={() => console.log("share pressed")}>
+              <Image source={Share} style={styles.voteIcon} />
+            </TouchableOpacity>
+          </View>
           <View style={styles.comments}>
             {comments && comments.length > 0 ? (
               comments.map((comment, index) => {
@@ -292,7 +311,6 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
             )}
           </View>
         </View>
-        
       </ScrollView>
 
       {/* Fixed TextBox for Comment */}
@@ -304,7 +322,10 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
           placeholder="Add a comment..."
           multiline
         />
-        <TouchableOpacity style={styles.submitButton} onPress={handleCommentSubmit}>
+        <TouchableOpacity
+          style={styles.submitButton}
+          onPress={handleCommentSubmit}
+        >
           <Text style={styles.submitButtonText}>Submit</Text>
         </TouchableOpacity>
       </View>

@@ -22,7 +22,6 @@ const CommentComponent: React.FC<CommentProps> = ({ comment }) => {
   const [upvoteCount, setUpvoteCount] = useState<number>(comment.upvotes);
   const [downvoteCount, setDownvoteCount] = useState<number>(comment.downvotes);
 
-  
   const handleUpvotePress = async () => {
     console.log("upvote icon pressed");
     if (upVote) {
@@ -46,7 +45,6 @@ const CommentComponent: React.FC<CommentProps> = ({ comment }) => {
     } catch (error) {
       console.error("Error upvoting comment:", error);
     }
-    
   };
 
   const handleDownvotePress = async () => {
@@ -79,9 +77,11 @@ const CommentComponent: React.FC<CommentProps> = ({ comment }) => {
     const fetchVote = async () => {
       try {
         console.log("Fetching vote");
-        console.log(userId)
-        console.log(comment.comment_id)
-        const response = await axios.get(`${BASE_URL}/reviews/comment/vote/${userId}/${comment.comment_id}`);
+        console.log(userId);
+        console.log(comment.comment_id);
+        const response = await axios.get(
+          `${BASE_URL}/reviews/comment/vote/${userId}/${comment.comment_id}`,
+        );
         console.log(response.data);
         if (response.data) {
           const { upvote } = response.data; // Assuming the API returns { user_id, post_id, upvote }
@@ -100,10 +100,9 @@ const CommentComponent: React.FC<CommentProps> = ({ comment }) => {
         console.error("Error fetching vote:", error);
       }
     };
-  
+
     fetchVote();
   }, [comment.comment_id, downVote, upVote]);
-  
 
   return (
     <View style={styles.card}>
@@ -129,24 +128,30 @@ const CommentComponent: React.FC<CommentProps> = ({ comment }) => {
 
       {/* Actions Section */}
       <View style={styles.actions}>
-        <TouchableOpacity onPress={handleUpvotePress} style={styles.actionButton}>
-        <Image
-          source={Upvotes}
-          style={[
-            styles.voteIcon,
-            { tintColor: upVote ? "#FFD700" : "#555" }, // Highlight if upvoted
-          ]}
-        />
+        <TouchableOpacity
+          onPress={handleUpvotePress}
+          style={styles.actionButton}
+        >
+          <Image
+            source={Upvotes}
+            style={[
+              styles.voteIcon,
+              { tintColor: upVote ? "#FFD700" : "#555" }, // Highlight if upvoted
+            ]}
+          />
           <Text style={styles.voteCount}>{upvoteCount}</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={handleDownvotePress} style={styles.actionButton}>
-        <Image
-          source={Downvotes}
-          style={[
-            styles.voteIcon,
-            { tintColor: downVote ? "#FFD700" : "#555" }, // Highlight if downvoted
-          ]}
-        />
+        <TouchableOpacity
+          onPress={handleDownvotePress}
+          style={styles.actionButton}
+        >
+          <Image
+            source={Downvotes}
+            style={[
+              styles.voteIcon,
+              { tintColor: downVote ? "#FFD700" : "#555" }, // Highlight if downvoted
+            ]}
+          />
           <Text style={styles.voteCount}>{downvoteCount}</Text>
         </TouchableOpacity>
       </View>

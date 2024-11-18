@@ -73,7 +73,6 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview, userId }) => {
     } catch (error) {
       console.error("Error upvoting comment:", error);
     }
-    
   };
 
   const handleDownvotePress = async () => {
@@ -123,9 +122,11 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview, userId }) => {
     const fetchVote = async () => {
       try {
         console.log("Fetching vote");
-        console.log(userId)
-        console.log(preview.review_id)
-        const response = await axios.get(`${BASE_URL}/reviews/vote/${userId}/${preview.review_id}`);
+        console.log(userId);
+        console.log(preview.review_id);
+        const response = await axios.get(
+          `${BASE_URL}/reviews/vote/${userId}/${preview.review_id}`,
+        );
         console.log(response.data);
         if (response.data) {
           const { upvote } = response.data; // Assuming the API returns { user_id, post_id, upvote }
@@ -143,9 +144,9 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview, userId }) => {
       } catch (error) {
         console.error("Error fetching vote:", error);
       }
-      };
-      fetchVote();
-    }, [preview.review_id, userId, downVote, upVote]);
+    };
+    fetchVote();
+  }, [preview.review_id, userId, downVote, upVote]);
 
   return (
     //<TouchableOpacity onPress={handlePreviewPress}> {/* Wrap the card with TouchableOpacity */}
@@ -231,17 +232,23 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview, userId }) => {
       <View style={styles.actionsContainer}>
         <View style={styles.voteContainer}>
           <TouchableOpacity onPress={handleUpvotePress}>
-            <Image source={Upvotes} style={[
-            styles.voteIcon,
-            { tintColor: upVote ? "#FFD700" : "#555" }, // Highlight if upvoted
-          ]} />
+            <Image
+              source={Upvotes}
+              style={[
+                styles.voteIcon,
+                { tintColor: upVote ? "#FFD700" : "#555" }, // Highlight if upvoted
+              ]}
+            />
           </TouchableOpacity>
           <Text>{upvoteCount}</Text>
           <TouchableOpacity onPress={handleDownvotePress}>
-          <Image source={Downvotes} style={[
-            styles.voteIcon,
-            { tintColor: downVote ? "#FFD700" : "#555" }, // Highlight if upvoted
-          ]} />
+            <Image
+              source={Downvotes}
+              style={[
+                styles.voteIcon,
+                { tintColor: downVote ? "#FFD700" : "#555" }, // Highlight if upvoted
+              ]}
+            />
           </TouchableOpacity>
           <Text>{downvoteCount}</Text>
           <TouchableOpacity onPress={handleCommentPress}>
