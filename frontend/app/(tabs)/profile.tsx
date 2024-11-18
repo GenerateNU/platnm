@@ -33,7 +33,7 @@ export default function ProfileScreen() {
   const [options, setOptions] = useState([
     "Favorite Artists",
     "Peak Albums",
-    "Featured Tracks"
+    "Featured Tracks",
   ]);
 
   const hasNotification = true; // Hardcoding - Get notification status from somewhere else
@@ -118,7 +118,7 @@ export default function ProfileScreen() {
     console.log("Adding item to section", sectionId);
     console.log("Selected option", selectedOption);
     navigation.navigate("SectionResults", {
-      "type": "track"
+      type: "track",
     });
     setSections(
       sections.map((section) => {
