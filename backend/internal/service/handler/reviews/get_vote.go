@@ -2,18 +2,13 @@ package reviews
 
 import (
 	"platnm/internal/errs"
-	"platnm/internal/models"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-type getVoteRequest struct {
-	models.UserVote
-}
-
 func (h *Handler) GetUserVote(c *fiber.Ctx, postType string) error {
-	userID := c.Params("userID") // Extract userID from URL parameters
-	postID := c.Params("postID") // Extract postID from URL parameters
+	userID := c.Params("userID")
+	postID := c.Params("postID")
 
 	if userID == "" || postID == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
