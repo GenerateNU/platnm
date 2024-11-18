@@ -318,6 +318,21 @@ func handleArtists(ctx context.Context, in <-chan handleTracksResult, errChan ch
 						artistID: id,
 					}
 				} else {
+					if artistId, err := mr.GetExistingArtistBySpotifyID(ctx, artist.ID.String()); err != nil {
+						errChan <- err
+						continue
+					} else if artistId != nil {
+						out <- handleArtistsResult{
+							trackID:  input.trackID,
+							albumID:  input.albumID,
+							artistID: *artistId,
+						}
+						mu.Lock()
+						artists[artist.ID.String()] = *artistId
+						mu.Unlock()
+						continue
+					}
+
 					if newArtist, err := mr.AddArtist(ctx, &models.Artist{
 						SpotifyID: artist.ID.String(),
 						Name:      artist.Name,
