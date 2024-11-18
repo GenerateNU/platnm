@@ -31,6 +31,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
   const [downVote, setdownVote] = useState<Boolean>();
   const [upvoteCount, setUpvoteCount] = useState<number>(0);
   const [downvoteCount, setDownvoteCount] = useState<number>(0);
+  const [commentCount, setCommentCount] = useState<number>(0);
   const [newComment, setNewComment] = useState<string>("");
 
   const ratingImages = {
@@ -109,6 +110,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
 
   const handleCommentSubmit = async () => {
     if (!newComment.trim()) return; // Do not submit if the comment is empty
+    setCommentCount(commentCount + 1);
 
     try {
       await axios.post(`${BASE_URL}/reviews/comment`, {
@@ -142,6 +144,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
         if (review) {
           setUpvoteCount(review.review_stat.upvotes);
           setDownvoteCount(review.review_stat.downvotes);
+          setCommentCount(review.review_stat.comment_count);
         }
       } catch (error) {
         console.error("Error fetching review:", error);
@@ -223,13 +226,8 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
               ) : null}
             </View>
           </View>
-          <Image
-            source={{ uri: review.media_cover }}
-            style={styles.coverImage}
-          />
           <Text style={styles.songName}>{review.media_title}</Text>
           <Text style={styles.artistName}>{review.media_artist}</Text>
-          <Text style={styles.comment}>{review.comment}</Text>
           {/* Rating Image on the right side of the song title */}
           <View>
             <Image
@@ -239,6 +237,8 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
               style={styles.ratingImage}
             />
           </View>
+
+          <Text style={styles.comment}>{review.comment}</Text>
           {/* Tags Section */}
       {review.tags && review.tags.length > 0 && (
         <ScrollView
@@ -338,7 +338,6 @@ const styles = StyleSheet.create({
   },
   comment: {
     fontSize: 16,
-    marginVertical: 10,
   },
   rating: {
     fontSize: 16,
@@ -347,6 +346,7 @@ const styles = StyleSheet.create({
   ratingImage: {
     width: 150,
     height: 150,
+    marginVertical: 20,
   },
   noReviewsText: {
     textAlign: "center",
@@ -472,14 +472,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   submitButton: {
-    backgroundColor: "#007BFF",
+    backgroundColor: "#D3D3D3",
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 5,
     marginLeft: 10,
   },
   submitButtonText: {
-    color: "#fff",
+    color: "#333",
     fontWeight: "bold",
   },
 });
