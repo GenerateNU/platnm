@@ -13,6 +13,6 @@ type UserComment struct {
 	DisplayName    string    `json:"display_name"`
 	ProfilePicture *string   `json:"profile_picture"`
 	CreatedAt      time.Time `json:"created_at"`
-	// Upvotes        int       `json:"upvotes"`
-	// Downvotes      int       `json:"downvotes"`
+	Upvotes        int       `json:"upvotes"`
+	Downvotes      int       `json:"downvotes"`
 }

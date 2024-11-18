@@ -17,7 +17,7 @@ type VoteRepository struct {
 const (
 	userVoteFKeyConstraint = "review_user_id_fkey"
 	votePKeyConstraint     = "user_vote_pkey"
-	reviewFKeyConstraint   = "user_vote_review_id_fkey"
+	reviewFKeyConstraint   = "user_vote_id_fkey"
 )
 
 func (r *VoteRepository) AddVote(ctx context.Context, vote *models.UserVote, postType string) error {
@@ -45,7 +45,7 @@ func (r *VoteRepository) GetVoteIfExists(ctx context.Context, usrID string, revI
 	var voteHolder models.UserVote
 
 	println("getting vote")
-	err := r.db.QueryRow(ctx, `SELECT user_id, post_id, upvote FROM user_vote WHERE user_id = $1 AND post_id = $2 AND post_type = $3`, usrID, revID, postType).Scan(&voteHolder.UserID, &voteHolder.PostID, &voteHolder.Upvote)
+	err := r.db.QueryRow(ctx, `SELECT user_id, post_id, upvote, post_type FROM user_vote WHERE user_id = $1 AND post_id = $2 AND post_type = $3`, usrID, revID, postType).Scan(&voteHolder.UserID, &voteHolder.PostID, &voteHolder.Upvote, &voteHolder.PostType)
 	if err != nil {
 		if err.Error() == "no rows in result set" {
 			return nil, nil

@@ -115,8 +115,8 @@ type UserComment = {
   review_id: number;
   comment: string;
   created_at: string;
-  // upvotes: number;
-  // downvotes: number;
+  upvotes: number;
+  downvotes: number;
 };
 
 type RatingDistribution = {

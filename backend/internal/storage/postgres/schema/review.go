@@ -569,9 +569,21 @@ func (r *ReviewRepository) GetSocialReviews(ctx context.Context, mediaType strin
 
 func (r *ReviewRepository) GetCommentsByReviewID(ctx context.Context, reviewID string) ([]*models.UserComment, error) {
 	rows, err := r.Query(ctx, `
-		SELECT c.id, text, review_id, c.user_id, username, display_name, profile_picture, c.created_at
+		SELECT c.id, text, review_id, c.user_id, username, display_name, profile_picture, c.created_at, COALESCE(upvotes, 0) AS upvotes, 
+    COALESCE(downvotes, 0) AS downvotes
 		FROM comment c
 		JOIN "user" u ON c.user_id = u.id
+		LEFT JOIN (
+			SELECT 
+					post_id,
+					SUM(CASE WHEN upvote = TRUE THEN 1 ELSE 0 END) AS upvotes,
+					SUM(CASE WHEN upvote = FALSE THEN 1 ELSE 0 END) AS downvotes
+			FROM 
+					user_vote
+			WHERE post_type = 'comment'
+			GROUP BY 
+					post_id
+	) vote_counts ON c.id = vote_counts.post_id
 		WHERE review_id = $1`, reviewID)
 	if err != nil {
 		return nil, err
@@ -590,6 +602,8 @@ func (r *ReviewRepository) GetCommentsByReviewID(ctx context.Context, reviewID s
 			&comment.DisplayName,
 			&comment.ProfilePicture,
 			&comment.CreatedAt,
+			&comment.Upvotes,
+			&comment.Downvotes,
 		); err != nil {
 			return nil, err
 		}

@@ -5,6 +5,8 @@ ALTER TABLE user_vote ADD COLUMN vote_id SERIAL;
 
 ALTER TABLE user_vote DROP CONSTRAINT user_review_vote_pkey;
 
+ALTER TABLE user_vote DROP CONSTRAINT user_review_vote_review_id_fkey;
+
 ALTER TABLE user_vote ADD CONSTRAINT user_vote_pkey PRIMARY KEY (vote_id);
 
 

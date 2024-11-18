@@ -1,7 +1,6 @@
 package reviews
 
 import (
-	"fmt"
 	"platnm/internal/errs"
 	"platnm/internal/models"
 
@@ -18,12 +17,9 @@ func (h *Handler) VoteReview(c *fiber.Ctx, postType string) error {
 	if err := c.BodyParser(&req); err != nil {
 		return errs.BadRequest("failed to parse request body")
 	}
-	fmt.Printf("here: %+v, %+v\n", req, req.UserVote)
 
-	fmt.Printf("user", req.UserVote.UserID)
 	exists, err := h.userRepository.UserExists(c.Context(), req.UserVote.UserID)
 
-	fmt.Printf("user exisits", exists)
 	if err != nil {
 		return err
 	}
@@ -32,11 +28,8 @@ func (h *Handler) VoteReview(c *fiber.Ctx, postType string) error {
 		return errs.NotFound("User", "id", &req.UserVote.UserID)
 	}
 
-	fmt.Printf(postType)
 	if postType == "review" {
 		reviewExists, reviewExistsErr := h.reviewRepository.ReviewExists(c.Context(), req.UserVote.PostID)
-		print("reviewExistsErr: ", reviewExistsErr)
-		print(reviewExists)
 		if reviewExistsErr != nil {
 			return reviewExistsErr
 		}
@@ -55,12 +48,8 @@ func (h *Handler) VoteReview(c *fiber.Ctx, postType string) error {
 		}
 	}
 
-	println("here")
 	voteValue, voteExistErr := h.voteRepository.GetVoteIfExists(c.Context(), req.UserVote.UserID, req.UserVote.PostID, postType)
-	println("vote:", voteValue)
-	//println("vote:", voteExistErr.Error())
 	if voteExistErr != nil {
-		print("erroring:")
 		return voteExistErr
 	}
 
