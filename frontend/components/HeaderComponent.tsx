@@ -6,22 +6,16 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useNavigation } from "expo-router";
-import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
+import { router } from "expo-router";
 
 interface HeaderComponentProps {
   title: string;
 }
 
 const HeaderComponent: React.FC<HeaderComponentProps> = ({ title }) => {
-  const navigation = useNavigation<NativeStackNavigationProp<any>>();
-
   return (
     <SafeAreaView style={styles.headerContainer}>
-      <TouchableOpacity
-        onPress={() => navigation.goBack()}
-        style={styles.backButton}
-      >
+      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
       <View style={styles.titleContainer}>

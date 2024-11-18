@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   View,
@@ -7,8 +8,6 @@ import {
   ScrollView,
   TouchableOpacity,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
 
 const MusicDisk = require("../assets/images/music-disk.png");
 const Comments = require("../assets/images/ReviewPreview/comments.png");
@@ -36,7 +35,6 @@ interface PreviewProps {
 
 const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
   const [showFullComment, setShowFullComment] = useState(false);
-  const navigation = useNavigation<NativeStackNavigationProp<any>>(); // Initialize navigation
 
   const getRatingImage = (rating: keyof typeof ratingImages) => {
     return ratingImages[rating]; // Access the image from the preloaded images object
@@ -60,7 +58,11 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
 
   const handlePreviewPress = () => {
     // Navigate to the ReviewPage when the preview is clicked
-    navigation.navigate("ReviewPage", { review_id: preview.review_id });
+    // navigation.navigate("ReviewPage", { review_id: preview.review_id });
+    router.push({
+      pathname: "/ReviewPage",
+      params: { review_id: preview.review_id },
+    });
   };
 
   return (
