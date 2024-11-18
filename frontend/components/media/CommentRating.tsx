@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, View, TextInput } from "react-native";
+import {
+  StyleSheet,
+  View,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  TouchableWithoutFeedback,
+} from "react-native";
 
 interface CommentRatingProps {
   onReviewChange: (value: string) => void;
@@ -14,33 +22,28 @@ const CommentRating = ({ onReviewChange }: CommentRatingProps) => {
   };
 
   return (
-    <View style={styles.comment}>
-      <TextInput
-        style={styles.input}
-        multiline={true}
-        placeholderTextColor="#434343"
-        placeholder="Provide your thoughts..."
-        value={comment}
-        onChangeText={handleReview}
-      />
-    </View>
+    <TextInput
+      style={styles.input}
+      multiline
+      placeholderTextColor="#434343"
+      placeholder="Provide your thoughts..."
+      value={comment}
+      onChangeText={handleReview}
+    />
   );
 };
 
+export default CommentRating;
+
 const styles = StyleSheet.create({
-  comment: {
-    backgroundColor: "#ffffff",
-    fontFamily: "Roboto",
-    padding: 20,
-    color: "#434343",
-    fontSize: 19,
-    height: "35%",
-  },
   input: {
     flex: 1,
+    padding: 10, // Add padding for better interaction
+    backgroundColor: "#ffffff",
+    fontFamily: "Roboto",
+    color: "#434343",
+    fontSize: 19,
     textAlignVertical: "top",
-    padding: 0,
+    justifyContent: "flex-end",
   },
 });
-
-export default CommentRating;

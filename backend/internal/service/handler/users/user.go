@@ -1,9 +1,12 @@
 package users
 
 import (
-	"github.com/google/uuid"
+	"platnm/internal/config"
 	"platnm/internal/errs"
+	"platnm/internal/service/session"
 	"platnm/internal/storage"
+
+	"github.com/google/uuid"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -11,12 +14,21 @@ import (
 type Handler struct {
 	userRepository     storage.UserRepository
 	playlistRepository storage.PlaylistRepository
+	config             config.Supabase
+	store              *session.SessionStore
 }
 
-func NewHandler(userRepository storage.UserRepository, playlistRepository storage.PlaylistRepository) *Handler {
+type UpdateUserOnboardRequest struct {
+	Email      string `json:"email" validate:"required,email"`
+	Enthusiasm string `json:"music_enthusiasm" validate:"required"`
+}
+
+func NewHandler(userRepository storage.UserRepository, playlistRepository storage.PlaylistRepository, config config.Supabase, store *session.SessionStore) *Handler {
 	return &Handler{
 		userRepository,
 		playlistRepository,
+		config,
+		store,
 	}
 }
 
@@ -27,6 +39,23 @@ func (h *Handler) GetUsers(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(users)
+}
+
+func (h *Handler) UpdateUserOnboard(c *fiber.Ctx) error {
+	var request UpdateUserOnboardRequest
+
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	result, err := h.userRepository.UpdateUserOnboard(c.Context(), request.Email, request.Enthusiasm)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(result)
 }
 
 func (h *Handler) GetUserById(c *fiber.Ctx) error {
@@ -94,5 +123,74 @@ func (h *Handler) GetUserProfile(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(profile)
+}
 
+func (h *Handler) UpdateUserBio(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	exists, err := h.userRepository.UserExists(c.Context(), id)
+	if err != nil {
+		print(err.Error())
+		return err
+	}
+
+	if !exists {
+		return errs.NotFound("User", "userID", id)
+	}
+
+	userUUID, err := uuid.Parse(id)
+	if err != nil {
+		print(err.Error())
+		return err
+	}
+
+	var requestBody struct {
+		Bio string `json:"bio"`
+	}
+
+	if err := c.BodyParser(&requestBody); err != nil {
+		print(err.Error())
+		return err
+	}
+
+	if err := h.userRepository.UpdateUserBio(c.Context(), userUUID, requestBody.Bio); err != nil {
+		print(err.Error())
+		return err
+	}
+
+	profile, err := h.userRepository.GetUserProfile(c.Context(), userUUID)
+	if err != nil {
+		print(err.Error(), "unable to fetch profile ")
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(profile)
+}
+
+func (h *Handler) GetUserFeed(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	exists, err := h.userRepository.UserExists(c.Context(), id)
+	if err != nil {
+		print(err.Error())
+		return err
+	}
+
+	if !exists {
+		return errs.NotFound("User", "userID", id)
+	}
+
+	userUUID, err := uuid.Parse(id)
+	if err != nil {
+		print(err.Error())
+		return err
+	}
+
+	feed, err := h.userRepository.GetUserFeed(c.Context(), userUUID)
+	if err != nil {
+		print(err.Error(), "unable to fetch profile ")
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(feed)
 }

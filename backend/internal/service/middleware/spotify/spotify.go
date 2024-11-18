@@ -1,6 +1,7 @@
 package spotify
 
 import (
+	"fmt"
 	"platnm/internal/config"
 	"platnm/internal/service/ctxt"
 	"platnm/internal/service/handler/oauth"
@@ -8,7 +9,6 @@ import (
 	"platnm/internal/storage"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
 
 	"github.com/zmb3/spotify/v2"
@@ -41,12 +41,13 @@ func (m *Middleware) WithAuthenticatedSpotifyClient() fiber.Handler {
 		}
 
 		if token == nil {
-			uid, err := uuid.Parse(c.Params("userID"))
+			user, err := m.sessionStore.GetUser(c)
+			fmt.Printf("user: %v\n", user)
 			if err != nil {
 				return err
 			}
 
-			encryptedToken, err := m.userAuthRepository.GetToken(c.Context(), uid)
+			encryptedToken, err := m.userAuthRepository.GetToken(c.Context(), user)
 			if err != nil {
 				return err
 			}
@@ -75,6 +76,8 @@ func (m *Middleware) WithAuthenticatedSpotifyClient() fiber.Handler {
 	}
 }
 
+// needs to be changed in future. currently setting a client creds client in session store for each user
+// i think there should be a way to set a single client creds client for the entire application
 func (m *Middleware) WithSpotifyClient() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		token, err := m.sessionStore.GetClientCredsToken(c)

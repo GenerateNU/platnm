@@ -2,6 +2,7 @@ package session
 
 import (
 	"github.com/gofiber/fiber/v2/middleware/session"
+	"github.com/google/uuid"
 	"golang.org/x/oauth2"
 )
 
@@ -14,7 +15,7 @@ func NewSessionStore(config session.Config) *SessionStore {
 		session.New(config),
 	}
 
-	store.RegisterType(UserState{})
+	store.RegisterType(uuid.UUID{})
 	store.RegisterType(oauth2.Token{})
 
 	return store

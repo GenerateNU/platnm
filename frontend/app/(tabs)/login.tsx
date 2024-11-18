@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import {
   View,
@@ -15,6 +15,8 @@ import { useAuthContext } from "@/components/AuthProvider";
 import { router } from "expo-router";
 
 export default function Login() {
+  const { sessionToken, updateAccessToken, updateSession, updateUserId } =
+    useAuthContext();
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
   const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
@@ -25,7 +27,6 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { updateAccessToken } = useAuthContext();
 
   const handleSignIn = async () => {
     setLoading(true);
@@ -40,8 +41,11 @@ export default function Login() {
           Alert.alert("Error", res.data.error);
           return;
         }
-        Alert.alert("Success", "You are now signed in!");
         updateAccessToken(res.data.token);
+        const sessionHeader = res.headers["x-session"];
+        updateSession(sessionHeader);
+        updateUserId(res.data.user.id);
+        router.push("/(tabs)/profile");
       })
       .catch((error) => {
         console.error("Error logging in:", error);
@@ -55,7 +59,7 @@ export default function Login() {
   };
 
   const handleSignUpPress = () => {
-    router.push("/onboard");
+    router.push("/onboarding/signup");
   };
 
   return (

@@ -1,31 +1,94 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Image,
+} from "react-native";
 import Icon from "react-native-vector-icons/Feather";
 import React, { useState, useEffect } from "react";
 
 interface SectionProps {
   title: string;
-  items: string[];
-  onEditPress: () => void;
+  items: SectionItem[];
+  isEditing: boolean;
+  sectionId: number;
+  onAddItem: () => void;
+  onDeleteSection: () => void;
+  onDeleteItem: (index: number) => void;
 }
 
-const Section: React.FC<SectionProps> = ({ title, items, onEditPress }) => {
+const Section: React.FC<SectionProps> = ({
+  title,
+  items,
+  isEditing,
+  sectionId,
+  onAddItem,
+  onDeleteSection,
+  onDeleteItem,
+}) => {
+  const [sectionTitle, setsectionTitle] = useState(title);
+  const [editedItems, setEditedItems] = useState(items);
+  const [editItem, setEditItem] = useState("");
+
+  const addItemImage = require("@/assets/images/add-item-placeholder.png");
+
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>{title}</Text>
-        <TouchableOpacity style={styles.editIcon}>
-          <TouchableOpacity onPress={onEditPress} style={styles.editIcon}>
-            <Icon name="edit-2" size={15} color="#888" />
-          </TouchableOpacity>
-        </TouchableOpacity>
+        <View style={styles.container}>
+          {isEditing && (
+            <>
+              <TouchableOpacity onPress={onAddItem} style={styles.plusIcon}>
+                <Icon name="plus" size={20} color="#F28037" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={onDeleteSection}
+                style={styles.trashIcon}
+              >
+                <Icon name="trash" size={20} color="#F28037" />
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
       </View>
-      <View style={styles.itemsRow}>
-        {items.map((item, index) => (
-          <View key={index} style={styles.item}>
-            <Text style={styles.itemTitle}>{item}</Text>
-          </View>
-        ))}
-      </View>
+
+      <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          {items.map((item, index) => (
+            <View
+              key={index}
+              style={{ marginHorizontal: 10, alignItems: "center" }}
+            >
+              <View style={{ position: "relative" }}>
+                <Image
+                  source={addItemImage}
+                  style={{ width: 100, height: 100, borderRadius: 10 }}
+                />
+                {isEditing && (
+                  <TouchableOpacity
+                    onPress={() => onDeleteItem(item.id)}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      right: 0,
+                      backgroundColor: "#D9D9D9",
+                      borderRadius: 100,
+                    }}
+                  >
+                    <Text style={{ fontSize: 16 }}>✖</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+              <Text style={{ marginTop: 5, textAlign: "center" }}>
+                {item.title}
+              </Text>
+            </View>
+          ))}
+        </View>
+      </ScrollView>
     </View>
   );
 };
@@ -33,13 +96,27 @@ const Section: React.FC<SectionProps> = ({ title, items, onEditPress }) => {
 export default Section;
 
 const styles = StyleSheet.create({
-  editIcon: {
+  container: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  plusIcon: {
     position: "absolute",
-    right: -25,
-    bottom: 20,
+    right: 0,
+    bottom: -10,
     backgroundColor: "transparent",
     padding: 4,
     borderRadius: 50,
+    marginHorizontal: 5,
+  },
+  trashIcon: {
+    position: "absolute",
+    right: -30,
+    bottom: -10,
+    backgroundColor: "transparent",
+    padding: 4,
+    borderRadius: 50,
+    marginHorizontal: 5,
   },
   editText: {
     fontSize: 16,
@@ -73,5 +150,16 @@ const styles = StyleSheet.create({
   itemTitle: {
     marginTop: 10,
     fontSize: 14,
+  },
+  sectionInput: {
+    width: "80%",
+    padding: 10,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 20,
+    fontSize: 16,
+    color: "#666",
+    backgroundColor: "#ddd",
+    textAlign: "left",
   },
 });

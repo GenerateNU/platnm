@@ -9,6 +9,7 @@ interface Album {
   country: string;
   genre_id: number;
   media_type: string;
+  artist_name: string;
 }
 
 interface Track {
@@ -21,6 +22,7 @@ interface Track {
   release_date: Date;
   cover: string;
   media_type: string;
+  artist_name: string;
 }
 
 type Media = Album | Track;
@@ -32,6 +34,9 @@ type Review = {
   media_id: number;
   rating: number;
   comment: string;
+  username: string;
+  display_name: string;
+  profile_picture: string;
   created_at: string;
   updated_at: string;
 };
@@ -56,4 +61,62 @@ type UserProfile = {
   followers: number;
   followed: number;
   score: number;
+};
+
+type Section = {
+  id: number;
+  title: string;
+  items: SectionItem[];
+};
+
+interface SectionItem {
+  id: number;
+  title: string;
+  media_type: string;
+  cover: string;
+}
+
+type ReviewStat = {
+  upvotes: number;
+  downvotes: number;
+  comment_count: number;
+};
+
+type Preview = {
+  review_id: number;
+  user_id: string;
+  username: string;
+  display_name: string;
+  profile_picture: string;
+  media_type: MediaType;
+  media_id: number;
+  rating: number;
+  comment?: string;
+  created_at: Date;
+  updated_at: Date;
+  media_cover: string;
+  media_title: string;
+  media_artist: string;
+  tags: string[];
+  review_stat: ReviewStat;
+};
+
+type MediaResponse = {
+  media: Media;
+  reviewCount: number;
+};
+
+type UserComment = {
+  id: number;
+  user_id: string;
+  review_id: number;
+  comment: string;
+  created_at: string;
+  // upvotes: number;
+  // downvotes: number;
+};
+
+type RatingDistribution = {
+  rating: number;
+  count: number;
 };
