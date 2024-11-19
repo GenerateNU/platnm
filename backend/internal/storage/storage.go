@@ -20,6 +20,8 @@ type UserRepository interface {
 	UpdateUserBio(ctx context.Context, user uuid.UUID, bio string) error
 	GetUserFeed(ctx context.Context, id uuid.UUID) ([]*models.Preview, error)
 	UpdateUserOnboard(ctx context.Context, email string, enthusiasm string) (string, error)
+	GetProfileByName(ctx context.Context, name string) ([]*models.Profile, error)
+	// GetProfileByUser(ctx context.Context, userName string) (*models.Profile, error)
 }
 
 type ReviewRepository interface {
