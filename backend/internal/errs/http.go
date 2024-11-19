@@ -48,10 +48,6 @@ func InvalidRequestData(errors map[string]string) HTTPError {
 	}
 }
 
-func InvalidJSON() HTTPError {
-	return NewHTTPError(http.StatusBadRequest, errors.New("invalid json"))
-}
-
 func InternalServerError() HTTPError {
 	return NewHTTPError(http.StatusInternalServerError, errors.New("internal server error"))
 }

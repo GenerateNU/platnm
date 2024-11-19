@@ -20,6 +20,8 @@ type UserRepository interface {
 	UpdateUserBio(ctx context.Context, user uuid.UUID, bio string) error
 	GetUserFeed(ctx context.Context, id uuid.UUID) ([]*models.Preview, error)
 	UpdateUserOnboard(ctx context.Context, email string, enthusiasm string) (string, error)
+	GetProfileByName(ctx context.Context, name string) ([]*models.Profile, error)
+	// GetProfileByUser(ctx context.Context, userName string) (*models.Profile, error)
 }
 
 type ReviewRepository interface {
@@ -52,7 +54,6 @@ type MediaRepository interface {
 	AddAlbumArtist(ctx context.Context, albumId int, artistId int) error
 	AddTrack(ctx context.Context, track *models.Track) (*models.Track, error)
 	AddTrackArtist(ctx context.Context, trackId int, artistId int) error
-	GetExistingTrackBySpotifyID(ctx context.Context, id string) (int, error)
 }
 
 type RecommendationRepository interface {
