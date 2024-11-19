@@ -80,6 +80,7 @@ func (m *Middleware) WithAuthenticatedSpotifyClient() fiber.Handler {
 // i think there should be a way to set a single client creds client for the entire application
 func (m *Middleware) WithSpotifyClient() fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		fmt.Println("WithSpotifyClient")
 		token, err := m.sessionStore.GetClientCredsToken(c)
 		if err != nil {
 			return err
