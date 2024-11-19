@@ -53,6 +53,7 @@ type MediaRepository interface {
 	AddArtistAndAlbumArtist(ctx context.Context, artist *models.Artist, albumId int) error
 	AddTrack(ctx context.Context, track *models.Track) (*models.Track, error)
 	AddTrackArtist(ctx context.Context, trackId int, artistId int) error
+	GetExistingTrackBySpotifyID(ctx context.Context, id string) (int, error)
 	AddArtistAndTrackArtist(ctx context.Context, artist *models.Artist, trackId int) error
 }
 
