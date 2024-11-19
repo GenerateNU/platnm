@@ -1,12 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button, StyleSheet, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
-import {
-  useFocusEffect,
-  useLocalSearchParams,
-  useNavigation,
-} from "expo-router";
+import { useFocusEffect, useLocalSearchParams, router } from "expo-router";
 import axios from "axios";
 import Histogram from "@/components/media/Histogram";
 import YourRatings from "@/components/media/YourRatings";
@@ -30,7 +25,6 @@ export default function MediaPage() {
   >([]);
 
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-  const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const { mediaId, mediaType } = useLocalSearchParams<{
     mediaId: string;
     mediaType: string;
@@ -105,12 +99,15 @@ export default function MediaPage() {
             <View style={styles.addReviewContainer}>
               <Button
                 onPress={() =>
-                  navigation.navigate("CreateReview", {
-                    mediaName: media.title,
-                    mediaType: media.media_type,
-                    mediaId: media.id,
-                    cover: media.cover,
-                    artistName: media.artist_name,
+                  router.push({
+                    pathname: "/CreateReview",
+                    params: {
+                      mediaName: media.title,
+                      mediaType: media.media_type,
+                      mediaId: media.id,
+                      cover: media.cover,
+                      artistName: media.artist_name,
+                    },
                   })
                 }
                 color={"white"}

@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   View,
@@ -8,8 +9,6 @@ import {
   Switch,
   SafeAreaView,
 } from "react-native";
-import { useNavigation } from "expo-router";
-import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
 import Icon from "react-native-vector-icons/Ionicons";
 
 function Settings() {
@@ -17,14 +16,13 @@ function Settings() {
   const [recommendations, setRecommendations] = useState(false);
   const [reviewInteractions, setReviewInteractions] = useState(true);
   const [hideActivity, setHideActivity] = useState(false);
-  const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
   return (
     <ScrollView style={styles.container}>
       {/* Header */}
       <SafeAreaView style={styles.header}>
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
+          onPress={() => router.back()}
           style={styles.backContainer}
         >
           <Icon name="arrow-back" size={24} color="#1C1B1F" />

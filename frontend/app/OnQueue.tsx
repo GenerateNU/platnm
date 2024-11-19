@@ -5,19 +5,16 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
-  ScrollView,
   SafeAreaView,
   FlatList,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
-import { useNavigation, router } from "expo-router";
+import { router } from "expo-router";
 import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
 import axios from "axios";
 
 const OnQueue = () => {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-  const navigation = useNavigation<NativeStackNavigationProp<any>>();
-  const [userReviews, setUserReviews] = useState<Review[]>();
   const userId = "c9bd4c67-7937-4ee3-959d-21a1b3db70eb"; // Hardcoding - Get userId from navigation
 
   const [songs, setSongs] = useState([
@@ -54,9 +51,12 @@ const OnQueue = () => {
   ]);
 
   const goToSongPage = (id: string) => {
-    navigation.navigate("MediaPage", {
-      mediaType: "track",
-      mediaId: id,
+    router.push({
+      pathname: "/MediaPage",
+      params: {
+        mediaType: "track",
+        mediaId: id,
+      },
     });
   };
 
@@ -69,9 +69,6 @@ const OnQueue = () => {
       style={styles.itemContainer}
       onPress={() => goToSongPage(item.id)}
     >
-      {/* <View style={styles.thumbnail}>
-                
-            </View> */}
       <Image source={{ uri: item.cover }} style={styles.albumCover} />
       <View style={styles.textContainer}>
         <Text style={styles.title}>{item.title}</Text>
@@ -96,7 +93,7 @@ const OnQueue = () => {
       {/* Header */}
       <SafeAreaView style={styles.header}>
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
+          onPress={() => router.back()}
           style={styles.backContainer}
         >
           <Icon name="arrow-back" size={24} color="#1C1B1F" />

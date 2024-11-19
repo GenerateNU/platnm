@@ -1,7 +1,6 @@
-import { router } from "expo-router";
 import React from "react";
+import { router } from "expo-router";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
-import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
 
 interface SongChipProps {
   rank: number;
