@@ -95,7 +95,13 @@ export default function HomeScreen() {
             feedReviews.map((review, index) => {
               return (
                 console.log("Review: ", review),
-                (<ReviewPreview key={index} preview={review} user_Id={userId} />)
+                (
+                  <ReviewPreview
+                    key={index}
+                    preview={review}
+                    user_Id={userId}
+                  />
+                )
               );
             })
           ) : (
