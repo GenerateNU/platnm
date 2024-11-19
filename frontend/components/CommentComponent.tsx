@@ -95,6 +95,9 @@ const CommentComponent: React.FC<CommentProps> = ({ comment }) => {
             setupVote(false);
             setdownVote(false);
           }
+        } else {
+          setupVote(false);
+          setdownVote(false);
         }
       } catch (error) {
         console.error("Error fetching vote:", error);

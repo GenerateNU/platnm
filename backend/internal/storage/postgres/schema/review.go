@@ -707,6 +707,55 @@ func (r *ReviewRepository) GetReviewByID(ctx context.Context, id string) (*model
 	return &preview, nil
 }
 
+func (r *ReviewRepository) UserVote(ctx context.Context, userID string, postID string, upvote bool, postType string) error {
+	println("getting votes")
+	rows, err := r.Query(ctx, `
+		WITH deleted_vote AS (
+    -- Delete the existing vote if it exists for the given user, post, and type
+    DELETE FROM user_vote
+    WHERE user_id = $4
+      AND post_id = $1
+      AND post_type = $2
+    RETURNING *
+),
+post_check AS (
+    -- Check if the post exists in the review or comment table
+    SELECT id
+    FROM review
+    WHERE id = $1 AND $2 = 'review'
+    UNION ALL
+    SELECT id
+    FROM comment
+    WHERE id = $1 AND $2 = 'comment'
+)
+-- Insert the new vote only if it's a different vote or there was no vote before
+INSERT INTO user_vote (user_id, post_id, post_type, upvote)
+SELECT $4, id, $2, $3
+FROM post_check
+WHERE NOT EXISTS (SELECT 1 FROM deleted_vote) OR $3 <> (SELECT upvote FROM user_vote WHERE user_id = $4 AND post_id = $1 AND post_type = $2 LIMIT 1);
+
+`, postID, postType, upvote, userID)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	// var votes []*models.UserVote
+	// for rows.Next() {
+	// 	var vote models.UserVote
+	// 	if err := rows.Scan(&vote.UserID, &vote.PostID, &vote.Upvote, &vote.PostType); err != nil {
+	// 		return err
+	// 	}
+	// 	votes = append(votes, &vote)
+	// }
+
+	if err := rows.Err(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func NewReviewRepository(db *pgxpool.Pool) *ReviewRepository {
 	return &ReviewRepository{
 		db,

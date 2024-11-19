@@ -83,7 +83,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 
 		// changed from /vote/:rating to /vote becuase the query parameter is not being used at all
 		r.Post("/vote", func(c *fiber.Ctx) error {
-			return reviewHandler.VoteReview(c, "review")
+			return reviewHandler.UserVote(c, "review")
 		})
 		r.Patch("/:id", reviewHandler.UpdateReviewByReviewID)
 		r.Get("/album/:id", func(c *fiber.Ctx) error {
@@ -97,7 +97,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		})
 		r.Post("/comment", reviewHandler.CreateComment)
 		r.Post("/comment/vote", func(c *fiber.Ctx) error {
-			return reviewHandler.VoteReview(c, "comment")
+			return reviewHandler.UserVote(c, "comment")
 		})
 		r.Get("/comment/vote/:userID/:postID", func(c *fiber.Ctx) error {
 			return reviewHandler.GetUserVote(c, "comment")

@@ -350,6 +350,7 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 10,
     marginBottom: 20,
+    overflow: "scroll",
   },
   songName: {
     fontSize: 24,

@@ -32,17 +32,18 @@ const ratingImages = {
 
 interface PreviewProps {
   preview: Preview;
-  userId: string;
+  user_Id: string;
 }
 
-const ReviewPreview: React.FC<PreviewProps> = ({ preview, userId }) => {
+const ReviewPreview: React.FC<PreviewProps> = ({ preview, user_Id }) => {
   const [showFullComment, setShowFullComment] = useState(false);
-
+  console.log(user_Id);
   const [upVote, setupVote] = useState<Boolean>();
   const [downVote, setdownVote] = useState<Boolean>();
   const [upvoteCount, setUpvoteCount] = useState<number>(0);
   const [downvoteCount, setDownvoteCount] = useState<number>(0);
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+  const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
 
   const getRatingImage = (rating: keyof typeof ratingImages) => {
     return ratingImages[rating]; // Access the image from the preloaded images object
@@ -312,6 +313,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between", // Align left and right sections
     width: "100%",
     marginBottom: 10,
+    overflow: "scroll",
   },
   leftSection: {
     flexDirection: "row",
