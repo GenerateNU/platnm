@@ -432,11 +432,11 @@ const styles = StyleSheet.create({
   },
   mediaCover: {
     position: "absolute",
-    width: 62,
-    height: 62,
-    top: -8,
-    right: -3,
-    borderRadius: 30,
+    width: 80,
+    height: 80,
+    top: -12,
+    right: -5,
+    borderRadius: 40,
     overflow: "hidden",
   },
   topSection: {

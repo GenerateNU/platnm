@@ -147,9 +147,10 @@ func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int
 	LEFT JOIN review_tag rt ON r.id = rt.review_id
 	LEFT JOIN tag tag ON rt.tag_id = tag.id
 	LEFT JOIN (
-		SELECT review_id, COUNT(*) AS vote_count
+		SELECT post_id as review_id, COUNT(*) AS vote_count
 		FROM user_vote
-		GROUP BY review_id
+		WHERE post_type = 'review'
+		GROUP BY post_id
 	) v ON r.id = v.review_id
 	GROUP BY r.id, r.user_id, u.username, u.display_name, u.profile_picture, r.media_type, r.media_id, r.rating, r.comment, r.created_at, r.updated_at, media_cover, media_title, media_artist, v.vote_count
 	ORDER BY vote_count DESC

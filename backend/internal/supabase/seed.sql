@@ -50,6 +50,7 @@ INSERT INTO review (user_id, media_id, media_type, rating, comment)
 VALUES
   ('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 1, 'album', 5, 'This is a great album!'),
   ('2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e', 2, 'album', 4, 'I like this album.'),
+  ('2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e', 1, 'album', 7, 'I like this album.'),
   ('3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f', 1, 'track', 3, 'This song is okay.'),
   ('4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9d', 3, 'track', 2, 'I don''t like this song.'),
   ('4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9d', 5, 'track', 2, 'This song is the best song ever');
