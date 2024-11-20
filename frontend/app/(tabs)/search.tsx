@@ -9,8 +9,8 @@ import axios from "axios";
 
 const SearchPage: React.FC = () => {
   const [searchResults, setSearchResults] = useState<{
-    songs: MediaResponse[];
-    albums: MediaResponse[];
+    songs: Media[];
+    albums: Media[];
   }>({
     songs: [],
     albums: [],
@@ -50,8 +50,8 @@ const SearchPage: React.FC = () => {
     setIsLoading(true);
     try {
       const [songsResponse, albumsResponse] = await Promise.all([
-        axios.get(`${BASE_URL}/media?name=${query}&type=track`),
-        axios.get(`${BASE_URL}/media?name=${query}&type=album`),
+        axios.get(`${BASE_URL}/media/${query}`),
+        axios.get(`${BASE_URL}/media/${query}`),
       ]);
 
       setSearchResults({

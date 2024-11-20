@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button, StyleSheet, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useFocusEffect, useLocalSearchParams, router } from "expo-router";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import axios from "axios";
 import Histogram from "@/components/media/Histogram";
 import YourRatings from "@/components/media/YourRatings";
@@ -10,11 +10,6 @@ import MediaCard from "@/components/media/MediaCard";
 import ReviewStats from "@/components/media/ReviewStats";
 import HeaderComponent from "@/components/HeaderComponent";
 import ReviewPreview from "@/components/ReviewPreview";
-
-type MediaResponse = {
-  media: Media;
-  reviewCount: number;
-};
 
 export default function MediaPage() {
   const [media, setMedia] = useState<Media>();
@@ -43,11 +38,15 @@ export default function MediaPage() {
   useEffect(() => {
     const calculateRatingDistribution = () => {
       const distributionMap = new Map<number, number>();
+      if (!reviews) {
+        setRatingDistributions([]);
+        return;
+      }
 
       reviews.forEach((review) => {
         distributionMap.set(
           review.rating,
-          (distributionMap.get(review.rating) || 0) + 1,
+          (distributionMap.get(review.rating) || 0) + 1
         );
       });
 
@@ -56,7 +55,7 @@ export default function MediaPage() {
         ([rating, count]) => ({
           rating,
           count,
-        }),
+        })
       ).sort((a, b) => a.rating - b.rating);
 
       setRatingDistributions(distributionArray);
@@ -76,7 +75,7 @@ export default function MediaPage() {
           })
           .catch((error) => console.error(error));
       }
-    }, [media]),
+    }, [media])
   );
 
   return (
@@ -92,58 +91,40 @@ export default function MediaPage() {
             paddingBottom: 80, // Add padding at the bottom equal to the height of the bottom tab bar
           }}
         >
-          <View>
-            <MediaCard media={media} />
-          </View>
-          <View style={styles.buttonContainer}>
-            <View style={styles.addReviewContainer}>
-              <Button
-                onPress={() =>
-                  router.push({
-                    pathname: "/CreateReview",
-                    params: {
-                      mediaName: media.title,
-                      mediaType: media.media_type,
-                      mediaId: media.id,
-                      cover: media.cover,
-                      artistName: media.artist_name,
-                    },
-                  })
-                }
-                color={"white"}
-                title="Add rating"
-              />
-            </View>
+          <MediaCard media={media} />
+          <View style={styles.bodyContainer}>
             <View style={styles.saveReviewContainer}>
               <Button color={"white"} title="Save" />
             </View>
-          </View>
-          <View style={styles.titleContainer}>
-            {rating && <ReviewStats rating={rating} reviews={reviews} />}
-          </View>
-          <Histogram distribution={ratingDistributions} />
-          <View style={styles.socialContainer}>
-            <YourRatings count={3} />
-            <FriendRatings count={5} />
-          </View>
-          <View>
-            {reviews?.map((review) => (
-              <ReviewPreview
-                key={review.id}
-                preview={{
-                  ...review,
-                  review_id: review.id,
-                  created_at: new Date(review.created_at),
-                  updated_at: new Date(review.updated_at),
-                  media_title: media.title,
-                  tags: ["Excitement"],
-                  review_stat: { comment_count: 5, upvotes: 4, downvotes: 2 },
-                  media_artist: "Taylor Swift",
-                  media_cover:
-                    "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png",
-                }}
-              />
-            ))}
+            <View style={styles.titleContainer}>
+              {rating && <ReviewStats rating={rating} reviews={reviews} />}
+            </View>
+            {ratingDistributions.length > 0 && (
+              <Histogram distribution={ratingDistributions} />
+            )}
+            <View style={styles.socialContainer}>
+              <YourRatings count={3} />
+              <FriendRatings count={5} />
+            </View>
+            <View>
+              {reviews?.map((review) => (
+                <ReviewPreview
+                  key={review.id}
+                  preview={{
+                    ...review,
+                    review_id: review.id,
+                    created_at: new Date(review.created_at),
+                    updated_at: new Date(review.updated_at),
+                    media_title: media.title,
+                    tags: ["Excitement"],
+                    review_stat: { comment_count: 5, upvotes: 4, downvotes: 2 },
+                    media_artist: "Taylor Swift",
+                    media_cover:
+                      "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png",
+                  }}
+                />
+              ))}
+            </View>
           </View>
         </ScrollView>
       </View>
@@ -153,7 +134,7 @@ export default function MediaPage() {
 
 const styles = StyleSheet.create({
   scrollView: {
-    paddingHorizontal: 16,
+    // paddingHorizontal: 16,
     backgroundColor: "#FFF",
     paddingBottom: 100,
   },
@@ -170,6 +151,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     gap: 8,
   },
+  bodyContainer: { paddingHorizontal: 16 },
 
   buttonContainer: {
     flexDirection: "row",

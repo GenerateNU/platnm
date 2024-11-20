@@ -4,8 +4,8 @@ import SongChip from "@/components/search/SongChip";
 import AlbumSearchCard from "@/components/search/AlbumSearchCard";
 
 interface SearchResultsProps {
-  songs: MediaResponse[];
-  albums: MediaResponse[];
+  songs: Media[];
+  albums: Media[];
   isLoading: boolean;
   filter: "all" | "songs" | "albums";
 }
@@ -34,12 +34,12 @@ const SearchResults: React.FC<SearchResultsProps> = ({
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
           {albums.map((album, index) => (
             <AlbumSearchCard
-              id={album.media.id}
-              key={album.media.id}
+              id={album.id}
+              key={album.id}
               rank={index + 1}
-              artist_name={album.media.artist_name}
-              album_name={album.media.title}
-              cover={album.media.cover}
+              artist_name={album.artist_name}
+              album_name={album.title}
+              cover={album.cover}
             />
           ))}
           <View />
@@ -49,10 +49,10 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                 <SongChip
                   key={index}
                   rank={index + 1}
-                  id={song.media.id}
-                  title={song.media.title}
-                  artist_name={song.media.artist_name}
-                  cover={song.media.cover}
+                  id={song.id}
+                  title={song.title}
+                  artist_name={song.artist_name}
+                  cover={song.cover}
                 />
               ))}
             </View>

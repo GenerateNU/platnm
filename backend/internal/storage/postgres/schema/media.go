@@ -143,12 +143,19 @@ func (r *MediaRepository) GetExistingArtistBySpotifyID(ctx context.Context, id s
 
 func (r *MediaRepository) GetAlbumById(ctx context.Context, id string) (*models.Album, error) {
 	var album models.Album
-	err := r.QueryRow(ctx, `SELECT id, title, release_date, cover, spotify_id FROM album WHERE id = $1`, id).Scan(
+	err := r.QueryRow(ctx, `
+		SELECT a.id, a.title, a.release_date, a.cover, a.spotify_id, art.name
+		FROM album a
+		JOIN album_artist aa on a.id = aa.album_id
+		JOIN artist art on aa.artist_id = art.id
+		WHERE a.id = $1
+		`, id).Scan(
 		&album.ID,
 		&album.Title,
 		&album.ReleaseDate,
 		&album.Cover,
 		&album.SpotifyID,
+		&album.ArtistName,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -162,12 +169,18 @@ func (r *MediaRepository) GetAlbumById(ctx context.Context, id string) (*models.
 
 func (r *MediaRepository) GetTrackById(ctx context.Context, id string) (*models.Track, error) {
 	var track models.Track
-	err := r.QueryRow(ctx, `SELECT id, album_id, title, duration_seconds, spotify_id FROM track WHERE id = $1`, id).Scan(
+	err := r.QueryRow(ctx, `
+		SELECT t.id, t.album_id, t.title, t.duration_seconds, t.spotify_id, art.name 
+		FROM track t
+		JOIN track_artist ta on t.id = ta.track_id
+		JOIN artist art on ta.artist_id = art.id
+		WHERE t.id = $1`, id).Scan(
 		&track.ID,
 		&track.AlbumID,
 		&track.Title,
 		&track.Duration,
 		&track.SpotifyID,
+		&track.ArtistName,
 	)
 
 	if err != nil {
