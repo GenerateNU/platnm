@@ -150,6 +150,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 			clientCredRoute.Get("/", h.GetPlatnmPlaylist)
 			clientCredRoute.Get("/import/new-releases", h.NewReleases)
 			clientCredRoute.Post("/import/recommendations", h.ImportRecommendations)
+
 		})
 
 		r.Route("/", func(authRoute fiber.Router) {

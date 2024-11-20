@@ -145,7 +145,6 @@ func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int
 	OFFSET $2;
 	`
 
-
 	rows, err := r.Query(ctx, query, limit+1, offset) // for some reason this +1 for the limit is needed
 
 	if err != nil {
