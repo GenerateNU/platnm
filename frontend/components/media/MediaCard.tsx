@@ -1,7 +1,7 @@
 import React from "react";
 import { router } from "expo-router";
 import { View, Text, StyleSheet, Image, ImageBackground } from "react-native";
-import { Button } from "react-native-paper";
+import { Button, IconButton } from "react-native-paper";
 
 type MediaCardProps = {
   media: Media;
@@ -20,12 +20,36 @@ const MediaCard = ({ media }: MediaCardProps) => {
       >
         <View style={styles.contentContainer}>
           <View>
+            <View style={styles.iconContainer}>
+              <IconButton
+                icon="arrow-left"
+                iconColor="white"
+                size={24}
+                onPress={() => router.back()}
+              />
+              <View style={styles.iconContainer}>
+                <IconButton
+                  icon="export-variant"
+                  iconColor="white"
+                  size={24}
+                  onPress={() => console.log("More options pressed")}
+                />
+                <IconButton
+                  icon="bookmark-outline"
+                  iconColor="white"
+                  size={24}
+                  onPress={() => console.log("More options pressed")}
+                />
+              </View>
+            </View>
             <View style={styles.artist}>
               <Image style={styles.image} source={{ uri: media.cover }} />
-              <Text>{media.artist_name}</Text>
+              <Text style={styles.artistText}>{media.artist_name}</Text>
             </View>
-            <Text style={styles.songNameText}>{media.title}</Text>
-            {isTrack(media) && <Text>{media.album_title}</Text>}
+            <Text style={styles.primaryMediaText}>{media.title}</Text>
+            {isTrack(media) && (
+              <Text style={styles.albumText}>{media.album_title}</Text>
+            )}
           </View>
           <View style={styles.addReviewContainer}>
             <Button
@@ -62,14 +86,24 @@ const styles = StyleSheet.create({
   imageBackground: {
     width: "100%",
     height: 400,
+    opacity: 0.9,
   },
   contentContainer: {
     flex: 1,
+    justifyContent: "space-between",
+    marginHorizontal: 16,
+    marginVertical: 12,
+  },
+  iconContainer: {
+    flexDirection: "row",
     justifyContent: "space-between",
   },
   artist: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  artistText: {
+    color: "white",
   },
   image: {
     width: 50,
@@ -78,9 +112,16 @@ const styles = StyleSheet.create({
     opacity: 0.6,
     borderRadius: 25,
   },
-  songNameText: {
+  primaryMediaText: {
     fontSize: 20,
     fontWeight: "bold",
+    color: "white",
+  },
+  albumText: {
+    marginTop: 4,
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "white",
   },
   addReviewContainer: {
     backgroundColor: "#000000",

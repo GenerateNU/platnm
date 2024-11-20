@@ -46,7 +46,7 @@ export default function MediaPage() {
       reviews.forEach((review) => {
         distributionMap.set(
           review.rating,
-          (distributionMap.get(review.rating) || 0) + 1
+          (distributionMap.get(review.rating) || 0) + 1,
         );
       });
 
@@ -55,7 +55,7 @@ export default function MediaPage() {
         ([rating, count]) => ({
           rating,
           count,
-        })
+        }),
       ).sort((a, b) => a.rating - b.rating);
 
       setRatingDistributions(distributionArray);
@@ -75,7 +75,7 @@ export default function MediaPage() {
           })
           .catch((error) => console.error(error));
       }
-    }, [media])
+    }, [media]),
   );
 
   return (
@@ -93,9 +93,9 @@ export default function MediaPage() {
         >
           <MediaCard media={media} />
           <View style={styles.bodyContainer}>
-            <View style={styles.saveReviewContainer}>
+            {/* <View style={styles.saveReviewContainer}>
               <Button color={"white"} title="Save" />
-            </View>
+            </View> */}
             <View style={styles.titleContainer}>
               {rating && <ReviewStats rating={rating} reviews={reviews} />}
             </View>
@@ -118,9 +118,8 @@ export default function MediaPage() {
                     media_title: media.title,
                     tags: ["Excitement"],
                     review_stat: { comment_count: 5, upvotes: 4, downvotes: 2 },
-                    media_artist: "Taylor Swift",
-                    media_cover:
-                      "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png",
+                    media_artist: media.artist_name,
+                    media_cover: media.cover,
                   }}
                 />
               ))}
@@ -134,7 +133,6 @@ export default function MediaPage() {
 
 const styles = StyleSheet.create({
   scrollView: {
-    // paddingHorizontal: 16,
     backgroundColor: "#FFF",
     paddingBottom: 100,
   },
