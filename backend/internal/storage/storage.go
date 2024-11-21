@@ -25,6 +25,8 @@ type UserRepository interface {
 	UpdateSectionItem(ctx context.Context, sectionitem models.SectionItem) error
 	DeleteSectionItem(ctx context.Context, section_type_item models.SectionTypeItem) error
 	DeleteSection(ctx context.Context, section_type_item models.SectionTypeItem) error
+	GetUserSections(ctx context.Context, id string) ([]models.UserSection, error)
+	GetUserSectionOptions(ctx context.Context, id string) ([]models.SectionOption, error)
 }
 
 type ReviewRepository interface {

@@ -27,7 +27,7 @@ const TopMedia = ({ media }: MediaCardProps) => {
         {media?.map((m, index) => (
           <SectionItem
             key={m.media.id}
-            id={m.media.id}
+            id={m.media.id.toString()}
             rank={index + 1}
             artist_name={m.media.artist_name} // hardcoded
             title={m.media.title}

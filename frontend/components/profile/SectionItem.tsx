@@ -1,11 +1,12 @@
-import { router, useNavigation } from "expo-router";
+import axios from "axios";
+import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
 
 interface SectionItemProps {
   rank: number;
-  id: number;
+  id: string;
   artist_name: string;
   title: string;
   cover: string;
@@ -20,13 +21,27 @@ const SectionItem: React.FC<SectionItemProps> = ({
 }) => {
   const placeholderImage =
     "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png";
-  const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+  // const { userId, sectionId } = useLocalSearchParams<{
+  //   type: string;
+  // }>();
+
+  const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d";
+  const sectionId = id;
 
   return (
     <TouchableOpacity
       style={styles.cardContainer}
-      onPress={() => {
+      onPress={async () => {
         console.log(title, artist_name, cover);
+        console.log(`${BASE_URL}/users/section/item/${userId}/${sectionId}`);
+        const response = await axios.post(
+          `${BASE_URL}/users/section/item/${userId}/${sectionId}`,
+          {
+            title: title,
+            cover_photo: cover,
+          },
+        );
         router.push("/profile");
       }}
     >

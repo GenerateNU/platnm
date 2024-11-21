@@ -70,7 +70,9 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Post("/section/item/:userId/:sectionId", userHandler.CreateSectionItem)
 		r.Patch("/section/item", userHandler.UpdateSectionItem)
 		r.Delete("/section/item", userHandler.DeleteSectionItem)
-		r.Delete("/section/user", userHandler.DeleteSection)
+		r.Delete("/section", userHandler.DeleteSection)
+		r.Get("/section/:id", userHandler.GetUserSections)
+		r.Get("/section/options/:id", userHandler.GetUserSectionOptions)
 	})
 
 	app.Route("/reviews", func(r fiber.Router) {

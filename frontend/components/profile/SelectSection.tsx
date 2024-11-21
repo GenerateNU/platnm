@@ -4,8 +4,8 @@ import { View, Text, StyleSheet, TouchableOpacity, Modal } from "react-native";
 interface SelectSectionProps {
   visible: boolean;
   onClose: () => void;
-  onSelect: (option: string) => void;
-  options: string[];
+  onSelect: (option: SectionOption) => void;
+  options: SectionOption[];
 }
 
 const SelectSection: React.FC<SelectSectionProps> = ({
@@ -24,7 +24,7 @@ const SelectSection: React.FC<SelectSectionProps> = ({
               style={styles.menuItem}
               onPress={() => onSelect(option)}
             >
-              <Text style={styles.menuItemText}>{option}</Text>
+              <Text style={styles.menuItemText}>{option.title}</Text>
             </TouchableOpacity>
           ))}
           <TouchableOpacity style={styles.cancelButton} onPress={onClose}>

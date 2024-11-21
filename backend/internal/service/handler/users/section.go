@@ -1,6 +1,7 @@
 package users
 
 import (
+	"fmt"
 	"platnm/internal/models"
 
 	"github.com/gofiber/fiber/v2"
@@ -40,7 +41,6 @@ func (h *Handler) CreateSectionItem(c *fiber.Ctx) error {
 	var body SectionItem
 	id := c.Params("userId")
 	sectionId := c.Params("sectionId")
-
 	if err := c.BodyParser(&body); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Cannot parse JSON",
@@ -80,6 +80,7 @@ func (h *Handler) DeleteSectionItem(c *fiber.Ctx) error {
 	var body SectionTypeItem
 
 	if err := c.BodyParser(&body); err != nil {
+		fmt.Println(err.Error())
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Cannot parse JSON",
 		})
@@ -87,8 +88,9 @@ func (h *Handler) DeleteSectionItem(c *fiber.Ctx) error {
 
 	err := h.userRepository.DeleteSectionItem(c.Context(), body.SectionTypeItem)
 	if err != nil {
+		fmt.Println(err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to unfollow user",
+			"error": "Failed to Delete Section Item",
 		})
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -100,18 +102,44 @@ func (h *Handler) DeleteSection(c *fiber.Ctx) error {
 	var body SectionTypeItem
 
 	if err := c.BodyParser(&body); err != nil {
+		fmt.Println(err.Error())
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Cannot parse JSON",
 		})
 	}
 
-	err := h.userRepository.DeleteSectionItem(c.Context(), body.SectionTypeItem)
+	err := h.userRepository.DeleteSection(c.Context(), body.SectionTypeItem)
 	if err != nil {
+		fmt.Println(err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to unfollow user",
+			"error": "Failed to Delete Section Item",
 		})
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"sucess": "Deleting item in section",
 	})
+}
+
+func (h *Handler) GetUserSections(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	sections, err := h.userRepository.GetUserSections(c.Context(), id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to get user sections",
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(sections)
+}
+
+func (h *Handler) GetUserSectionOptions(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	options, err := h.userRepository.GetUserSectionOptions(c.Context(), id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to get section option",
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(options)
 }

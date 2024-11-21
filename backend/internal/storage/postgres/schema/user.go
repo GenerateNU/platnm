@@ -383,7 +383,7 @@ func (r *UserRepository) DeleteSectionItem(ctx context.Context, section_type_ite
 		return err
 	}
 
-	_, err = r.db.Exec(ctx, `DELETE FROM "section_item" WHERE id = $1 AND section_type_id = $2`, section_type_item.SectionItemId)
+	_, err = r.db.Exec(ctx, `DELETE FROM "section_item" WHERE id = $1`, section_type_item.SectionItemId)
 	if err != nil {
 		return err
 	}
@@ -399,7 +399,7 @@ func (r *UserRepository) DeleteSection(ctx context.Context, section_type_item mo
 		return err
 	}
 
-	_, err = r.db.Exec(ctx, `DELETE FROM "section_type_item" WHERE section_type_id = $2`, section_type_item.SectionTypeId)
+	_, err = r.db.Exec(ctx, `DELETE FROM "section_type_item" WHERE section_type_id = $1`, section_type_item.SectionTypeId)
 	if err != nil {
 		return err
 	}
@@ -407,23 +407,100 @@ func (r *UserRepository) DeleteSection(ctx context.Context, section_type_item mo
 	return nil
 }
 
-// func (r *UserRepository) GetUserSections(ctx context.Context, user_id string) (*models.Review, error) {
-// 	var review models.Review
-// 	err := r.db.QueryRow(ctx, `SELECT id, user_id, media_type, media_id, rating, comment, created_at, updated_at FROM review WHERE user_id = $1 AND media_id = $2 AND media_type = 'track'`, id, id2).Scan(&review.ID, &review.UserID, &review.MediaType, &review.MediaID, &review.Rating, &review.Comment, &review.CreatedAt, &review.UpdatedAt)
+func (r *UserRepository) GetUserSections(ctx context.Context, user_id string) ([]models.UserSection, error) {
 
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	rows, err := r.db.Query(ctx,
+		`SELECT section_type_item.section_type_id as section_id, section_type.title as section_title, section_type.search_type, section_item.id as item_id, section_item.title as item_title, section_item.cover_photo
+		FROM section_type_item
+		JOIN section_item on section_item.id = section_type_item.section_item_id
+		JOIN section_type on section_type.id = section_type_item.section_type_id
+		WHERE section_type_item.user_id = $1
+		GROUP by section_type_item.section_type_id, section_type.search_type, section_type.title, section_item.id, section_item.title, section_item.cover_photo`, user_id)
 
-// 	return &review, nil
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-// 	SELECT *
-// FROM section_type_item
-// JOIN section_item on section_item.id = section_type_item.section_item_id
-// JOIN section_type on section_type.id = section_type_item.section_item_id
-// WHERE section_type_item.user_id = '095b0f67-b718-4ffa-a3f3-3d3b534836ad'
+	sectionMap := make(map[string]*models.UserSection)
 
-// }
+	for rows.Next() {
+		var sectionID, sectionTitle, itemID, searchType, itemTitle, coverPhoto string
+		if err := rows.Scan(&sectionID, &sectionTitle, &searchType, &itemID, &itemTitle, &coverPhoto); err != nil {
+			return nil, err
+		}
+
+		section, exists := sectionMap[sectionID]
+		if !exists {
+			section = &models.UserSection{
+				SectionId: func() int {
+					id, err := strconv.Atoi(sectionID)
+					if err != nil {
+						return -1
+					}
+					return id
+				}(),
+				Title:      sectionTitle,
+				SearchType: searchType,
+				Items:      []models.SectionItem{},
+			}
+			sectionMap[sectionID] = section
+		}
+
+		itemIDInt, err := strconv.Atoi(itemID)
+		if err != nil {
+			return nil, err
+		}
+
+		section.Items = append(section.Items, models.SectionItem{
+			ID:         itemIDInt,
+			Title:      itemTitle,
+			CoverPhoto: coverPhoto,
+		})
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	var sections []models.UserSection
+	for _, section := range sectionMap {
+		sections = append(sections, *section)
+	}
+
+	return sections, nil
+}
+
+func (r *UserRepository) GetUserSectionOptions(ctx context.Context, user_id string) ([]models.SectionOption, error) {
+	var options []models.SectionOption
+	rows, err := r.db.Query(ctx,
+		`SELECT section_type.title, section_type.search_type
+		FROM section_type
+		WHERE section_type.id NOT IN  
+  		  (SELECT section_type_item.section_type_id 
+  		  FROM section_type_item
+   		  WHERE section_type_item.user_id = $1)`, user_id)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var option models.SectionOption
+		if err := rows.Scan(&option.SectionTitle, &option.SearchType); err != nil {
+			return nil, err
+		}
+		options = append(options, option)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return options, nil
+
+}
 
 func NewUserRepository(db *pgxpool.Pool) *UserRepository {
 	return &UserRepository{
