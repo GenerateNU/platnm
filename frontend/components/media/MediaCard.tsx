@@ -2,6 +2,7 @@ import React from "react";
 import { router } from "expo-router";
 import { View, Text, StyleSheet, Image, ImageBackground } from "react-native";
 import { Button, IconButton } from "react-native-paper";
+import { LinearGradient } from "expo-linear-gradient";
 
 type MediaCardProps = {
   media: Media;
@@ -18,60 +19,66 @@ const MediaCard = ({ media }: MediaCardProps) => {
         style={styles.imageBackground}
         source={{ uri: media.cover }}
       >
-        <View style={styles.contentContainer}>
-          <View>
-            <View style={styles.iconContainer}>
-              <IconButton
-                icon="arrow-left"
-                iconColor="white"
-                size={24}
-                onPress={() => router.back()}
-              />
+        <LinearGradient
+          // Background Linear Gradient
+          colors={["rgba(0,0,0,0.6)", "rgba(242, 128, 55, 0.6)"]}
+          style={styles.background}
+        >
+          <View style={styles.contentContainer}>
+            <View>
               <View style={styles.iconContainer}>
                 <IconButton
-                  icon="export-variant"
+                  icon="arrow-left"
                   iconColor="white"
                   size={24}
-                  onPress={() => console.log("More options pressed")}
+                  onPress={() => router.back()}
                 />
-                <IconButton
-                  icon="bookmark-outline"
-                  iconColor="white"
-                  size={24}
-                  onPress={() => console.log("More options pressed")}
-                />
+                <View style={styles.iconContainer}>
+                  <IconButton
+                    icon="export-variant"
+                    iconColor="white"
+                    size={24}
+                    onPress={() => console.log("More options pressed")}
+                  />
+                  <IconButton
+                    icon="bookmark-outline"
+                    iconColor="white"
+                    size={24}
+                    onPress={() => console.log("More options pressed")}
+                  />
+                </View>
               </View>
+              <View style={styles.artist}>
+                <Image style={styles.image} source={{ uri: media.cover }} />
+                <Text style={styles.artistText}>{media.artist_name}</Text>
+              </View>
+              <Text style={styles.primaryMediaText}>{media.title}</Text>
+              {isTrack(media) && (
+                <Text style={styles.albumText}>{media.album_title}</Text>
+              )}
             </View>
-            <View style={styles.artist}>
-              <Image style={styles.image} source={{ uri: media.cover }} />
-              <Text style={styles.artistText}>{media.artist_name}</Text>
+            <View style={styles.addReviewContainer}>
+              <Button
+                onPress={() =>
+                  router.push({
+                    pathname: "/CreateReview",
+                    params: {
+                      mediaName: media.title,
+                      mediaType: media.media_type,
+                      mediaId: media.id,
+                      cover: media.cover,
+                      artistName: media.artist_name,
+                    },
+                  })
+                }
+                icon={"plus"}
+                textColor="white"
+              >
+                Rate
+              </Button>
             </View>
-            <Text style={styles.primaryMediaText}>{media.title}</Text>
-            {isTrack(media) && (
-              <Text style={styles.albumText}>{media.album_title}</Text>
-            )}
           </View>
-          <View style={styles.addReviewContainer}>
-            <Button
-              onPress={() =>
-                router.push({
-                  pathname: "/CreateReview",
-                  params: {
-                    mediaName: media.title,
-                    mediaType: media.media_type,
-                    mediaId: media.id,
-                    cover: media.cover,
-                    artistName: media.artist_name,
-                  },
-                })
-              }
-              icon={"plus"}
-              textColor="white"
-            >
-              Rate
-            </Button>
-          </View>
-        </View>
+        </LinearGradient>
       </ImageBackground>
     </View>
   );
@@ -85,8 +92,11 @@ const styles = StyleSheet.create({
   },
   imageBackground: {
     width: "100%",
-    height: 400,
+    height: 300,
     opacity: 0.9,
+  },
+  background: {
+    height: 300,
   },
   contentContainer: {
     flex: 1,

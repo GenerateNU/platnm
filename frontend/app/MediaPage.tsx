@@ -46,7 +46,7 @@ export default function MediaPage() {
       reviews.forEach((review) => {
         distributionMap.set(
           review.rating,
-          (distributionMap.get(review.rating) || 0) + 1,
+          (distributionMap.get(review.rating) || 0) + 1
         );
       });
 
@@ -55,7 +55,7 @@ export default function MediaPage() {
         ([rating, count]) => ({
           rating,
           count,
-        }),
+        })
       ).sort((a, b) => a.rating - b.rating);
 
       setRatingDistributions(distributionArray);
@@ -75,7 +75,7 @@ export default function MediaPage() {
           })
           .catch((error) => console.error(error));
       }
-    }, [media]),
+    }, [media])
   );
 
   return (
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     gap: 8,
   },
-  bodyContainer: { paddingHorizontal: 16 },
+  bodyContainer: { marginTop: 16, paddingHorizontal: 16 },
 
   buttonContainer: {
     flexDirection: "row",
