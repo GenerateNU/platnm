@@ -23,7 +23,7 @@ const SearchPage: React.FC = () => {
   const [initialSongs, setInitialSongs] = useState<MediaResponse[]>([]);
   const [initialAlbums, setInitialAlbums] = useState<MediaResponse[]>([]);
   const [initialReviews, setInitialReviews] = useState<Preview[]>([]);
-  const [initialProfiles, setInitialProfiles] = useState<UserProfile[]>([]);
+
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
   // Fetch initial top songs and albums
@@ -43,10 +43,6 @@ const SearchPage: React.FC = () => {
       .then((response) => setInitialReviews(response.data))
       .catch((error) => console.error(error));
 
-      axios
-      .get(`${BASE_URL}/users`)
-      .then((response) => setInitialProfiles(response.data))
-      .catch((error) => console.error(error));
   }, []);
 
   const handleSearch = async (query: string) => {
@@ -61,7 +57,7 @@ const SearchPage: React.FC = () => {
       const [songsResponse, albumsResponse, profilesResponse] = await Promise.all([
         axios.get(`${BASE_URL}/media?name=${query}&type=track`),
         axios.get(`${BASE_URL}/media?name=${query}&type=album`),
-        axios.get(`${BASE_URL}/users/profile/name?name=${query}`),
+        axios.get(`${BASE_URL}/users/profile/name/${query}`),
       ]);
 
       setSearchResults({
@@ -92,7 +88,6 @@ const SearchPage: React.FC = () => {
         />
       ) : (
         <View>
-          <Profiles profiles={initialProfiles}/>
           <TopSongs songs={initialSongs} />
           <TopAlbums albums={initialAlbums} />
           <TopReviews reviews={initialReviews} />

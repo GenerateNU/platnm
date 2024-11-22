@@ -56,7 +56,7 @@ const ProfileChip: React.FC<ProfileChipProps> = ({
   
   const styles = StyleSheet.create({
     chipContainer: {
-      width: '50%', // Takes up half the width for 2 per row
+      width: '50%',
       alignItems: 'center',
       justifyContent: 'center',
       paddingBottom: 30,

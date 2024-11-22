@@ -11,17 +11,18 @@ const Profiles = ({ profiles }: ProfileChipProps) => {
   return (
     <View>
       <Text style={styles.title}>Profiles</Text>
-      <ScrollView>
+
         <View style={styles.profileRow}>
           {limitedProfiles?.map((profile) => (
             <ProfileChip
               profile_picture={profile.profile_picture} 
               id={profile.id}
               display_name={profile.display_name}
+              key={profile.id}
             />
           ))}
         </View>
-      </ScrollView>
+
     </View>
   );
 };

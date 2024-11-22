@@ -3,6 +3,7 @@
   import SongChip from "@/components/search/SongChip";
   import AlbumSearchCard from "@/components/search/AlbumSearchCard";
   import ProfileChip from "@/components/search/ProfileChip";
+  import Profiles from "@/components/search/Profiles"
   import Filter from "@/components/search/Filter";
 
   interface SearchResultsProps {
@@ -10,7 +11,7 @@
     albums: MediaResponse[];
     profiles: UserProfile[];
     isLoading: boolean;
-    filter: "all" | "songs" | "albums";
+    filter: "all" | "songs" | "albums" | "profile";
   }
 
   type FilterOption = "all" | "songs" | "albums" | "profile";
@@ -43,9 +44,43 @@
         />
         <View style={styles.resultGrid}>
           <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
+          {(selectedFilter === "all" || selectedFilter === "profile") && (
+              <View style={styles.songsList}>
+                <Text style={styles.title}>Profiles</Text>
+                {profiles?.map((profile) => (
+                  <ProfileChip
+                    display_name={profile.display_name}
+                    profile_picture={profile.profile_picture}
+                    id={profile.id}
+                    key={profile.id}
+                  />
+                ))}
+                {/* <Profiles profiles={profiles}/> */}
+              </View>
+            )}
+            
+            {(selectedFilter === "all" || selectedFilter === "songs") && (
+              <View style={styles.songsList}>
+                <Text style={styles.title}>Songs</Text>
+                <ScrollView>
+                  {songs?.map((song, index) => (
+                    <SongChip
+                      key={index}
+                      rank={index + 1}
+                      id={song.media.id}
+                      title={song.media.title}
+                      artist_name={song.media.artist_name}
+                      cover={song.media.cover}
+                    />
+                  ))}
+                  </ScrollView>
+              </View>
+            )}
             {(selectedFilter === "all" || selectedFilter === "albums") && (
               <View>
-                {albums.map((album, index) => (
+                <Text style={styles.title}>Albums</Text>
+                <View style={styles.albumsList}>
+                {albums?.map((album, index) => (
                   <AlbumSearchCard
                     id={album.media.id}
                     key={album.media.id}
@@ -55,31 +90,7 @@
                     cover={album.media.cover}
                   />
                 ))}
-              </View>
-            )}
-            {(selectedFilter === "all" || selectedFilter === "songs") && (
-              <View style={styles.songsList}>
-                {songs.map((song, index) => (
-                  <SongChip
-                    key={index}
-                    rank={index + 1}
-                    id={song.media.id}
-                    title={song.media.title}
-                    artist_name={song.media.artist_name}
-                    cover={song.media.cover}
-                  />
-                ))}
-              </View>
-            )}
-            {(selectedFilter === "all" || selectedFilter === "profile") && (
-              <View style={styles.songsList}>
-                {profiles.map((profile) => (
-                  <ProfileChip
-                    display_name={profile.display_name}
-                    profile_picture={profile.profile_picture}
-                    id={profile.id}
-                  />
-                ))}
+                </View>
               </View>
             )}
             </ScrollView>
@@ -89,46 +100,56 @@
     );
   };
 
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      paddingHorizontal: 16,
-    },
-    headerContainer: {
-      marginTop: 10,
-      marginBottom: 20,
-      fontSize: 16,
-      textAlign: "center",
-      fontWeight: "600",
-      color: "#000000",
-    },
-    section: {
-      marginTop: 20,
-    },
-    sectionTitle: {
-      fontSize: 20,
-      fontWeight: "600",
-      marginBottom: 10,
-      color: "#434343",
-    },
-    loadingText: {
-      textAlign: "center",
-      marginTop: 20,
-      color: "#666666",
-    },
-    resultGrid: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: 10,
-    },
-    songsList: {
-      marginRight: 20,
-    },
-    noResults: {
-      textAlign: "center",
-      marginTop: 20,
-      color: "#666666",
-    },
+const styles = StyleSheet.create({
+title: {
+  fontSize: 24,
+  fontWeight: "bold",
+  padding: 16,
+},
+container: {
+  flex: 1,
+  paddingHorizontal: 16,
+},
+headerContainer: {
+  marginTop: 10,
+  marginBottom: 20,
+  fontSize: 16,
+  textAlign: "center",
+  fontWeight: "600",
+  color: "#000000",
+},
+section: {
+  marginTop: 20,
+},
+sectionTitle: {
+  fontSize: 20,
+  fontWeight: "600",
+  marginBottom: 10,
+  color: "#434343",
+},
+loadingText: {
+  textAlign: "center",
+  marginTop: 20,
+  color: "#666666",
+},
+resultGrid: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  gap: 10,
+},
+songsList: {
+  marginRight: 20,
+},
+albumsList: {
+width: '48%', // Slightly less than 50% to allow for spacing
+marginBottom: 16,
+paddingHorizontal: 4,
+},
+noResults: {
+  textAlign: "center",
+  marginTop: 20,
+  color: "#666666",
+},
   });
 
   export default SearchResults;
