@@ -74,7 +74,6 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Get("/section/:id", userHandler.GetUserSections)
 		r.Get("/section/options/:id", userHandler.GetUserSectionOptions)
 		r.Get("/profile/name/:name", userHandler.GetProfileByName)
-		// r.get("/:displayUser", userHandler.GetProfileByUser)
 	})
 
 	app.Route("/reviews", func(r fiber.Router) {

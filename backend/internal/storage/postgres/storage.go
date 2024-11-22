@@ -12,7 +12,6 @@ import (
 )
 
 func ConnectDatabase(config config.DB) *pgxpool.Pool {
-	// dbConfig, err := pgxpool.ParseConfig("postgresql://postgres:postgres@127.0.0.1:54322/postgres")
 	dbConfig, err := pgxpool.ParseConfig(config.Connection())
 	if err != nil {
 		log.Fatal("Failed to create a config, error: ", err)
