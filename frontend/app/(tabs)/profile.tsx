@@ -36,13 +36,13 @@ export default function ProfileScreen() {
   const [bio, setBio] = useState(userProfile?.bio);
   const [nextId, setNextId] = useState(0);
 
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     if (!userId) {
-  //       router.push("/(tabs)/login");
-  //     }
-  //   }, [userId]),
-  // );
+  useFocusEffect(
+    useCallback(() => {
+      if (!userId) {
+        router.push("/(tabs)/login");
+      }
+    }, [userId]),
+  );
 
   useEffect(() => {
     const fetchUserProfile = async () => {
