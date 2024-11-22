@@ -102,7 +102,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "space-between",
     marginHorizontal: 16,
-    marginVertical: 12,
+    marginTop: 28,
+    marginBottom: 12,
   },
   iconContainer: {
     flexDirection: "row",

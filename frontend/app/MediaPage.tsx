@@ -81,11 +81,9 @@ export default function MediaPage() {
   return (
     media && (
       <View style={{ backgroundColor: "#FFF" }}>
-        <HeaderComponent title="" />
         <ScrollView
           style={{
             ...styles.scrollView,
-            marginTop: 15,
           }}
           contentContainerStyle={{
             paddingBottom: 80, // Add padding at the bottom equal to the height of the bottom tab bar
