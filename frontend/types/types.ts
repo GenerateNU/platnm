@@ -115,3 +115,8 @@ type UserComment = {
   // upvotes: number;
   // downvotes: number;
 };
+
+type RatingDistribution = {
+  rating: number;
+  count: number;
+};

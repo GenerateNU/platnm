@@ -72,6 +72,7 @@ const ProfilePicture = ({ uri, editing }: Props) => {
 	};
 
 	const openPicker = async () => {
+		if (!editing) return;
 		const { status } = await MediaLibrary.getPermissionsAsync();
 		console.log(status);
 		if (status != 'granted') {
