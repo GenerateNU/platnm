@@ -25,27 +25,13 @@ export default function ProfileScreen() {
 
 	const [userProfile, setUserProfile] = useState<UserProfile>();
 	const [userReviews, setUserReviews] = useState<Review[]>();
-	const { userId } = useAuthContext();
-	const navigation = useNavigation<NativeStackNavigationProp<any>>();
-
-	const [sections, setSections] = useState<Section[]>([
-		{
-			id: 0,
-			title: 'Section 1',
-			items: [
-				{
-					id: 0,
-					title: 'Add Item',
-					media_type: 'placeholder',
-					cover: 'path_to_placeholder_image_or_url',
-				},
-			],
-		},
-	]); //TODO depending on what we do with sections
+	// const { userId } = useAuthContext();
+	const userId = '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d'; // Hardcoding - Get userId from somewhere else
+	const [sections, setSections] = useState<Section[]>([]); //TODO depending on what we do with sections
 
 	const [selectSectionVisible, setSelectSectionVisible] = useState(false);
-	const [selectedOption, setSelectedOption] = useState('');
-	const [options, setOptions] = useState(['Favorite Artists', 'Peak Albums', 'Featured Tracks']);
+	const [selectedOption, setSelectedOption] = useState<SectionOption>();
+	const [options, setOptions] = useState<SectionOption[]>([]);
 
 	const hasNotification = true; // Hardcoding - Get notification status from somewhere else
 
@@ -82,8 +68,27 @@ export default function ProfileScreen() {
 			}
 		};
 
+		const fetchUserSections = async () => {
+			try {
+				const response = await axios.get(`${BASE_URL}/users/section/${userId}`);
+				setSections(response.data);
+			} catch (error) {
+				console.error('Error fetching user sections:', error);
+			}
+		};
+
+		const fetchSectionOptions = async () => {
+			try {
+				const response = await axios.get(`${BASE_URL}/users/section/options/${userId}`);
+				setOptions(response.data);
+			} catch (error) {
+				console.error('Error fetching section options:', error);
+			}
+		};
 		fetchUserProfile();
 		fetchUserReviews();
+		fetchUserSections();
+		fetchSectionOptions();
 	}, [userId]);
 
 	const handleActivityPress = () => {
@@ -109,23 +114,17 @@ export default function ProfileScreen() {
 		setIsEditing(!isEditing);
 	};
 
-	const handleSelect = (option: string) => {
+	const handleSelect = (option: SectionOption) => {
 		setSelectedOption(option);
 		setSelectSectionVisible(false);
 		const newSection = {
-			id: nextId,
-			title: `${option}`,
-			items: [
-				{
-					id: 0,
-					title: 'Add Item',
-					media_type: 'placeholder',
-					cover: 'path_to_placeholder_image_or_url',
-				},
-			],
+			section_id: nextId,
+			title: `${option.title}`,
+			items: [],
+			search_type: option.search_type,
 		};
-		setOptions((prevOptions) => prevOptions.filter((item) => item !== option));
-		setSections([...sections, newSection]);
+		setOptions((prevOptions) => prevOptions.filter((item) => item.title !== option.title));
+		setSections([...(sections || []), newSection]);
 		setNextId(nextId + 1);
 	};
 
@@ -133,21 +132,20 @@ export default function ProfileScreen() {
 		setSelectSectionVisible(true);
 	};
 
-	const handleAddItem = (sectionId: number) => {
+	const handleAddItem = (section: Section) => {
+		console.log('Adding item to section', section.section_id);
+		console.log('Selected option', section.title);
+		console.log('Selected option', section.search_type);
+		router.push({
+			pathname: '/SectionResults',
+			params: { type: section.search_type },
+		});
 		setSections(
 			sections.map((section) => {
-				if (section.id === sectionId) {
+				if (section.section_id === section.section_id) {
 					return {
 						...section,
-						items: [
-							...section.items,
-							{
-								id: Math.floor(Math.random() * 1000),
-								title: 'Add Item',
-								media_type: 'placeholder',
-								cover: '../../assets/images/add-item-placeholder.png',
-							},
-						],
+						items: [...section.items],
 					};
 				}
 				return section;
@@ -158,7 +156,7 @@ export default function ProfileScreen() {
 	const handleDeleteItem = (sectionId: number, itemId: number) => {
 		setSections((prevSections) =>
 			prevSections.map((section) =>
-				section.id === sectionId
+				section.section_id === sectionId
 					? {
 							...section,
 							items: section.items.filter((item) => item.id !== itemId),
@@ -166,10 +164,34 @@ export default function ProfileScreen() {
 					: section,
 			),
 		);
+
+		axios.delete(`${BASE_URL}/users/section/item`, {
+			data: {
+				user_id: userId,
+				section_type_id: sectionId,
+				section_item_id: itemId,
+			},
+		});
 	};
 
 	const handleDeleteSection = (id: number) => {
-		setSections(sections.filter((section) => section.id !== id));
+		const sectionToDelete = sections.find((section) => section.section_id === id);
+		if (sectionToDelete) {
+			setOptions([
+				...options,
+				{
+					title: sectionToDelete.title,
+					search_type: sectionToDelete.search_type,
+				},
+			]);
+		}
+		setSections(sections.filter((section) => section.section_id !== id));
+		axios.delete(`${BASE_URL}/users/section`, {
+			data: {
+				section_type_id: id,
+				user_id: userId,
+			},
+		});
 	};
 
 	return (
@@ -240,19 +262,19 @@ export default function ProfileScreen() {
 				</TouchableOpacity>
 
 				{/* Sections */}
-				{sections.map((section, index) => (
-					<View key={index}>
-						<Section
-							title={section.title}
-							items={section.items}
-							isEditing={isEditing}
-							sectionId={section.id}
-							onAddItem={() => handleAddItem(section.id)}
-							onDeleteSection={() => handleDeleteSection(section.id)}
-							onDeleteItem={(itemIndex) => handleDeleteItem(section.id, itemIndex)}
-						/>
-					</View>
-				))}
+				{sections &&
+					sections.map((section, index) => (
+						<View key={index}>
+							<Section
+								title={section.title}
+								items={section.items}
+								isEditing={isEditing}
+								onAddItem={() => handleAddItem(section)}
+								onDeleteSection={() => handleDeleteSection(section.section_id)}
+								onDeleteItem={(itemIndex) => handleDeleteItem(section.section_id, itemIndex)}
+							/>
+						</View>
+					))}
 				{/* Button to Add a New Section */}
 				{isEditing && (
 					<TouchableOpacity onPress={handleAddSection} style={styles.addSectionButton}>
