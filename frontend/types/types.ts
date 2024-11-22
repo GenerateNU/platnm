@@ -64,9 +64,10 @@ type UserProfile = {
 };
 
 type Section = {
-  id: number;
+  section_id: number;
   title: string;
   items: SectionItem[];
+  search_type: string;
 };
 
 interface SectionItem {
@@ -75,6 +76,11 @@ interface SectionItem {
   media_type: string;
   cover: string;
 }
+
+type SectionOption = {
+  title: string;
+  search_type: string;
+};
 
 type ReviewStat = {
   upvotes: number;
