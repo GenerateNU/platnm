@@ -138,23 +138,11 @@ func (h *Handler) GetUserProfile(c *fiber.Ctx) error {
 }
 
 
-<<<<<<< HEAD
 func (h *Handler) UpdateUserProfilePicture(c *fiber.Ctx) error {
 	id := c.Params("id")
 
-	exists, err := h.userRepository.UserExists(c.Context(), id)
-	if err != nil {
-		print(err.Error())
-		return err
-	}
-
-	if !exists {
-		return errs.NotFound("User", "userID", id)
-	}
-
 	userUUID, err := uuid.Parse(id)
 	if err != nil {
-		print(err.Error())
 		return err
 	}
 
@@ -163,20 +151,16 @@ func (h *Handler) UpdateUserProfilePicture(c *fiber.Ctx) error {
 	}
 
 	if err := c.BodyParser(&requestBody); err != nil {
-		print(err.Error())
 		return err
 	}
 
 	if err := h.userRepository.UpdateUserProfilePicture(c.Context(), userUUID, requestBody.ProfilePicture); err != nil {
-		print(err.Error())
 		return err
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Profile picture updated successfully",
 	})
 }
-=======
->>>>>>> origin/main
 
 func (h *Handler) UpdateUserBio(c *fiber.Ctx) error {
 	id := c.Params("id")

@@ -66,9 +66,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Patch("/bio/:id", userHandler.UpdateUserBio)
 		r.Put("/enthusiasm", userHandler.UpdateUserOnboard)
 		r.Get("/feed/:id", userHandler.GetUserFeed)
-<<<<<<< HEAD
 		r.Patch("/pfp/:id", userHandler.UpdateUserProfilePicture)
-=======
 		r.Post("/section", userHandler.CreateSection)
 		r.Post("/section/item/:userId/:sectionId", userHandler.CreateSectionItem)
 		r.Patch("/section/item", userHandler.UpdateSectionItem)
@@ -77,7 +75,6 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Get("/section/:id", userHandler.GetUserSections)
 		r.Get("/section/options/:id", userHandler.GetUserSectionOptions)
 		r.Get("/profile/name/:name", userHandler.GetProfileByName)
->>>>>>> origin/main
 	})
 
 	app.Route("/reviews", func(r fiber.Router) {
