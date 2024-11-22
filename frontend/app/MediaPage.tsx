@@ -46,7 +46,7 @@ export default function MediaPage() {
       reviews.forEach((review) => {
         distributionMap.set(
           review.rating,
-          (distributionMap.get(review.rating) || 0) + 1,
+          (distributionMap.get(review.rating) || 0) + 1
         );
       });
 
@@ -55,7 +55,7 @@ export default function MediaPage() {
         ([rating, count]) => ({
           rating,
           count,
-        }),
+        })
       ).sort((a, b) => a.rating - b.rating);
 
       setRatingDistributions(distributionArray);
@@ -75,7 +75,7 @@ export default function MediaPage() {
           })
           .catch((error) => console.error(error));
       }
-    }, [media]),
+    }, [media])
   );
 
   return (
@@ -91,9 +91,6 @@ export default function MediaPage() {
         >
           <MediaCard media={media} />
           <View style={styles.bodyContainer}>
-            {/* <View style={styles.saveReviewContainer}>
-              <Button color={"white"} title="Save" />
-            </View> */}
             <View style={styles.titleContainer}>
               {rating && <ReviewStats rating={rating} reviews={reviews} />}
             </View>
@@ -158,12 +155,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#000000",
     borderRadius: 8,
     flexGrow: 2,
-    padding: 8,
-  },
-  saveReviewContainer: {
-    backgroundColor: "#444242",
-    borderRadius: 8,
-    flexGrow: 1,
     padding: 8,
   },
 });
