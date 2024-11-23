@@ -191,9 +191,10 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
 
       try {
         const response = await axios.get(`${BASE_URL}/reviews/${review_id}`);
-        console.log("response", response.data);
-        setReview(response.data);
+        const review = response.data;
+        setReview(review);
         if (review) {
+          // these don't update the parent component!
           setUpvoteCount(review.review_stat.upvotes);
           setDownvoteCount(review.review_stat.downvotes);
           setCommentCount(review.review_stat.comment_count);

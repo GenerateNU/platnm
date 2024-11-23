@@ -1,6 +1,6 @@
 import axios from "axios";
-import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -38,8 +38,12 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
   const [showFullComment, setShowFullComment] = useState(false);
   const [upVote, setupVote] = useState<Boolean>(false);
   const [downVote, setdownVote] = useState<Boolean>(false);
-  const [upvoteCount, setUpvoteCount] = useState<number>(preview.review_stat.upvotes);
-  const [downvoteCount, setDownvoteCount] = useState<number>(preview.review_stat.downvotes);
+  const [upvoteCount, setUpvoteCount] = useState<number>(
+    preview.review_stat.upvotes
+  );
+  const [downvoteCount, setDownvoteCount] = useState<number>(
+    preview.review_stat.downvotes
+  );
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
   const user_Id = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
@@ -98,32 +102,56 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
     }
   };
 
-  useEffect(() => {
-    const fetchVote = async () => {
-      try {
-        const response = await axios.get(
-          `${BASE_URL}/reviews/comment/vote/${user_Id}/${preview.review_id}`,
-        );
-        if (response.data) {
-          const { upvote } = response.data;
-          if (upvote === true) {
-            setupVote(true);
-            setdownVote(false);
-          } else if (upvote === false) {
-            setupVote(false);
-            setdownVote(true);
-          } else {
-            setupVote(false);
-            setdownVote(false);
+  useFocusEffect(
+    useCallback(() => {
+      const fetchReview = async () => {
+        try {
+          console.log("refetching the review statec");
+          const response = await axios.get(
+            `${BASE_URL}/reviews/${preview.review_id}`
+          );
+          if (response.data) {
+            // these don't update the parent component!
+            setUpvoteCount(response.data.review_stat.upvotes);
+            setDownvoteCount(response.data.review_stat.downvotes);
           }
+        } catch (error) {
+          console.error("Error fetching review:", error);
         }
-      } catch (error) {
-        console.error("Error fetching vote:", error);
-      }
-    };
+      };
 
-    fetchVote();
-  }, []);
+      fetchReview();
+    }, [])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchVote = async () => {
+        try {
+          const response = await axios.get(
+            `${BASE_URL}/reviews/comment/vote/${user_Id}/${preview.review_id}`
+          );
+          if (response.data) {
+            const { upvote } = response.data;
+            if (upvote === true) {
+              setupVote(true);
+              setdownVote(false);
+            } else if (upvote === false) {
+              setupVote(false);
+              setdownVote(true);
+            } else {
+              setupVote(false);
+              setdownVote(false);
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching vote:", error);
+        }
+      };
+
+      fetchVote();
+    }, [])
+  );
 
   const handleCommentPress = () => {
     console.log("comment icon pressed");
@@ -176,7 +204,9 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
 
           <View>
             <Image
-              source={getRatingImage(preview.rating as keyof typeof ratingImages)}
+              source={getRatingImage(
+                preview.rating as keyof typeof ratingImages
+              )}
             />
           </View>
         </View>
