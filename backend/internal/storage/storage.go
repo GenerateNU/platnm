@@ -5,6 +5,7 @@ import (
 	"platnm/internal/models"
 
 	"github.com/google/uuid"
+	"github.com/zmb3/spotify/v2"
 )
 
 type UserRepository interface {
@@ -65,6 +66,8 @@ type MediaRepository interface {
 	AddTrackArtist(ctx context.Context, trackId int, artistId int) error
 	GetExistingTrackBySpotifyID(ctx context.Context, id string) (int, error)
 	AddArtistAndTrackArtist(ctx context.Context, artist *models.Artist, trackId int) error
+	GetArtistsMissingPhoto(ctx context.Context) ([]spotify.ID, error)
+	UpdateArtistPhoto(ctx context.Context, spotifyId spotify.ID, photo string) (int, error)
 }
 
 type RecommendationRepository interface {

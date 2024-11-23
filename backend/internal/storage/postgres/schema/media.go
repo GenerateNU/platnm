@@ -10,6 +10,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/zmb3/spotify/v2"
 )
 
 type MediaRepository struct {
@@ -400,7 +401,7 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, media
 				string_agg(ar.name, ', ') as artists,
 				cover,
 				release_date
-			from album a 
+			from album a
 				left join album_artist aa on a.id = aa.album_id
 				join artist ar on aa.artist_id = ar.id
 			group by
@@ -433,7 +434,7 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, media
 				t.spotify_id
 		) t on t.album_id = a.id
 		WHERE t.title ILIKE '%' || $1 || '%' OR a.title ILIKE '%' || $1 || '%'
-		AND ($2::media_type IS NULL OR 
+		AND ($2::media_type IS NULL OR
        		(CASE WHEN t.id IS NOT NULL THEN 'track' ELSE 'album' END)::media_type = $2::media_type)
 	`
 	var rows pgx.Rows
@@ -521,14 +522,14 @@ func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset i
 				ORDER BY review_count DESC
 				LIMIT $1 OFFSET $2
 			)
-			SELECT 
+			SELECT
 				m.media_type,
 				m.media_id,
 				m.review_count,
-				COALESCE(a.title, t.title) AS title, 
+				COALESCE(a.title, t.title) AS title,
 				COALESCE(a.artists, t.artists) AS artist_name,
-				COALESCE(a.cover, t.cover) AS cover, 
-				COALESCE(a.release_date, t.release_date) AS release_date, 
+				COALESCE(a.cover, t.cover) AS cover,
+				COALESCE(a.release_date, t.release_date) AS release_date,
 				t.album_id AS track_album_id,
 				t.duration_seconds
 			FROM MostReviewed m
@@ -618,6 +619,41 @@ func (r *MediaRepository) GetExistingTrackBySpotifyID(ctx context.Context, id st
 	}
 
 	return trackId, nil
+}
+
+func (r *MediaRepository) GetArtistsMissingPhoto(ctx context.Context) ([]spotify.ID, error) {
+	const query string = `
+		SELECT spotify_id FROM artist WHERE photo = '' LIMIT 50;
+	`
+
+	rows, err := r.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	spotifyIds, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (spotify.ID, error) {
+		var spotifyId string
+		if err := row.Scan(&spotifyId); err != nil {
+			return "", err
+		}
+
+		return spotify.ID(spotifyId), nil
+	})
+
+	return spotifyIds, nil
+}
+
+func (r *MediaRepository) UpdateArtistPhoto(ctx context.Context, spotifyId spotify.ID, photo string) (int, error) {
+	const query string = `
+		UPDATE artist SET photo = $1 WHERE spotify_id = $2 RETURNING id;
+	`
+
+	var id int
+	if err := r.QueryRow(ctx, query, photo, spotifyId.String()).Scan(&id); err != nil {
+		return 0, err
+	}
+
+	return id, nil
 }
 
 func NewMediaRepository(db *pgxpool.Pool) *MediaRepository {
