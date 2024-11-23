@@ -158,7 +158,6 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
   const handleEditSave = async () => {
     try {
       const requestBody = {
-        id: review_id,
         user_id: userId, // User ID to validate ownership
         comment: editedComment, // The updated comment
       };
