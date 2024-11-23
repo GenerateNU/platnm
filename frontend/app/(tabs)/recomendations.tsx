@@ -8,6 +8,7 @@ import { SubpageHeader } from '@/components/SubpageHeader';
 import { Dimensions } from 'react-native';
 import { Text } from 'react-native';
 import { RatingButton } from '@/components/RatingButton';
+// @ts-ignore
 import SwipeCards from 'react-native-swipe-cards';
 import { ImageBackground } from 'react-native';
 import axios from 'axios';

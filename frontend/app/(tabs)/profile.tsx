@@ -13,11 +13,8 @@ import {
 import Icon from 'react-native-vector-icons/Feather';
 import axios from 'axios';
 import Section from '@/components/profile/Section';
-import ReviewCard from '@/components/ReviewCard';
 import { router, useFocusEffect, useNavigation } from 'expo-router';
 import SelectSection from '@/components/profile/SelectSection';
-import { useAuthContext } from '@/components/AuthProvider';
-import { NativeStackNavigationProp } from 'react-native-screens/lib/typescript/native-stack/types';
 import ProfilePicture from '@/components/profile/ProfilePicture';
 
 export default function ProfileScreen() {
@@ -50,7 +47,7 @@ export default function ProfileScreen() {
 	useEffect(() => {
 		const fetchUserProfile = async () => {
 			try {
-				const response = await axios.get(`${BASE_URL}/users/profile/${userId}`);
+				const response = await axios.get(`${BASE_URL}/users/profile/id/${userId}`);
 				setUserProfile(response.data);
 				setBio(response.data.bio);
 				console.log(response.data);
