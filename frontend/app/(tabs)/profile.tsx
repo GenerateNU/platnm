@@ -47,7 +47,9 @@ export default function ProfileScreen() {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/users/profile/id/${userId}`);
+        const response = await axios.get(
+          `${BASE_URL}/users/profile/id/${userId}`,
+        );
         const profile = {
           id: response.data.user_id,
           username: response.data.username,
@@ -56,7 +58,7 @@ export default function ProfileScreen() {
           profile_picture: response.data.profile_picture.String,
           followers: response.data.followers,
           followed: response.data.followed,
-          score: response.data.score
+          score: response.data.score,
         };
         setUserProfile(profile);
         setBio(response.data.bio.String);

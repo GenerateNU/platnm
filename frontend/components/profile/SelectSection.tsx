@@ -18,15 +18,16 @@ const SelectSection: React.FC<SelectSectionProps> = ({
     <Modal visible={visible} transparent={true} animationType="slide">
       <View style={styles.modalOverlay}>
         <View style={styles.menuContainer}>
-          {options && options.map((option, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.menuItem}
-              onPress={() => onSelect(option)}
-            >
-              <Text style={styles.menuItemText}>{option.title}</Text>
-            </TouchableOpacity>
-          ))}
+          {options &&
+            options.map((option, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.menuItem}
+                onPress={() => onSelect(option)}
+              >
+                <Text style={styles.menuItemText}>{option.title}</Text>
+              </TouchableOpacity>
+            ))}
           <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
             <Text style={styles.cancelButtonText}>Cancel</Text>
           </TouchableOpacity>
