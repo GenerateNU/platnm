@@ -623,7 +623,7 @@ func (r *MediaRepository) GetExistingTrackBySpotifyID(ctx context.Context, id st
 
 func (r *MediaRepository) GetArtistsMissingPhoto(ctx context.Context) ([]spotify.ID, error) {
 	const query string = `
-		SELECT spotify_id FROM artist WHERE photo = '' LIMIT 50;
+		SELECT spotify_id FROM artist WHERE photo = '';
 	`
 
 	rows, err := r.Query(ctx, query)

@@ -137,8 +137,6 @@ func (h *Handler) GetUserProfile(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(profile)
 }
 
-
-
 func (h *Handler) UpdateUserBio(c *fiber.Ctx) error {
 	id := c.Params("id")
 
