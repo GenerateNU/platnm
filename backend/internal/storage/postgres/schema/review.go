@@ -329,7 +329,7 @@ func (r *ReviewRepository) UpdateReview(ctx context.Context, review *models.Revi
         UPDATE review 
         SET comment = $1, rating = $2, updated_at = now() 
         WHERE id = $3 
-        RETURNING id, user_id, comment, rating, updated_at`
+        RETURNING id, user_id, comment, rating, updated_at, draft`
 
 	// QueryRow with both rating and comment
 	err := r.QueryRow(ctx, query, review.Comment, review.Rating, review.ID).
@@ -346,7 +346,7 @@ func (r *ReviewRepository) GetExistingReview(ctx context.Context, id string) (*m
 	var review models.Review
 
 	row := r.QueryRow(ctx, `
-		SELECT id, user_id, media_type, media_id, rating, comment, created_at, updated_at
+		SELECT id, user_id, media_type, media_id, rating, comment, created_at, updated_at, draft
 		FROM review 
 		WHERE id = $1`, id)
 

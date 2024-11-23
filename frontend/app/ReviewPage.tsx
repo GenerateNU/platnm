@@ -11,6 +11,7 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
+  Modal,
 } from "react-native";
 
 interface ReviewPageProps {
@@ -44,13 +45,19 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
   const [commentCount, setCommentCount] = useState<number>(0);
   const [newComment, setNewComment] = useState<string>("");
 
+  const [isEditable, setIsEditable] = useState(false);
+  const [editedComment, setEditedComment] = useState<string>("");
+  const [showMenu, setShowMenu] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+
+
   const ratingImages = {
-    0: require("../assets/images/Ratings/0Rating.png"),
-    1: require("../assets/images/Ratings/1Rating.png"),
-    2: require("../assets/images/Ratings/2Rating.png"),
-    3: require("../assets/images/Ratings/3Rating.png"),
-    4: require("../assets/images/Ratings/4Rating.png"),
-    5: require("../assets/images/Ratings/5Rating.png"),
+    0: require("../assets/images/Ratings/Radial-0.svg"),
+    1: require("../assets/images/Ratings/Radial-1.svg"),
+    2: require("../assets/images/Ratings/Radial-2.svg"),
+    3: require("../assets/images/Ratings/Radial-3.svg"),
+    4: require("../assets/images/Ratings/Radial-4.svg"),
+    5: require("../assets/images/Ratings/Radial-5.svg"),
     6: require("../assets/images/Ratings/6Rating.png"),
     7: require("../assets/images/Ratings/7Rating.png"),
     8: require("../assets/images/Ratings/8Rating.png"),
@@ -140,6 +147,38 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
       fetchComments();
     } catch (error) {
       console.error("Error submitting comment:", error);
+    }
+  };
+
+  const handleEditSave = async () => {
+    try {
+      const requestBody = {
+        id: review_id,
+        user_id: userId,      // User ID to validate ownership
+        comment: editedComment, // The updated comment
+      };
+
+      await axios.patch(`${BASE_URL}/reviews/${review_id}`, requestBody);
+      setIsEditable(false);
+      setReview((prev) =>
+        prev ? { ...prev, comment: editedComment } : prev
+      );
+    } catch (error) {
+      console.error("Error saving edited review:", error);
+    }
+  };
+
+  const handleMenuOption = (option: string) => {
+    setShowPopup(false);
+    if (option === "edit") {
+      setIsEditable(true);
+      setEditedComment(review?.comment || "");
+    } else if (option === "delete") {
+      // Add delete functionality
+    } else if (option === "manageComments") {
+      // Add manage comments functionality
+    } else if (option === "share") {
+      // Add share functionality
     }
   };
 
@@ -233,6 +272,14 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
                   <Text style={styles.displayName}>{review.display_name}</Text>
                   <Text style={styles.username}>@{review.username}</Text>
                 </View>
+                {review.user_id === userId && (
+                  <TouchableOpacity
+                    style={styles.menuButton}
+                    onPress={() => setShowPopup(true)}
+                  >
+                    <Text style={styles.menuText}>⋮</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
             <View style={styles.vinyl}>
@@ -258,7 +305,53 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
             />
           </View>
 
-          <Text style={styles.comment}>{review.comment}</Text>
+          <Modal visible={showPopup} transparent>
+            <View style={styles.popupContainer}>
+              <TouchableOpacity
+                style={styles.popupOption}
+                onPress={() => handleMenuOption("edit")}
+              >
+                <Text>Edit Review</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.popupOption}
+                onPress={() => handleMenuOption("manageComments")}
+              >
+                <Text>Manage Comments</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.popupOption}
+                onPress={() => handleMenuOption("share")}
+              >
+                <Text>Share</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.popupOption}
+                onPress={() => handleMenuOption("delete")}
+              >
+                <Text>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </Modal>
+
+          {isEditable ? (
+            <View>
+              <TextInput
+                style={styles.editInput}
+                value={editedComment}
+                onChangeText={setEditedComment}
+                multiline
+              />
+              <TouchableOpacity
+                style={styles.saveButton}
+                onPress={handleEditSave}
+              >
+                <Text>Save</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <Text>{review.comment}</Text>
+          )}
           {/* Tags Section */}
           {review.tags && review.tags.length > 0 && (
             <ScrollView
@@ -511,6 +604,19 @@ const styles = StyleSheet.create({
     color: "#333",
     fontWeight: "bold",
   },
+  menuButton: { padding: 10 },
+  menuText: { fontSize: 24 },
+  popupContainer: {
+    position: "absolute",
+    bottom: 50,
+    right: 20,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 10,
+  },
+  popupOption: { padding: 10 },
+  editInput: { borderColor: "#ddd", borderWidth: 1, margin: 10, padding: 10 },
+  saveButton: { backgroundColor: "#007bff", padding: 10 },
 });
 
 export default ReviewPage;
