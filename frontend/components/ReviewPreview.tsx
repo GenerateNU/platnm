@@ -58,6 +58,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
   const [downvoteCount, setDownvoteCount] = useState<number>(
     preview.review_stat.downvotes
   );
+  const [reviewText, setReviewText] = useState<string>(preview.comment || "");
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
   const user_Id = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
@@ -170,7 +171,24 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
         }
       };
 
+      const fetchReview = async () => {
+        try {
+          console.log("refetching the review state");
+          const response = await axios.get(
+            `${BASE_URL}/reviews/${preview.review_id}`
+          );
+          if (response.data) {
+            setUpvoteCount(response.data.review_stat.upvotes);
+            setDownvoteCount(response.data.review_stat.downvotes);
+            setReviewText(response.data.comment);
+          }
+        } catch (error) {
+          console.error("Error fetching review:", error);
+        }
+      }
+
       fetchVote();
+      fetchReview();
     }, [])
   );
 
@@ -246,13 +264,13 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
 
       <TouchableOpacity onPress={handlePreviewPress}>
         <Text style={styles.commentText}>
-          {preview.comment && preview.comment.length > 100
+          {reviewText && reviewText.length > 100
             ? showFullComment
-              ? preview.comment
-              : `${preview.comment.slice(0, 100)}...`
-            : preview.comment}
+              ? reviewText
+              : `${reviewText.slice(0, 100)}...`
+            : reviewText}
         </Text>
-        {preview.comment && preview.comment.length > 100 && (
+        {reviewText && reviewText.length > 100 && (
           <TouchableOpacity onPress={handleViewMorePress}>
             <Text style={styles.readMore}>
               {showFullComment ? "Show less" : "Read more"}
