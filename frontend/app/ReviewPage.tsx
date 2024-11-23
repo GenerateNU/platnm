@@ -13,7 +13,17 @@ import {
   TextInput,
   Modal,
 } from "react-native";
-
+import Rating0 from "@/assets/images/Ratings/Radial-0.svg";
+import Rating1 from "@/assets/images/Ratings/Radial-1.svg";
+import Rating2 from "@/assets/images/Ratings/Radial-2.svg";
+import Rating3 from "@/assets/images/Ratings/Radial-3.svg";
+import Rating4 from "@/assets/images/Ratings/Radial-4.svg";
+import Rating5 from "@/assets/images/Ratings/Radial-5.svg";
+import Rating6 from "@/assets/images/Ratings/Radial-6.svg";
+import Rating7 from "@/assets/images/Ratings/Radial-7.svg";
+import Rating8 from "@/assets/images/Ratings/Radial-8.svg";
+import Rating9 from "@/assets/images/Ratings/Radial-9.svg";
+import Rating10 from "@/assets/images/Ratings/Radial-10.svg";
 interface ReviewPageProps {
   route: {
     params: {
@@ -52,17 +62,17 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
 
 
   const ratingImages = {
-    0: require("../assets/images/Ratings/Radial-0.svg"),
-    1: require("../assets/images/Ratings/Radial-1.svg"),
-    2: require("../assets/images/Ratings/Radial-2.svg"),
-    3: require("../assets/images/Ratings/Radial-3.svg"),
-    4: require("../assets/images/Ratings/Radial-4.svg"),
-    5: require("../assets/images/Ratings/Radial-5.svg"),
-    6: require("../assets/images/Ratings/6Rating.png"),
-    7: require("../assets/images/Ratings/7Rating.png"),
-    8: require("../assets/images/Ratings/8Rating.png"),
-    9: require("../assets/images/Ratings/9Rating.png"),
-    10: require("../assets/images/Ratings/10Rating.png"),
+    0: Rating0,
+    1: Rating1,
+    2: Rating2,
+    3: Rating3,
+    4: Rating4,
+    5: Rating5,
+    6: Rating6,
+    7: Rating7,
+    8: Rating8,
+    9: Rating9,
+    10: Rating10,
   };
 
   const getRatingImage = (rating: keyof typeof ratingImages) => {
@@ -153,7 +163,6 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
   const handleEditSave = async () => {
     try {
       const requestBody = {
-        id: review_id,
         user_id: userId,      // User ID to validate ownership
         comment: editedComment, // The updated comment
       };
@@ -298,12 +307,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
           <Text style={styles.artistName}>{review.media_artist}</Text>
           {/* Rating Image on the right side of the song title */}
           <View>
-            <Image
-              source={getRatingImage(
-                review.rating as keyof typeof ratingImages,
-              )}
-              style={styles.ratingImage}
-            />
+            {React.createElement(getRatingImage(review.rating as keyof typeof ratingImages))}
           </View>
 
           <Modal visible={showPopup} transparent>
@@ -450,6 +454,16 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 20,
     overflow: "scroll",
+  },
+  ratingImageWrapper: {
+    width: 100,  // Set width as per requirement (in pixels or percentage)
+    height: 100, // Set height as per requirement
+    overflow: "hidden", // This ensures cropping of the image
+    borderRadius: 50,  // Optional: If you want a circular crop, use borderRadius
+  },
+  ratingSvg: {
+    width: "100%",  // Ensure SVG scales correctly inside the wrapper
+    height: "100%", // Ensure SVG scales correctly inside the wrapper
   },
   songName: {
     fontSize: 24,
