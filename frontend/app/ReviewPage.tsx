@@ -279,7 +279,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
             <View style={styles.voteContainer}>
               <TouchableOpacity onPress={handleUpvotePress}>
                 <Image
-                  source={Upvotes}
+                  source={review.review_stat.upvotes ? Upvotes : Upvotes}
                   style={[
                     styles.voteIcon,
                     { tintColor: upVote ? "#FFD700" : "#555" }, // Highlight if upvoted
@@ -289,7 +289,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
               <Text>{upvoteCount}</Text>
               <TouchableOpacity onPress={handleDownvotePress}>
                 <Image
-                  source={Downvotes}
+                  source={review.review_stat.downvotes ? Downvotes : Downvotes}
                   style={[
                     styles.voteIcon,
                     { tintColor: downVote ? "#FFD700" : "#555" }, // Highlight if upvoted
