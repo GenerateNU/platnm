@@ -230,6 +230,20 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
         </View>
       </View>
 
+      {preview.tags && preview.tags.length > 0 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.tagsContainer}
+        >
+          {preview.tags.map((tag, index) => (
+            <View key={index} style={styles.tag}>
+              <Text style={styles.tagText}>{tag}</Text>
+            </View>
+          ))}
+        </ScrollView>
+      )}
+
       <TouchableOpacity onPress={handlePreviewPress}>
         <Text style={styles.commentText}>
           {preview.comment && preview.comment.length > 100
@@ -246,20 +260,6 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
           </TouchableOpacity>
         )}
       </TouchableOpacity>
-
-      {preview.tags && preview.tags.length > 0 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.tagsContainer}
-        >
-          {preview.tags.map((tag, index) => (
-            <View key={index} style={styles.tag}>
-              <Text style={styles.tagText}>{tag}</Text>
-            </View>
-          ))}
-        </ScrollView>
-      )}
 
       <View style={styles.actionsContainer}>
         <View style={styles.voteContainer}>
@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
   },
   tag: {
-    backgroundColor: "#E8E8E8",
+    backgroundColor: 'rgba(242, 128, 55, 0.65)',     
     paddingVertical: 5,
     paddingHorizontal: 12,
     borderRadius: 20,

@@ -493,7 +493,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
   },
   tag: {
-    backgroundColor: "#FDE1D5",
+    backgroundColor: 'rgba(242, 128, 55, 0.65)', 
     paddingVertical: 5,
     paddingHorizontal: 12,
     borderRadius: 20,
