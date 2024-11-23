@@ -10,6 +10,18 @@ import {
   TouchableOpacity,
 } from "react-native";
 
+import Rating0 from "@/assets/images/Ratings/Radial-0.svg";
+import Rating1 from "@/assets/images/Ratings/Radial-1.svg";
+import Rating2 from "@/assets/images/Ratings/Radial-2.svg";
+import Rating3 from "@/assets/images/Ratings/Radial-3.svg";
+import Rating4 from "@/assets/images/Ratings/Radial-4.svg";
+import Rating5 from "@/assets/images/Ratings/Radial-5.svg";
+import Rating6 from "@/assets/images/Ratings/Radial-6.svg";
+import Rating7 from "@/assets/images/Ratings/Radial-7.svg";
+import Rating8 from "@/assets/images/Ratings/Radial-8.svg";
+import Rating9 from "@/assets/images/Ratings/Radial-9.svg";
+import Rating10 from "@/assets/images/Ratings/Radial-10.svg";
+
 const MusicDisk = require("../assets/images/music-disk.png");
 const Comments = require("../assets/images/ReviewPreview/comments.png");
 const Upvotes = require("../assets/images/ReviewPreview/upvote.png");
@@ -17,17 +29,17 @@ const Downvotes = require("../assets/images/ReviewPreview/downvote.png");
 const Share = require("../assets/images/ReviewPreview/share.png");
 
 const ratingImages = {
-  0: require("../assets/images/Ratings/0Rating.png"),
-  1: require("../assets/images/Ratings/1Rating.png"),
-  2: require("../assets/images/Ratings/2Rating.png"),
-  3: require("../assets/images/Ratings/3Rating.png"),
-  4: require("../assets/images/Ratings/4Rating.png"),
-  5: require("../assets/images/Ratings/5Rating.png"),
-  6: require("../assets/images/Ratings/6Rating.png"),
-  7: require("../assets/images/Ratings/7Rating.png"),
-  8: require("../assets/images/Ratings/8Rating.png"),
-  9: require("../assets/images/Ratings/9Rating.png"),
-  10: require("../assets/images/Ratings/10Rating.png"),
+  0: Rating0,
+  1: Rating1,
+  2: Rating2,
+  3: Rating3,
+  4: Rating4,
+  5: Rating5,
+  6: Rating6,
+  7: Rating7,
+  8: Rating8,
+  9: Rating9,
+  10: Rating10,
 };
 
 interface PreviewProps {
@@ -211,12 +223,9 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
             <Text style={styles.artistName}>{preview.media_artist}</Text>
           </View>
 
+          
           <View>
-            <Image
-              source={getRatingImage(
-                preview.rating as keyof typeof ratingImages
-              )}
-            />
+            {React.createElement(getRatingImage(preview.rating as keyof typeof ratingImages))}
           </View>
         </View>
       </View>
