@@ -16,14 +16,14 @@ import ReviewCard from "@/components/ReviewCard";
 import { router, useFocusEffect } from "expo-router";
 import SelectSection from "@/components/profile/SelectSection";
 import { useAuthContext } from "@/components/AuthProvider";
+import { profile } from "console";
 
 export default function ProfileScreen() {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
   const [userProfile, setUserProfile] = useState<UserProfile>();
   const [userReviews, setUserReviews] = useState<Review[]>();
-  // const { userId } = useAuthContext();
-  const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from somewhere else
+  const { userId } = useAuthContext();
   const [sections, setSections] = useState<Section[]>([]); //TODO depending on what we do with sections
 
   const [selectSectionVisible, setSelectSectionVisible] = useState(false);
@@ -47,9 +47,19 @@ export default function ProfileScreen() {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/users/profile/${userId}`);
-        setUserProfile(response.data);
-        setBio(response.data.bio);
+        const response = await axios.get(`${BASE_URL}/users/profile/id/${userId}`);
+        const profile = {
+          id: response.data.user_id,
+          username: response.data.username,
+          display_name: response.data.display_name,
+          bio: response.data.bio.String,
+          profile_picture: response.data.profile_picture.String,
+          followers: response.data.followers,
+          followed: response.data.followed,
+          score: response.data.score
+        };
+        setUserProfile(profile);
+        setBio(response.data.bio.String);
       } catch (error) {
         console.error("Error fetching user profile:", error);
       }

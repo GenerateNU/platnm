@@ -18,7 +18,7 @@ const SelectSection: React.FC<SelectSectionProps> = ({
     <Modal visible={visible} transparent={true} animationType="slide">
       <View style={styles.modalOverlay}>
         <View style={styles.menuContainer}>
-          {options.map((option, index) => (
+          {options && options.map((option, index) => (
             <TouchableOpacity
               key={index}
               style={styles.menuItem}
