@@ -16,7 +16,6 @@ func (h *Handler) ResetPassword(c *fiber.Ctx) error {
 		return errs.BadRequest("failed to parse request body")
 	}
 
-	// Authenticate the user to get an access token
 	authToken, err := auth.GetAuthToken(&h.config, req.Email, req.CurrentPassword)
 	if err != nil {
 		return errs.BadRequest("authentication failed")
@@ -32,13 +31,11 @@ func (h *Handler) ResetPassword(c *fiber.Ctx) error {
 }
 
 func (h *Handler) SignOut(c *fiber.Ctx) error {
-	// Get the access token from the request header or body
-	accessToken := c.Get("Authorization") // Assuming it's passed as a Bearer token in the Authorization header
+	accessToken := c.Get("authorization") 
 	if accessToken == "" {
 		return errs.BadRequest("no authorization token provided")
 	}
 
-	// Sign out the user
 	err := auth.SignOut(&h.config, accessToken)
 	if err != nil {
 		return err
@@ -48,10 +45,7 @@ func (h *Handler) SignOut(c *fiber.Ctx) error {
 }
 
 func (h *Handler) DeactivateAccount(c *fiber.Ctx) error {
-	// Get the user ID from the request
 	userID := c.Locals("userID").(string)
-
-	// Delete the user account
 	err := auth.DeleteUser(&h.config, userID)
 	if err != nil {
 		return errs.BadRequest("failed to delete user account")

@@ -11,6 +11,7 @@ import {
   SafeAreaView,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
+import { useAuthContext } from "@/components/AuthProvider";
 
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -19,16 +20,21 @@ function Settings() {
   const [recommendations, setRecommendations] = useState(false);
   const [reviewInteractions, setReviewInteractions] = useState(true);
   const [hideActivity, setHideActivity] = useState(false);
+  const { accessToken } = useAuthContext();
 
   async function handleSignOut() {
-    axios.post(`${BASE_URL}/auth/signout`).then((response) => {
-      console.log(response.data);
-      router.push("/(tabs)/login");
-    });
+    axios
+      .post(`${BASE_URL}/auth/platnm/signout`, {
+        authorization: accessToken,
+      })
+      .then((response) => {
+        console.log(response.data);
+        router.push("/(tabs)/login");
+      });
   }
 
   async function handleDeactivate() {
-    axios.post(`${BASE_URL}/auth/deactivate`).then((response) => {
+    axios.post(`${BASE_URL}/auth/platnm/deactivate`).then((response) => {
       console.log(response.data);
       router.push("/(tabs)/login");
     });
@@ -138,17 +144,14 @@ function Settings() {
       </View>
 
       {/* Sign Out Button */}
-      <TouchableOpacity
-        style={styles.signOutButton}
-        onPress={() => handleDeactivate}
-      >
+      <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
         <Text style={styles.signOutButtonText}>Sign Out</Text>
       </TouchableOpacity>
 
       {/* Deactivate Account Link */}
       <TouchableOpacity
         style={styles.deactivateAccount}
-        onPress={() => handleDeactivate}
+        onPress={handleDeactivate}
       >
         <Text style={styles.deactivateText}>Deactivate Account</Text>
       </TouchableOpacity>
