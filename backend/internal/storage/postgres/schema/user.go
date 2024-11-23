@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"platnm/internal/models"
 	"strconv"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -52,7 +53,6 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id string) (*models.Us
 	return &user, nil
 }
 
-
 func (r *UserRepository) UserExists(ctx context.Context, id string) (bool, error) {
 
 	rows, err := r.db.Query(ctx, `SELECT * FROM "user" WHERE id = $1`, id)
@@ -67,7 +67,6 @@ func (r *UserRepository) UserExists(ctx context.Context, id string) (bool, error
 
 	return false, nil
 }
-
 
 func (r *UserRepository) FollowExists(ctx context.Context, follower uuid.UUID, following uuid.UUID) (bool, error) {
 
@@ -182,25 +181,25 @@ func (r *UserRepository) UpdateUserOnboard(ctx context.Context, email string, en
 
 func (r *UserRepository) GetUserProfile(ctx context.Context, id uuid.UUID) (*models.Profile, error) {
 	profile := &models.Profile{}
-	query := `SELECT u.id, u.username, u.display_name, COUNT(DISTINCT followers.follower_id) AS follower_count, COUNT(DISTINCT followed.followee_id) AS followed_count
+	query := `SELECT u.id, u.username, u.display_name, COUNT(DISTINCT followers.follower_id) AS follower_count, COUNT(DISTINCT followed.followee_id) AS followed_count, u.bio, u.profile_picture
 		FROM "user" u
 		LEFT JOIN follower followers ON followers.followee_id = u.id
 		LEFT JOIN follower followed ON followed.follower_id = u.id
 		WHERE u.id = $1
 		GROUP BY u.id, u.username, u.display_name, u.profile_picture, u.bio;`
 
-	err := r.db.QueryRow(ctx, query, id).Scan(&profile.UserID, &profile.Username, &profile.DisplayName, &profile.Followers, &profile.Followed)
+	err := r.db.QueryRow(ctx, query, id).Scan(&profile.UserID, &profile.Username, &profile.DisplayName, &profile.Followers, &profile.Followed, &profile.Bio, &profile.ProfilePicture)
 	if err != nil {
 		print(err.Error(), "unable to find profile")
 		return nil, err
 	}
-	
+
 	score, err := r.CalculateScore(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 	profile.Score = score
-	
+
 	return profile, nil
 }
 
@@ -212,7 +211,7 @@ func (r *UserRepository) GetProfileByName(ctx context.Context, name string) ([]*
 		WHERE username ILIKE '%' || $1 || '%' OR display_name ILIKE '%' || $1 || '%'
 		GROUP BY u.id, u.username, u.display_name, u.profile_picture, u.bio;`
 
-	var profiles []*models.Profile;
+	var profiles []*models.Profile
 
 	profileRows, profileErr := r.db.Query(ctx, query, name)
 	if profileErr != nil {
@@ -230,20 +229,20 @@ func (r *UserRepository) GetProfileByName(ctx context.Context, name string) ([]*
 			&profile.Bio,
 			&profile.Followers,
 			&profile.Followed,
-			); err != nil {
-				return nil, err
-			}
+		); err != nil {
+			return nil, err
+		}
 
-			userUUID, err := uuid.Parse(profile.UserID)
-        	if err != nil {
-            	return nil, err
-       		}
-			score, err := r.CalculateScore(ctx, userUUID)
-			if err != nil {
-				return nil, err
-			}
-			profile.Score = score
-			profiles = append(profiles, &profile)
+		userUUID, err := uuid.Parse(profile.UserID)
+		if err != nil {
+			return nil, err
+		}
+		score, err := r.CalculateScore(ctx, userUUID)
+		if err != nil {
+			return nil, err
+		}
+		profile.Score = score
+		profiles = append(profiles, &profile)
 	}
 	return profiles, nil
 }

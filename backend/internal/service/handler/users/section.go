@@ -129,6 +129,11 @@ func (h *Handler) GetUserSections(c *fiber.Ctx) error {
 			"error": "Failed to get user sections",
 		})
 	}
+
+	if sections == nil {
+		sections = []models.UserSection{}
+	}
+
 	return c.Status(fiber.StatusOK).JSON(sections)
 }
 
@@ -141,5 +146,6 @@ func (h *Handler) GetUserSectionOptions(c *fiber.Ctx) error {
 			"error": "Failed to get section option",
 		})
 	}
+
 	return c.Status(fiber.StatusOK).JSON(options)
 }
