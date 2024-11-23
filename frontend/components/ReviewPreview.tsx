@@ -40,8 +40,8 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview, user_Id }) => {
   console.log(user_Id);
   const [upVote, setupVote] = useState<Boolean>();
   const [downVote, setdownVote] = useState<Boolean>();
-  const [upvoteCount, setUpvoteCount] = useState<number>(0);
-  const [downvoteCount, setDownvoteCount] = useState<number>(0);
+  const [upvoteCount, setUpvoteCount] = useState<number>(preview.review_stat.upvotes);
+  const [downvoteCount, setDownvoteCount] = useState<number>(preview.review_stat.downvotes);
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
 
@@ -63,8 +63,6 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview, user_Id }) => {
       }
     }
     console.log(upVote);
-    console.log(preview.review_id);
-    console.log(userId);
     try {
       await axios.post(`${BASE_URL}/reviews/vote`, {
         user_id: userId,
@@ -72,7 +70,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview, user_Id }) => {
         upvote: true,
       });
     } catch (error) {
-      console.error("Error upvoting comment:", error);
+      console.error("Error upvoting review:", error);
     }
   };
 
@@ -98,9 +96,43 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview, user_Id }) => {
         upvote: false,
       });
     } catch (error) {
-      console.error("Error downvoting comment:", error);
+      console.error("Error downvoting review:", error);
     }
   };
+
+  useEffect(() => {
+    const fetchVote = async () => {
+      try {
+        console.log("Fetching vote");
+        console.log(userId);
+        console.log(preview.review_id);
+        const response = await axios.get(
+          `${BASE_URL}/reviews/comment/vote/${userId}/${preview.review_id}`,
+        );
+        console.log(response.data);
+        if (response.data) {
+          const { upvote } = response.data; // Assuming the API returns { user_id, post_id, upvote }
+          if (upvote === true) {
+            setupVote(true);
+            setdownVote(false);
+          } else if (upvote === false) {
+            setupVote(false);
+            setdownVote(true);
+          } else {
+            setupVote(false);
+            setdownVote(false);
+          }
+        } else {
+          setupVote(false);
+          setdownVote(false);
+        }
+      } catch (error) {
+        console.error("Error fetching vote:", error);
+      }
+    };
+
+    fetchVote();
+  }, [preview.review_id, downVote, upVote]);
 
   const handleCommentPress = () => {
     console.log("comment icon pressed");
@@ -118,36 +150,6 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview, user_Id }) => {
       params: { review_id: preview.review_id, userId: userId },
     });
   };
-
-  useEffect(() => {
-    const fetchVote = async () => {
-      try {
-        console.log("Fetching vote");
-        console.log(userId);
-        console.log(preview.review_id);
-        const response = await axios.get(
-          `${BASE_URL}/reviews/vote/${userId}/${preview.review_id}`,
-        );
-        console.log(response.data);
-        if (response.data) {
-          const { upvote } = response.data; // Assuming the API returns { user_id, post_id, upvote }
-          if (upvote === true) {
-            setupVote(true);
-            setdownVote(false);
-          } else if (upvote === false) {
-            setupVote(false);
-            setdownVote(true);
-          } else {
-            setupVote(false);
-            setdownVote(false);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching vote:", error);
-      }
-    };
-    fetchVote();
-  }, [preview.review_id, userId, downVote, upVote]);
 
   return (
     //<TouchableOpacity onPress={handlePreviewPress}> {/* Wrap the card with TouchableOpacity */}
