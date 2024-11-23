@@ -32,25 +32,23 @@ const ratingImages = {
 
 interface PreviewProps {
   preview: Preview;
-  user_Id: string;
 }
 
-const ReviewPreview: React.FC<PreviewProps> = ({ preview, user_Id }) => {
+const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
   const [showFullComment, setShowFullComment] = useState(false);
-  console.log(user_Id);
-  const [upVote, setupVote] = useState<Boolean>();
-  const [downVote, setdownVote] = useState<Boolean>();
+  const [upVote, setupVote] = useState<Boolean>(false);
+  const [downVote, setdownVote] = useState<Boolean>(false);
   const [upvoteCount, setUpvoteCount] = useState<number>(preview.review_stat.upvotes);
   const [downvoteCount, setDownvoteCount] = useState<number>(preview.review_stat.downvotes);
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-  const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
+
+  const user_Id = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
 
   const getRatingImage = (rating: keyof typeof ratingImages) => {
-    return ratingImages[rating]; // Access the image from the preloaded images object
+    return ratingImages[rating];
   };
 
   const handleUpvotePress = async () => {
-    console.log("upvote icon pressed");
     if (upVote) {
       setupVote(false);
       setUpvoteCount(upvoteCount - 1);
@@ -62,21 +60,20 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview, user_Id }) => {
         setDownvoteCount(downvoteCount - 1);
       }
     }
-    console.log(upVote);
+
     try {
       await axios.post(`${BASE_URL}/reviews/vote`, {
-        user_id: userId,
+        user_id: user_Id,
         post_id: String(preview.review_id),
         upvote: true,
       });
+      // Sync upvote with review page or feed
     } catch (error) {
       console.error("Error upvoting review:", error);
     }
   };
 
   const handleDownvotePress = async () => {
-    console.log("downvote icon pressed");
-    console.log(preview.review_id);
     if (downVote) {
       setdownVote(false);
       setDownvoteCount(downvoteCount - 1);
@@ -91,10 +88,11 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview, user_Id }) => {
 
     try {
       await axios.post(`${BASE_URL}/reviews/vote`, {
-        user_id: userId,
+        user_id: user_Id,
         post_id: String(preview.review_id),
         upvote: false,
       });
+      // Sync downvote with review page or feed
     } catch (error) {
       console.error("Error downvoting review:", error);
     }
@@ -103,15 +101,11 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview, user_Id }) => {
   useEffect(() => {
     const fetchVote = async () => {
       try {
-        console.log("Fetching vote");
-        console.log(userId);
-        console.log(preview.review_id);
         const response = await axios.get(
-          `${BASE_URL}/reviews/comment/vote/${userId}/${preview.review_id}`,
+          `${BASE_URL}/reviews/comment/vote/${user_Id}/${preview.review_id}`,
         );
-        console.log(response.data);
         if (response.data) {
-          const { upvote } = response.data; // Assuming the API returns { user_id, post_id, upvote }
+          const { upvote } = response.data;
           if (upvote === true) {
             setupVote(true);
             setdownVote(false);
@@ -122,9 +116,6 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview, user_Id }) => {
             setupVote(false);
             setdownVote(false);
           }
-        } else {
-          setupVote(false);
-          setdownVote(false);
         }
       } catch (error) {
         console.error("Error fetching vote:", error);
@@ -132,7 +123,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview, user_Id }) => {
     };
 
     fetchVote();
-  }, [preview.review_id, downVote, upVote]);
+  }, []);
 
   const handleCommentPress = () => {
     console.log("comment icon pressed");
@@ -144,21 +135,19 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview, user_Id }) => {
 
   const handlePreviewPress = () => {
     // Navigate to the ReviewPage when the preview is clicked
-    // navigation.navigate("ReviewPage", { review_id: preview.review_id });
     router.push({
       pathname: "/ReviewPage",
-      params: { review_id: preview.review_id, userId: userId },
+      params: { review_id: preview.review_id, userId: user_Id },
     });
   };
 
   return (
-    //<TouchableOpacity onPress={handlePreviewPress}> {/* Wrap the card with TouchableOpacity */}
     <View style={styles.card}>
       <View style={styles.vinyl}>
         <Image source={MusicDisk} style={styles.musicDisk} />
         {preview.media_cover ? (
           <Image
-            source={{ uri: preview.media_cover }} // Use uri for remote images
+            source={{ uri: preview.media_cover }}
             style={styles.mediaCover}
             resizeMode="cover"
           />
@@ -166,7 +155,6 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview, user_Id }) => {
       </View>
 
       <View style={styles.container}>
-        {/* Top Section with Profile Picture and Name */}
         <View style={styles.topContainer}>
           <View style={styles.leftSection}>
             <Image
@@ -180,25 +168,20 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview, user_Id }) => {
           </View>
         </View>
 
-        {/* Song Name and Artist Name */}
         <View style={styles.mediaContainer}>
           <View style={styles.ratingContainer}>
             <Text style={styles.songName}>{preview.media_title}</Text>
             <Text style={styles.artistName}>{preview.media_artist}</Text>
           </View>
 
-          {/* Rating Image on the right side of the song title */}
           <View>
             <Image
-              source={getRatingImage(
-                preview.rating as keyof typeof ratingImages,
-              )}
+              source={getRatingImage(preview.rating as keyof typeof ratingImages)}
             />
           </View>
         </View>
       </View>
 
-      {/* Comment Section */}
       <TouchableOpacity onPress={handlePreviewPress}>
         <Text style={styles.commentText}>
           {preview.comment && preview.comment.length > 100
@@ -216,7 +199,6 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview, user_Id }) => {
         )}
       </TouchableOpacity>
 
-      {/* Tags Section */}
       {preview.tags && preview.tags.length > 0 && (
         <ScrollView
           horizontal
@@ -231,7 +213,6 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview, user_Id }) => {
         </ScrollView>
       )}
 
-      {/* Action Buttons */}
       <View style={styles.actionsContainer}>
         <View style={styles.voteContainer}>
           <TouchableOpacity onPress={handleUpvotePress}>
@@ -239,7 +220,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview, user_Id }) => {
               source={Upvotes}
               style={[
                 styles.voteIcon,
-                { tintColor: upVote ? "#FFD700" : "#555" }, // Highlight if upvoted
+                { tintColor: upVote ? "#FFD700" : "#555" },
               ]}
             />
           </TouchableOpacity>
@@ -249,7 +230,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview, user_Id }) => {
               source={Downvotes}
               style={[
                 styles.voteIcon,
-                { tintColor: downVote ? "#FFD700" : "#555" }, // Highlight if upvoted
+                { tintColor: downVote ? "#FFD700" : "#555" },
               ]}
             />
           </TouchableOpacity>
@@ -264,7 +245,6 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview, user_Id }) => {
         </TouchableOpacity>
       </View>
     </View>
-    //</TouchableOpacity>
   );
 };
 

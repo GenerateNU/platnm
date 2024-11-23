@@ -166,7 +166,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
 
     fetchReview();
     fetchComments();
-  }, [review_id, userId, user_id]);
+  }, [review_id, userId, user_id, newComment]);
 
   const fetchComments = async () => {
     console.log("fetchComments");
@@ -188,6 +188,11 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
         console.log("Fetching vote");
         console.log(userId);
         console.log(review_id);
+        if (review) {
+          setUpvoteCount(review.review_stat.upvotes);
+          setDownvoteCount(review.review_stat.downvotes);
+          setCommentCount(review.review_stat.comment_count);
+        }
         const response = await axios.get(
           `${BASE_URL}/reviews/vote/${userId}/${review_id}`,
         );
@@ -210,7 +215,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
       }
     };
     fetchVote();
-  }, [review_id, userId, downVote, upVote]);
+  }, [review_id, userId, downVote, upVote, newComment]);
 
   return review ? (
     <View style={styles.container}>
