@@ -38,8 +38,9 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
   const Share = require("../assets/images/ReviewPreview/share.png");
   const MusicDisk = require("../assets/images/music-disk.png");
 
-  const [upVote, setupVote] = useState<Boolean>();
-  const [downVote, setdownVote] = useState<Boolean>();
+  const [currentVote, setCurrentVote] = useState<boolean>(false); // does a vote currently exist?
+  const [currentVoteValue, setCurrentVoteValue] = useState<boolean>(false); // what is the current vote's value?
+
   const [upvoteCount, setUpvoteCount] = useState<number>(0);
   const [downvoteCount, setDownvoteCount] = useState<number>(0);
   const [commentCount, setCommentCount] = useState<number>(0);
@@ -49,7 +50,6 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
   const [editedComment, setEditedComment] = useState<string>("");
   const [showMenu, setShowMenu] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
-
 
   const ratingImages = {
     0: require("../assets/images/Ratings/Radial-0.svg"),
@@ -69,43 +69,38 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
     return ratingImages[rating]; // Access the image from the preloaded images object
   };
 
-  const handleUpvotePress = async () => {
-    console.log("upvote icon pressed");
-    if (upVote) {
-      setupVote(false);
-      setUpvoteCount(upvoteCount - 1);
-    } else {
-      setupVote(true);
-      setUpvoteCount(upvoteCount + 1);
-      if (downVote) {
-        setdownVote(false);
+  const handleVotePress = async (newVoteValue: boolean) => {
+    console.log("Vote icon pressed with value: ", newVoteValue);
+    console.log(review_id);
+
+    if (currentVote) {
+      // if there is already a vote value, we have to delete or swap it
+      if (currentVoteValue && newVoteValue) {
+        // if there is an upvote and the user clicks upvote again
+        setCurrentVote(false); // cancel out the vote
+        setUpvoteCount(upvoteCount - 1);
+      } else if (!currentVoteValue && !newVoteValue) {
+        // if there is a downvote and the user clicks downvote again
+        setCurrentVote(false); // cancel out the vote
+        setDownvoteCount(downvoteCount - 1);
+      } else if (currentVoteValue && !newVoteValue) {
+        // if there is an upvote and the user clicks downvote
+        setCurrentVoteValue(false);
+        setUpvoteCount(upvoteCount - 1);
+        setDownvoteCount(downvoteCount + 1);
+      } else if (!currentVoteValue && newVoteValue) {
+        // if there is a downvote and the user clicks upvote
+        setCurrentVoteValue(true);
+        setUpvoteCount(upvoteCount + 1);
         setDownvoteCount(downvoteCount - 1);
       }
-    }
-    console.log(upVote);
-    try {
-      await axios.post(`${BASE_URL}/reviews/vote`, {
-        user_id: userId,
-        post_id: review_id,
-        upvote: true,
-      });
-    } catch (error) {
-      console.error("Error upvoting comment:", error);
-    }
-  };
-
-  const handleDownvotePress = async () => {
-    console.log("downvote icon pressed");
-    console.log(review_id);
-    if (downVote) {
-      setdownVote(false);
-      setDownvoteCount(downvoteCount - 1);
     } else {
-      setdownVote(true);
-      setDownvoteCount(downvoteCount + 1);
-      if (upVote) {
-        setupVote(false);
-        setUpvoteCount(upvoteCount - 1);
+      setCurrentVote(true);
+      setCurrentVoteValue(newVoteValue);
+      if (newVoteValue) {
+        setUpvoteCount(upvoteCount + 1);
+      } else {
+        setDownvoteCount(downvoteCount + 1);
       }
     }
 
@@ -113,7 +108,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
       await axios.post(`${BASE_URL}/reviews/vote`, {
         user_id: userId,
         post_id: review_id,
-        upvote: false,
+        upvote: newVoteValue,
       });
     } catch (error) {
       console.error("Error downvoting comment:", error);
@@ -140,7 +135,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
           headers: {
             "Content-Type": "application/json",
           },
-        },
+        }
       );
       setNewComment(""); // Clear the input after submitting
       // Fetch updated comments after submitting
@@ -154,15 +149,13 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
     try {
       const requestBody = {
         id: review_id,
-        user_id: userId,      // User ID to validate ownership
+        user_id: userId, // User ID to validate ownership
         comment: editedComment, // The updated comment
       };
 
       await axios.patch(`${BASE_URL}/reviews/${review_id}`, requestBody);
       setIsEditable(false);
-      setReview((prev) =>
-        prev ? { ...prev, comment: editedComment } : prev
-      );
+      setReview((prev) => (prev ? { ...prev, comment: editedComment } : prev));
     } catch (error) {
       console.error("Error saving edited review:", error);
     }
@@ -185,10 +178,6 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
   // Fetch the review data using the review_id
   useEffect(() => {
     const fetchReview = async () => {
-      console.log("fetchReviews");
-
-      console.log("review_id", review_id);
-
       try {
         const response = await axios.get(`${BASE_URL}/reviews/${review_id}`);
         const review = response.data;
@@ -213,7 +202,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
     console.log("review_id", review_id);
     try {
       const response = await axios.get(
-        `${BASE_URL}/reviews/comments/${review_id}`,
+        `${BASE_URL}/reviews/comments/${review_id}`
       );
       console.log("comments", response.data);
       setComments(response.data);
@@ -234,28 +223,22 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
           setCommentCount(review.review_stat.comment_count);
         }
         const response = await axios.get(
-          `${BASE_URL}/reviews/vote/${userId}/${review_id}`,
+          `${BASE_URL}/reviews/vote/${userId}/${review_id}`
         );
         console.log(response.data);
         if (response.data) {
+          setCurrentVote(true);
           const { upvote } = response.data; // Assuming the API returns { user_id, post_id, upvote }
-          if (upvote === true) {
-            setupVote(true);
-            setdownVote(false);
-          } else if (upvote === false) {
-            setupVote(false);
-            setdownVote(true);
-          } else {
-            setupVote(false);
-            setdownVote(false);
-          }
+          setCurrentVoteValue(upvote);
+        } else {
+          setCurrentVote(false);
         }
       } catch (error) {
         console.error("Error fetching vote:", error);
       }
     };
     fetchVote();
-  }, [review_id, userId, downVote, upVote, newComment]);
+  }, [review_id, userId, newComment]);
 
   return review ? (
     <View style={styles.container}>
@@ -300,7 +283,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
           <View>
             <Image
               source={getRatingImage(
-                review.rating as keyof typeof ratingImages,
+                review.rating as keyof typeof ratingImages
               )}
               style={styles.ratingImage}
             />
@@ -371,22 +354,28 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
           {/* Action Buttons */}
           <View style={styles.actionsContainer}>
             <View style={styles.voteContainer}>
-              <TouchableOpacity onPress={handleUpvotePress}>
+              <TouchableOpacity onPress={() => handleVotePress(true)}>
                 <Image
-                  source={review.review_stat.upvotes ? Upvotes : Upvotes}
+                  source={Upvotes}
                   style={[
                     styles.voteIcon,
-                    { tintColor: upVote ? "#FFD700" : "#555" }, // Highlight if upvoted
+                    {
+                      tintColor:
+                        currentVote && currentVoteValue ? "#FFD700" : "#555",
+                    }, // Highlight if upvoted
                   ]}
                 />
               </TouchableOpacity>
               <Text>{upvoteCount}</Text>
-              <TouchableOpacity onPress={handleDownvotePress}>
+              <TouchableOpacity onPress={() => handleVotePress(false)}>
                 <Image
-                  source={review.review_stat.downvotes ? Downvotes : Downvotes}
+                  source={Downvotes}
                   style={[
                     styles.voteIcon,
-                    { tintColor: downVote ? "#FFD700" : "#555" }, // Highlight if upvoted
+                    {
+                      tintColor:
+                        currentVote && !currentVoteValue ? "#FFD700" : "#555",
+                    }, // Highlight if upvoted
                   ]}
                 />
               </TouchableOpacity>

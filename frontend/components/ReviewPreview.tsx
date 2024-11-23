@@ -36,8 +36,10 @@ interface PreviewProps {
 
 const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
   const [showFullComment, setShowFullComment] = useState(false);
-  const [upVote, setupVote] = useState<Boolean>(false);
-  const [downVote, setdownVote] = useState<Boolean>(false);
+
+  const [currentVote, setCurrentVote] = useState<boolean>(false); // does a vote currently exist?
+  const [currentVoteValue, setCurrentVoteValue] = useState<boolean>(false); // what is the current vote's value?
+
   const [upvoteCount, setUpvoteCount] = useState<number>(
     preview.review_stat.upvotes
   );
@@ -53,16 +55,19 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
   };
 
   const handleUpvotePress = async () => {
-    if (upVote) {
-      setupVote(false);
+    if (!currentVote) {
+      setCurrentVote(true);
+      setCurrentVoteValue(true);
+      setUpvoteCount(upvoteCount + 1);
+    } else if (currentVote && currentVoteValue) {
+      // if there's already a vote and it's an upvote, cancel it out
+      setCurrentVote(false);
       setUpvoteCount(upvoteCount - 1);
     } else {
-      setupVote(true);
+      // if there's already a vote and it's a downvote
+      setCurrentVoteValue(true);
       setUpvoteCount(upvoteCount + 1);
-      if (downVote) {
-        setdownVote(false);
-        setDownvoteCount(downvoteCount - 1);
-      }
+      setDownvoteCount(downvoteCount - 1);
     }
 
     try {
@@ -78,16 +83,19 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
   };
 
   const handleDownvotePress = async () => {
-    if (downVote) {
-      setdownVote(false);
-      setDownvoteCount(downvoteCount - 1);
-    } else {
-      setdownVote(true);
+    if (!currentVote) {
+      setCurrentVote(true);
+      setCurrentVoteValue(false);
       setDownvoteCount(downvoteCount + 1);
-      if (upVote) {
-        setupVote(false);
-        setUpvoteCount(upvoteCount - 1);
-      }
+    } else if (currentVote && !currentVoteValue) {
+      // if there's already a vote and it's a downvote, cancel it out
+      setCurrentVote(false);
+      setUpvoteCount(upvoteCount - 1);
+    } else {
+      // if there's already a vote and it's an upvote, replace it
+      setCurrentVoteValue(true);
+      setUpvoteCount(upvoteCount - 1);
+      setDownvoteCount(downvoteCount + 1);
     }
 
     try {
@@ -128,21 +136,22 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
     useCallback(() => {
       const fetchVote = async () => {
         try {
+          console.log("FETCHING USER VOTE");
           const response = await axios.get(
-            `${BASE_URL}/reviews/comment/vote/${user_Id}/${preview.review_id}`
+            `${BASE_URL}/reviews/vote/${user_Id}/${preview.review_id}`
           );
+          console.log(
+            "request: ",
+            `${BASE_URL}/reviews/vote/${user_Id}/${preview.review_id}`
+          );
+          console.log("response: ", response.data);
           if (response.data) {
             const { upvote } = response.data;
-            if (upvote === true) {
-              setupVote(true);
-              setdownVote(false);
-            } else if (upvote === false) {
-              setupVote(false);
-              setdownVote(true);
-            } else {
-              setupVote(false);
-              setdownVote(false);
-            }
+            console.log("upvote: ", upvote);
+            setCurrentVote(true);
+            setCurrentVoteValue(upvote);
+          } else {
+            setCurrentVote(false);
           }
         } catch (error) {
           console.error("Error fetching vote:", error);
@@ -250,7 +259,10 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
               source={Upvotes}
               style={[
                 styles.voteIcon,
-                { tintColor: upVote ? "#FFD700" : "#555" },
+                {
+                  tintColor:
+                    currentVote && currentVoteValue ? "#FFD700" : "#555",
+                },
               ]}
             />
           </TouchableOpacity>
@@ -260,7 +272,10 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
               source={Downvotes}
               style={[
                 styles.voteIcon,
-                { tintColor: downVote ? "#FFD700" : "#555" },
+                {
+                  tintColor:
+                    currentVote && !currentVoteValue ? "#FFD700" : "#555",
+                },
               ]}
             />
           </TouchableOpacity>
