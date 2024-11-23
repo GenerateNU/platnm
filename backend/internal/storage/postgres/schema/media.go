@@ -639,6 +639,9 @@ func (r *MediaRepository) GetArtistsMissingPhoto(ctx context.Context) ([]spotify
 
 		return spotify.ID(spotifyId), nil
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	return spotifyIds, nil
 }
