@@ -5,12 +5,12 @@ import ReviewPreview from "@/components/ReviewPreview";
 import Filter from "@/components/search/Filter";
 
 interface MediaReviewProps {
-  media_type: MediaType;
-  media_id: string;
+  mediaType: MediaType;
+  mediaId: string;
   filter: "user" | "friend";
 }
 
-const TrackReviewsPage = ({media_type, media_id, filter} : MediaReviewProps) => {
+const MediaReviewsPage = ({mediaType, mediaId, filter} : MediaReviewProps) => {
 
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - replace dynamically
@@ -28,9 +28,9 @@ const TrackReviewsPage = ({media_type, media_id, filter} : MediaReviewProps) => 
   useEffect(() => {
     // Fetch user reviews
     axios
-    .get(`${BASE_URL}/reviews/${media_id}/${userId}`, {
+    .get(`${BASE_URL}/reviews/${mediaId}/${userId}`, {
       params: {
-        media_type: media_type, 
+        media_type: mediaType, 
       },
     })      
     .then((response) => {
@@ -63,10 +63,11 @@ const TrackReviewsPage = ({media_type, media_id, filter} : MediaReviewProps) => 
   );
 }
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 80,
   },
 });
+
+export default MediaReviewsPage

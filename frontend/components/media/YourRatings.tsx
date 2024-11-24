@@ -1,17 +1,27 @@
 import React from "react";
+import { router } from "expo-router"
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import ArrowRight from "@/assets/images/Media/arrowRight.svg";
 
 type YourRatingsProps = {
   count: number | null;
+  mediaType: string;
+  mediaId: string;
 };
 
-const YourRatings = ({ count }: YourRatingsProps) => {
+const YourRatings = ({ count, mediaType, mediaId }: YourRatingsProps) => {
   console.log(count)
   return (
     <TouchableOpacity
       style={styles.container}
-      onPress={() => console.log("pressed!")}
+      onPress={() => router.push({
+        pathname: "/MediaReviewsPage",
+        params: {
+          mediaType: mediaType
+          mediaId: mediaId,
+          filter="user",
+        },
+      })}
     >
       <View style={styles.textContainer}>
         <Text style={styles.text}>You've rated this song</Text>

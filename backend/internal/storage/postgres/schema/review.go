@@ -270,8 +270,7 @@ func (r *ReviewRepository) GetUserReviewsOfMedia(ctx context.Context, media_type
 		COALESCE(a.cover, t.cover) AS media_cover, 
 		COALESCE(a.title, t.title) AS media_title, 
 		COALESCE(a.artists, t.artists) AS media_artist,
-		ARRAY_AGG(tag.name) FILTER (WHERE tag.name IS NOT NULL) AS tags,
-		COALESCE(v.vote_count, 0) AS vote_count
+		ARRAY_AGG(tag.name) FILTER (WHERE tag.name IS NOT NULL) AS tags
 	FROM review r
 	INNER JOIN "user" u ON u.id = r.user_id
 	LEFT JOIN (
@@ -297,13 +296,14 @@ func (r *ReviewRepository) GetUserReviewsOfMedia(ctx context.Context, media_type
 		WHERE post_type = 'review'
 		GROUP BY post_id
 	) v ON r.id = v.review_id
+	WHERE r.user_id = $1 AND r.media_id = $2 AND r.media_type = $3
 	GROUP BY r.id, r.user_id, u.username, u.display_name, u.profile_picture, r.media_type, r.media_id, r.rating, r.comment, r.created_at, r.updated_at, media_cover, media_title, media_artist, v.vote_count
-	WHERE r.user_id = $1 AND r.media_id = $2 AND r.media_type = $3	
 	`
 
 	rows, err := r.Query(ctx, query, userID, mediaID, media_type) 
 
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -332,6 +332,7 @@ func (r *ReviewRepository) GetUserReviewsOfMedia(ctx context.Context, media_type
 			&preview.Tags,
 		)
 		if err != nil {
+			fmt.Println(err)
 			return nil, err
 		}
 
