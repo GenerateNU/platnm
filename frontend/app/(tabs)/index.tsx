@@ -8,11 +8,11 @@ import {
 } from "react-native";
 
 import { ThemedText } from "@/components/ThemedText";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import ReviewPreview from "@/components/ReviewPreview";
 import Icon from "react-native-vector-icons/Feather";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 
 export default function HomeScreen() {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -21,19 +21,25 @@ export default function HomeScreen() {
   const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
   const hasNotification = true; // Hardcoding - Get notification status from somewhere else
 
-  useEffect(() => {
-    const fetchFeedReviews = async () => {
-      console.log("fetchFeedReviews");
-      try {
-        const response = await axios.get(`${BASE_URL}/users/feed/${userId}`);
-        setFeedReviews(response.data);
-      } catch (error) {
-        console.error("Error fetching feed reviews:", error);
-      }
-    };
+  const fetchFeedReviews = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/users/feed/${userId}`);
+      setFeedReviews(response.data);
+    } catch (error) {
+      console.error("Error fetching feed reviews:", error);
+    }
+  };
 
+  useEffect(() => {
     fetchFeedReviews();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      // Refetch reviews whenever the screen is focused
+      fetchFeedReviews();
+    }, []),
+  );
 
   const handleNotifPress = () => {
     console.log("Notif icon pressed");

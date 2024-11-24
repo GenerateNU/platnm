@@ -5,21 +5,25 @@ import SearchResults from "@/components/search/SearchResults";
 import TopAlbums from "@/components/search/TopAlbums";
 import TopSongs from "@/components/search/TopSongs";
 import TopReviews from "@/components/search/TopReviews";
+import Profiles from "@/components/search/Profiles";
 import axios from "axios";
 
 const SearchPage: React.FC = () => {
   const [searchResults, setSearchResults] = useState<{
     songs: Media[];
     albums: Media[];
+    profiles: UserProfile[];
   }>({
     songs: [],
     albums: [],
+    profiles: [],
   });
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [initialSongs, setInitialSongs] = useState<MediaResponse[]>([]);
   const [initialAlbums, setInitialAlbums] = useState<MediaResponse[]>([]);
   const [initialReviews, setInitialReviews] = useState<Preview[]>([]);
+
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
   // Fetch initial top songs and albums
@@ -42,26 +46,29 @@ const SearchPage: React.FC = () => {
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) {
-      setSearchResults({ songs: [], albums: [] });
+      setSearchResults({ songs: [], albums: [], profiles: [] });
       setIsSearchActive(false);
       return;
     }
 
     setIsLoading(true);
     try {
-      const [songsResponse, albumsResponse] = await Promise.all([
-        axios.get(`${BASE_URL}/media/${query}`),
-        axios.get(`${BASE_URL}/media/${query}`),
-      ]);
+      const [songsResponse, albumsResponse, profilesResponse] =
+        await Promise.all([
+          axios.get(`${BASE_URL}/media/${query}`),
+          axios.get(`${BASE_URL}/media/${query}`),
+          axios.get(`${BASE_URL}/users/profile/name/${query}`),
+        ]);
 
       setSearchResults({
         songs: songsResponse.data,
         albums: albumsResponse.data,
+        profiles: profilesResponse.data,
       });
       setIsSearchActive(true);
     } catch (error) {
       console.error("Search error:", error);
-      setSearchResults({ songs: [], albums: [] });
+      setSearchResults({ songs: [], albums: [], profiles: [] });
     } finally {
       setIsLoading(false);
     }
@@ -76,6 +83,7 @@ const SearchPage: React.FC = () => {
           songs={searchResults.songs}
           albums={searchResults.albums}
           isLoading={isLoading}
+          profiles={searchResults.profiles}
           filter={"all"}
         />
       ) : (
@@ -93,6 +101,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 80,
+    backgroundColor: "#fff",
   },
 });
 

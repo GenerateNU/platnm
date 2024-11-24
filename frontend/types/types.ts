@@ -64,9 +64,10 @@ type UserProfile = {
 };
 
 type Section = {
-  id: number;
+  section_id: number;
   title: string;
   items: SectionItem[];
+  search_type: string;
 };
 
 interface SectionItem {
@@ -75,6 +76,11 @@ interface SectionItem {
   media_type: string;
   cover: string;
 }
+
+type SectionOption = {
+  title: string;
+  search_type: string;
+};
 
 type ReviewStat = {
   upvotes: number;
@@ -107,13 +113,16 @@ type MediaResponse = {
 };
 
 type UserComment = {
-  id: number;
+  comment_id: number;
   user_id: string;
+  username: string;
+  display_name: string;
+  profile_picture: string;
   review_id: number;
   comment: string;
   created_at: string;
-  // upvotes: number;
-  // downvotes: number;
+  upvotes: number;
+  downvotes: number;
 };
 
 type RatingDistribution = {

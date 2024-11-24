@@ -50,6 +50,7 @@ INSERT INTO review (user_id, media_id, media_type, rating, comment)
 VALUES
   ('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 1, 'album', 5, 'This is a great album!'),
   ('2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e', 2, 'album', 4, 'I like this album.'),
+  ('2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e', 1, 'album', 7, 'I like this album.'),
   ('3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f', 1, 'track', 3, 'This song is okay.'),
   ('4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9d', 3, 'track', 2, 'I don''t like this song.'),
   ('4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9d', 5, 'track', 2, 'This song is the best song ever');
@@ -74,13 +75,26 @@ VALUES
   (2, 2),
   (3, 3);
 
-INSERT INTO user_review_vote (user_id, review_id, upvote)
+  INSERT INTO comment (user_id, review_id, text)
 VALUES
-  ('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 1, true),
-  ('2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e', 2, false),
-  ('3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f', 3, false),
-  ('4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9d', 4, false),
-  ('5e6f7a8b-9c0d-1e2f-3a4b-5c6d7e8f9d0e', 5, true);
+  ('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 1, 'I agree with this review.'),
+  ('2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e', 2, 'I like this album.'),
+  ('3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f', 1, 'This song is okay.'),
+  ('4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9d', 3, 'I don''t like this song.'),
+  ('4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9d', 5, 'This song is the best song ever');
+
+INSERT INTO user_vote (user_id, post_id, upvote, post_type)
+VALUES
+  ('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 1, true, 'review'),
+  ('2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e', 2, false, 'review'),
+  ('3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f', 3, false, 'review'),
+  ('4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9d', 4, false, 'review'),
+  ('5e6f7a8b-9c0d-1e2f-3a4b-5c6d7e8f9d0e', 5, true, 'review'),
+  ('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 1, true, 'comment'),
+  ('2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e', 2, false, 'comment'),
+  ('3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f', 3, false, 'comment'),
+  ('4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9d', 4, false, 'comment'),
+  ('5e6f7a8b-9c0d-1e2f-3a4b-5c6d7e8f9d0e', 5, true, 'comment');
 
   INSERT INTO recommendation (
     media_id,
@@ -109,3 +123,17 @@ Insert into review_tag (review_id, tag_id) VALUES
 (2, 3),
 (2, 4),
 (3, 5);
+
+INSERT INTO section_item (title, cover_photo) VALUES
+('Mis Favoritas', 'https://i.scdn.co/image/ab67616d0000b27380f18909dd76c185004c25f1'),
+('Fallen', 'https://i.scdn.co/image/ab67616d0000b273b452e368a6ab2cff47147b3c'),
+('True Story', 'https://i.scdn.co/image/ab67616d0000b2732e49046fecfba5be6bc7b92a');
+
+INSERT INTO section_type (title, search_type) VALUES
+('Peak Albums', 'album'),
+('Favorite Artists', 'artist'),
+('Featured Tracks', 'track');
+
+INSERT INTO section_type_item (user_id, section_item_id, section_type_id) VALUES
+('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 1, 3),
+('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 2, 3);

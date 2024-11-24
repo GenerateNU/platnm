@@ -9,6 +9,8 @@ import {
   StyleSheet,
   Touchable,
   TouchableOpacity,
+  Pressable,
+  Keyboard,
 } from "react-native";
 import axios from "axios";
 import { useAuthContext } from "@/components/AuthProvider";
@@ -63,48 +65,50 @@ export default function Login() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+    <Pressable onPress={Keyboard.dismiss} style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <Text style={styles.title}>Login</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor="#aaa"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor="#aaa"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-
-      <View style={styles.button}>
-        <Button
-          title={loading ? "Logging in..." : "Login"}
-          onPress={handleSignIn}
-          disabled={loading}
-          color={"#fff"}
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          placeholderTextColor="#aaa"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
         />
-      </View>
 
-      <TouchableOpacity onPress={forgotUsernamePassword}>
-        <Text style={styles.note}>Forgot username or password</Text>
-      </TouchableOpacity>
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          placeholderTextColor="#aaa"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
 
-      <View style={styles.signUpContainer}>
-        <Text style={styles.signUpNote}>Don't have an account? </Text>
-        <TouchableOpacity onPress={handleSignUpPress}>
-          <Text style={styles.signUpText}>Sign Up</Text>
+        <View style={styles.button}>
+          <Button
+            title={loading ? "Logging in..." : "Login"}
+            onPress={handleSignIn}
+            disabled={loading}
+            color={"#fff"}
+          />
+        </View>
+
+        <TouchableOpacity onPress={forgotUsernamePassword}>
+          <Text style={styles.note}>Forgot username or password</Text>
         </TouchableOpacity>
+
+        <View style={styles.signUpContainer}>
+          <Text style={styles.signUpNote}>Don't have an account? </Text>
+          <TouchableOpacity onPress={handleSignUpPress}>
+            <Text style={styles.signUpText}>Sign Up</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
