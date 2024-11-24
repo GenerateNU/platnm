@@ -13,8 +13,6 @@ interface SearchResultsProps {
   filter: "all" | "songs" | "albums" | "profile";
 }
 
-type FilterOption = "all" | "songs" | "albums" | "profile";
-
 const SearchResults: React.FC<SearchResultsProps> = ({
   songs,
   albums,
@@ -39,6 +37,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     <View style={styles.container}>
       <Filter
         currentFilter={selectedFilter}
+        filterOptions={["all", "songs", "albums", "profile"]}
         onFilterChange={handleFilterChange}
       />
       <View style={styles.resultGrid}>

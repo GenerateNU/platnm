@@ -1,71 +1,38 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 
-type FilterOption = "all" | "songs" | "albums" | "profile";
-
 interface FilterProps {
   currentFilter: FilterOption;
+  filterOptions: FilterOption[];
   onFilterChange: (filter: FilterOption) => void;
 }
 
-const Filter: React.FC<FilterProps> = ({ currentFilter, onFilterChange }) => {
+const Filter: React.FC<FilterProps> = ({
+  currentFilter,
+  filterOptions,
+  onFilterChange,
+}) => {
   return (
     <View style={styles.container}>
       <View style={styles.buttonsRow}>
-        <TouchableOpacity
-          onPress={() => onFilterChange("all")}
-          style={[styles.button]}
-        >
-          <Text
-            style={[
-              styles.buttonText,
-              currentFilter === "all" && styles.selectedButtonText,
-            ]}
+        {filterOptions.map((filter) => (
+          <TouchableOpacity
+            key={filter}
+            onPress={() => onFilterChange(filter)}
+            style={[styles.button]}
           >
-            All
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => onFilterChange("songs")}
-          style={[styles.button]}
-        >
-          <Text
-            style={[
-              styles.buttonText,
-              currentFilter === "songs" && styles.selectedButtonText,
-            ]}
-          >
-            Songs
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => onFilterChange("albums")}
-          style={[styles.button]}
-        >
-          <Text
-            style={[
-              styles.buttonText,
-              currentFilter === "albums" && styles.selectedButtonText,
-            ]}
-          >
-            Albums
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => onFilterChange("profile")}
-          style={[styles.button]}
-        >
-          <Text
-            style={[
-              styles.buttonText,
-              currentFilter === "profile" && styles.selectedButtonText,
-            ]}
-          >
-            Profile
-          </Text>
-        </TouchableOpacity>
+            <Text
+              style={[
+                styles.buttonText,
+                currentFilter === filter && styles.selectedButtonText,
+              ]}
+            >
+              {filter.charAt(0).toUpperCase() + filter.slice(1)} {}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
-      <View style={styles.underline}></View>
+      <View style={styles.underline} />
     </View>
   );
 };
