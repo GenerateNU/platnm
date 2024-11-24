@@ -36,7 +36,9 @@ const YourRatings = ({ user_id, media_id, media_type }: YourRatingsProps) => {
       onPress={() => router.push({
         pathname: "/MediaReviewsPage",
         params: {
-          userReviews: userReviews, 
+          mediaId: media_id,
+          userId: user_id,
+          media_type: media_type, 
           filter: "user",
         },
       })}
