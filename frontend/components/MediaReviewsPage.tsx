@@ -6,7 +6,7 @@ import Filter from "@/components/search/Filter";
 
 interface MediaReviewProps {
   mediaType: MediaType;
-  mediaId: string;
+  mediaId: number;
   filter: "user" | "friend";
 }
 

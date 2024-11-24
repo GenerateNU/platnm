@@ -6,7 +6,7 @@ import ArrowRight from "@/assets/images/Media/arrowRight.svg";
 type YourRatingsProps = {
   count: number | null;
   mediaType: string;
-  mediaId: string;
+  mediaId: number;
 };
 
 const YourRatings = ({ count, mediaType, mediaId }: YourRatingsProps) => {
@@ -17,9 +17,9 @@ const YourRatings = ({ count, mediaType, mediaId }: YourRatingsProps) => {
       onPress={() => router.push({
         pathname: "/MediaReviewsPage",
         params: {
-          mediaType: mediaType
+          mediaType: mediaType,
           mediaId: mediaId,
-          filter="user",
+          filter: "user",
         },
       })}
     >
