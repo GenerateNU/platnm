@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
-import { IconButton } from "react-native-paper";
-import StarRating from "react-native-star-rating-widget";
-import UpvoteIcon from "@/assets/images/upvote.svg";
-import DownvoteIcon from "@/assets/images/downvote.svg";
+
+import Downvote from "@/assets/images/ReviewPreview/downvote.svg";
+import Upvote from "@/assets/images/ReviewPreview/upvote.svg";
 import axios from "axios";
 const MusicDisk = require("../assets/images/music-disk.png");
 
@@ -12,8 +11,6 @@ interface CommentProps {
 }
 
 const CommentComponent: React.FC<CommentProps> = ({ comment }) => {
-  const Upvotes = require("../assets/images/ReviewPreview/upvote.png");
-  const Downvotes = require("../assets/images/ReviewPreview/downvote.png");
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const userId = "2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e"; // Hardcoding - Get userId from navigation
 
@@ -23,11 +20,11 @@ const CommentComponent: React.FC<CommentProps> = ({ comment }) => {
   const [downvoteCount, setDownvoteCount] = useState<number>(comment.downvotes);
 
   const handleUpvotePress = async () => {
-    console.log("upvote icon pressed");
     if (upVote) {
       setupVote(false);
       setUpvoteCount(upvoteCount - 1);
     } else {
+      "setting true"
       setupVote(true);
       setUpvoteCount(upvoteCount + 1);
       if (downVote) {
@@ -35,7 +32,6 @@ const CommentComponent: React.FC<CommentProps> = ({ comment }) => {
         setDownvoteCount(downvoteCount - 1);
       }
     }
-    console.log(upVote);
     try {
       await axios.post(`${BASE_URL}/reviews/comment/vote`, {
         user_id: userId,
@@ -48,8 +44,6 @@ const CommentComponent: React.FC<CommentProps> = ({ comment }) => {
   };
 
   const handleDownvotePress = async () => {
-    console.log("downvote icon pressed");
-    console.log(comment.comment_id);
     if (downVote) {
       setdownVote(false);
       setDownvoteCount(downvoteCount - 1);
@@ -76,13 +70,9 @@ const CommentComponent: React.FC<CommentProps> = ({ comment }) => {
   useEffect(() => {
     const fetchVote = async () => {
       try {
-        console.log("Fetching vote");
-        console.log(userId);
-        console.log(comment.comment_id);
         const response = await axios.get(
           `${BASE_URL}/reviews/comment/vote/${userId}/${comment.comment_id}`,
         );
-        console.log(response.data);
         if (response.data) {
           const { upvote } = response.data; // Assuming the API returns { user_id, post_id, upvote }
           if (upvote === true) {
@@ -131,32 +121,33 @@ const CommentComponent: React.FC<CommentProps> = ({ comment }) => {
 
       {/* Actions Section */}
       <View style={styles.actions}>
-        <TouchableOpacity
-          onPress={handleUpvotePress}
-          style={styles.actionButton}
-        >
-          <Image
-            source={Upvotes}
-            style={[
-              styles.voteIcon,
-              { tintColor: upVote ? "#FFD700" : "#555" }, // Highlight if upvoted
-            ]}
-          />
-          <Text style={styles.voteCount}>{upvoteCount}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={handleDownvotePress}
-          style={styles.actionButton}
-        >
-          <Image
-            source={Downvotes}
-            style={[
-              styles.voteIcon,
-              { tintColor: downVote ? "#FFD700" : "#555" }, // Highlight if downvoted
-            ]}
-          />
-          <Text style={styles.voteCount}>{downvoteCount}</Text>
-        </TouchableOpacity>
+      <TouchableOpacity 
+              onPress={() => handleUpvotePress()}
+              style={styles.voteButton}
+            >
+              <Upvote
+                width={24}
+                height={24}
+                fill={upVote ? "#F28037" : "#555"}
+                style={{
+                  color: upVote ? "#F28037" : "#555"
+                }}  
+              />
+              <Text>{upvoteCount}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={() => handleDownvotePress()}
+              style={styles.voteButton}
+            >
+              <Downvote
+                width={24}
+                height={24}
+                fill={downVote ? "#F28037" : "#555"}
+                style={{
+                  color: downVote ? "#F28037" : "#555"
+                }}              />
+              <Text>{downvoteCount}</Text>
+            </TouchableOpacity>
       </View>
     </View>
   );
@@ -231,6 +222,11 @@ const styles = StyleSheet.create({
   voteCount: {
     fontSize: 14,
     color: "#555",
+  },
+  voteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 5,
   },
 });
 

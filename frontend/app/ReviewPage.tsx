@@ -24,6 +24,11 @@ import Rating7 from "@/assets/images/Ratings/Radial-7.svg";
 import Rating8 from "@/assets/images/Ratings/Radial-8.svg";
 import Rating9 from "@/assets/images/Ratings/Radial-9.svg";
 import Rating10 from "@/assets/images/Ratings/Radial-10.svg";
+import Downvote from "@/assets/images/ReviewPreview/downvote.svg";
+import Upvote from "@/assets/images/ReviewPreview/upvote.svg";
+import Comment from "@/assets/images/ReviewPreview/comment.svg";
+import Share from "@/assets/images/ReviewPreview/share.svg";
+
 interface ReviewPageProps {
   route: {
     params: {
@@ -42,10 +47,6 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
   const [comments, setComments] = useState<UserComment[]>();
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
-  const Comments = require("../assets/images/ReviewPreview/comments.png");
-  const Upvotes = require("../assets/images/ReviewPreview/upvote.png");
-  const Downvotes = require("../assets/images/ReviewPreview/downvote.png");
-  const Share = require("../assets/images/ReviewPreview/share.png");
   const MusicDisk = require("../assets/images/music-disk.png");
 
   const [currentVote, setCurrentVote] = useState<boolean>(false); // does a vote currently exist?
@@ -58,7 +59,6 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
 
   const [isEditable, setIsEditable] = useState(false);
   const [editedComment, setEditedComment] = useState<string>("");
-  const [showMenu, setShowMenu] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
 
   const ratingImages = {
@@ -80,8 +80,6 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
   };
 
   const handleVotePress = async (newVoteValue: boolean) => {
-    console.log("Vote icon pressed with value: ", newVoteValue);
-    console.log(review_id);
 
     if (currentVote) {
       // if there is already a vote value, we have to delete or swap it
@@ -207,13 +205,10 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
   }, [review_id, userId, user_id, newComment]);
 
   const fetchComments = async () => {
-    console.log("fetchComments");
-    console.log("review_id", review_id);
     try {
       const response = await axios.get(
         `${BASE_URL}/reviews/comments/${review_id}`
       );
-      console.log("comments", response.data);
       setComments(response.data);
     } catch (error) {
       console.error("Error fetching comments:", error);
@@ -223,9 +218,6 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
   useEffect(() => {
     const fetchVote = async () => {
       try {
-        console.log("Fetching vote");
-        console.log(userId);
-        console.log(review_id);
         if (review) {
           setUpvoteCount(review.review_stat.upvotes);
           setDownvoteCount(review.review_stat.downvotes);
@@ -234,7 +226,6 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
         const response = await axios.get(
           `${BASE_URL}/reviews/vote/${userId}/${review_id}`
         );
-        console.log(response.data);
         if (response.data) {
           setCurrentVote(true);
           const { upvote } = response.data; // Assuming the API returns { user_id, post_id, upvote }
@@ -265,14 +256,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
                   <Text style={styles.displayName}>{review.display_name}</Text>
                   <Text style={styles.username}>@{review.username}</Text>
                 </View>
-                {review.user_id === userId && (
-                  <TouchableOpacity
-                    style={styles.menuButton}
-                    onPress={() => setShowPopup(true)}
-                  >
-                    <Text style={styles.menuText}>⋮</Text>
-                  </TouchableOpacity>
-                )}
+                
               </View>
             </View>
             <View style={styles.vinyl}>
@@ -286,43 +270,58 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
               ) : null}
             </View>
           </View>
-          <Text style={styles.songName}>{review.media_title}</Text>
-          <Text style={styles.artistName}>{review.media_artist}</Text>
-          {/* Rating Image on the right side of the song title */}
-          <View>
-            {React.createElement(
-              getRatingImage(review.rating as keyof typeof ratingImages)
-            )}
+          <View style={styles.mediaContainer}>
+            <View style={styles.ratingContainer}>
+              <Text style={styles.songName}>{review.media_title}</Text>
+              <Text style={styles.artistName}>{review.media_artist}</Text>
+            </View>
+
+          </View>
+
+          <View style={styles.rating}>
+            {React.createElement(getRatingImage(review.rating as keyof typeof ratingImages),  {
+              width: 150, // Adjust size as needed
+              height: 150,
+            }, {
+              style: styles.ratingImage,
+            } as any)}
           </View>
 
           <Modal visible={showPopup} transparent>
-            <View style={styles.popupContainer}>
-              <TouchableOpacity
-                style={styles.popupOption}
-                onPress={() => handleMenuOption("edit")}
-              >
-                <Text>Edit Review</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.popupOption}
-                onPress={() => handleMenuOption("manageComments")}
-              >
-                <Text>Manage Comments</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.popupOption}
-                onPress={() => handleMenuOption("share")}
-              >
-                <Text>Share</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.popupOption}
-                onPress={() => handleMenuOption("delete")}
-              >
-                <Text>Delete</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              style={styles.modalOverlay}
+              onPress={() => setShowPopup(false)}
+              activeOpacity={1} // Prevent the modal itself from closing on tap
+            >
+              <View style={styles.popupContainer}>
+                <TouchableOpacity
+                  style={styles.popupOption}
+                  onPress={() => handleMenuOption("edit")}
+                >
+                  <Text>Edit Review</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.popupOption}
+                  onPress={() => handleMenuOption("manageComments")}
+                >
+                  <Text>Manage Comments</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.popupOption}
+                  onPress={() => handleMenuOption("share")}
+                >
+                  <Text>Share</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.popupOption}
+                  onPress={() => handleMenuOption("delete")}
+                >
+                  <Text>Delete</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
           </Modal>
+
 
           {isEditable ? (
             <View>
@@ -360,40 +359,54 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
           {/* Action Buttons */}
           <View style={styles.actionsContainer}>
             <View style={styles.voteContainer}>
-              <TouchableOpacity onPress={() => handleVotePress(true)}>
-                <Image
-                  source={Upvotes}
-                  style={[
-                    styles.voteIcon,
-                    {
-                      tintColor:
-                        currentVote && currentVoteValue ? "#FFD700" : "#555",
-                    }, // Highlight if upvoted
-                  ]}
-                />
-              </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={() => handleVotePress(true)}
+              style={styles.voteButton}
+            >
+              <Upvote
+                width={24}
+                height={24}
+                fill={currentVote && currentVoteValue ? "#F28037" : "#555"}
+                style={{
+                  color: currentVote && currentVoteValue ? "#F28037" : "#555"
+                }}  
+              />
               <Text>{upvoteCount}</Text>
-              <TouchableOpacity onPress={() => handleVotePress(false)}>
-                <Image
-                  source={Downvotes}
-                  style={[
-                    styles.voteIcon,
-                    {
-                      tintColor:
-                        currentVote && !currentVoteValue ? "#FFD700" : "#555",
-                    }, // Highlight if upvoted
-                  ]}
-                />
-              </TouchableOpacity>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={() => handleVotePress(false)}
+              style={styles.voteButton}
+            >
+              <Downvote
+                width={24}
+                height={24}
+                fill={currentVote && !currentVoteValue ? "#F28037" : "#555"}
+                style={{
+                  color: currentVote && !currentVoteValue ? "#F28037" : "#555"
+                }}              />
               <Text>{downvoteCount}</Text>
-              <TouchableOpacity onPress={handleCommentPress}>
-                <Image source={Comments} style={styles.voteIcon} />
+            </TouchableOpacity>
+              <TouchableOpacity onPress={handleCommentPress} style={styles.voteButton}>
+                <Comment
+                    width={24}
+                    height={24} />
               </TouchableOpacity>
               <Text>{review.review_stat.comment_count}</Text>
-            </View>
-            <TouchableOpacity onPress={() => console.log("share pressed")}>
-              <Image source={Share} style={styles.voteIcon} />
+              <TouchableOpacity onPress={() => console.log("share pressed")} style={styles.voteButton}>
+                <Share
+                    width={24}
+                    height={24}
+                    style={{marginLeft: 10}} />
             </TouchableOpacity>
+            </View>
+            {review.user_id === userId && (
+              <TouchableOpacity
+                style={styles.menuButton}
+                onPress={() => setShowPopup(true)}
+              >
+                <Text style={styles.menuText}>⋮</Text>
+              </TouchableOpacity>
+            )}
           </View>
           <View style={styles.comments}>
             {comments && comments.length > 0 ? (
@@ -435,9 +448,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+    marginTop: 20,
+    paddingBottom: 80, // Add padding at the bottom equal to the height of the bottom tab bar
   },
   reviewContainer: {
-    alignItems: "center",
+    alignItems: "flex-start",
+    paddingLeft: 20,
+    paddingBottom: 30,
   },
   coverImage: {
     width: 200,
@@ -446,36 +463,40 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     overflow: "scroll",
   },
-  ratingImageWrapper: {
-    width: 100, // Set width as per requirement (in pixels or percentage)
-    height: 100, // Set height as per requirement
-    overflow: "hidden", // This ensures cropping of the image
-    borderRadius: 50, // Optional: If you want a circular crop, use borderRadius
+  voteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 5,
   },
-  ratingSvg: {
-    width: "100%", // Ensure SVG scales correctly inside the wrapper
-    height: "100%", // Ensure SVG scales correctly inside the wrapper
+  ratingImageWrapper: {
+    width: "100%",
+    height: 100,
+    overflow: "hidden", // This ensures cropping of the image
+    alignItems: "center",
+  },
+  ratingContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  mediaContainer: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    width: "95%",
+    height: "15%",
+    marginTop: 20,
   },
   songName: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
   },
   artistName: {
-    fontSize: 18,
+    fontSize: 16,
     color: "#888",
   },
   comment: {
     fontSize: 16,
   },
-  rating: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  ratingImage: {
-    width: 150,
-    height: 150,
-    marginVertical: 20,
-  },
+  
   noReviewsText: {
     textAlign: "center",
     color: "#888",
@@ -485,24 +506,45 @@ const styles = StyleSheet.create({
     width: "100%",
     marginTop: 20,
     marginBottom: 50,
+    marginLeft: -20,
   },
+  rating: {
+    width: '100%',
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: -20,
+    paddingRight: 20, // Add this to account for the left padding of reviewContainer
+  },
+  
+  ratingImage: {
+    alignSelf: 'center', // Add this
+  },
+
   tagsContainer: {
     flexDirection: "row",
-    marginVertical: 10,
-    paddingHorizontal: 5,
+    marginBottom: 10,
+    paddingVertical: 15,
+    minHeight: 60, // Change from fixed height to minHeight
   },
+
   tag: {
-    backgroundColor: 'rgba(242, 128, 55, 0.65)', 
+    backgroundColor: 'rgba(242, 128, 55, 0.65)',     
     paddingVertical: 5,
     paddingHorizontal: 12,
     borderRadius: 20,
     marginHorizontal: 5,
     borderWidth: 1,
     borderColor: "#C0C0C0",
+    marginBottom: 10,
+    minHeight: 25, // Change from height to minHeight
+    justifyContent: 'center', // Add this
   },
+
   tagText: {
     color: "#333",
     fontSize: 12,
+    lineHeight: 16, // Add this to ensure proper text spacing
+    textAlignVertical: 'center', // Add this
   },
   actionsContainer: {
     flexDirection: "row",
@@ -518,8 +560,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   voteIcon: {
-    width: 24,
-    height: 24,
     marginHorizontal: 10,
   },
   vinyl: {
@@ -553,7 +593,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between", // Align left and right sections
     width: "100%",
     marginBottom: 10,
-    marginLeft: 10,
   },
   leftSection: {
     flexDirection: "row",
@@ -610,19 +649,31 @@ const styles = StyleSheet.create({
     color: "#333",
     fontWeight: "bold",
   },
-  menuButton: { padding: 10 },
-  menuText: { fontSize: 24 },
-  popupContainer: {
-    position: "absolute",
-    bottom: 50,
-    right: 20,
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 10,
+  menuButton: { padding: 10, marginRight: 10 },
+  menuText: { fontSize: 24, marginLeft: 10 },
+  editInput: { borderColor: "#ddd", borderWidth: 1, margin: 10, padding: 10, marginRight: 25 },
+  saveButton: { backgroundColor: "#ddd", padding: 10, borderRadius: 10, margin: 10, width: 60 },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
+    justifyContent: "center", // Center the modal vertically
+    alignItems: "center", // Center the modal horizontally
   },
-  popupOption: { padding: 10 },
-  editInput: { borderColor: "#ddd", borderWidth: 1, margin: 10, padding: 10 },
-  saveButton: { backgroundColor: "#007bff", padding: 10 },
+  popupContainer: {
+    backgroundColor: "#fff", // Modal background
+    borderRadius: 10,
+    padding: 20,
+    width: "80%", // Adjust width as needed
+    alignItems: "center",
+    zIndex: 1000, // Ensure the modal is on top
+  },
+  popupOption: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+    width: "100%",
+    alignItems: "center",
+  },
 });
 
 export default ReviewPage;

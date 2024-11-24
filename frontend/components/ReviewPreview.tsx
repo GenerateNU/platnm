@@ -8,6 +8,8 @@ import {
   Image,
   ScrollView,
   TouchableOpacity,
+  Modal,
+  TextInput,
 } from "react-native";
 
 import Rating0 from "@/assets/images/Ratings/Radial-0.svg";
@@ -22,11 +24,13 @@ import Rating8 from "@/assets/images/Ratings/Radial-8.svg";
 import Rating9 from "@/assets/images/Ratings/Radial-9.svg";
 import Rating10 from "@/assets/images/Ratings/Radial-10.svg";
 
+import Downvote from "@/assets/images/ReviewPreview/downvote.svg";
+import Upvote from "@/assets/images/ReviewPreview/upvote.svg";
+import  Comment from "@/assets/images/ReviewPreview/comment.svg";
+
+
 const MusicDisk = require("../assets/images/music-disk.png");
-const Comments = require("../assets/images/ReviewPreview/comments.png");
-const Upvotes = require("../assets/images/ReviewPreview/upvote.png");
-const Downvotes = require("../assets/images/ReviewPreview/downvote.png");
-const Share = require("../assets/images/ReviewPreview/share.png");
+const ThreeDotsMenu = require("../assets/images/three_dots_menu.png");
 
 const ratingImages = {
   0: Rating0,
@@ -59,9 +63,33 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
     preview.review_stat.downvotes
   );
   const [reviewText, setReviewText] = useState<string>(preview.comment || "");
+  const [isEditable, setIsEditable] = useState(false);
+  const [editedComment, setEditedComment] = useState<string>("");
+
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
   const user_Id = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
+
+  const isOwner = user_Id === preview.user_id;
+  const [menuVisible, setMenuVisible] = useState(false);
+
+  const handleMenuToggle = () => setMenuVisible(!menuVisible);
+
+  const handleMenuOption = (option: string) => {
+    handleMenuToggle();
+    if (option === "edit") {
+      setIsEditable(true);
+      setEditedComment(preview?.comment || "");
+    } else if (option === "delete") {
+      // Add delete functionality
+    } else if (option === "manage comments") {
+      // Add manage comments functionality
+    } else if (option === "share") {
+      // Add share functionality
+    } else if (option === "report") {
+      // Add share functionality
+    }
+  };
 
   const getRatingImage = (rating: keyof typeof ratingImages) => {
     return ratingImages[rating];
@@ -103,10 +131,10 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
     } else if (currentVote && !currentVoteValue) {
       // if there's already a vote and it's a downvote, cancel it out
       setCurrentVote(false);
-      setUpvoteCount(upvoteCount - 1);
+      setDownvoteCount(downvoteCount - 1);
     } else {
       // if there's already a vote and it's an upvote, replace it
-      setCurrentVoteValue(true);
+      setCurrentVoteValue(false);
       setUpvoteCount(upvoteCount - 1);
       setDownvoteCount(downvoteCount + 1);
     }
@@ -123,11 +151,25 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
     }
   };
 
+  const handleEditSave = async () => {
+    try {
+      const requestBody = {
+        user_id: user_Id, // User ID to validate ownership
+        comment: editedComment, // The updated comment
+      };
+
+      await axios.patch(`${BASE_URL}/reviews/${preview.review_id}`, requestBody);
+      setIsEditable(false);
+      setReviewText(editedComment);
+    } catch (error) {
+      console.error("Error saving edited review:", error);
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
       const fetchReview = async () => {
         try {
-          console.log("refetching the review statec");
           const response = await axios.get(
             `${BASE_URL}/reviews/${preview.review_id}`
           );
@@ -149,18 +191,11 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
     useCallback(() => {
       const fetchVote = async () => {
         try {
-          console.log("FETCHING USER VOTE");
           const response = await axios.get(
             `${BASE_URL}/reviews/vote/${user_Id}/${preview.review_id}`
           );
-          console.log(
-            "request: ",
-            `${BASE_URL}/reviews/vote/${user_Id}/${preview.review_id}`
-          );
-          console.log("response: ", response.data);
           if (response.data) {
             const { upvote } = response.data;
-            console.log("upvote: ", upvote);
             setCurrentVote(true);
             setCurrentVoteValue(upvote);
           } else {
@@ -173,7 +208,6 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
 
       const fetchReview = async () => {
         try {
-          console.log("refetching the review state");
           const response = await axios.get(
             `${BASE_URL}/reviews/${preview.review_id}`
           );
@@ -243,7 +277,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
 
           
           <View>
-            {React.createElement(getRatingImage(preview.rating as keyof typeof ratingImages))}
+            {React.createElement(getRatingImage(preview.rating as keyof typeof ratingImages), {style: styles.ratingImage})}
           </View>
         </View>
       </View>
@@ -263,13 +297,31 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
       )}
 
       <TouchableOpacity onPress={handlePreviewPress}>
-        <Text style={styles.commentText}>
-          {reviewText && reviewText.length > 100
-            ? showFullComment
-              ? reviewText
-              : `${reviewText.slice(0, 100)}...`
-            : reviewText}
-        </Text>
+      {isEditable ? (
+            <View>
+              <TextInput
+                style={styles.editInput}
+                value={editedComment}
+                onChangeText={setEditedComment}
+                multiline
+              />
+              <TouchableOpacity
+                style={styles.saveButton}
+                onPress={handleEditSave}
+              >
+                <Text>Save</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <Text style={styles.commentText}>
+              {reviewText && reviewText.length > 100
+                ? showFullComment
+                  ? reviewText
+                  : `${reviewText.slice(0, 100)}...`
+                : reviewText}
+            </Text>
+          )}
+        
         {reviewText && reviewText.length > 100 && (
           <TouchableOpacity onPress={handleViewMorePress}>
             <Text style={styles.readMore}>
@@ -281,40 +333,94 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
 
       <View style={styles.actionsContainer}>
         <View style={styles.voteContainer}>
-          <TouchableOpacity onPress={handleUpvotePress}>
-            <Image
-              source={Upvotes}
-              style={[
-                styles.voteIcon,
-                {
-                  tintColor:
-                    currentVote && currentVoteValue ? "#FFD700" : "#555",
-                },
-              ]}
-            />
-          </TouchableOpacity>
+        <TouchableOpacity 
+          onPress={() => handleUpvotePress()}
+          style={styles.voteButton}
+        >
+          <Upvote
+            width={24}
+            height={24}
+            fill={currentVote && currentVoteValue ? "#F28037" : "#555"}
+            style={{
+              color: currentVote && currentVoteValue ? "#F28037" : "#555"
+            }}              />
           <Text>{upvoteCount}</Text>
-          <TouchableOpacity onPress={handleDownvotePress}>
-            <Image
-              source={Downvotes}
-              style={[
-                styles.voteIcon,
-                {
-                  tintColor:
-                    currentVote && !currentVoteValue ? "#FFD700" : "#555",
-                },
-              ]}
-            />
-          </TouchableOpacity>
-          <Text>{downvoteCount}</Text>
-          <TouchableOpacity onPress={handleCommentPress}>
-            <Image source={Comments} style={styles.voteIcon} />
-          </TouchableOpacity>
+        </TouchableOpacity>
+        <TouchableOpacity 
+              onPress={() => handleDownvotePress()}
+              style={styles.voteButton}
+            >
+              <Downvote
+                width={24}
+                height={24}
+                fill={currentVote && !currentVoteValue ? "#F28037" : "#555"}
+                style={{
+                  color: currentVote && !currentVoteValue ? "#F28037" : "#555"
+                }}              />
+              <Text>{downvoteCount}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleCommentPress} style={styles.voteButton}>
+                <Comment
+                    width={24}
+                    height={24} />
+              </TouchableOpacity>
           <Text>{preview.review_stat.comment_count}</Text>
         </View>
-        <TouchableOpacity onPress={() => console.log("share pressed")}>
-          <Image source={Share} style={styles.voteIcon} />
+        <TouchableOpacity onPress={handleMenuToggle}>
+          <Image source={ThreeDotsMenu} style={styles.voteIcon} />
         </TouchableOpacity>
+        
+
+        {/* Modal for menu */}
+        <Modal
+          visible={menuVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setMenuVisible(false)}
+        >
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            onPress={() => setMenuVisible(false)}
+          >
+            <View style={styles.menuContainer}>
+              {isOwner ? (
+                <>
+                  <TouchableOpacity onPress={() => handleMenuOption("share")} style={styles.menuItem}>
+                    <Text style={styles.menuText}>Share</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => handleMenuOption("edit")} style={styles.menuItem}>
+                    <Text style={styles.menuText}>Edit</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => handleMenuOption("delete")}
+                    style={styles.menuItem}
+                  >
+                    <Text style={styles.menuText}>Delete</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => handleMenuOption("manage comments")}
+                    style={styles.menuItem}
+                  >
+                    <Text style={styles.menuText}>Manage Comments</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <TouchableOpacity onPress={() => handleMenuOption("share")} style={styles.menuItem}>
+                    <Text style={styles.menuText}>Share</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => handleMenuOption("report")}
+                    style={styles.menuItem}
+                  >
+                    <Text style={styles.menuText}>Report</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          </TouchableOpacity>
+        </Modal>
+        
       </View>
     </View>
   );
@@ -334,6 +440,11 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     alignItems: "flex-start",
     overflow: "scroll",
+  },
+  voteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 5,
   },
   vinyl: {
     position: "absolute",
@@ -397,14 +508,15 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#111",
     marginTop: 5,
-    width: 200,
+    width: 175,
     textAlign: "left",
+    marginLeft: 5,
   },
   artistName: {
     fontSize: 13,
     color: "#666",
-    marginBottom: 10,
     textAlign: "left",
+    marginLeft: 5,
   },
   ratingContainer: {
     justifyContent: "flex-start",
@@ -420,6 +532,7 @@ const styles = StyleSheet.create({
     color: "#333",
     textAlign: "left",
     marginVertical: 8,
+    marginLeft: 5,
   },
   readMore: {
     fontSize: 14,
@@ -427,7 +540,7 @@ const styles = StyleSheet.create({
   },
   tagsContainer: {
     flexDirection: "row",
-    marginVertical: 10,
+    marginBottom: 10,
     paddingHorizontal: 5,
   },
   tag: {
@@ -438,6 +551,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     borderWidth: 1,
     borderColor: "#C0C0C0",
+    marginLeft: 2,
   },
   tagText: {
     color: "#333",
@@ -461,6 +575,38 @@ const styles = StyleSheet.create({
     height: 24,
     marginHorizontal: 10,
   },
+  ratingImage: {
+    width: 30, // Smaller size
+    height: 30, // Match smaller size
+    marginRight: 30, // Adjust horizontal placement
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  menuContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 10,
+    width: 200,
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  menuItem: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+  },
+  menuText: {
+    fontSize: 16,
+    color: "#333",
+  },
+  editInput: { borderColor: "#ddd", borderWidth: 1, margin: 10, padding: 10, marginRight: 25 },
+  saveButton: { backgroundColor: "#ddd", padding: 10, borderRadius: 10, margin: 10, width: 60 },
 });
 
 export default ReviewPreview;

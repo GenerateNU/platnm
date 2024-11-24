@@ -22,14 +22,9 @@ export default function HomeScreen() {
   const hasNotification = true; // Hardcoding - Get notification status from somewhere else
 
   const fetchFeedReviews = async () => {
-    console.log("fetchFeedReviews");
     try {
-      console.log("fetchFeedReviews2");
-      console.log("userId: ", userId);
-      console.log("BASE_URL: ", BASE_URL);
       const response = await axios.get(`${BASE_URL}/users/feed/${userId}`);
       setFeedReviews(response.data);
-      console.log("fetchFeedReviews3");
     } catch (error) {
       console.error("Error fetching feed reviews:", error);
     }
