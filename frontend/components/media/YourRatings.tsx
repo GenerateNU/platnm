@@ -3,10 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import ArrowRight from "@/assets/images/Media/arrowRight.svg";
 
 type YourRatingsProps = {
-  count: number;
+  count: number | null;
 };
 
 const YourRatings = ({ count }: YourRatingsProps) => {
+  console.log(count)
   return (
     <TouchableOpacity
       style={styles.container}

@@ -17,6 +17,7 @@ type MediaResponse = {
 };
 
 export default function MediaPage() {
+
   const [media, setMedia] = useState<Media>();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [rating, setReviewAvgRating] = useState<number | null>(null);
@@ -25,10 +26,12 @@ export default function MediaPage() {
   >([]);
 
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+  const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
   const { mediaId, mediaType } = useLocalSearchParams<{
     mediaId: string;
     mediaType: string;
   }>();
+  const [yourRatings, setYourRatings] = useState<number | null>(null);
 
   const insets = useSafeAreaInsets();
 
@@ -64,6 +67,13 @@ export default function MediaPage() {
 
     calculateRatingDistribution();
   }, [reviews]);
+
+  useEffect(() => {
+    axios
+      .get(`${BASE_URL}/reviews/user/${userId}`)
+      .then((response) => setYourRatings(response.data.length))
+      .catch((error) => console.error(error));
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -123,7 +133,7 @@ export default function MediaPage() {
           </View>
           <Histogram distribution={ratingDistributions} />
           <View style={styles.socialContainer}>
-            <YourRatings count={3} />
+            <YourRatings count={yourRatings} />
             <FriendRatings count={5} />
           </View>
           <View>
