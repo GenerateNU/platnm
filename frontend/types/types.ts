@@ -113,13 +113,16 @@ type MediaResponse = {
 };
 
 type UserComment = {
-  id: number;
+  comment_id: number;
   user_id: string;
+  username: string;
+  display_name: string;
+  profile_picture: string;
   review_id: number;
   comment: string;
   created_at: string;
-  // upvotes: number;
-  // downvotes: number;
+  upvotes: number;
+  downvotes: number;
 };
 
 type RatingDistribution = {
