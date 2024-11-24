@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { StyleSheet, View, Text, ScrollView, Dimensions } from "react-native";
-import { TabView, SceneMap, TabBar } from "react-native-tab-view";
 import axios from "axios";
 import ReviewPreview from "@/components/ReviewPreview";
+import Filter from "@/components/search/Filter";
 
 const initialLayout = { width: Dimensions.get("window").width };
 
@@ -48,10 +48,18 @@ export default function SongReviews() {
     // TODO THIS PART
   );
 
-  const renderScene = SceneMap({
-    userReviews: UserReviewsTab,
-    friendReviews: FriendReviewTab,
-  });
+  const [selectedFilter, setSelectedFilter] = useState<FilterOption>("all");
+
+    const handleFilterChange = (filter: FilterOption) => {
+      setSelectedFilter(filter);
+    };
+
+    return (
+      <View style={styles.container}>
+        <Filter
+          currentFilter={selectedFilter}
+          onFilterChange={handleFilterChange}
+        />
 
   return (
     <TabView
