@@ -1,21 +1,14 @@
-import { useState, useEffect } from "react";
-import { StyleSheet, View, Text, ScrollView } from "react-native";
-import axios from "axios";
+import { useState } from "react";
+import { StyleSheet, View, Text } from "react-native";
 import ReviewPreview from "@/components/ReviewPreview";
 import Filter from "@/components/search/Filter";
 
 interface MediaReviewProps {
-  mediaType: MediaType;
-  mediaId: number;
+  userReviews: Preview[]
   filter: "user" | "friend";
 }
 
-const MediaReviewsPage = ({mediaType, mediaId, filter} : MediaReviewProps) => {
-
-  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-  const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - replace dynamically
-
-  const [userReviews, setUserReviews] = useState<Preview[]>([]);
+const MediaReviewsPage = ({userReviews, filter} : MediaReviewProps) => {
 
   const [selectedFilter, setSelectedFilter] = useState<FilterOption>(filter);
 
@@ -24,20 +17,6 @@ const MediaReviewsPage = ({mediaType, mediaId, filter} : MediaReviewProps) => {
   const handleFilterChange = (filter: FilterOption) => {
     setSelectedFilter(filter);
   };
-
-  useEffect(() => {
-    // Fetch user reviews
-    axios
-    .get(`${BASE_URL}/reviews/${mediaId}/${userId}`, {
-      params: {
-        media_type: mediaType, 
-      },
-    })      
-    .then((response) => {
-      setUserReviews(response.data);
-    })
-    .catch((error) => console.error(error));
-  }, []);
 
   return (
     <View style={styles.container}>

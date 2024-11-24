@@ -31,7 +31,6 @@ export default function MediaPage() {
     mediaId: string;
     mediaType: string;
   }>();
-  const [yourRatings, setYourRatings] = useState<number | null>(null);
 
   const insets = useSafeAreaInsets();
 
@@ -67,13 +66,6 @@ export default function MediaPage() {
 
     calculateRatingDistribution();
   }, [reviews]);
-
-  useEffect(() => {
-    axios
-      .get(`${BASE_URL}/reviews/user/${userId}`)
-      .then((response) => setYourRatings(response.data.length))
-      .catch((error) => console.error(error));
-  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -133,7 +125,7 @@ export default function MediaPage() {
           </View>
           <Histogram distribution={ratingDistributions} />
           <View style={styles.socialContainer}>
-            <YourRatings count={yourRatings} mediaType={media.media_type} mediaId={media.id}/>
+            <YourRatings user_id={userId} media_id={mediaId} media_type={mediaType}/>
             <FriendRatings count={5} />
           </View>
           <View>
