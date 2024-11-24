@@ -58,6 +58,18 @@ func (h *Handler) UpdateUserOnboard(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(result)
 }
 
+func (h *Handler) GetProfileByName(c *fiber.Ctx) error {
+	name := c.Params("name")
+	profile, err := h.userRepository.GetProfileByName(c.Context(), name)
+
+	if err != nil {
+		print(err.Error(), "from transactions err ")
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(profile)
+}
+
 func (h *Handler) GetUserById(c *fiber.Ctx) error {
 	id := c.Params("id")
 	user, err := h.userRepository.GetUserByID(c.Context(), id)

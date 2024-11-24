@@ -59,13 +59,21 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	app.Route("/users", func(r fiber.Router) {
 		r.Get("/", userHandler.GetUsers)
 		r.Get("/:id", userHandler.GetUserById)
-		r.Get("/profile/:id", userHandler.GetUserProfile)
+		r.Get("/profile/id/:id", userHandler.GetUserProfile)
 		r.Post("/follow", userHandler.FollowUnfollowUser)
 		r.Get("/score/:id", userHandler.CalculateScore)
 		r.Post("/", userHandler.CreateUser)
 		r.Patch("/bio/:id", userHandler.UpdateUserBio)
 		r.Put("/enthusiasm", userHandler.UpdateUserOnboard)
 		r.Get("/feed/:id", userHandler.GetUserFeed)
+		r.Post("/section", userHandler.CreateSection)
+		r.Post("/section/item/:userId/:sectionId", userHandler.CreateSectionItem)
+		r.Patch("/section/item", userHandler.UpdateSectionItem)
+		r.Delete("/section/item", userHandler.DeleteSectionItem)
+		r.Delete("/section", userHandler.DeleteSection)
+		r.Get("/section/:id", userHandler.GetUserSections)
+		r.Get("/section/options/:id", userHandler.GetUserSectionOptions)
+		r.Get("/profile/name/:name", userHandler.GetProfileByName)
 	})
 
 	app.Route("/reviews", func(r fiber.Router) {
@@ -155,16 +163,18 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		h := spotify_handler.NewHandler(repository.Media)
 		m := spotify_middleware.NewMiddleware(config.Spotify, repository.UserAuth, sessionStore)
 
+		r.Route("/clientCreds", func(clientCredRoute fiber.Router) {
+			clientCredRoute.Use(m.WithSpotifyClient())
+			clientCredRoute.Get("/", h.GetPlatnmPlaylist)
+			clientCredRoute.Get("/import/new-releases", h.NewReleases)
+			clientCredRoute.Post("/import/recommendations", h.ImportRecommendations)
+			clientCredRoute.Patch("/import/artist-details", h.GetArtistDetails)
+		})
+
 		r.Route("/", func(authRoute fiber.Router) {
 			authRoute.Use(m.WithAuthenticatedSpotifyClient())
 			authRoute.Get("/playlists", h.GetCurrentUserPlaylists)
 			authRoute.Get("/top-items", h.GetTopItems)
-		})
-
-		r.Route("/", func(clientCredRoute fiber.Router) {
-			clientCredRoute.Use(m.WithSpotifyClient())
-			clientCredRoute.Get("/", h.GetPlatnmPlaylist)
-			clientCredRoute.Get("/new-releases", h.NewReleases)
 		})
 	})
 

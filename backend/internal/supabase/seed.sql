@@ -123,3 +123,17 @@ Insert into review_tag (review_id, tag_id) VALUES
 (2, 3),
 (2, 4),
 (3, 5);
+
+INSERT INTO section_item (title, cover_photo) VALUES
+('Mis Favoritas', 'https://i.scdn.co/image/ab67616d0000b27380f18909dd76c185004c25f1'),
+('Fallen', 'https://i.scdn.co/image/ab67616d0000b273b452e368a6ab2cff47147b3c'),
+('True Story', 'https://i.scdn.co/image/ab67616d0000b2732e49046fecfba5be6bc7b92a');
+
+INSERT INTO section_type (title, search_type) VALUES
+('Peak Albums', 'album'),
+('Favorite Artists', 'artist'),
+('Featured Tracks', 'track');
+
+INSERT INTO section_type_item (user_id, section_item_id, section_type_id) VALUES
+('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 1, 3),
+('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 2, 3);

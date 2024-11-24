@@ -168,6 +168,7 @@ const OnboardingCarousel: React.FC = () => {
       updateAccessToken(res.data["access_token"]);
       updateSession(res.headers["x-session"]);
       updateUserId(res.data["user_id"]);
+      handleSlideChange(currentSlide + 1);
     } catch (error) {
       console.log(error);
       alert("Signup Error");
@@ -228,6 +229,7 @@ const OnboardingCarousel: React.FC = () => {
 
       setTopArtists(artists);
       setTopTracks(tracks);
+      handleSlideChange(currentSlide + 1);
     } catch (error) {
       console.log(error);
       alert("Error fetching top artists and tracks");
@@ -236,8 +238,7 @@ const OnboardingCarousel: React.FC = () => {
 
   const handleNext = async () => {
     if (currentSlide === 3) {
-      handleSlideChange(currentSlide + 1);
-      handleSignUp();
+      await handleSignUp();
       return;
     }
     if (currentSlide === 2 && !passwordMatch) {
@@ -252,7 +253,7 @@ const OnboardingCarousel: React.FC = () => {
 
     if (currentSlide === 4) {
       await populateTopArtistsAndTopTracks();
-      handleSlideChange(currentSlide + 1);
+      return;
     }
 
     if (currentSlide === 6 || currentSlide === 7) {

@@ -13,7 +13,6 @@ interface SectionProps {
   title: string;
   items: SectionItem[];
   isEditing: boolean;
-  sectionId: number;
   onAddItem: () => void;
   onDeleteSection: () => void;
   onDeleteItem: (index: number) => void;
@@ -23,14 +22,11 @@ const Section: React.FC<SectionProps> = ({
   title,
   items,
   isEditing,
-  sectionId,
   onAddItem,
   onDeleteSection,
   onDeleteItem,
 }) => {
-  const [sectionTitle, setsectionTitle] = useState(title);
-  const [editedItems, setEditedItems] = useState(items);
-  const [editItem, setEditItem] = useState("");
+  const ITEM_LIMIT = 5;
 
   const addItemImage = require("@/assets/images/add-item-placeholder.png");
 
@@ -41,9 +37,11 @@ const Section: React.FC<SectionProps> = ({
         <View style={styles.container}>
           {isEditing && (
             <>
-              <TouchableOpacity onPress={onAddItem} style={styles.plusIcon}>
-                <Icon name="plus" size={20} color="#F28037" />
-              </TouchableOpacity>
+              {items.length < ITEM_LIMIT && (
+                <TouchableOpacity onPress={onAddItem} style={styles.plusIcon}>
+                  <Icon name="plus" size={20} color="#F28037" />
+                </TouchableOpacity>
+              )}
               <TouchableOpacity
                 onPress={onDeleteSection}
                 style={styles.trashIcon}
