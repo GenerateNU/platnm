@@ -589,7 +589,7 @@ func (r *ReviewRepository) GetCommentsByReviewID(ctx context.Context, reviewID s
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close() // Make sure to close rows after we're done with it
+	defer rows.Close()
 
 	var comments []*models.UserComment
 	for rows.Next() {
@@ -738,15 +738,6 @@ WHERE NOT EXISTS (SELECT 1 FROM deleted_vote) OR $3 <> (SELECT upvote FROM user_
 		return err
 	}
 	defer rows.Close()
-
-	// var votes []*models.UserVote
-	// for rows.Next() {
-	// 	var vote models.UserVote
-	// 	if err := rows.Scan(&vote.UserID, &vote.PostID, &vote.Upvote, &vote.PostType); err != nil {
-	// 		return err
-	// 	}
-	// 	votes = append(votes, &vote)
-	// }
 
 	if err := rows.Err(); err != nil {
 		return err

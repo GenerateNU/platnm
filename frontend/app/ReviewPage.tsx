@@ -189,7 +189,6 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
         const review = response.data;
         setReview(review);
         if (review) {
-          // these don't update the parent component!
           setUpvoteCount(review.review_stat.upvotes);
           setDownvoteCount(review.review_stat.downvotes);
           setCommentCount(review.review_stat.comment_count);
@@ -259,13 +258,13 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
             </View>
             <View style={styles.vinyl}>
               <Image source={MusicDisk} style={styles.musicDisk} />
-              {review.media_cover ? (
+              {review.media_cover && (
                 <Image
                   source={{ uri: review.media_cover }} // Use uri for remote images
                   style={styles.mediaCover}
                   resizeMode="cover"
                 />
-              ) : null}
+              )}
             </View>
           </View>
           <View style={styles.mediaContainer}>

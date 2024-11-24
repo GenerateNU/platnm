@@ -176,7 +176,6 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
             `${BASE_URL}/reviews/${preview.review_id}`,
           );
           if (response.data) {
-            // these don't update the parent component!
             setUpvoteCount(response.data.review_stat.upvotes);
             setDownvoteCount(response.data.review_stat.downvotes);
           }
@@ -248,13 +247,13 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
     <View style={styles.card}>
       <View style={styles.vinyl}>
         <Image source={MusicDisk} style={styles.musicDisk} />
-        {preview.media_cover ? (
+        {preview.media_cover && (
           <Image
             source={{ uri: preview.media_cover }}
             style={styles.mediaCover}
             resizeMode="cover"
           />
-        ) : null}
+        )}
       </View>
 
       <View style={styles.container}>

@@ -88,8 +88,6 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		// Get Reviews by ID which can be used to populate a preview
 		r.Get("/:id", reviewHandler.GetReviewByID)
 		r.Get("/user/:id", reviewHandler.GetReviewsByUserID)
-
-		// changed from /vote/:rating to /vote becuase the query parameter is not being used at all
 		r.Post("/vote", func(c *fiber.Ctx) error {
 			return reviewHandler.UserVote(c, "review")
 		})
