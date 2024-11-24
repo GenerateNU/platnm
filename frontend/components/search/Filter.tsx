@@ -1,69 +1,102 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import Icon from "react-native-vector-icons/Ionicons";
 
-type FilterOption = "all" | "songs" | "albums";
+type FilterOption = "all" | "songs" | "albums" | "profile";
 
 interface FilterProps {
+  currentFilter: FilterOption;
   onFilterChange: (filter: FilterOption) => void;
 }
 
-const Filter: React.FC<FilterProps> = ({ onFilterChange }) => {
-  const [selectedFilter, setSelectedFilter] = useState<FilterOption>("all");
-
-  const handleFilterChange = (filter: FilterOption) => {
-    setSelectedFilter(filter);
-    onFilterChange(filter);
-  };
-
+const Filter: React.FC<FilterProps> = ({ currentFilter, onFilterChange }) => {
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        onPress={() => handleFilterChange("all")}
-        style={[
-          styles.button,
-          selectedFilter === "all" && styles.selectedButton,
-        ]}
-      >
-        <Icon name="apps-outline" size={20} color="white" />
-        <Text style={styles.buttonText}>All</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => handleFilterChange("songs")}
-        style={[
-          styles.button,
-          selectedFilter === "songs" && styles.selectedButton,
-        ]}
-      >
-        <Icon name="musical-notes-outline" size={20} color="white" />
-        <Text style={styles.buttonText}>Songs</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => handleFilterChange("albums")}
-        style={[
-          styles.button,
-          selectedFilter === "albums" && styles.selectedButton,
-        ]}
-      >
-        <Icon name="albums-outline" size={20} color="white" />
-        <Text style={styles.buttonText}>Albums</Text>
-      </TouchableOpacity>
+      <View style={styles.buttonsRow}>
+        <TouchableOpacity
+          onPress={() => onFilterChange("all")}
+          style={[styles.button]}
+        >
+          <Text
+            style={[
+              styles.buttonText,
+              currentFilter === "all" && styles.selectedButtonText,
+            ]}
+          >
+            All
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => onFilterChange("songs")}
+          style={[styles.button]}
+        >
+          <Text
+            style={[
+              styles.buttonText,
+              currentFilter === "songs" && styles.selectedButtonText,
+            ]}
+          >
+            Songs
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => onFilterChange("albums")}
+          style={[styles.button]}
+        >
+          <Text
+            style={[
+              styles.buttonText,
+              currentFilter === "albums" && styles.selectedButtonText,
+            ]}
+          >
+            Albums
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => onFilterChange("profile")}
+          style={[styles.button]}
+        >
+          <Text
+            style={[
+              styles.buttonText,
+              currentFilter === "profile" && styles.selectedButtonText,
+            ]}
+          >
+            Profile
+          </Text>
+        </TouchableOpacity>
+      </View>
+      <View style={styles.underline}></View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flexDirection: "row", justifyContent: "center", margin: 10 },
+  container: {
+    margin: 10,
+  },
+  buttonsRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginBottom: 8,
+  },
   button: {
     flexDirection: "row",
     alignItems: "center",
     padding: 10,
-    borderRadius: 5,
     marginHorizontal: 5,
-    backgroundColor: "#ccc",
   },
-  selectedButton: { backgroundColor: "#007AFF" },
-  buttonText: { color: "white", marginLeft: 5 },
+  buttonText: {
+    color: "black",
+    marginLeft: 5,
+  },
+  selectedButtonText: {
+    color: "orange",
+  },
+  underline: {
+    width: "100%",
+    height: 2,
+    backgroundColor: "#E0E0E0",
+  },
 });
 
 export default Filter;

@@ -11,12 +11,6 @@ export default function SongReviews() {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - replace dynamically
   const [userReviews, setUserReviews] = useState<Review[]>([]);
-  const [friendReviews, setOtherReviews] = useState<Review[]>([]);
-  const [index, setIndex] = useState(0);
-  const [routes] = useState([
-    { key: "userReviews", title: "Your Reviews" },
-    { key: "friendReviews", title: "Friend Reviews" },
-  ]);
 
   useEffect(() => {
     // Fetch user reviews
@@ -26,13 +20,10 @@ export default function SongReviews() {
         setUserReviews(response.data);
       })
       .catch((error) => console.error(error));
-
-    // TODO: Fetch other reviews
-
   }, []);
 
   const UserReviewsTab = () => (
-    
+
     <ScrollView>
       {userReviews.length > 0 ? (
         userReviews.map((review) => (
@@ -42,35 +33,16 @@ export default function SongReviews() {
         <Text>You haven't reviewed this yet.</Text>
       )}
     </ScrollView>
+
   );
-
-  const FriendReviewTab = () => (
-    // TODO THIS PART
-  );
-
-  const [selectedFilter, setSelectedFilter] = useState<FilterOption>("all");
-
-    const handleFilterChange = (filter: FilterOption) => {
-      setSelectedFilter(filter);
-    };
-
-    return (
-      <View style={styles.container}>
-        <Filter
-          currentFilter={selectedFilter}
-          onFilterChange={handleFilterChange}
-        />
 
   return (
-    <TabView
-      navigationState={{ index, routes }}
-      renderScene={SceneMap({
-        userReviews: UserReviewsTab,
-        friendReviews: FriendReviewTab,
-      })}
-      onIndexChange={setIndex}
-      initialLayout={initialLayout}
-    />
+    <View style={styles.container}>
+      <Filter
+        selectedFilter={selectedFilter}
+        onFilterChange={handleFilterChange}
+      />
+    </View>
   );
 }
 
