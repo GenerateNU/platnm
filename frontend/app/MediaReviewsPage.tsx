@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { StyleSheet, View, Text, ScrollView } from "react-native";
+import { View, ScrollView } from "react-native";
 import ReviewPreview from "@/components/ReviewPreview";
 import Filter from "@/components/search/Filter";
 import axios from "axios";
@@ -18,6 +18,7 @@ const MediaReviewsPage = () => {
 
   const [selectedFilter, setSelectedFilter] = useState<FilterOption>(filter);
   const [userReviews, setUserReviews] = useState<Preview[]>([])
+  const [friendsReviews, setFriendsReviews] = useState<Preview[]>([])
 
   const filterOptions = ["user", "friend"]
 
@@ -35,6 +36,8 @@ const MediaReviewsPage = () => {
       setUserReviews(response.data);
     })
     .catch((error) => console.error(error));
+
+    // TODO ALEX: Here you would also fetch the reviews from friends
   }, []);
 
   const handleFilterChange = (filter: FilterOption) => {
@@ -58,7 +61,7 @@ const MediaReviewsPage = () => {
         </View>
       )}
       {selectedFilter === "friend" && (
-        <View></View> 
+        <View></View> // TODO ALEX: Map each fetched review to a ReviewPreview component which will take care of the rest
         )}
       </View>
     </ScrollView>
