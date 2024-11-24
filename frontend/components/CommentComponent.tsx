@@ -24,7 +24,7 @@ const CommentComponent: React.FC<CommentProps> = ({ comment }) => {
       setupVote(false);
       setUpvoteCount(upvoteCount - 1);
     } else {
-      "setting true"
+      ("setting true");
       setupVote(true);
       setUpvoteCount(upvoteCount + 1);
       if (downVote) {
@@ -121,33 +121,34 @@ const CommentComponent: React.FC<CommentProps> = ({ comment }) => {
 
       {/* Actions Section */}
       <View style={styles.actions}>
-      <TouchableOpacity 
-              onPress={() => handleUpvotePress()}
-              style={styles.voteButton}
-            >
-              <Upvote
-                width={24}
-                height={24}
-                fill={upVote ? "#F28037" : "#555"}
-                style={{
-                  color: upVote ? "#F28037" : "#555"
-                }}  
-              />
-              <Text>{upvoteCount}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              onPress={() => handleDownvotePress()}
-              style={styles.voteButton}
-            >
-              <Downvote
-                width={24}
-                height={24}
-                fill={downVote ? "#F28037" : "#555"}
-                style={{
-                  color: downVote ? "#F28037" : "#555"
-                }}              />
-              <Text>{downvoteCount}</Text>
-            </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => handleUpvotePress()}
+          style={styles.voteButton}
+        >
+          <Upvote
+            width={24}
+            height={24}
+            fill={upVote ? "#F28037" : "#555"}
+            style={{
+              color: upVote ? "#F28037" : "#555",
+            }}
+          />
+          <Text>{upvoteCount}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => handleDownvotePress()}
+          style={styles.voteButton}
+        >
+          <Downvote
+            width={24}
+            height={24}
+            fill={downVote ? "#F28037" : "#555"}
+            style={{
+              color: downVote ? "#F28037" : "#555",
+            }}
+          />
+          <Text>{downvoteCount}</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -224,8 +225,8 @@ const styles = StyleSheet.create({
     color: "#555",
   },
   voteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginHorizontal: 5,
   },
 });

@@ -26,8 +26,7 @@ import Rating10 from "@/assets/images/Ratings/Radial-10.svg";
 
 import Downvote from "@/assets/images/ReviewPreview/downvote.svg";
 import Upvote from "@/assets/images/ReviewPreview/upvote.svg";
-import  Comment from "@/assets/images/ReviewPreview/comment.svg";
-
+import Comment from "@/assets/images/ReviewPreview/comment.svg";
 
 const MusicDisk = require("../assets/images/music-disk.png");
 const ThreeDotsMenu = require("../assets/images/three_dots_menu.png");
@@ -57,10 +56,10 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
   const [currentVoteValue, setCurrentVoteValue] = useState<boolean>(false); // what is the current vote's value?
 
   const [upvoteCount, setUpvoteCount] = useState<number>(
-    preview.review_stat.upvotes
+    preview.review_stat.upvotes,
   );
   const [downvoteCount, setDownvoteCount] = useState<number>(
-    preview.review_stat.downvotes
+    preview.review_stat.downvotes,
   );
   const [reviewText, setReviewText] = useState<string>(preview.comment || "");
   const [isEditable, setIsEditable] = useState(false);
@@ -158,7 +157,10 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
         comment: editedComment, // The updated comment
       };
 
-      await axios.patch(`${BASE_URL}/reviews/${preview.review_id}`, requestBody);
+      await axios.patch(
+        `${BASE_URL}/reviews/${preview.review_id}`,
+        requestBody,
+      );
       setIsEditable(false);
       setReviewText(editedComment);
     } catch (error) {
@@ -171,7 +173,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
       const fetchReview = async () => {
         try {
           const response = await axios.get(
-            `${BASE_URL}/reviews/${preview.review_id}`
+            `${BASE_URL}/reviews/${preview.review_id}`,
           );
           if (response.data) {
             // these don't update the parent component!
@@ -184,7 +186,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
       };
 
       fetchReview();
-    }, [])
+    }, []),
   );
 
   useFocusEffect(
@@ -192,7 +194,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
       const fetchVote = async () => {
         try {
           const response = await axios.get(
-            `${BASE_URL}/reviews/vote/${user_Id}/${preview.review_id}`
+            `${BASE_URL}/reviews/vote/${user_Id}/${preview.review_id}`,
           );
           if (response.data) {
             const { upvote } = response.data;
@@ -209,7 +211,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
       const fetchReview = async () => {
         try {
           const response = await axios.get(
-            `${BASE_URL}/reviews/${preview.review_id}`
+            `${BASE_URL}/reviews/${preview.review_id}`,
           );
           if (response.data) {
             setUpvoteCount(response.data.review_stat.upvotes);
@@ -219,11 +221,11 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
         } catch (error) {
           console.error("Error fetching review:", error);
         }
-      }
+      };
 
       fetchVote();
       fetchReview();
-    }, [])
+    }, []),
   );
 
   const handleCommentPress = () => {
@@ -275,9 +277,11 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
             <Text style={styles.artistName}>{preview.media_artist}</Text>
           </View>
 
-          
           <View>
-            {React.createElement(getRatingImage(preview.rating as keyof typeof ratingImages), {style: styles.ratingImage})}
+            {React.createElement(
+              getRatingImage(preview.rating as keyof typeof ratingImages),
+              { style: styles.ratingImage },
+            )}
           </View>
         </View>
       </View>
@@ -297,31 +301,31 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
       )}
 
       <TouchableOpacity onPress={handlePreviewPress}>
-      {isEditable ? (
-            <View>
-              <TextInput
-                style={styles.editInput}
-                value={editedComment}
-                onChangeText={setEditedComment}
-                multiline
-              />
-              <TouchableOpacity
-                style={styles.saveButton}
-                onPress={handleEditSave}
-              >
-                <Text>Save</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <Text style={styles.commentText}>
-              {reviewText && reviewText.length > 100
-                ? showFullComment
-                  ? reviewText
-                  : `${reviewText.slice(0, 100)}...`
-                : reviewText}
-            </Text>
-          )}
-        
+        {isEditable ? (
+          <View>
+            <TextInput
+              style={styles.editInput}
+              value={editedComment}
+              onChangeText={setEditedComment}
+              multiline
+            />
+            <TouchableOpacity
+              style={styles.saveButton}
+              onPress={handleEditSave}
+            >
+              <Text>Save</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <Text style={styles.commentText}>
+            {reviewText && reviewText.length > 100
+              ? showFullComment
+                ? reviewText
+                : `${reviewText.slice(0, 100)}...`
+              : reviewText}
+          </Text>
+        )}
+
         {reviewText && reviewText.length > 100 && (
           <TouchableOpacity onPress={handleViewMorePress}>
             <Text style={styles.readMore}>
@@ -333,43 +337,45 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
 
       <View style={styles.actionsContainer}>
         <View style={styles.voteContainer}>
-        <TouchableOpacity 
-          onPress={() => handleUpvotePress()}
-          style={styles.voteButton}
-        >
-          <Upvote
-            width={24}
-            height={24}
-            fill={currentVote && currentVoteValue ? "#F28037" : "#555"}
-            style={{
-              color: currentVote && currentVoteValue ? "#F28037" : "#555"
-            }}              />
-          <Text>{upvoteCount}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-              onPress={() => handleDownvotePress()}
-              style={styles.voteButton}
-            >
-              <Downvote
-                width={24}
-                height={24}
-                fill={currentVote && !currentVoteValue ? "#F28037" : "#555"}
-                style={{
-                  color: currentVote && !currentVoteValue ? "#F28037" : "#555"
-                }}              />
-              <Text>{downvoteCount}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleCommentPress} style={styles.voteButton}>
-                <Comment
-                    width={24}
-                    height={24} />
-              </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => handleUpvotePress()}
+            style={styles.voteButton}
+          >
+            <Upvote
+              width={24}
+              height={24}
+              fill={currentVote && currentVoteValue ? "#F28037" : "#555"}
+              style={{
+                color: currentVote && currentVoteValue ? "#F28037" : "#555",
+              }}
+            />
+            <Text>{upvoteCount}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => handleDownvotePress()}
+            style={styles.voteButton}
+          >
+            <Downvote
+              width={24}
+              height={24}
+              fill={currentVote && !currentVoteValue ? "#F28037" : "#555"}
+              style={{
+                color: currentVote && !currentVoteValue ? "#F28037" : "#555",
+              }}
+            />
+            <Text>{downvoteCount}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleCommentPress}
+            style={styles.voteButton}
+          >
+            <Comment width={24} height={24} />
+          </TouchableOpacity>
           <Text>{preview.review_stat.comment_count}</Text>
         </View>
         <TouchableOpacity onPress={handleMenuToggle}>
           <Image source={ThreeDotsMenu} style={styles.voteIcon} />
         </TouchableOpacity>
-        
 
         {/* Modal for menu */}
         <Modal
@@ -385,10 +391,16 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
             <View style={styles.menuContainer}>
               {isOwner ? (
                 <>
-                  <TouchableOpacity onPress={() => handleMenuOption("share")} style={styles.menuItem}>
+                  <TouchableOpacity
+                    onPress={() => handleMenuOption("share")}
+                    style={styles.menuItem}
+                  >
                     <Text style={styles.menuText}>Share</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => handleMenuOption("edit")} style={styles.menuItem}>
+                  <TouchableOpacity
+                    onPress={() => handleMenuOption("edit")}
+                    style={styles.menuItem}
+                  >
                     <Text style={styles.menuText}>Edit</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -406,7 +418,10 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
                 </>
               ) : (
                 <>
-                  <TouchableOpacity onPress={() => handleMenuOption("share")} style={styles.menuItem}>
+                  <TouchableOpacity
+                    onPress={() => handleMenuOption("share")}
+                    style={styles.menuItem}
+                  >
                     <Text style={styles.menuText}>Share</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -420,7 +435,6 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
             </View>
           </TouchableOpacity>
         </Modal>
-        
       </View>
     </View>
   );
@@ -442,8 +456,8 @@ const styles = StyleSheet.create({
     overflow: "scroll",
   },
   voteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginHorizontal: 5,
   },
   vinyl: {
@@ -544,7 +558,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
   },
   tag: {
-    backgroundColor: 'rgba(242, 128, 55, 0.65)',     
+    backgroundColor: "rgba(242, 128, 55, 0.65)",
     paddingVertical: 5,
     paddingHorizontal: 12,
     borderRadius: 20,
@@ -605,8 +619,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#333",
   },
-  editInput: { borderColor: "#ddd", borderWidth: 1, margin: 10, padding: 10, marginRight: 25 },
-  saveButton: { backgroundColor: "#ddd", padding: 10, borderRadius: 10, margin: 10, width: 60 },
+  editInput: {
+    borderColor: "#ddd",
+    borderWidth: 1,
+    margin: 10,
+    padding: 10,
+    marginRight: 25,
+  },
+  saveButton: {
+    backgroundColor: "#ddd",
+    padding: 10,
+    borderRadius: 10,
+    margin: 10,
+    width: 60,
+  },
 });
 
 export default ReviewPreview;

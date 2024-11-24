@@ -38,7 +38,7 @@ export default function HomeScreen() {
     useCallback(() => {
       // Refetch reviews whenever the screen is focused
       fetchFeedReviews();
-    }, [])
+    }, []),
   );
 
   const handleNotifPress = () => {
@@ -95,15 +95,7 @@ export default function HomeScreen() {
         <View>
           {feedReviews && feedReviews.length > 0 ? (
             feedReviews.map((review, index) => {
-              return (
-                console.log("Review: ", review),
-                (
-                  <ReviewPreview
-                    key={index}
-                    preview={review}
-                  />
-                )
-              );
+              return <ReviewPreview key={index} preview={review} />;
             })
           ) : (
             <Text style={styles.noReviewsText}>No reviews found.</Text>
