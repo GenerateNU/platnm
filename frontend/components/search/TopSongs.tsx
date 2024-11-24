@@ -13,19 +13,19 @@ const TopSongs = ({ songs }: SongCardProp) => {
     <View style={styles.wrapper}>
       <Text style={styles.title}>Top Songs</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-      <View style={styles.gridContainer}>
-        {topNineSongs?.map((song, id) => (
-          <View key={song.media.id} style={styles.gridItem}>
-            <SongChip
-              rank={id + 1}
-              id={song.media.id}
-              title={song.media.title}
-              artist_name={song.media.artist_name}
-              cover={song.media.cover}
-            />
-          </View>
-        ))}
-      </View>
+        <View style={styles.gridContainer}>
+          {topNineSongs?.map((song, id) => (
+            <View key={song.media.id} style={styles.gridItem}>
+              <SongChip
+                rank={id + 1}
+                id={song.media.id}
+                title={song.media.title}
+                artist_name={song.media.artist_name}
+                cover={song.media.cover}
+              />
+            </View>
+          ))}
+        </View>
       </ScrollView>
     </View>
   );
@@ -33,16 +33,16 @@ const TopSongs = ({ songs }: SongCardProp) => {
 
 const styles = StyleSheet.create({
   wrapper: {
-    width: '100%',
+    width: "100%",
   },
   gridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     paddingHorizontal: 16,
-    width: 500, // Fixed width 
+    width: 500, // Fixed width
   },
   gridItem: {
-    width: '33.33%',
+    width: "33.33%",
     marginBottom: 16,
   },
   title: {

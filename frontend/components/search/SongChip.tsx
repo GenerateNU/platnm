@@ -33,8 +33,12 @@ const SongChip: React.FC<SongChipProps> = ({
       {rank !== undefined && <Text style={styles.rank}>{rank}.</Text>}
       <Image style={styles.cover} source={{ uri: cover }} />
       <View style={[styles.textContainer, !rank && styles.noRankTextContainer]}>
-        <Text style={styles.title} numberOfLines={1}>{title}</Text>
-        <Text style={styles.artist} numberOfLines={1}>{artist_name}</Text>
+        <Text style={styles.title} numberOfLines={1}>
+          {title}
+        </Text>
+        <Text style={styles.artist} numberOfLines={1}>
+          {artist_name}
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -42,8 +46,8 @@ const SongChip: React.FC<SongChipProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingRight: 8,
     paddingVertical: 4,
   },
@@ -65,7 +69,7 @@ const styles = StyleSheet.create({
   textContainer: {
     flex: 1,
     marginLeft: 8,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   noRankTextContainer: {
     marginLeft: 8,

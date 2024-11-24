@@ -12,17 +12,16 @@ const Profiles = ({ profiles }: ProfileChipProps) => {
     <View>
       <Text style={styles.title}>Profiles</Text>
 
-        <View style={styles.profileRow}>
-          {limitedProfiles?.map((profile) => (
-            <ProfileChip
-              profile_picture={profile.profile_picture} 
-              id={profile.id}
-              display_name={profile.display_name}
-              key={profile.id}
-            />
-          ))}
-        </View>
-
+      <View style={styles.profileRow}>
+        {limitedProfiles?.map((profile) => (
+          <ProfileChip
+            profile_picture={profile.profile_picture}
+            id={profile.id}
+            display_name={profile.display_name}
+            key={profile.id}
+          />
+        ))}
+      </View>
     </View>
   );
 };
