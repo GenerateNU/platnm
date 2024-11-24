@@ -9,7 +9,6 @@ import (
 
 func (h *Handler) GetTrackById(c *fiber.Ctx) error {
 	id := c.Params("id")
-	print(id)
 	media, err := h.mediaRepository.GetTrackById(c.Context(), id)
 	if err != nil {
 		return err
@@ -20,7 +19,6 @@ func (h *Handler) GetTrackById(c *fiber.Ctx) error {
 
 func (h *Handler) GetAlbumById(c *fiber.Ctx) error {
 	id := c.Params("id")
-	print(id)
 	media, err := h.mediaRepository.GetAlbumById(c.Context(), id)
 	if err != nil {
 		return err
