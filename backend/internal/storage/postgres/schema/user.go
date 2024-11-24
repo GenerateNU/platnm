@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"platnm/internal/models"
 	"strconv"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -52,9 +53,7 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id string) (*models.Us
 	return &user, nil
 }
 
-
 func (r *UserRepository) UserExists(ctx context.Context, id string) (bool, error) {
-
 	rows, err := r.db.Query(ctx, `SELECT * FROM "user" WHERE id = $1`, id)
 	if err != nil {
 		return false, err
@@ -67,7 +66,6 @@ func (r *UserRepository) UserExists(ctx context.Context, id string) (bool, error
 
 	return false, nil
 }
-
 
 func (r *UserRepository) FollowExists(ctx context.Context, follower uuid.UUID, following uuid.UUID) (bool, error) {
 
@@ -116,7 +114,7 @@ func (r *UserRepository) CalculateScore(ctx context.Context, id uuid.UUID) (int,
             SELECT 
                 SUM(CASE WHEN urv.upvote = TRUE THEN 1 ELSE -1 END)
             FROM 
-                user_review_vote urv
+                user_vote urv
             WHERE 
                 urv.user_id = $1
         ), 0) + 
@@ -182,25 +180,25 @@ func (r *UserRepository) UpdateUserOnboard(ctx context.Context, email string, en
 
 func (r *UserRepository) GetUserProfile(ctx context.Context, id uuid.UUID) (*models.Profile, error) {
 	profile := &models.Profile{}
-	query := `SELECT u.id, u.username, u.display_name, COUNT(DISTINCT followers.follower_id) AS follower_count, COUNT(DISTINCT followed.followee_id) AS followed_count
+	query := `SELECT u.id, u.username, u.display_name, COUNT(DISTINCT followers.follower_id) AS follower_count, COUNT(DISTINCT followed.followee_id) AS followed_count, u.bio, u.profile_picture
 		FROM "user" u
 		LEFT JOIN follower followers ON followers.followee_id = u.id
 		LEFT JOIN follower followed ON followed.follower_id = u.id
 		WHERE u.id = $1
 		GROUP BY u.id, u.username, u.display_name, u.profile_picture, u.bio;`
 
-	err := r.db.QueryRow(ctx, query, id).Scan(&profile.UserID, &profile.Username, &profile.DisplayName, &profile.Followers, &profile.Followed)
+	err := r.db.QueryRow(ctx, query, id).Scan(&profile.UserID, &profile.Username, &profile.DisplayName, &profile.Followers, &profile.Followed, &profile.Bio, &profile.ProfilePicture)
 	if err != nil {
 		print(err.Error(), "unable to find profile")
 		return nil, err
 	}
-	
+
 	score, err := r.CalculateScore(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 	profile.Score = score
-	
+
 	return profile, nil
 }
 
@@ -212,7 +210,7 @@ func (r *UserRepository) GetProfileByName(ctx context.Context, name string) ([]*
 		WHERE username ILIKE '%' || $1 || '%' OR display_name ILIKE '%' || $1 || '%'
 		GROUP BY u.id, u.username, u.display_name, u.profile_picture, u.bio;`
 
-	var profiles []*models.Profile;
+	var profiles []*models.Profile
 
 	profileRows, profileErr := r.db.Query(ctx, query, name)
 	if profileErr != nil {
@@ -230,20 +228,20 @@ func (r *UserRepository) GetProfileByName(ctx context.Context, name string) ([]*
 			&profile.Bio,
 			&profile.Followers,
 			&profile.Followed,
-			); err != nil {
-				return nil, err
-			}
+		); err != nil {
+			return nil, err
+		}
 
-			userUUID, err := uuid.Parse(profile.UserID)
-        	if err != nil {
-            	return nil, err
-       		}
-			score, err := r.CalculateScore(ctx, userUUID)
-			if err != nil {
-				return nil, err
-			}
-			profile.Score = score
-			profiles = append(profiles, &profile)
+		userUUID, err := uuid.Parse(profile.UserID)
+		if err != nil {
+			return nil, err
+		}
+		score, err := r.CalculateScore(ctx, userUUID)
+		if err != nil {
+			return nil, err
+		}
+		profile.Score = score
+		profiles = append(profiles, &profile)
 	}
 	return profiles, nil
 }
@@ -365,6 +363,180 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 	}
 
 	return previews, nil
+
+}
+
+func (r *UserRepository) CreateSection(ctx context.Context, sectiontype models.SectionType) (models.SectionType, error) {
+
+	if err := r.db.QueryRow(ctx, `INSERT INTO "section_type" (id, title, search_type) VALUES ($1, $2, $3) RETURNING id`, sectiontype.ID, sectiontype.Title, sectiontype.SearchType).Scan(&sectiontype.ID); err != nil {
+		return models.SectionType{}, err
+	}
+	return sectiontype, nil
+}
+
+func (r *UserRepository) CreateSectionItem(ctx context.Context, sectionitem models.SectionItem, user string, sectiontype string) (models.SectionItem, error) {
+	exists, err := r.UserExists(ctx, user)
+	if !exists {
+		print("User does not exist.")
+		return models.SectionItem{}, err
+	}
+
+	if err := r.db.QueryRow(ctx, `INSERT INTO "section_item" (title, cover_photo) VALUES ($1, $2) RETURNING id`, sectionitem.Title, sectionitem.CoverPhoto).Scan(&sectionitem.ID); err != nil {
+		return models.SectionItem{}, err
+	}
+
+	_, err = r.db.Exec(ctx, `INSERT INTO "section_type_item" (user_id, section_item_id, section_type_id) VALUES ($1, $2, $3)`, user, sectionitem.ID, sectiontype)
+	if err != nil {
+		return models.SectionItem{}, err
+	}
+
+	return sectionitem, nil
+}
+
+func (r *UserRepository) UpdateSectionItem(ctx context.Context, sectionitem models.SectionItem) error {
+	result, err := r.db.Exec(ctx, `UPDATE "section_item" SET "title" = $1, "cover_photo" = $2 WHERE id = $3`, sectionitem.Title, sectionitem.CoverPhoto, sectionitem.ID)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected := result.RowsAffected()
+
+	if rowsAffected == 0 {
+		return nil
+	}
+
+	return nil
+}
+
+func (r *UserRepository) DeleteSectionItem(ctx context.Context, section_type_item models.SectionTypeItem) error {
+
+	exists, err := r.UserExists(ctx, section_type_item.UserID)
+	if !exists {
+		print("User does not exist.")
+		return err
+	}
+
+	_, err = r.db.Exec(ctx, `DELETE FROM "section_type_item" WHERE section_item_id = $1 AND section_type_id = $2`, section_type_item.SectionItemId, section_type_item.SectionTypeId)
+	if err != nil {
+		return err
+	}
+
+	_, err = r.db.Exec(ctx, `DELETE FROM "section_item" WHERE id = $1`, section_type_item.SectionItemId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *UserRepository) DeleteSection(ctx context.Context, section_type_item models.SectionTypeItem) error {
+
+	exists, err := r.UserExists(ctx, section_type_item.UserID)
+	if !exists {
+		print("User does not exist.")
+		return err
+	}
+
+	_, err = r.db.Exec(ctx, `DELETE FROM "section_type_item" WHERE section_type_id = $1`, section_type_item.SectionTypeId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *UserRepository) GetUserSections(ctx context.Context, user_id string) ([]models.UserSection, error) {
+
+	rows, err := r.db.Query(ctx,
+		`SELECT section_type_item.section_type_id as section_id, section_type.title as section_title, section_type.search_type, section_item.id as item_id, section_item.title as item_title, section_item.cover_photo
+		FROM section_type_item
+		JOIN section_item on section_item.id = section_type_item.section_item_id
+		JOIN section_type on section_type.id = section_type_item.section_type_id
+		WHERE section_type_item.user_id = $1
+		GROUP by section_type_item.section_type_id, section_type.search_type, section_type.title, section_item.id, section_item.title, section_item.cover_photo`, user_id)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	sectionMap := make(map[string]*models.UserSection)
+
+	for rows.Next() {
+		var sectionID, sectionTitle, itemID, searchType, itemTitle, coverPhoto string
+		if err := rows.Scan(&sectionID, &sectionTitle, &searchType, &itemID, &itemTitle, &coverPhoto); err != nil {
+			return nil, err
+		}
+
+		section, exists := sectionMap[sectionID]
+		if !exists {
+			section = &models.UserSection{
+				SectionId: func() int {
+					id, err := strconv.Atoi(sectionID)
+					if err != nil {
+						return -1
+					}
+					return id
+				}(),
+				Title:      sectionTitle,
+				SearchType: searchType,
+				Items:      []models.SectionItem{},
+			}
+			sectionMap[sectionID] = section
+		}
+
+		itemIDInt, err := strconv.Atoi(itemID)
+		if err != nil {
+			return nil, err
+		}
+
+		section.Items = append(section.Items, models.SectionItem{
+			ID:         itemIDInt,
+			Title:      itemTitle,
+			CoverPhoto: coverPhoto,
+		})
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	var sections []models.UserSection
+	for _, section := range sectionMap {
+		sections = append(sections, *section)
+	}
+
+	return sections, nil
+}
+
+func (r *UserRepository) GetUserSectionOptions(ctx context.Context, user_id string) ([]models.SectionOption, error) {
+	var options []models.SectionOption
+	rows, err := r.db.Query(ctx,
+		`SELECT section_type.title, section_type.search_type
+		FROM section_type
+		WHERE section_type.id NOT IN  
+  		  (SELECT section_type_item.section_type_id 
+  		  FROM section_type_item
+   		  WHERE section_type_item.user_id = $1)`, user_id)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var option models.SectionOption
+		if err := rows.Scan(&option.SectionTitle, &option.SearchType); err != nil {
+			return nil, err
+		}
+		options = append(options, option)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return options, nil
 
 }
 

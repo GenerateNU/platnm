@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
 	"platnm/internal/models"
 	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/zmb3/spotify/v2"
 )
 
 type MediaRepository struct {
@@ -228,32 +230,43 @@ func (r *MediaRepository) GetExistingAlbumBySpotifyID(ctx context.Context, id st
 
 func (r *MediaRepository) AddAlbum(ctx context.Context, album *models.Album) (*models.Album, error) {
 	query :=
-		`INSERT INTO album (title, release_date, cover, country, spotify_id)
-		 VALUES ($1, $2, $3, $4, $5)
-		 RETURNING id;`
+		`
+		WITH inserted_album AS (
+		 INSERT INTO album (title, release_date, cover, spotify_id)
+		 VALUES ($1, $2, $3, $4)
+		 ON CONFLICT (spotify_id) DO NOTHING
+		 RETURNING id
+		)
+		 SELECT id FROM inserted_album
+		 UNION
+		 SELECT id FROM album WHERE spotify_id = $4;`
 
-	if err := r.QueryRow(ctx, query, album.Title, album.ReleaseDate, album.Cover, album.Country, album.SpotifyID).Scan(&album.ID); err != nil {
+	var id int
+	if err := r.QueryRow(ctx, query, album.Title, album.ReleaseDate, album.Cover, album.SpotifyID).Scan(&id); err != nil {
 		return nil, err
 	}
 
+	album.ID = id
 	return album, nil
 }
 
 func (r *MediaRepository) AddTrack(ctx context.Context, track *models.Track) (*models.Track, error) {
 	query :=
 		`
+		WITH inserted_track AS (
 		 INSERT INTO track (album_id, title, duration_seconds, spotify_id)
 		 VALUES ($1, $2, $3, $4)
 		 ON CONFLICT (spotify_id) DO NOTHING
-		 RETURNING id;`
+		 RETURNING id
+		)
+		 SELECT id FROM inserted_track
+		 UNION
+		 SELECT id FROM track WHERE spotify_id = $4;
+		 `
 
 	var id int
 	err := r.QueryRow(ctx, query, track.AlbumID, track.Title, track.Duration, track.SpotifyID).Scan(&id)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			track.ID = id
-			return track, nil // No new row was inserted because one existed
-		}
 		return nil, err
 	}
 
@@ -277,6 +290,32 @@ func (r *MediaRepository) AddAlbumArtist(ctx context.Context, albumId int, artis
 	return nil
 }
 
+func (r *MediaRepository) AddArtistAndAlbumArtist(ctx context.Context, artist *models.Artist, albumId int) error {
+	query := `
+		WITH inserted_artist AS (
+			INSERT INTO artist (name, spotify_id, photo, bio)
+			VALUES ($1, $2, $3, $4)
+			ON CONFLICT (spotify_id) DO NOTHING
+			RETURNING id
+		),
+		final_artist AS (
+			SELECT id FROM inserted_artist
+			UNION ALL
+			SELECT id FROM artist WHERE spotify_id = $2
+			LIMIT 1
+		)
+		INSERT INTO album_artist (album_id, artist_id)
+		SELECT $5, id FROM final_artist
+		ON CONFLICT DO NOTHING;`
+
+	_, err := r.Exec(ctx, query, artist.Name, artist.SpotifyID, artist.Photo, artist.Bio, albumId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *MediaRepository) AddTrackArtist(ctx context.Context, trackId int, artistId int) error {
 	query :=
 		`INSERT INTO track_artist (track_id, artist_id)
@@ -292,81 +331,169 @@ func (r *MediaRepository) AddTrackArtist(ctx context.Context, trackId int, artis
 	return nil
 }
 
+func (r *MediaRepository) AddArtistAndTrackArtist(ctx context.Context, artist *models.Artist, trackId int) error {
+	query := `
+		WITH inserted_artist AS (
+			INSERT INTO artist (name, spotify_id, photo, bio)
+			VALUES ($1, $2, $3, $4)
+			ON CONFLICT (spotify_id) DO NOTHING
+			RETURNING id
+		),
+		final_artist AS (
+			SELECT id FROM inserted_artist
+			UNION ALL
+			SELECT id FROM artist WHERE spotify_id = $2
+			LIMIT 1
+		)
+		INSERT INTO track_artist (track_id, artist_id)
+		SELECT $5, id FROM final_artist
+		ON CONFLICT DO NOTHING;`
+
+	_, err := r.Exec(ctx, query, artist.Name, artist.SpotifyID, artist.Photo, artist.Bio, trackId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, mediaType models.MediaType) ([]models.Media, error) {
-	// Select all rows where either the input string is in the title of the media, or if the string matches one of the titles fuzzily
-	var albumQuery = "SELECT * FROM album WHERE levenshtein(title, $1) <= 5 OR title ILIKE '%' || $1 || '%' LIMIT 20;"
-	var trackQuery = `
-	SELECT 
-		track.id AS track_id,
-		track.title AS track_title,
-		track.duration_seconds,
-		track.album_id as album_id,
-		album.release_date,
-		album.cover,
-		album.title as album_title
-	FROM track
-	JOIN album ON track.album_id = album.id
-	WHERE levenshtein(track.title, $1) <= 5 OR track.title ILIKE '%' || $1 || '%'
-	LIMIT 20;
+	decodedName, err := url.QueryUnescape(name) // handle URL encoding
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode name: %w", err)
+	}
+
+	type columns struct {
+		MediaType   string     `db:"media_type"`
+		MediaId     int        `db:"media_id"`
+		Title       string     `db:"media_title"`
+		ArtistName  string     `db:"artist_name"`
+		Cover       *string    `db:"cover"`
+		ReleaseDate *time.Time `db:"release_date"`
+		SpotifyId   *string    `db:"spotify_id"`
+
+		// album column
+		AlbumTitle *string `db:"album_title"`
+
+		// track columns
+		TrackAlbumID *int `db:"track_album_id"`
+		Duration     *int `db:"duration_seconds"`
+	}
+
+	const query string = `
+			select
+			(CASE WHEN t.id IS NOT NULL THEN 'track' ELSE 'album' END) as media_type,
+			coalesce(t.id, a.id) as media_id,
+			coalesce(t.title, a.title) as media_title,
+			coalesce(a.artists, t.artists) as artist_name,
+			coalesce(a.cover, t.cover) as cover,
+			coalesce(a.release_date, t.release_date) as release_date,
+			coalesce(a.spotify_id, t.spotify_id) as spotify_id,
+			t.album_id as track_album_id,
+			a.title as album_title,
+			t.duration_seconds
+		from
+		(
+      select
+				a.id,
+				a.title,
+				a.spotify_id,
+				string_agg(ar.name, ', ') as artists,
+				cover,
+				release_date
+			from album a
+				left join album_artist aa on a.id = aa.album_id
+				join artist ar on aa.artist_id = ar.id
+			group by
+				a.id,
+				cover,
+				a.title,
+				a.spotify_id
+		) a
+    left join (
+      select
+				t.title,
+				t.id,
+				string_agg(ar.name, ', ') as artists,
+				cover,
+				album_id,
+				duration_seconds,
+				release_date,
+				t.spotify_id
+			from track t
+				left join track_artist ta on t.id = ta.track_id
+				join artist ar on ta.artist_id = ar.id
+				join album a on t.album_id = a.id
+			group by
+				t.id,
+				cover,
+				t.title,
+				album_id,
+				duration_seconds,
+				release_date,
+				t.spotify_id
+		) t on t.album_id = a.id
+		WHERE t.title ILIKE '%' || $1 || '%' OR a.title ILIKE '%' || $1 || '%'
+		AND ($2::media_type IS NULL OR
+       		(CASE WHEN t.id IS NOT NULL THEN 'track' ELSE 'album' END)::media_type = $2::media_type)
 	`
-
-	var medias []models.Media
-
-	if mediaType == models.AlbumMedia || mediaType == models.BothMedia {
-
-		albumRows, albumErr := r.Query(ctx, albumQuery, name)
-		if albumErr != nil {
-			return nil, albumErr
-		}
-		defer albumRows.Close()
-
-		for albumRows.Next() {
-			var album models.Album
-			if err := albumRows.Scan(
-				&album.ID,
-				&album.Title,
-				&album.ReleaseDate,
-				&album.Cover,
-				&album.Country,
-				&album.GenreID,
-				&album.SpotifyID,
-			); err != nil {
-				return nil, err
-			}
-			album.MediaType = models.AlbumMedia
-			medias = append(medias, album)
-		}
+	var rows pgx.Rows
+	if mediaType == models.BothMedia {
+		rows, err = r.Query(ctx, query, decodedName, nil)
+	} else {
+		rows, err = r.Query(ctx, query, decodedName, mediaType)
+	}
+	if err != nil {
+		return nil, err
 	}
 
-	if mediaType == models.TrackMedia || mediaType == models.BothMedia {
-
-		trackRows, trackErr := r.Query(ctx, trackQuery, name)
-		if trackErr != nil {
-			return nil, trackErr
+	results, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.Media, error) {
+		c, err := pgx.RowToStructByName[columns](row)
+		if err != nil {
+			return models.Track{}, err
 		}
-		defer trackRows.Close()
 
-		for trackRows.Next() {
-			var track models.Track
-			if err := trackRows.Scan(
-				&track.ID,
-				&track.Title,
-				&track.Duration,
-				&track.AlbumID,
-				&track.ReleaseDate,
-				&track.Cover,
-				&track.AlbumTitle,
-			); err != nil {
-				return nil, err
+		var media models.Media
+		switch c.MediaType {
+		case string(models.AlbumMedia):
+			album := &models.Album{
+				MediaType:   models.AlbumMedia,
+				ID:          c.MediaId,
+				Title:       c.Title,
+				ReleaseDate: *c.ReleaseDate,
+				Cover:       *c.Cover,
+				ArtistName:  c.ArtistName,
+				SpotifyID:   *c.SpotifyId,
 			}
-			track.MediaType = models.TrackMedia
-			medias = append(medias, track)
-		}
+			media = album
+		case string(models.TrackMedia):
+			track := &models.Track{
+				MediaType:   models.TrackMedia,
+				ID:          c.MediaId,
+				Title:       c.Title,
+				ReleaseDate: *c.ReleaseDate,
+				AlbumID:     *c.TrackAlbumID,
+				Duration:    *c.Duration,
+				Cover:       *c.Cover,
+				ArtistName:  c.ArtistName,
+				SpotifyID:   *c.SpotifyId,
+			}
 
+			if c.AlbumTitle != nil {
+				track.AlbumTitle = *c.AlbumTitle
+			}
+			media = track
+		default:
+			return nil, fmt.Errorf("unknown media type: %s", c.MediaType)
+		}
+		return media, nil
+	})
+
+	if err != nil {
+		return nil, err
 	}
 
-	return medias, nil
-
+	return results, nil
 }
 
 func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset int, mediaType *string) ([]models.MediaWithReviewCount, error) {
@@ -395,14 +522,14 @@ func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset i
 				ORDER BY review_count DESC
 				LIMIT $1 OFFSET $2
 			)
-			SELECT 
+			SELECT
 				m.media_type,
 				m.media_id,
 				m.review_count,
-				COALESCE(a.title, t.title) AS title, 
+				COALESCE(a.title, t.title) AS title,
 				COALESCE(a.artists, t.artists) AS artist_name,
-				COALESCE(a.cover, t.cover) AS cover, 
-				COALESCE(a.release_date, t.release_date) AS release_date, 
+				COALESCE(a.cover, t.cover) AS cover,
+				COALESCE(a.release_date, t.release_date) AS release_date,
 				t.album_id AS track_album_id,
 				t.duration_seconds
 			FROM MostReviewed m
@@ -492,6 +619,44 @@ func (r *MediaRepository) GetExistingTrackBySpotifyID(ctx context.Context, id st
 	}
 
 	return trackId, nil
+}
+
+func (r *MediaRepository) GetArtistsMissingPhoto(ctx context.Context) ([]spotify.ID, error) {
+	const query string = `
+		SELECT spotify_id FROM artist WHERE photo = '';
+	`
+
+	rows, err := r.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	spotifyIds, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (spotify.ID, error) {
+		var spotifyId string
+		if err := row.Scan(&spotifyId); err != nil {
+			return "", err
+		}
+
+		return spotify.ID(spotifyId), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return spotifyIds, nil
+}
+
+func (r *MediaRepository) UpdateArtistPhoto(ctx context.Context, spotifyId spotify.ID, photo string) (int, error) {
+	const query string = `
+		UPDATE artist SET photo = $1 WHERE spotify_id = $2 RETURNING id;
+	`
+
+	var id int
+	if err := r.QueryRow(ctx, query, photo, spotifyId.String()).Scan(&id); err != nil {
+		return 0, err
+	}
+
+	return id, nil
 }
 
 func NewMediaRepository(db *pgxpool.Pool) *MediaRepository {
