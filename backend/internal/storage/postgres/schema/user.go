@@ -208,7 +208,8 @@ func (r *UserRepository) GetProfileByName(ctx context.Context, name string) ([]*
 		LEFT JOIN follower followers ON followers.followee_id = u.id
 		LEFT JOIN follower followed ON followed.follower_id = u.id
 		WHERE username ILIKE '%' || $1 || '%' OR display_name ILIKE '%' || $1 || '%'
-		GROUP BY u.id, u.username, u.display_name, u.profile_picture, u.bio;`
+		GROUP BY u.id, u.username, u.display_name, u.profile_picture, u.bio
+		LIMIT 5;`
 
 	var profiles []*models.Profile
 

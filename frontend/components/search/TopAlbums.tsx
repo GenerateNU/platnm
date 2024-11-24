@@ -1,7 +1,6 @@
 import React from "react";
 import { useState } from "react";
 
-//"Import SongChip from @/components/SongChip" where?
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import AlbumSearchCard from "@/components/search/AlbumSearchCard";
 import { ScrollView } from "react-native";
