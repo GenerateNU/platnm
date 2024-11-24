@@ -1,17 +1,20 @@
 import { useState, useEffect } from "react";
-import { StyleSheet, View, Text } from "react-native";
+import { StyleSheet, View, Text, ScrollView } from "react-native";
 import ReviewPreview from "@/components/ReviewPreview";
 import Filter from "@/components/search/Filter";
 import axios from "axios";
+import { useLocalSearchParams } from "expo-router";
+import HeaderComponent from "@/components/HeaderComponent";
 
-interface MediaReviewProps {
-  media_id: string, 
-  user_id: string,
-  media_type: string,
-  filter: "user" | "friend";
-}
+const MediaReviewsPage = () => {
 
-const MediaReviewsPage = ({media_id, user_id, media_type, filter} : MediaReviewProps) => {
+  const { media_id, user_id, media_type, filter } =
+  useLocalSearchParams<{
+    media_id: string,
+    user_id: string,
+    media_type: string,
+    filter: string
+  }>();
 
   const [selectedFilter, setSelectedFilter] = useState<FilterOption>(filter);
   const [userReviews, setUserReviews] = useState<Preview[]>([])
@@ -23,7 +26,7 @@ const MediaReviewsPage = ({media_id, user_id, media_type, filter} : MediaReviewP
   useEffect(() => {
     // Fetch user reviews
     axios
-    .get(`${BASE_URL}/reviews/${media_id}/${user_id}`, {
+    .get(`${BASE_URL}/reviews/media/${media_id}/${user_id}`, {
       params: {
         media_type: media_type, 
       },
@@ -39,7 +42,8 @@ const MediaReviewsPage = ({media_id, user_id, media_type, filter} : MediaReviewP
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={{ backgroundColor: "#FFF" }}>
+      <HeaderComponent title="" />
       <Filter
         currentFilter={selectedFilter}
         filterOptions={filterOptions}
@@ -48,7 +52,6 @@ const MediaReviewsPage = ({media_id, user_id, media_type, filter} : MediaReviewP
       <View>
       {selectedFilter === "user" && (
         <View>
-          <Text>User Reviews</Text>
           {userReviews.map((review, index) => {
             return <ReviewPreview key={index} preview={review} />;
           })}
@@ -58,15 +61,8 @@ const MediaReviewsPage = ({media_id, user_id, media_type, filter} : MediaReviewP
         <View></View> 
         )}
       </View>
-    </View>
+    </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 80,
-  },
-});
 
 export default MediaReviewsPage

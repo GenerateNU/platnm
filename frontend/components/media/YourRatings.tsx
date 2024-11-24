@@ -19,7 +19,7 @@ const YourRatings = ({ user_id, media_id, media_type }: YourRatingsProps) => {
   useEffect(() => {
     // Fetch user reviews
     axios
-    .get(`${BASE_URL}/reviews/${media_id}/${user_id}`, {
+    .get(`${BASE_URL}/reviews/media/${media_id}/${user_id}`, {
       params: {
         media_type: media_type, 
       },
@@ -36,8 +36,8 @@ const YourRatings = ({ user_id, media_id, media_type }: YourRatingsProps) => {
       onPress={() => router.push({
         pathname: "/MediaReviewsPage",
         params: {
-          mediaId: media_id,
-          userId: user_id,
+          media_id: media_id,
+          user_id: user_id,
           media_type: media_type, 
           filter: "user",
         },
