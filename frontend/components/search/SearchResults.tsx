@@ -27,6 +27,8 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     return <Text style={styles.noResults}>No results found</Text>;
   }
 
+  const filterOptions = ["all", "songs", "albums", "profile"]
+
   const [selectedFilter, setSelectedFilter] = useState<FilterOption>("all");
 
   const handleFilterChange = (filter: FilterOption) => {
@@ -37,7 +39,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     <View style={styles.container}>
       <Filter
         currentFilter={selectedFilter}
-        filterOptions={["all", "songs", "albums", "profile"]}
+        filterOptions={filterOptions}
         onFilterChange={handleFilterChange}
       />
       <View style={styles.resultGrid}>
