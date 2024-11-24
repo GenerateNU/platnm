@@ -54,7 +54,6 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id string) (*models.Us
 }
 
 func (r *UserRepository) UserExists(ctx context.Context, id string) (bool, error) {
-	print(id)
 	rows, err := r.db.Query(ctx, `SELECT * FROM "user" WHERE id = $1`, id)
 	if err != nil {
 		return false, err

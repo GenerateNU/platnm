@@ -15,7 +15,6 @@ func (h *Handler) GetUserVote(c *fiber.Ctx, postType string) error {
 	}
 
 	vote, err := h.voteRepository.GetVoteIfExists(c.Context(), userID, postID, postType)
-	print(vote, err)
 
 	if vote == nil {
 		return nil
@@ -25,6 +24,5 @@ func (h *Handler) GetUserVote(c *fiber.Ctx, postType string) error {
 		return err
 	}
 
-	print(vote)
 	return c.Status(fiber.StatusOK).JSON(vote)
 }

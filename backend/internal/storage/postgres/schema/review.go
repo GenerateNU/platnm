@@ -708,7 +708,6 @@ func (r *ReviewRepository) GetReviewByID(ctx context.Context, id string) (*model
 }
 
 func (r *ReviewRepository) UserVote(ctx context.Context, userID string, postID string, upvote bool, postType string) error {
-	println("getting votes")
 	rows, err := r.Query(ctx, `
 		WITH deleted_vote AS (
     -- Delete the existing vote if it exists for the given user, post, and type

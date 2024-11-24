@@ -21,7 +21,6 @@ const (
 )
 
 func (r *VoteRepository) AddVote(ctx context.Context, vote *models.UserVote, postType string) error {
-	println("adding vote")
 	query := `
 	INSERT INTO user_vote (user_id, post_id, upvote, post_type)
 	VALUES ($1, $2, $3, $4);
@@ -44,26 +43,18 @@ func (r *VoteRepository) AddVote(ctx context.Context, vote *models.UserVote, pos
 func (r *VoteRepository) GetVoteIfExists(ctx context.Context, usrID string, revID string, postType string) (*models.UserVote, error) {
 	var voteHolder models.UserVote
 
-	println("getting vote")
-	println("usrID:", usrID)
-	println("revID:", revID)
-	println("postType:", postType)
 	err := r.db.QueryRow(ctx, `SELECT user_id, post_id, upvote, post_type FROM user_vote WHERE user_id = $1 AND post_id = $2 AND post_type = $3`, usrID, revID, postType).Scan(&voteHolder.UserID, &voteHolder.PostID, &voteHolder.Upvote, &voteHolder.PostType)
-	println("getting vote post query")
 	if err != nil {
 		if err.Error() == "no rows in result set" {
 			return nil, nil
 		}
-		println("error:", err)
 		return nil, err
 	}
 
-	fmt.Printf("voteHolder: %+v\n", voteHolder)
 	return &voteHolder, nil
 }
 
 func (r *VoteRepository) DeleteVote(ctx context.Context, userID string, revID string, postType string) error {
-	println("deleting vote")
 	query := `
 	DELETE FROM user_vote 
 	WHERE user_id = $1 AND post_id =$2 AND post_type = $3
@@ -76,7 +67,6 @@ func (r *VoteRepository) DeleteVote(ctx context.Context, userID string, revID st
 }
 
 func (r *VoteRepository) UpdateVote(ctx context.Context, userID string, reviewID string, vote bool, postType string) error {
-	println("updating vote")
 	query := `
 	UPDATE user_vote
 	SET upvote = $1
