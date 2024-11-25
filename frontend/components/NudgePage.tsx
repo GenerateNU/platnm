@@ -1,24 +1,56 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
+  Image,
   TouchableOpacity,
   TouchableWithoutFeedback,
 } from "react-native";
+import axios from "axios";
+import { useAuthContext } from "@/components/AuthProvider";
 
-const NudgePage = () => {
-  return (
+interface Profile {
+  profile_picture: string;
+  name: string;
+}
+
+const NudgePage: React.FC = () => {
+  const [profiles, fetchFollowing] = useState<Profile[]>([]);
+
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+  const { userId } = useAuthContext();
+const [following, setFollowing] = useState([]);
+  
+useEffect(() => {
+  const fetchFollowing = async () => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/following/${userId}`,
+      );
+      setFollowing(response.data);
+    } catch (error) {
+      console.error("Error fetching following:", error);
+    }
+  };
+
+   fetchFollowing();
+}, [])
+
+return (
     <View style={styles.container}>
       <Text style={styles.heading}>Review Published!</Text>
       <View style={styles.nudgeContainer}>
         <Text style={styles.nudgeText}>Send nudge</Text>
       </View>
       <View style={styles.artistsGrid}>
-        {Array.from({ length: 6 }).map((_, index) => (
+        {profiles.map((user, index) => (
           <View key={index} style={styles.artist}>
-            <View style={styles.artistCircle}></View>
-            <Text style={styles.artistName}>User Name</Text>
+            <Image
+            source={{ uri: user.profile_picture }}
+            style={styles.artistCircle}
+            />
+            <Text style={styles.artistName}>{user.name}</Text>
           </View>
         ))}
       </View>
