@@ -34,6 +34,7 @@ type UserRepository interface {
 }
 
 type ReviewRepository interface {
+	GetUserReviewsOfMedia(ctx context.Context, media_type string, mediaID string, userID string) ([]*models.Preview, error)
 	GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error)
 	CreateReview(ctx context.Context, review *models.Review) (*models.Review, error)
 	ReviewExists(ctx context.Context, id string) (bool, error)

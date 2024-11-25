@@ -129,3 +129,5 @@ type RatingDistribution = {
   rating: number;
   count: number;
 };
+
+type FilterOption = string;
