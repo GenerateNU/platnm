@@ -252,7 +252,7 @@ func (r *ReviewRepository) CreateComment(ctx context.Context, comment *models.Co
 }
 
 func (r *ReviewRepository) GetUserReviewsOfMedia(ctx context.Context, media_type string, mediaID string, userID string) ([]*models.Preview, error) {
-	
+
 	// shoutout to ally again <3
 	query := `
 	SELECT 
@@ -300,7 +300,7 @@ func (r *ReviewRepository) GetUserReviewsOfMedia(ctx context.Context, media_type
 	GROUP BY r.id, r.user_id, u.username, u.display_name, u.profile_picture, r.media_type, r.media_id, r.rating, r.comment, r.created_at, r.updated_at, media_cover, media_title, media_artist, v.vote_count
 	`
 
-	rows, err := r.Query(ctx, query, userID, mediaID, media_type) 
+	rows, err := r.Query(ctx, query, userID, mediaID, media_type)
 
 	if err != nil {
 		fmt.Println(err)
@@ -370,7 +370,7 @@ func (r *ReviewRepository) GetUserReviewsOfMedia(ctx context.Context, media_type
 
 	return previews, nil
 
-} 
+}
 
 func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error) {
 
