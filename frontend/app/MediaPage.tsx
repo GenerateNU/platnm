@@ -14,7 +14,7 @@ import ReviewPreview from "@/components/ReviewPreview";
 export default function MediaPage() {
   const [media, setMedia] = useState<Media>();
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [rating, setReviewAvgRating] = useState<number | null>(null);
+  const [avgRating, setAvgRating] = useState<number | null>(null);
   const [ratingDistributions, setRatingDistributions] = useState<
     RatingDistribution[]
   >([]);
@@ -25,8 +25,6 @@ export default function MediaPage() {
     mediaId: string;
     mediaType: string;
   }>();
-
-  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     axios
@@ -47,7 +45,7 @@ export default function MediaPage() {
       reviews.forEach((review) => {
         distributionMap.set(
           review.rating,
-          (distributionMap.get(review.rating) || 0) + 1
+          (distributionMap.get(review.rating) || 0) + 1,
         );
       });
 
@@ -56,7 +54,7 @@ export default function MediaPage() {
         ([rating, count]) => ({
           rating,
           count,
-        })
+        }),
       ).sort((a, b) => a.rating - b.rating);
 
       setRatingDistributions(distributionArray);
@@ -72,11 +70,11 @@ export default function MediaPage() {
           .get(`${BASE_URL}/reviews/${mediaType}/${mediaId}`)
           .then((response) => {
             setReviews(response.data.reviews);
-            setReviewAvgRating(response.data.avgRating.toFixed(2) / 2 || null);
+            setAvgRating(Math.round(response.data.avgRating) || null);
           })
           .catch((error) => console.error(error));
       }
-    }, [media])
+    }, [media]),
   );
 
   return (
@@ -93,9 +91,11 @@ export default function MediaPage() {
           <MediaCard media={media} />
           <View style={styles.bodyContainer}>
             <View style={styles.titleContainer}>
-              {rating && <ReviewStats rating={rating} reviews={reviews} />}
+              {avgRating && (
+                <ReviewStats rating={avgRating} reviews={reviews} />
+              )}
             </View>
-            {ratingDistributions.length > 0 && (
+            {ratingDistributions && ratingDistributions.length > 0 && (
               <Histogram distribution={ratingDistributions} />
             )}
             <View style={styles.socialContainer}>

@@ -32,6 +32,7 @@ const YourRatings = ({ user_id, media_id, media_type }: YourRatingsProps) => {
   return (
     <TouchableOpacity
       style={styles.container}
+      disabled={!userReviews || userReviews.length === 0}
       onPress={() =>
         router.push({
           pathname: "/MediaReviewsPage",
@@ -47,10 +48,10 @@ const YourRatings = ({ user_id, media_id, media_type }: YourRatingsProps) => {
       <View style={styles.textContainer}>
         <Text style={styles.text}>You've rated this song</Text>
         <View style={styles.countBubble}>
-          <Text style={styles.countText}>{userReviews.length}x</Text>
+          <Text style={styles.countText}>{userReviews?.length ?? 0}x</Text>
         </View>
       </View>
-      <ArrowRight />
+      {userReviews && userReviews.length > 0 && <ArrowRight />}
     </TouchableOpacity>
   );
 };

@@ -8,7 +8,7 @@ interface TopReviewsProps {
 
 const TopReviews = ({ reviews }: TopReviewsProps) => {
   return (
-    <View>
+    <View style={styles.container}>
       <Text style={styles.title}>Top Reviews</Text>
       {reviews.map((review, index) => {
         return <ReviewPreview key={index} preview={review} />;
@@ -18,25 +18,13 @@ const TopReviews = ({ reviews }: TopReviewsProps) => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 16,
+  },
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    padding: 16,
-  },
-  container: {
-    flexDirection: "row",
-  },
-  songName: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#434343",
-    marginBottom: 4,
-  },
-  artistName: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#434343",
-    marginBottom: 4,
+    paddingVertical: 8,
   },
 });
 
