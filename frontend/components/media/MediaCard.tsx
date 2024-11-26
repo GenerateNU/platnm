@@ -49,7 +49,10 @@ const MediaCard = ({ media }: MediaCardProps) => {
                 </View>
               </View>
               <View style={styles.artist}>
-                <Image style={styles.image} source={{ uri: media.cover }} />
+                <Image
+                  style={styles.image}
+                  source={{ uri: media.artist_photo }}
+                />
                 <Text style={styles.artistText}>{media.artist_name}</Text>
               </View>
               <Text style={styles.primaryMediaText}>{media.title}</Text>
@@ -115,6 +118,7 @@ const styles = StyleSheet.create({
   },
   artistText: {
     color: "white",
+    marginLeft: 5,
   },
   image: {
     width: 50,

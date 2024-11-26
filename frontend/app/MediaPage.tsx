@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Button, StyleSheet, ScrollView, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { StyleSheet, ScrollView, View } from "react-native";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import axios from "axios";
 import Histogram from "@/components/media/Histogram";
@@ -8,7 +7,6 @@ import YourRatings from "@/components/media/YourRatings";
 import FriendRatings from "@/components/media/FriendRatings";
 import MediaCard from "@/components/media/MediaCard";
 import ReviewStats from "@/components/media/ReviewStats";
-import HeaderComponent from "@/components/HeaderComponent";
 import ReviewPreview from "@/components/ReviewPreview";
 
 export default function MediaPage() {

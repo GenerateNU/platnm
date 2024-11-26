@@ -10,6 +10,7 @@ interface Album {
   genre_id: number;
   media_type: string;
   artist_name: string;
+  artist_photo: string;
 }
 
 interface Track {
@@ -23,6 +24,7 @@ interface Track {
   cover: string;
   media_type: string;
   artist_name: string;
+  artist_photo: string;
 }
 
 type Media = Album | Track;
