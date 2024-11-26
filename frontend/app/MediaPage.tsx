@@ -25,6 +25,7 @@ export default function MediaPage() {
   >([]);
 
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+  const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // TODO: RID OF THIS HARD CODING
   const { mediaId, mediaType } = useLocalSearchParams<{
     mediaId: string;
     mediaType: string;
@@ -123,7 +124,11 @@ export default function MediaPage() {
           </View>
           <Histogram distribution={ratingDistributions} />
           <View style={styles.socialContainer}>
-            <YourRatings count={3} />
+            <YourRatings
+              user_id={userId}
+              media_id={mediaId}
+              media_type={mediaType}
+            />
             <FriendRatings count={5} />
           </View>
           <View>

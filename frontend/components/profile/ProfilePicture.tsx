@@ -93,7 +93,7 @@ const ProfilePicture = ({ uri, editing }: Props) => {
 	};
 
 	return (
-		<TouchableOpacity onPress={handleProfilePicturePress} style={styles.profileImage}>
+		<TouchableOpacity onPress={handleProfilePicturePress} disabled={!editing} style={styles.profileImage}>
 			<Image
 				source={{ uri: activeUri }} // Use uri for remote images
 				style={styles.profileImage}

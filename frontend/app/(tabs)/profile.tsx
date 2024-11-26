@@ -17,15 +17,13 @@ import { router, useFocusEffect, useNavigation } from 'expo-router';
 import SelectSection from '@/components/profile/SelectSection';
 import ProfilePicture from '@/components/profile/ProfilePicture';
 import { useAuthContext } from '@/components/AuthProvider';
-import { profile } from 'console';
 
 export default function ProfileScreen() {
 	const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 	const [userProfile, setUserProfile] = useState<UserProfile>();
 	const [userReviews, setUserReviews] = useState<Review[]>();
-	// const { userId } = useAuthContext();
-	const userId = useAuthContext();
+	const { userId } = useAuthContext();
 	const [sections, setSections] = useState<Section[]>([]); //TODO depending on what we do with sections
 
 	const [selectSectionVisible, setSelectSectionVisible] = useState(false);

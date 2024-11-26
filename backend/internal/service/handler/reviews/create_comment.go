@@ -1,9 +1,10 @@
 package reviews
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"platnm/internal/errs"
 	"platnm/internal/models"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 type createComment struct {
@@ -13,6 +14,7 @@ type createComment struct {
 func (h *Handler) CreateComment(c *fiber.Ctx) error {
 	// Define a request struct specifically for creating a comment
 	var req createComment
+
 	if err := c.BodyParser(&req); err != nil {
 		return errs.BadRequest("failed to parse request body")
 	}

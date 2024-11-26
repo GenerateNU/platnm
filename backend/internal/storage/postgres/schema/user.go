@@ -54,7 +54,6 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id string) (*models.Us
 }
 
 func (r *UserRepository) UserExists(ctx context.Context, id string) (bool, error) {
-
 	rows, err := r.db.Query(ctx, `SELECT * FROM "user" WHERE id = $1`, id)
 	if err != nil {
 		return false, err
@@ -115,7 +114,7 @@ func (r *UserRepository) CalculateScore(ctx context.Context, id uuid.UUID) (int,
             SELECT 
                 SUM(CASE WHEN urv.upvote = TRUE THEN 1 ELSE -1 END)
             FROM 
-                user_review_vote urv
+                user_vote urv
             WHERE 
                 urv.user_id = $1
         ), 0) + 
@@ -225,7 +224,8 @@ func (r *UserRepository) GetProfileByName(ctx context.Context, name string) ([]*
 		LEFT JOIN follower followers ON followers.followee_id = u.id
 		LEFT JOIN follower followed ON followed.follower_id = u.id
 		WHERE username ILIKE '%' || $1 || '%' OR display_name ILIKE '%' || $1 || '%'
-		GROUP BY u.id, u.username, u.display_name, u.profile_picture, u.bio;`
+		GROUP BY u.id, u.username, u.display_name, u.profile_picture, u.bio
+		LIMIT 5;`
 
 	var profiles []*models.Profile
 
