@@ -23,16 +23,15 @@ const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({
   return (
     <TouchableOpacity
       style={styles.cardContainer}
-      onPress={() => {
-        console.log("pressing album: ", id);
+      onPress={() =>
         router.push({
           pathname: "/MediaPage",
           params: {
             mediaType: "album",
             mediaId: id,
           },
-        });
-      }}
+        })
+      }
     >
       <View style={styles.albumContainer}>
         {/* Rank */}
