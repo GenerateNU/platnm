@@ -26,7 +26,6 @@ const TopReview = ({ reviews }: ReviewCardProps) => {
     }
   }, [topReview]);
 
-  // TODO: THE RATINGS SHOULD EVENTUALLY BECOME SOME STARS MAYBE
   return (
     topReview && (
       <View>
