@@ -380,78 +380,70 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, media
 
 	type columns struct {
 		MediaType   string     `db:"media_type"`
-		MediaId     int        `db:"media_id"`
 		Title       string     `db:"media_title"`
 		ArtistName  string     `db:"artist_name"`
 		Cover       *string    `db:"cover"`
 		ReleaseDate *time.Time `db:"release_date"`
 		SpotifyId   *string    `db:"spotify_id"`
 
-		// album column
+		// album columns
+		AlbumID    int     `db:"album_id"`
 		AlbumTitle *string `db:"album_title"`
 
 		// track columns
-		TrackAlbumID *int `db:"track_album_id"`
-		Duration     *int `db:"duration_seconds"`
+		TrackID  *int `db:"track_id"`
+		Duration *int `db:"duration_seconds"`
 	}
 
 	const query string = `
+		with track_data as (
 			select
-			(CASE WHEN t.id IS NOT NULL THEN 'track' ELSE 'album' END) as media_type,
-			coalesce(t.id, a.id) as media_id,
-			coalesce(t.title, a.title) as media_title,
-			coalesce(a.artists, t.artists) as artist_name,
-			coalesce(a.cover, t.cover) as cover,
-			coalesce(a.release_date, t.release_date) as release_date,
-			coalesce(a.spotify_id, t.spotify_id) as spotify_id,
-			t.album_id as track_album_id,
-			a.title as album_title,
-			t.duration_seconds
-		from
-		(
-      select
-				a.id,
-				a.title,
+				'track' as media_type,
+				a.id as album_id,
+				t.id as track_id,
+				t.title as media_title,
+				string_agg(ar.name, ', ') as artist_name,
+				a.cover,
+				a.release_date,
+				t.spotify_id,
+				a.title as album_title,
+				t.duration_seconds as duration_seconds
+			from track t
+				join album a on t.album_id = a.id
+				left join track_artist ta on t.id = ta.track_id
+				join artist ar on ta.artist_id = ar.id
+			where ($2::media_type IS NULL OR $2::media_type = 'track')
+			and (
+				t.title ilike '%' || $1 || '%'
+				or a.title ilike '%' || $1 || '%'
+			)
+			group by t.id, a.id, t.title, a.cover, a.release_date, t.spotify_id, a.title, t.duration_seconds
+		),
+		album_data as (
+			select
+				'album' as media_type,
+				a.id as album_id,
+				-1 as track_id,
+				a.title as media_title,
+				string_agg(ar.name, ', ') as artist_name,
+				a.cover,
+				a.release_date,
 				a.spotify_id,
-				string_agg(ar.name, ', ') as artists,
-				cover,
-				release_date
+				'' as album_title,
+				-1 as duration_seconds
 			from album a
 				left join album_artist aa on a.id = aa.album_id
 				join artist ar on aa.artist_id = ar.id
-			group by
-				a.id,
-				cover,
-				a.title,
-				a.spotify_id
-		) a
-    left join (
-      select
-				t.title,
-				t.id,
-				string_agg(ar.name, ', ') as artists,
-				cover,
-				album_id,
-				duration_seconds,
-				release_date,
-				t.spotify_id
-			from track t
-				left join track_artist ta on t.id = ta.track_id
-				join artist ar on ta.artist_id = ar.id
-				join album a on t.album_id = a.id
-			group by
-				t.id,
-				cover,
-				t.title,
-				album_id,
-				duration_seconds,
-				release_date,
-				t.spotify_id
-		) t on t.album_id = a.id
-		WHERE t.title ILIKE '%' || $1 || '%' OR a.title ILIKE '%' || $1 || '%'
-		AND ($2::media_type IS NULL OR
-       		(CASE WHEN t.id IS NOT NULL THEN 'track' ELSE 'album' END)::media_type = $2::media_type)
-	`
+			where ($2::media_type IS NULL OR $2::media_type = 'album')
+			and a.title ilike '%' || $1 || '%'
+			group by a.id, a.title, a.cover, a.release_date, a.spotify_id
+		)
+		select * from
+		(
+			select * from track_data
+			union 
+			select * from album_data
+		) combined;`
 	var rows pgx.Rows
 	if mediaType == models.BothMedia {
 		rows, err = r.Query(ctx, query, decodedName, nil)
@@ -473,7 +465,7 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, media
 		case string(models.AlbumMedia):
 			album := &models.Album{
 				MediaType:   models.AlbumMedia,
-				ID:          c.MediaId,
+				ID:          c.AlbumID,
 				Title:       c.Title,
 				ReleaseDate: *c.ReleaseDate,
 				Cover:       *c.Cover,
@@ -484,10 +476,10 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, media
 		case string(models.TrackMedia):
 			track := &models.Track{
 				MediaType:   models.TrackMedia,
-				ID:          c.MediaId,
+				ID:          *c.TrackID,
 				Title:       c.Title,
 				ReleaseDate: *c.ReleaseDate,
-				AlbumID:     *c.TrackAlbumID,
+				AlbumID:     c.AlbumID,
 				Duration:    *c.Duration,
 				Cover:       *c.Cover,
 				ArtistName:  c.ArtistName,
