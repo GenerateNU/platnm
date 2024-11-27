@@ -1,62 +1,56 @@
-import React from "react";
-import {
-  SafeAreaView,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { router } from "expo-router";
-
+import React from 'react';
+import { SafeAreaView, Text, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { router } from 'expo-router';
+import Back from '@/assets/images/Icons/Back.svg';
 interface HeaderComponentProps {
-  title: string;
+	title: string;
 }
 
 const HeaderComponent: React.FC<HeaderComponentProps> = ({ title }) => {
-  return (
-    <SafeAreaView style={styles.headerContainer}>
-      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-        <Text style={styles.backText}>Back</Text>
-      </TouchableOpacity>
-      <View style={styles.titleContainer}>
-        <Text style={styles.headerTitle}>{title}</Text>
-      </View>
-      <View style={styles.spacer} />
-    </SafeAreaView>
-  );
+	return (
+		<SafeAreaView style={styles.headerContainer}>
+			<TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+				<Back />
+			</TouchableOpacity>
+			<View>
+				<Text style={styles.headerTitle}>{title}</Text>
+			</View>
+			<View style={styles.spacer} />
+		</SafeAreaView>
+	);
 };
 
 const styles = StyleSheet.create({
-  headerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#fff",
-    padding: 15,
-  },
-  backButton: {
-    flex: 1,
-  },
-  backText: {
-    color: "#B7B6B6",
-    fontSize: 16,
-    marginLeft: 20,
-  },
-  titleContainer: {
-    flex: 2,
-    alignItems: "center",
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#434343",
-    fontFamily: "Roboto",
-    borderRadius: 5,
-    padding: 5,
-  },
-  spacer: {
-    flex: 1,
-  },
+	headerContainer: {
+		flexDirection: 'row',
+		backgroundColor: '#fff',
+		width: '100%',
+		padding: 15,
+		marginTop: 56,
+		gap: 24,
+		alignItems: 'flex-start',
+	},
+	backButton: {
+		padding: 4,
+		marginLeft: 20,
+	},
+	backText: {
+		color: '#B7B6B6',
+		fontSize: 16,
+		marginLeft: 20,
+	},
+	titleContainer: {},
+	headerTitle: {
+		fontSize: 16,
+		fontWeight: 'bold',
+		color: '#434343',
+		borderRadius: 5,
+		padding: 5,
+		textAlign: 'left',
+	},
+	spacer: {
+		flex: 1,
+	},
 });
 
 export default HeaderComponent;
