@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+<<<<<<< HEAD
 import {
   StyleSheet,
   View,
@@ -18,6 +19,17 @@ import { router } from "expo-router";
 interface SearchResultsProps {
   songs: MediaResponse[];
   albums: MediaResponse[];
+=======
+import { StyleSheet, View, Text, ScrollView } from "react-native";
+import SongChip from "@/components/search/SongChip";
+import AlbumSearchCard from "@/components/search/AlbumSearchCard";
+import ProfileChip from "@/components/search/ProfileChip";
+import Filter from "@/components/search/Filter";
+
+interface SearchResultsProps {
+  songs: Media[];
+  albums: Media[];
+>>>>>>> main
   profiles: UserProfile[];
   isLoading: boolean;
   filter: "all" | "songs" | "albums" | "profile";
@@ -39,7 +51,13 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     return <Text style={styles.noResults}>No results found</Text>;
   }
 
+<<<<<<< HEAD
   var [selectedFilter, setSelectedFilter] = useState<FilterOption>("all");
+=======
+  const filterOptions = ["all", "songs", "albums", "profile"];
+
+  const [selectedFilter, setSelectedFilter] = useState<FilterOption>("all");
+>>>>>>> main
 
   const handleFilterChange = (filter: FilterOption) => {
     setSelectedFilter(filter);
@@ -49,11 +67,16 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     <View style={styles.container}>
       <Filter
         currentFilter={selectedFilter}
+<<<<<<< HEAD
+=======
+        filterOptions={filterOptions}
+>>>>>>> main
         onFilterChange={handleFilterChange}
       />
       <View style={styles.resultGrid}>
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
           {(selectedFilter === "all" || selectedFilter === "profile") && (
+<<<<<<< HEAD
             <View>
               {selectedFilter === "all" ? (
                 <TouchableOpacity onPress={() => setSelectedFilter("profile")}>
@@ -183,6 +206,52 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                   )
                 )}
               </View>
+=======
+            <View style={styles.songsList}>
+              <Text style={styles.title}>Profiles</Text>
+              {profiles?.map((profile, idx) => (
+                <ProfileChip
+                  display_name={profile.display_name}
+                  profile_picture={profile.profile_picture}
+                  id={profile.id}
+                  key={idx}
+                />
+              ))}
+>>>>>>> main
+            </View>
+          )}
+
+          {(selectedFilter === "all" || selectedFilter === "songs") && (
+            <View style={styles.albumsList}>
+              <Text style={styles.title}>Albums</Text>
+
+              {albums.map((album, index) => (
+                <AlbumSearchCard
+                  id={album.id}
+                  key={album.id}
+                  rank={index + 1}
+                  artist_name={album.artist_name}
+                  album_name={album.title}
+                  cover={album.cover}
+                />
+              ))}
+            </View>
+          )}
+          {(selectedFilter === "all" || selectedFilter === "songs") && (
+            <View style={styles.songsList}>
+              <Text style={styles.title}>Songs</Text>
+              <ScrollView>
+                {songs?.map((song, index) => (
+                  <SongChip
+                    key={index}
+                    rank={index + 1}
+                    id={song.id}
+                    title={song.title}
+                    artist_name={song.artist_name}
+                    cover={song.cover}
+                  />
+                ))}
+              </ScrollView>
             </View>
           )}
         </ScrollView>
@@ -192,11 +261,14 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 };
 
 const styles = StyleSheet.create({
+<<<<<<< HEAD
   profileContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "flex-start",
   },
+=======
+>>>>>>> main
   title: {
     fontSize: 24,
     fontWeight: "bold",
@@ -237,6 +309,7 @@ const styles = StyleSheet.create({
     marginRight: 20,
   },
   albumsList: {
+<<<<<<< HEAD
     width: "48%",
     marginBottom: 16,
     paddingHorizontal: 4,
@@ -253,6 +326,12 @@ const styles = StyleSheet.create({
     width: "33.33%",
     marginBottom: 16,
   },
+=======
+    width: "48%", // Slightly less than 50% to allow for spacing
+    marginBottom: 16,
+    paddingHorizontal: 4,
+  },
+>>>>>>> main
   noResults: {
     textAlign: "center",
     marginTop: 20,

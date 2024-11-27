@@ -1,24 +1,57 @@
-import React from "react";
+import { useState, useEffect } from "react";
+import { router } from "expo-router";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import ArrowRight from "@/assets/images/Media/arrowRight.svg";
+import axios from "axios";
 
 type YourRatingsProps = {
-  count: number;
+  user_id: string;
+  media_id: string;
+  media_type: string;
 };
 
-const YourRatings = ({ count }: YourRatingsProps) => {
+const YourRatings = ({ user_id, media_id, media_type }: YourRatingsProps) => {
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
+  const [userReviews, setUserReviews] = useState<Preview[]>([]);
+
+  useEffect(() => {
+    // Fetch user reviews
+    axios
+      .get(`${BASE_URL}/reviews/media/${media_id}/${user_id}`, {
+        params: {
+          media_type: media_type,
+        },
+      })
+      .then((response) => {
+        setUserReviews(response.data);
+      })
+      .catch((error) => console.error(error));
+  }, []);
+
   return (
     <TouchableOpacity
       style={styles.container}
-      onPress={() => console.log("pressed!")}
+      disabled={!userReviews || userReviews.length === 0}
+      onPress={() =>
+        router.push({
+          pathname: "/MediaReviewsPage",
+          params: {
+            media_id: media_id,
+            user_id: user_id,
+            media_type: media_type,
+            filter: "user",
+          },
+        })
+      }
     >
       <View style={styles.textContainer}>
         <Text style={styles.text}>You've rated this song</Text>
         <View style={styles.countBubble}>
-          <Text style={styles.countText}>{count}x</Text>
+          <Text style={styles.countText}>{userReviews?.length ?? 0}x</Text>
         </View>
       </View>
-      <ArrowRight />
+      {userReviews && userReviews.length > 0 && <ArrowRight />}
     </TouchableOpacity>
   );
 };

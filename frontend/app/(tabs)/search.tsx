@@ -10,8 +10,8 @@ import axios from "axios";
 
 const SearchPage: React.FC = () => {
   const [searchResults, setSearchResults] = useState<{
-    songs: MediaResponse[];
-    albums: MediaResponse[];
+    songs: Media[];
+    albums: Media[];
     profiles: UserProfile[];
   }>({
     songs: [],
@@ -54,11 +54,12 @@ const SearchPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const [songsResponse, albumsResponse, profilesResponse] = await Promise.all([
-        axios.get(`${BASE_URL}/media?name=${query}&type=track`),
-        axios.get(`${BASE_URL}/media?name=${query}&type=album`),
-        axios.get(`${BASE_URL}/users/profile/name/${query}`),
-      ]);
+      const [songsResponse, albumsResponse, profilesResponse] =
+        await Promise.all([
+          axios.get(`${BASE_URL}/media/${query}`),
+          axios.get(`${BASE_URL}/media/${query}`),
+          axios.get(`${BASE_URL}/users/profile/name/${query}`),
+        ]);
 
       setSearchResults({
         songs: songsResponse.data,
@@ -68,7 +69,7 @@ const SearchPage: React.FC = () => {
       setIsSearchActive(true);
     } catch (error) {
       console.error("Search error:", error);
-      setSearchResults({ songs: [], albums: [], profiles: []});
+      setSearchResults({ songs: [], albums: [], profiles: [] });
     } finally {
       setIsLoading(false);
     }
@@ -83,7 +84,7 @@ const SearchPage: React.FC = () => {
           songs={searchResults.songs}
           albums={searchResults.albums}
           isLoading={isLoading}
-          profiles = {searchResults.profiles}
+          profiles={searchResults.profiles}
           filter={"all"}
         />
       ) : (
@@ -99,8 +100,10 @@ const SearchPage: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
+    fontFamily: "NeueHaasUnicaPro-Regular",
     flex: 1,
     paddingTop: 80,
+    backgroundColor: "#fff",
   },
 });
 

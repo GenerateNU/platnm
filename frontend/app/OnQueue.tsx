@@ -10,7 +10,6 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { router } from "expo-router";
-import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
 import axios from "axios";
 
 const OnQueue = () => {

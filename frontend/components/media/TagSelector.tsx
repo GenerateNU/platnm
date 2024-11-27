@@ -29,6 +29,7 @@ const TagSelector = ({ handleTagSelect, tags }: TagSelectorProps) => {
         {TAGS.map((tag) => (
           <Tag
             name={tag}
+            key={tag}
             selected={tags.includes(tag)}
             handleTagSelect={handleTagSelect}
           />

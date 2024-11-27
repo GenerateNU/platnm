@@ -32,6 +32,7 @@ const styles = StyleSheet.create({
   },
   searchBarContainer: {
     marginRight: 20,
+    backgroundColor: "#EFf1f5",
   },
 });
 

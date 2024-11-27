@@ -1,4 +1,5 @@
 import React from "react";
+import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 
 type FilterOption = "all" | "songs" | "albums" | "profile";
@@ -79,6 +80,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 8,
   },
+  container: {
+    margin: 10,
+  },
+  buttonsRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginBottom: 8,
+  },
   button: {
     flexDirection: "row",
     alignItems: "center",
@@ -88,6 +97,18 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "black",
     marginLeft: 5,
+  },
+  buttonText: {
+    color: "black",
+    marginLeft: 5,
+  },
+  selectedButtonText: {
+    color: "orange",
+  },
+  underline: {
+    width: "100%",
+    height: 2,
+    backgroundColor: "#E0E0E0",
   },
   selectedButtonText: {
     color: "orange",

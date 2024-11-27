@@ -66,6 +66,14 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Patch("/bio/:id", userHandler.UpdateUserBio)
 		r.Put("/enthusiasm", userHandler.UpdateUserOnboard)
 		r.Get("/feed/:id", userHandler.GetUserFeed)
+		r.Patch("/pfp/:id", userHandler.UpdateUserProfilePicture)
+		r.Post("/section", userHandler.CreateSection)
+		r.Post("/section/item/:userId/:sectionId", userHandler.CreateSectionItem)
+		r.Patch("/section/item", userHandler.UpdateSectionItem)
+		r.Delete("/section/item", userHandler.DeleteSectionItem)
+		r.Delete("/section", userHandler.DeleteSection)
+		r.Get("/section/:id", userHandler.GetUserSections)
+		r.Get("/section/options/:id", userHandler.GetUserSectionOptions)
 		r.Get("/profile/name/:name", userHandler.GetProfileByName)
 	})
 
@@ -74,11 +82,17 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Post("/", reviewHandler.CreateReview)
 		r.Get("/popular", reviewHandler.GetReviewsByPopularity)
 		r.Get("/tags", reviewHandler.GetTags)
+		r.Get("/vote/:userID/:postID", func(c *fiber.Ctx) error {
+			return reviewHandler.GetUserVote(c, "review")
+		})
 
 		// Get Reviews by ID which can be used to populate a preview
 		r.Get("/:id", reviewHandler.GetReviewByID)
+		r.Get("/media/:mediaId/:userID", reviewHandler.GetUserReviewsOfMedia)
 		r.Get("/user/:id", reviewHandler.GetReviewsByUserID)
-		r.Post("/vote/:rating", reviewHandler.VoteReview)
+		r.Post("/vote", func(c *fiber.Ctx) error {
+			return reviewHandler.UserVote(c, "review")
+		})
 		r.Patch("/:id", reviewHandler.UpdateReviewByReviewID)
 		r.Get("/album/:id", func(c *fiber.Ctx) error {
 			return reviewHandler.GetReviewsByMediaId(c, "album")
@@ -90,6 +104,12 @@ func setupRoutes(app *fiber.App, config config.Config) {
 			return reviewHandler.GetUserReviewOfTrack(c)
 		})
 		r.Post("/comment", reviewHandler.CreateComment)
+		r.Post("/comment/vote", func(c *fiber.Ctx) error {
+			return reviewHandler.UserVote(c, "comment")
+		})
+		r.Get("/comment/vote/:userID/:postID", func(c *fiber.Ctx) error {
+			return reviewHandler.GetUserVote(c, "comment")
+		})
 		r.Get("/social/song/:songid", func(c *fiber.Ctx) error {
 			return reviewHandler.GetSocialReviews(c, "track")
 		})
@@ -148,6 +168,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 			clientCredRoute.Get("/", h.GetPlatnmPlaylist)
 			clientCredRoute.Get("/import/new-releases", h.NewReleases)
 			clientCredRoute.Post("/import/recommendations", h.ImportRecommendations)
+			clientCredRoute.Patch("/import/artist-details", h.GetArtistDetails)
 		})
 
 		r.Route("/", func(authRoute fiber.Router) {

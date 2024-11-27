@@ -1,9 +1,11 @@
 import { StyleSheet, View, Text, ScrollView } from "react-native";
+import { StyleSheet, View, Text, ScrollView } from "react-native";
 import SongChip from "@/components/search/SongChip";
 
 type SongCardProp = {
   songs: MediaResponse[];
 };
+
 
 const TopSongs = ({ songs }: SongCardProp) => {
   const topNineSongs = songs?.slice(0, 9);
@@ -45,7 +47,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
+    paddingHorizontal: 28,
+    paddingBottom: 12,
+    paddingTop: 32,
     fontWeight: "bold",
     padding: 16,
   },
