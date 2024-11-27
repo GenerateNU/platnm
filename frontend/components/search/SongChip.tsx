@@ -30,7 +30,7 @@ const SongChip: React.FC<SongChipProps> = ({
         })
       }
     >
-      {rank !== undefined && <Text style={styles.rank}>{rank}.</Text>}
+      {rank !== undefined && <Text style={styles.rank}>{rank !== undefined ? `${rank}. ` : ""}</Text>}
       <Image style={styles.cover} source={{ uri: cover }} />
       <View style={[styles.textContainer, !rank && styles.noRankTextContainer]}>
         <Text style={styles.title} numberOfLines={1}>{title}</Text>

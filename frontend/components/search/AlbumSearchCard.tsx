@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 
 interface AlbumSearchCardProps {
   id: number;
-  rank: number;
+  rank?: number;
   artist_name: string;
   album_name: string;
   cover: string;
@@ -35,7 +35,7 @@ const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({
     >
       <View style={styles.albumContainer}>
         {/* Rank */}
-        <Text style={styles.rank}>{rank}.</Text>
+        <Text style={styles.rank}>{rank !== undefined ? `${rank}. ` : ""}</Text>
 
         {/* Album Cover */}
         <View style={styles.coverContainer}>

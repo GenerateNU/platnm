@@ -6,7 +6,6 @@ type SongCardProp = {
 };
 
 const TopSongs = ({ songs }: SongCardProp) => {
-  // Take only the first 9 songs
   const topNineSongs = songs?.slice(0, 9);
 
   return (

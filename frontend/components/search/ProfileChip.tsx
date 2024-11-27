@@ -28,13 +28,10 @@ const ProfileChip: React.FC<ProfileChipProps> = ({
         }
       >
         <View style={styles.profileContainer}>
-          {/* Record image background */}
           <Image
             source={require("@/assets/images/Profile/record.png")}
             style={styles.recordImage}
           />
-          
-          {/* Profile picture overlaid in the center */}
           <View style={styles.profileImageContainer}>
             {profile_picture ? (
               <Image
@@ -107,7 +104,7 @@ const ProfileChip: React.FC<ProfileChipProps> = ({
       fontStyle: 'italic', // Makes it italic
       color: '#666666', // Lighter grey color
       opacity: 0.8, // Adds slight transparency
-    }
+    },
   });
   
   export default ProfileChip;
