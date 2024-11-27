@@ -1,3 +1,8 @@
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -31,31 +36,39 @@ export default function RootLayout() {
   // LogBox.ignoreAllLogs();
   return (
     <AuthProvider>
-      <GestureHandlerRootView>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="onboarding/signup"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen name="CreateReview" options={{ headerShown: false }} />
-          <Stack.Screen name="PreviewReview" options={{ headerShown: false }} />
-          <Stack.Screen name="MediaPage" options={{ headerShown: false }} />
-          <Stack.Screen name="Settings" options={{ headerShown: false }} />
-          <Stack.Screen name="Activity" options={{ headerShown: false }} />
-          <Stack.Screen name="OnQueue" options={{ headerShown: false }} />
-          <Stack.Screen name="ReviewPage" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="SectionResults"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Recommendations"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-      </GestureHandlerRootView>
+      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+        <GestureHandlerRootView>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="onboarding/signup"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="CreateReview"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="PreviewReview"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen name="MediaPage" options={{ headerShown: false }} />
+            <Stack.Screen name="Settings" options={{ headerShown: false }} />
+            <Stack.Screen name="Activity" options={{ headerShown: false }} />
+            <Stack.Screen name="OnQueue" options={{ headerShown: false }} />
+            <Stack.Screen name="ReviewPage" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="SectionResults"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Recommendations"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+        </GestureHandlerRootView>
+      </ThemeProvider>
     </AuthProvider>
   );
 }

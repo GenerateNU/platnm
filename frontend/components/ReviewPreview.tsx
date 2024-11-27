@@ -443,18 +443,15 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#F0F0F0",
+    backgroundColor: "#fff",
     padding: 15,
     width: "100%",
     marginVertical: 16,
     borderRadius: 15,
     alignSelf: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
     alignItems: "flex-start",
     overflow: "scroll",
+    boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.2)",
   },
   voteButton: {
     flexDirection: "row",

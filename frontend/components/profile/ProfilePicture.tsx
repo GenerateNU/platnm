@@ -10,6 +10,7 @@ import * as ImagePicker from "expo-image-picker";
 
 import { RNS3 } from "react-native-aws3";
 import { useAuthContext } from "@/components/AuthProvider";
+
 type Props = {
   uri: string;
   editing: boolean;
@@ -22,21 +23,17 @@ const ProfilePicture = ({ uri, editing }: Props) => {
   const pick = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: false,
-      allowsMultipleSelection: true,
+      allowsEditing: true,
+      allowsMultipleSelection: false,
       quality: 1,
       orderedSelection: true,
     });
-    console.log(result);
     if (!result.canceled) {
       onDone(result.assets, true);
     }
   };
 
   const onDone = (assets: any, isSelected: boolean) => {
-    console.log(assets);
-    console.log(isSelected);
-
     const [asset] = assets;
     const { uri, fileName, mimeType } = asset;
 
@@ -56,7 +53,6 @@ const ProfilePicture = ({ uri, editing }: Props) => {
 
     RNS3.put(file, options)
       .then(async (res) => {
-        console.log(res);
         if (res.status == 201) {
           // @ts-ignore
           let newUri = res.body.postResponse.location;
@@ -77,10 +73,8 @@ const ProfilePicture = ({ uri, editing }: Props) => {
   const openPicker = async () => {
     if (!editing) return;
     const { status } = await MediaLibrary.getPermissionsAsync();
-    console.log(status);
     if (status != "granted") {
       const newPerms = await MediaLibrary.requestPermissionsAsync();
-      console.log(newPerms);
       // @ts-ignore
       if (newPerms == MediaLibrary.PermissionStatus.GRANTED) {
         pick();
@@ -91,7 +85,6 @@ const ProfilePicture = ({ uri, editing }: Props) => {
   };
 
   const handleProfilePicturePress = () => {
-    console.log("Profile picture pressed");
     openPicker();
   };
 
@@ -114,11 +107,10 @@ export default ProfilePicture;
 
 const styles = StyleSheet.create({
   profileImage: {
-    position: "absolute", // Overlay the profile picture on the record
-    width: 90, // Adjust size to fit within the center of the record
-    height: 90, // Adjust size to fit within the center of the record
-    borderRadius: 90, // To make it circular
-    borderWidth: 2, // Optional: add a border around the profile image
-    // borderColor: '#fff', // Optional: white border
+    position: "absolute",
+    width: 90,
+    height: 90,
+    borderRadius: 90,
+    borderWidth: 2,
   },
 });
