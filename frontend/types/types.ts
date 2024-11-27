@@ -76,7 +76,7 @@ interface SectionItem {
   id: number;
   title: string;
   media_type: string;
-  cover: string;
+  cover_photo: string;
 }
 
 type SectionOption = {

@@ -49,6 +49,46 @@ func (h *Handler) GetMediaByName(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(medias)
 }
 
+func (h *Handler) GetArtistByName(c *fiber.Ctx) error {
+	name := c.Params("name")
+	artists, err := h.mediaRepository.GetArtistByName(c.Context(), name)
+	if err != nil {
+		return err
+	}
+
+	if len(artists) < 5 {
+		err = h.searchAndHandleSpotifyArtist(c, name)
+		if err != nil {
+			return err
+		}
+
+		artists, err = h.mediaRepository.GetArtistByName(c.Context(), name)
+		if err != nil {
+			return err
+		}
+	}
+
+	return c.Status(fiber.StatusOK).JSON(artists)
+}
+
+func (h *Handler) searchAndHandleSpotifyArtist(c *fiber.Ctx, name string) error {
+	searchType := spotify.SearchTypeArtist
+
+	client, err := ctxt.GetSpotifyClient(c)
+	if err != nil {
+		return err
+	}
+
+	result, err := client.Search(c.Context(), name, spotify.SearchType(searchType), spotify.Limit(10))
+
+	if err != nil {
+		return err
+	}
+
+	resp := h.handleSearchResults(client, c.Context(), result)
+	return c.Status(fiber.StatusOK).JSON(resp)
+}
+
 func (h *Handler) searchAndHandleSpotifyMedia(c *fiber.Ctx, name string, mediaType models.MediaType) error {
 	var searchType spotify.SearchType
 	switch mediaType {
@@ -100,6 +140,14 @@ func (h *Handler) handleSearchResults(client *spotify.Client, ctx context.Contex
 			h.handleSearchTrack(ctx, &wg, &track, errCh)
 		}()
 
+	}
+
+	for _, artist := range result.Artists.Artists {
+		wg.Add(1)
+		go func(artist spotify.FullArtist) {
+			defer wg.Done()
+			h.handleSearchArtist(ctx, artist, errCh)
+		}(artist)
 	}
 
 	wg.Wait()
@@ -218,7 +266,6 @@ func (h *Handler) handleSearchTrack(ctx context.Context, wg *sync.WaitGroup, tra
 		return
 	}
 
-	// get the Spotify artists associated with this track and add a record for each
 	for _, spotifyArtist := range track.Artists {
 		artist := &models.Artist{
 			SpotifyID: spotifyArtist.ID.String(),
@@ -228,6 +275,20 @@ func (h *Handler) handleSearchTrack(ctx context.Context, wg *sync.WaitGroup, tra
 		if err != nil {
 			h.sendError(errCh, "adding artist or track artist", err)
 		}
+	}
+}
+
+func (h *Handler) handleSearchArtist(ctx context.Context, artist spotify.FullArtist, errCh chan<- error) {
+	modelArtist := &models.Artist{
+		SpotifyID: artist.ID.String(),
+		Name:      artist.Name,
+		Photo:     artist.Images[0].URL,
+		Bio:       "",
+	}
+
+	_, err := h.mediaRepository.AddArtist(ctx, modelArtist)
+	if err != nil {
+		h.sendError(errCh, "adding artist", err)
 	}
 }
 

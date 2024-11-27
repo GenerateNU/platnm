@@ -2,6 +2,7 @@ import axios from "axios";
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { useAuthContext } from "../AuthProvider";
 
 interface SectionItemProps {
   rank: number;
@@ -25,7 +26,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
   //   type: string;
   // }>();
 
-  const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d";
+  const { userId } = useAuthContext();
   const sectionId = id;
 
   return (

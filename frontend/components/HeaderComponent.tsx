@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#434343",
     fontFamily: "Roboto",

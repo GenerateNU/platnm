@@ -257,34 +257,36 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
       </View>
 
       <View style={styles.container}>
-        <View style={styles.topContainer}>
-          <View style={styles.leftSection}>
-            <Image
-              style={styles.profilePicture}
-              source={{ uri: preview.profile_picture }}
-            />
-            <View style={styles.textContainer}>
-              <Text style={styles.displayName}>{preview.display_name}</Text>
-              <Text style={styles.username}>@{preview.username}</Text>
+        <TouchableOpacity onPress={handlePreviewPress}>
+          <View style={styles.topContainer}>
+            <View style={styles.leftSection}>
+              <Image
+                style={styles.profilePicture}
+                source={{ uri: preview.profile_picture }}
+              />
+              <View style={styles.textContainer}>
+                <Text style={styles.displayName}>{preview.display_name}</Text>
+                <Text style={styles.username}>@{preview.username}</Text>
+              </View>
             </View>
           </View>
-        </View>
 
-        <View style={styles.mediaContainer}>
-          <View style={styles.ratingContainer}>
-            <Text style={styles.songName}>{preview.media_title}</Text>
-            <Text style={styles.artistName}>{preview.media_artist}</Text>
-          </View>
+          <View style={styles.mediaContainer}>
+            <View style={styles.ratingContainer}>
+              <Text style={styles.songName}>{preview.media_title}</Text>
+              <Text style={styles.artistName}>{preview.media_artist}</Text>
+            </View>
 
-          <View>
-            {React.createElement(
-              getRatingImage(preview.rating as keyof typeof ratingImages),
-              {
-                style: styles.ratingImage,
-              },
-            )}
+            <View>
+              {React.createElement(
+                getRatingImage(preview.rating as keyof typeof ratingImages),
+                {
+                  style: styles.ratingImage,
+                },
+              )}
+            </View>
           </View>
-        </View>
+        </TouchableOpacity>
       </View>
 
       {preview.tags && preview.tags.length > 0 && (

@@ -372,6 +372,44 @@ func (r *MediaRepository) AddArtistAndTrackArtist(ctx context.Context, artist *m
 	return nil
 }
 
+func (r *MediaRepository) GetArtistByName(ctx context.Context, name string) ([]models.Artist, error) {
+	decodedName, err := url.QueryUnescape(name)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode name: %w", err)
+	}
+
+	const query = `
+		SELECT 
+			id, 
+			name, 
+			spotify_id, 
+			photo, 
+			bio 
+		FROM artist 
+		WHERE name ILIKE '%' || $1 || '%'
+	`
+
+	rows, err := r.Query(ctx, query, decodedName)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	results, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.Artist, error) {
+		var artist models.Artist
+		err := row.Scan(&artist.ID, &artist.Name, &artist.SpotifyID, &artist.Photo, &artist.Bio)
+		if err != nil {
+			return models.Artist{}, err
+		}
+		return artist, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
 func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, mediaType models.MediaType) ([]models.Media, error) {
 	decodedName, err := url.QueryUnescape(name) // handle URL encoding
 	if err != nil {
