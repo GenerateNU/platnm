@@ -24,7 +24,7 @@ const SongCard: React.FC<SongCardProps> = ({
         width={150}
         height={150}
         source={{
-          uri: image,
+          uri: cover,
         }}
       />
       <View style={styles.textContainer}>

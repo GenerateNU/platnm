@@ -6,8 +6,8 @@ import ProfileChip from "@/components/search/ProfileChip";
 import Filter from "@/components/search/Filter";
 
 interface SearchResultsProps {
-  songs: MediaResponse[];
-  albums: MediaResponse[];
+  songs: Media[];
+  albums: Media[];
   profiles: UserProfile[];
   isLoading: boolean;
   filter: "all" | "songs" | "albums" | "profile";
@@ -59,6 +59,22 @@ const SearchResults: React.FC<SearchResultsProps> = ({
           )}
 
           {(selectedFilter === "all" || selectedFilter === "songs") && (
+            <View style={styles.albumsList}>
+              <Text style={styles.title}>Albums</Text>
+
+              {albums.map((album, index) => (
+                <AlbumSearchCard
+                  id={album.id}
+                  key={album.id}
+                  rank={index + 1}
+                  artist_name={album.artist_name}
+                  album_name={album.title}
+                  cover={album.cover}
+                />
+              ))}
+            </View>
+          )}
+          {(selectedFilter === "all" || selectedFilter === "songs") && (
             <View style={styles.songsList}>
               <Text style={styles.title}>Songs</Text>
               <ScrollView>
@@ -66,30 +82,13 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                   <SongChip
                     key={index}
                     rank={index + 1}
-                    id={song.media.id}
-                    title={song.media.title}
-                    artist_name={song.media.artist_name}
-                    cover={song.media.cover}
+                    id={song.id}
+                    title={song.title}
+                    artist_name={song.artist_name}
+                    cover={song.cover}
                   />
                 ))}
               </ScrollView>
-            </View>
-          )}
-          {(selectedFilter === "all" || selectedFilter === "albums") && (
-            <View>
-              <Text style={styles.title}>Albums</Text>
-              <View style={styles.albumsList}>
-                {albums?.map((album, index) => (
-                  <AlbumSearchCard
-                    id={album.media.id}
-                    key={album.media.id}
-                    rank={index + 1}
-                    artist_name={album.media.artist_name}
-                    album_name={album.media.title}
-                    cover={album.media.cover}
-                  />
-                ))}
-              </View>
             </View>
           )}
         </ScrollView>

@@ -1,5 +1,10 @@
 import { View, Text, StyleSheet } from "react-native";
-import { VictoryAxis, VictoryBar, VictoryChart } from "victory-native";
+import {
+  VictoryAxis,
+  VictoryBar,
+  VictoryChart,
+  VictoryTheme,
+} from "victory-native";
 
 interface HistogramProps {
   distribution: RatingDistribution[];
@@ -25,10 +30,9 @@ const Histogram = ({ distribution }: HistogramProps) => {
           data={distribution}
           x="rating"
           y="count"
-          barRatio={1}
+          barWidth={20}
           style={{
             data: { fill: "#F28037" },
-            parent: { margin: 0 },
           }}
         />
       </VictoryChart>
