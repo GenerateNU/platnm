@@ -72,7 +72,7 @@ const CommentComponent: React.FC<CommentProps> = ({ comment }) => {
     const fetchVote = async () => {
       try {
         const response = await axios.get(
-          `${BASE_URL}/reviews/comment/vote/${userId}/${comment.comment_id}`
+          `${BASE_URL}/reviews/comment/vote/${userId}/${comment.comment_id}`,
         );
         if (response.data) {
           const { upvote } = response.data; // Assuming the API returns { user_id, post_id, upvote }
