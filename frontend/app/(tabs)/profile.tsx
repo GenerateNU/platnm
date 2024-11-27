@@ -38,9 +38,7 @@ export default function ProfileScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      if (!userId) {
-        router.push("/(tabs)/login");
-      }
+      if (!userId) router.push("/(tabs)/login");
     }, [userId]),
   );
 
@@ -95,10 +93,13 @@ export default function ProfileScreen() {
         console.error("Error fetching section options:", error);
       }
     };
-    fetchUserProfile();
-    fetchUserReviews();
-    fetchUserSections();
-    fetchSectionOptions();
+
+    if (userId) {
+      fetchUserProfile();
+      fetchUserReviews();
+      fetchUserSections();
+      fetchSectionOptions();
+    }
   }, [userId]);
 
   const handleActivityPress = () => {
@@ -250,12 +251,12 @@ export default function ProfileScreen() {
               source={require("@/assets/images/Profile/record.png")}
               style={styles.recordImage}
             />
-            {userProfile.profile_picture ? ( // Check if profilePicture exists
-              <ProfilePicture
-                uri={userProfile.profile_picture}
-                editing={isEditing}
-              />
-            ) : null}
+
+            <ProfilePicture
+              uri={userProfile.profile_picture}
+              editing={isEditing}
+            />
+
             {/* Don't render anything if there's no profile picture */}
             <TouchableOpacity onPress={handleEditPress} style={styles.editIcon}>
               <Icon name="edit-2" size={20} color="#888" />
