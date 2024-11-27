@@ -56,6 +56,14 @@ const MediaCard = ({ media, full = false }: MediaCardProps) => {
 						</View>
 						{full && (
 							<View style={styles.noReviewsContainer}>
+								<Text
+									style={{
+										color: 'white',
+										fontSize: 24,
+										fontWeight: 'bold',
+									}}>
+									You've got taste!
+								</Text>
 								<Text style={styles.emptyText}>
 									We dont have any reviews for this {media.media_type} yet.
 								</Text>

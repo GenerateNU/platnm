@@ -40,6 +40,7 @@ export default function RootLayout() {
 						<Stack.Screen name='CreateReview' options={{ headerShown: false }} />
 						<Stack.Screen name='PreviewReview' options={{ headerShown: false }} />
 						<Stack.Screen name='MediaPage' options={{ headerShown: false }} />
+						<Stack.Screen name='MediaReviewsPage' options={{ headerShown: false }} />
 						<Stack.Screen name='Settings' options={{ headerShown: false }} />
 						<Stack.Screen name='Activity' options={{ headerShown: false }} />
 						<Stack.Screen name='OnQueue' options={{ headerShown: false }} />

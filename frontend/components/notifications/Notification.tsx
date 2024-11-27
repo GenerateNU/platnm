@@ -1,11 +1,26 @@
 import { View, Text } from 'react-native';
-import { StyleSheet, Image, Dimensions } from 'react-native';
-import React from 'react';
+import { StyleSheet, Image, useAnimatedValue, Animated } from 'react-native';
+import React, { useEffect } from 'react';
 import FollowNotification from './FollowNotification';
 
 export default function Notification({ notification }: { notification: CustomNotification }) {
+	const fadeAnim = useAnimatedValue(9); // Initial value for opacity: 0
+
+	useEffect(() => {
+		Animated.timing(fadeAnim, {
+			toValue: 0,
+			duration: 5000,
+			useNativeDriver: true,
+		}).start();
+	}, [fadeAnim]);
+
 	return (
-		<View style={notification.read ? styles.container : styles.unreadContainer}>
+		<Animated.View
+			style={
+				notification.read
+					? styles.container
+					: { ...styles.unreadContainer, backgroundColor: `#f280370${fadeAnim}` }
+			}>
 			<View
 				style={
 					!notification.read
@@ -28,7 +43,7 @@ export default function Notification({ notification }: { notification: CustomNot
 				<Text style={{ textAlign: 'right' }}>{notification.createdAt}</Text>
 				<Text style={{ fontWeight: 'bold', fontSize: 28, textAlign: 'right' }}>...</Text>
 			</View>
-		</View>
+		</Animated.View>
 	);
 }
 
@@ -47,7 +62,6 @@ const styles = StyleSheet.create({
 	unreadContainer: {
 		display: 'flex',
 		flexDirection: 'row',
-		backgroundColor: '#f2803710',
 		paddingVertical: 16,
 		justifyContent: 'space-between',
 	},
