@@ -11,6 +11,7 @@ import { RatingButton } from '@/components/RatingButton';
 import SwipeCards from 'react-native-swipe-cards';
 import { ImageBackground } from 'react-native';
 import axios from 'axios';
+import { router } from 'expo-router';
 
 import Play from '@/assets/images/Icons/play.svg';
 import Info from '@/assets/images/Icons/info.svg';
@@ -130,7 +131,7 @@ export default function RecommendationsScreen() {
 					<TouchableOpacity
 						style={styles.exploreButton}
 						onPress={() => {
-							console.log('pressed!');
+							router.push('/search');
 						}}>
 						<Text style={styles.exploreText}>Explore Music</Text>
 					</TouchableOpacity>
