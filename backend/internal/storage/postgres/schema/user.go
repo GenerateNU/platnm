@@ -163,6 +163,22 @@ func (r *UserRepository) UpdateUserBio(ctx context.Context, user uuid.UUID, bio 
 	return nil
 }
 
+func (r *UserRepository) UpdateUserProfilePicture(ctx context.Context, user uuid.UUID, pfp string) error {
+	query := `
+		UPDATE "user"
+		SET profile_picture = $1
+		WHERE id = $2;
+	`
+
+	_, err := r.db.Exec(ctx, query, pfp, user)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *UserRepository) UpdateUserOnboard(ctx context.Context, email string, enthusiasm string) (string, error) {
 	result, err := r.db.Exec(ctx, `UPDATE "user" SET "enthusiasm" = $1 WHERE email = $2`, enthusiasm, email)
 	if err != nil {
@@ -185,7 +201,7 @@ func (r *UserRepository) GetUserProfile(ctx context.Context, id uuid.UUID) (*mod
 		LEFT JOIN follower followers ON followers.followee_id = u.id
 		LEFT JOIN follower followed ON followed.follower_id = u.id
 		WHERE u.id = $1
-		GROUP BY u.id, u.username, u.display_name, u.profile_picture, u.bio;`
+		GROUP BY u.id, u.username, u.display_name, u.bio, u.profile_picture;`
 
 	err := r.db.QueryRow(ctx, query, id).Scan(&profile.UserID, &profile.Username, &profile.DisplayName, &profile.Followers, &profile.Followed, &profile.Bio, &profile.ProfilePicture)
 	if err != nil {

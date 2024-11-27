@@ -8,23 +8,43 @@ interface TopReviewsProps {
 
 const TopReviews = ({ reviews }: TopReviewsProps) => {
   return (
-    <View style={styles.container}>
+    <View>
       <Text style={styles.title}>Top Reviews</Text>
-      {reviews.map((review, index) => {
-        return <ReviewPreview key={index} preview={review} />;
-      })}
+      <View style={styles.reviewsContainer}>
+        {reviews.map((review, index) => {
+          return <ReviewPreview key={index} preview={review} />;
+        })}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 16,
-  },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
-    paddingVertical: 8,
+    paddingHorizontal: 28,
+    paddingBottom: 12,
+    paddingTop: 32,
+  },
+  container: {
+    flexDirection: "row",
+  },
+  reviewsContainer: {
+    marginTop: -8,
+    paddingHorizontal: 8,
+  },
+  songName: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#434343",
+    marginBottom: 4,
+  },
+  artistName: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#434343",
+    marginBottom: 4,
   },
 });
 

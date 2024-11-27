@@ -7,7 +7,6 @@ import TopSongs from "@/components/search/TopSongs";
 import TopReviews from "@/components/search/TopReviews";
 import axios from "axios";
 
-import { RouteProp } from "@react-navigation/native";
 import { useLocalSearchParams } from "expo-router";
 import TopMedia from "@/components/profile/TopMedia";
 import SectionSearchResults from "@/components/profile/SectionSearch";

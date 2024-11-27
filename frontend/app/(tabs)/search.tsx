@@ -99,6 +99,7 @@ const SearchPage: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
+    fontFamily: "NeueHaasUnicaPro-Regular",
     flex: 1,
     paddingTop: 80,
     backgroundColor: "#fff",

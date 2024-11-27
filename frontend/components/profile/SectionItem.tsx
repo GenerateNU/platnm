@@ -2,7 +2,6 @@ import axios from "axios";
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
-import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
 
 interface SectionItemProps {
   rank: number;

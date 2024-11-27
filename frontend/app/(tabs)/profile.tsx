@@ -8,15 +8,15 @@ import {
   ScrollView,
   Dimensions,
   TextInput,
+  Touchable,
 } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
 import axios from "axios";
 import Section from "@/components/profile/Section";
-import ReviewCard from "@/components/ReviewCard";
-import { router, useFocusEffect } from "expo-router";
+import { router, useFocusEffect, useNavigation } from "expo-router";
 import SelectSection from "@/components/profile/SelectSection";
+import ProfilePicture from "@/components/profile/ProfilePicture";
 import { useAuthContext } from "@/components/AuthProvider";
-import { profile } from "console";
 
 export default function ProfileScreen() {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -251,10 +251,9 @@ export default function ProfileScreen() {
               style={styles.recordImage}
             />
             {userProfile.profile_picture ? ( // Check if profilePicture exists
-              <Image
-                source={{ uri: userProfile.profile_picture }} // Use uri for remote images
-                style={styles.profileImage}
-                resizeMode="cover"
+              <ProfilePicture
+                uri={userProfile.profile_picture}
+                editing={isEditing}
               />
             ) : null}
             {/* Don't render anything if there's no profile picture */}
@@ -393,14 +392,7 @@ const styles = StyleSheet.create({
     height: "100%",
     resizeMode: "cover",
   },
-  profileImage: {
-    position: "absolute", // Overlay the profile picture on the record
-    width: 60, // Adjust size to fit within the center of the record
-    height: 60, // Adjust size to fit within the center of the record
-    borderRadius: 30, // To make it circular
-    borderWidth: 2, // Optional: add a border around the profile image
-    borderColor: "#fff", // Optional: white border
-  },
+
   editIcon: {
     position: "absolute",
     right: -25,
