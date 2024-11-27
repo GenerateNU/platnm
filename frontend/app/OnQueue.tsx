@@ -15,7 +15,7 @@ import { useAuthContext } from "@/components/AuthProvider";
 
 const OnQueue = () => {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-  const { userId } = useAuthContext(); // Hardcoding - Get userId from navigation
+  const { userId } = useAuthContext();
 
   const [songs, setSongs] = useState([
     {
