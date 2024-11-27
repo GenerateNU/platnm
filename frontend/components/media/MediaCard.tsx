@@ -3,6 +3,8 @@ import { router } from "expo-router";
 import { View, Text, StyleSheet, Image, ImageBackground } from "react-native";
 import { Button, IconButton } from "react-native-paper";
 import { LinearGradient } from "expo-linear-gradient";
+import axios from "axios";
+import { useAuthContext } from "../AuthProvider";
 
 type MediaCardProps = {
   media: Media;
@@ -13,6 +15,15 @@ function isTrack(media: Media): media is Track {
 }
 
 const MediaCard = ({ media }: MediaCardProps) => {
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+  const { userId } = useAuthContext();
+
+  const addToOnQueue = async () => {
+    await axios.post(`${BASE_URL}/playlist/on_queue/${userId}`, {
+      ...media,
+    });
+  };
+
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -40,12 +51,14 @@ const MediaCard = ({ media }: MediaCardProps) => {
                     size={24}
                     onPress={() => console.log("More options pressed")}
                   />
-                  <IconButton
-                    icon="bookmark-outline"
-                    iconColor="white"
-                    size={24}
-                    onPress={() => console.log("More options pressed")}
-                  />
+                  {media?.media_type === "track" && (
+                    <IconButton
+                      icon="bookmark-outline"
+                      iconColor="white"
+                      size={24}
+                      onPress={() => addToOnQueue()}
+                    />
+                  )}
                 </View>
               </View>
               <View style={styles.artist}>
