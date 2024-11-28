@@ -11,10 +11,11 @@ import {
 import Icon from "react-native-vector-icons/Ionicons";
 import { router } from "expo-router";
 import axios from "axios";
+import { useAuthContext } from "@/components/AuthProvider";
 
 const OnQueue = () => {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-  const userId = "c9bd4c67-7937-4ee3-959d-21a1b3db70eb"; // Hardcoding - Get userId from navigation
+  const { userId } = useAuthContext();
 
   const [songs, setSongs] = useState([
     {
