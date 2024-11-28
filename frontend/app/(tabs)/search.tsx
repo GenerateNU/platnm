@@ -55,8 +55,8 @@ const SearchPage: React.FC = () => {
     try {
       const [songsResponse, albumsResponse, profilesResponse] =
         await Promise.all([
-          axios.get(`${BASE_URL}/media/${query}`),
-          axios.get(`${BASE_URL}/media/${query}`),
+          axios.get(`${BASE_URL}/media/${query}?media_type=track`),
+          axios.get(`${BASE_URL}/media/${query}?media_type=album`),
           axios.get(`${BASE_URL}/users/profile/name/${query}`),
         ]);
 
