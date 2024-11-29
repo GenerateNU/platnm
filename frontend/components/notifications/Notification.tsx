@@ -16,7 +16,7 @@ export default function Notification({ notification }: { notification: CustomNot
 			return minuteDiff + 'm';
 		}
 		if (minuteDiff < 1440) {
-			return Math.floor(minuteDiff / 60) + ' h';
+			return Math.floor(minuteDiff / 60) + 'h';
 		}
 		return Math.floor(minuteDiff / 1440) + ' day' + (Math.floor(minuteDiff / 1440) > 1 ? 's' : '') + ' ago';
 	};
@@ -84,8 +84,6 @@ const styles = StyleSheet.create({
 		width: 50,
 		height: 50,
 		borderRadius: 25,
-		left: 0,
 		marginVertical: 'auto',
-		marginTop: 16,
 	},
 });

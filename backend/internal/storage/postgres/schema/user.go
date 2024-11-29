@@ -91,12 +91,12 @@ func (r *UserRepository) Follow(ctx context.Context, follower uuid.UUID, followi
 	println("inserted into follower table")
 
 	// get the username and profile picture of the followee
-	var followeeUsername string
-	var followeeProfilePicture string
+	var followerUsername string
+	var followerProfilePicture string
 
 	// I tried to condesnse this into the insertion but im unsure about syntax,
 	// if its possible to do it in one query some help on that would be appreciated!
-	err = r.db.QueryRow(ctx, `SELECT username, profile_picture FROM "user" WHERE id = $1`, following).Scan(&followeeUsername, &followeeProfilePicture)
+	err = r.db.QueryRow(ctx, `SELECT username, profile_picture FROM "user" WHERE id = $1`, follower).Scan(&followerUsername, &followerProfilePicture)
 	if err != nil {
 		println(err.Error(), "from transactions err ")
 		return false, err
@@ -106,7 +106,7 @@ func (r *UserRepository) Follow(ctx context.Context, follower uuid.UUID, followi
 	_, err = r.db.Exec(ctx, `
 		INSERT INTO notifications (reciever_id, tagged_entity_id, type, tagged_entity_type, thumbnail_url, tagged_entity_name)
 		VALUES ($1, $2, 'follow', 'user', $3, $4)
-	`, following, follower, followeeProfilePicture, followeeUsername)
+	`, following, follower, followerProfilePicture, followerUsername)
 
 	if err != nil {
 		println(err.Error(), "from transactions err ")
@@ -585,6 +585,7 @@ func (r *UserRepository) GetNotifications(ctx context.Context, id string) ([]*mo
 	rows, err := r.db.Query(ctx,`
 	   SELECT * FROM notifications 
 		 WHERE reciever_id = $1
+		 ORDER BY "created_at" DESC
 	`, id)
 
 	if err != nil {

@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useAuthContext } from '@/components/AuthProvider';
 import HeaderComponent from '@/components/HeaderComponent';
@@ -12,20 +12,7 @@ enum NotificationType {
 const Notifications = () => {
 	// const { userId } = useAuthContext();
 	const userId = '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d'; // Hardcoding - Get userId from navigation
-	const [notifications, setNotifications] = useState<CustomNotification[]>([
-		{
-			created_at: '2024-11-28T22:05:59.617625-05:00',
-			id: 1,
-			tagged_entity_id: '5e6f7a8b-9c0d-1e2f-3a4b-5c6d7e8f9d0e',
-			tagged_entity_name: 'john_doe',
-			tagged_entity_type: 'user',
-			thumbnail:
-				'https://preview.redd.it/tgnwy4m2ju741.jpg?width=640&crop=smart&auto=webp&s=90ad3b579c14db0dee54a4157dc3d5d71251baa4',
-			type: 'follow' as NotificationType,
-			read: false,
-		},
-	]);
-
+	const [notifications, setNotifications] = useState<CustomNotification[]>([]);
 	const [oldNotifications, setOldNotifications] = useState<CustomNotification[]>([]);
 
 	useEffect(() => {
@@ -34,29 +21,38 @@ const Notifications = () => {
 				console.log(userId);
 				const response = await axios.get(`${process.env.EXPO_PUBLIC_BASE_URL}/users/notifications/${userId}`);
 				console.log(response.data);
-				// setNotifications(response.data);
+				// TODO: sort into old and new notifications if its older than 7 days
+				const notifications = response.data.map((notification: any) => ({ ...notification, read: true }));
+
+				setNotifications(notifications);
 			} catch (error) {
 				console.error('Error fetching notifications:', error);
 			}
 		};
 		fetchNotifications();
-	}, []);
+	}, [userId]);
+
+	useEffect(() => {
+		console.log('notifications', notifications);
+	}, [notifications]);
 
 	return (
 		<View style={styles.container}>
 			<View style={styles.header}>
 				<HeaderComponent title='Your Notifications' />
 			</View>
-			<View style={styles.bodyContainer}>
+			<ScrollView style={styles.bodyContainer}>
 				<Text style={styles.title}>Recent</Text>
-				{notifications.map((notification, index) => {
-					return <Notification key={index} notification={notification} />;
-				})}
+
+				{notifications.length > 0 &&
+					notifications.map((notification, index) => {
+						return <Notification key={index} notification={notification} />;
+					})}
 				<Text style={styles.title}>Last 7 Days</Text>
 				{oldNotifications.map((notification, index) => {
 					return <Notification key={index} notification={notification} />;
 				})}
-			</View>
+			</ScrollView>
 		</View>
 	);
 };
