@@ -32,7 +32,7 @@ type UserRepository interface {
 
 	GetProfileByName(ctx context.Context, name string) ([]*models.Profile, error)
 	GetNotifications(ctx context.Context, id string) ([]*models.Notification, error)
-	
+
 	// GetProfileByUser(ctx context.Context, userName string) (*models.Profile, error)
 }
 

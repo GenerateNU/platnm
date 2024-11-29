@@ -112,7 +112,7 @@ func (r *UserRepository) Follow(ctx context.Context, follower uuid.UUID, followi
 		println(err.Error(), "from transactions err ")
 		return false, err
 	}
-	
+
 	// Match found
 	return true, nil
 }
@@ -483,7 +483,7 @@ func (r *UserRepository) DeleteSection(ctx context.Context, section_type_item mo
 		return err
 	}
 
-	return nil 
+	return nil
 }
 
 func (r *UserRepository) GetUserSections(ctx context.Context, user_id string) ([]models.UserSection, error) {
@@ -582,7 +582,7 @@ func (r *UserRepository) GetUserSectionOptions(ctx context.Context, user_id stri
 }
 
 func (r *UserRepository) GetNotifications(ctx context.Context, id string) ([]*models.Notification, error) {
-	rows, err := r.db.Query(ctx,`
+	rows, err := r.db.Query(ctx, `
 	   SELECT * FROM notifications 
 		 WHERE reciever_id = $1
 		 ORDER BY "created_at" DESC
@@ -597,14 +597,14 @@ func (r *UserRepository) GetNotifications(ctx context.Context, id string) ([]*mo
 	for rows.Next() {
 		var notification models.Notification
 		if err := rows.Scan(
-			&notification.ID, // Scan into notification.ID first
-			&notification.Type, // Scan into notification.Type eighth
-			&notification.CreatedAt, // Scan into notification.CreatedAt third
-			&notification.RecieverID, // Scan into notification.RecieverID fourth
-			&notification.TaggedEntityID, // Scan into notification.TaggedEntityID fifth
+			&notification.ID,               // Scan into notification.ID first
+			&notification.Type,             // Scan into notification.Type eighth
+			&notification.CreatedAt,        // Scan into notification.CreatedAt third
+			&notification.RecieverID,       // Scan into notification.RecieverID fourth
+			&notification.TaggedEntityID,   // Scan into notification.TaggedEntityID fifth
 			&notification.TaggedEntityName, // Scan into notification.TaggedEntityName seventh
 			&notification.TaggedEntityType, // Scan into notification.TaggedEntityType sixth
-			&notification.Thumbnail, // Scan into notification.Type second
+			&notification.Thumbnail,        // Scan into notification.Type second
 		); err != nil {
 			return nil, err
 		}
@@ -618,7 +618,6 @@ func (r *UserRepository) GetNotifications(ctx context.Context, id string) ([]*mo
 	return notifications, nil
 
 }
-
 
 func NewUserRepository(db *pgxpool.Pool) *UserRepository {
 	return &UserRepository{

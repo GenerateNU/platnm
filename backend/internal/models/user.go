@@ -15,12 +15,12 @@ type User struct {
 }
 
 type Notification struct {
-	ID             int       `json:"id"`
-	Thumbnail      string    `json:"thumbnail"` // Url of the notification thumbnail
-	CreatedAt      time.Time `json:"created_at"`
-	Type           string    `json:"type"` // Type of the notifcation 
-	RecieverID     string    `json:"reciever_id"` // Reciever of the notification
-	TaggedEntityID string    `json:"tagged_entity_id"`
-	TaggedEntityType   string    `json:"tagged_entity_type"`
-	TaggedEntityName   string    `json:"tagged_entity_name"`
+	ID               int       `json:"id"`
+	Thumbnail        string    `json:"thumbnail"` // Url of the notification thumbnail
+	CreatedAt        time.Time `json:"created_at"`
+	Type             string    `json:"type"`        // Type of the notifcation
+	RecieverID       string    `json:"reciever_id"` // Reciever of the notification
+	TaggedEntityID   string    `json:"tagged_entity_id"`
+	TaggedEntityType string    `json:"tagged_entity_type"`
+	TaggedEntityName string    `json:"tagged_entity_name"`
 }
