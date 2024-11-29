@@ -42,11 +42,9 @@ const SearchPage: React.FC = () => {
       .get(`${BASE_URL}/reviews/popular`)
       .then((response) => setInitialReviews(response.data))
       .catch((error) => console.error(error));
-
   }, []);
 
   const handleSearch = async (query: string) => {
-    console.log(BASE_URL);
     if (!query.trim()) {
       setSearchResults({ songs: [], albums: [], profiles: [] });
       setIsSearchActive(false);
@@ -66,7 +64,7 @@ const SearchPage: React.FC = () => {
         songs: songsResponse.data,
         albums: albumsResponse.data,
         profiles: profilesResponse.data,
-      }); 
+      });
       setIsSearchActive(true);
     } catch (error) {
       console.error("Search error:", error);
@@ -90,7 +88,6 @@ const SearchPage: React.FC = () => {
         />
       ) : (
         <View>
-          <Profiles profiles={initialProfiles}/>
           <TopSongs songs={initialSongs} />
           <TopAlbums albums={initialAlbums} />
           <TopReviews reviews={initialReviews} />

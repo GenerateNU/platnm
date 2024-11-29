@@ -1,8 +1,6 @@
 import React from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import ProfileChip from "@/components/search/ProfileChip";
-import { ScrollView } from "react-native";
-
 
 type ProfileChipProps = {
   profiles: UserProfile[];
@@ -22,8 +20,7 @@ const Profiles = ({ profiles }: ProfileChipProps) => {
               profile_picture={profile.profile_picture} 
               id={profile.id}
               display_name={profile.display_name}
-              key={profile.id}
-            />
+              />
           ))}
         </View>
 

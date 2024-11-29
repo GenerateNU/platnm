@@ -8,7 +8,6 @@ interface SongChipProps {
   artist_name: string;
   cover: string;
   rank?: number;
-  rank?: number;
 }
 
 const SongChip: React.FC<SongChipProps> = ({
@@ -20,7 +19,6 @@ const SongChip: React.FC<SongChipProps> = ({
 }) => {
   return (
     <TouchableOpacity
-      style={[styles.container, !rank && styles.noRankContainer]}
       style={[styles.container, !rank && styles.noRankContainer]}
       onPress={() =>
         router.push({
@@ -72,11 +70,8 @@ const styles = StyleSheet.create({
   noRankTextContainer: {
     marginLeft: 8,
   },
-  noRankTextContainer: {
-    marginLeft: 8,
-  },
+
   title: {
-    fontSize: 13,
     fontSize: 13,
     color: "#000000",
     fontWeight: "500",

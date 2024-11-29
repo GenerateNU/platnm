@@ -1,7 +1,6 @@
 import React from "react";
 import { router } from "expo-router";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
-import { ScrollView } from "react-native";
 
 export interface ProfileChipProps {
     display_name: string;

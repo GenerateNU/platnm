@@ -31,7 +31,6 @@ type UserRepository interface {
 	GetUserSectionOptions(ctx context.Context, id string) ([]models.SectionOption, error)
 
 	GetProfileByName(ctx context.Context, name string) ([]*models.Profile, error)
-	// GetProfileByUser(ctx context.Context, userName string) (*models.Profile, error)
 }
 
 type ReviewRepository interface {

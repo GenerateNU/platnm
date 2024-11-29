@@ -1,35 +1,15 @@
 import React, { useState } from "react";
-<<<<<<< HEAD
-import {
-  StyleSheet,
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-} from "react-native";
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity} from "react-native";
 import SongChip from "@/components/search/SongChip";
 import AlbumSearchCard from "@/components/search/AlbumSearchCard";
 import ProfileChip from "@/components/search/ProfileChip";
-import Profiles from "@/components/search/Profiles";
 import Filter from "@/components/search/Filter";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import SongCard from "@/components/SongCard";
-import { router } from "expo-router";
 
 interface SearchResultsProps {
   songs: MediaResponse[];
   albums: MediaResponse[];
-=======
-import { StyleSheet, View, Text, ScrollView } from "react-native";
-import SongChip from "@/components/search/SongChip";
-import AlbumSearchCard from "@/components/search/AlbumSearchCard";
-import ProfileChip from "@/components/search/ProfileChip";
-import Filter from "@/components/search/Filter";
-
-interface SearchResultsProps {
-  songs: Media[];
-  albums: Media[];
->>>>>>> main
   profiles: UserProfile[];
   isLoading: boolean;
   filter: "all" | "songs" | "albums" | "profile";
@@ -51,13 +31,9 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     return <Text style={styles.noResults}>No results found</Text>;
   }
 
-<<<<<<< HEAD
-  var [selectedFilter, setSelectedFilter] = useState<FilterOption>("all");
-=======
   const filterOptions = ["all", "songs", "albums", "profile"];
 
   const [selectedFilter, setSelectedFilter] = useState<FilterOption>("all");
->>>>>>> main
 
   const handleFilterChange = (filter: FilterOption) => {
     setSelectedFilter(filter);
@@ -67,16 +43,12 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     <View style={styles.container}>
       <Filter
         currentFilter={selectedFilter}
-<<<<<<< HEAD
-=======
         filterOptions={filterOptions}
->>>>>>> main
         onFilterChange={handleFilterChange}
       />
       <View style={styles.resultGrid}>
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
           {(selectedFilter === "all" || selectedFilter === "profile") && (
-<<<<<<< HEAD
             <View>
               {selectedFilter === "all" ? (
                 <TouchableOpacity onPress={() => setSelectedFilter("profile")}>
@@ -119,10 +91,10 @@ const SearchResults: React.FC<SearchResultsProps> = ({
             <View>
               {selectedFilter === "all" ? (
                 <TouchableOpacity onPress={() => setSelectedFilter("songs")}>
-                <Text style={styles.title}>
-                  Songs <AntDesign name="right" size={24} color="black" />
-                </Text>
-              </TouchableOpacity>
+                  <Text style={styles.title}>
+                    Songs <AntDesign name="right" size={24} color="black" />
+                  </Text>
+                </TouchableOpacity>
               ) : (
                 <Text style={styles.title}>Songs</Text>
               )}
@@ -178,10 +150,10 @@ const SearchResults: React.FC<SearchResultsProps> = ({
             <View>
               {selectedFilter === "all" ? (
                 <TouchableOpacity onPress={() => setSelectedFilter("albums")}>
-                <Text style={styles.title}>
-                  Albums <AntDesign name="right" size={24} color="black" />
-                </Text>
-              </TouchableOpacity>
+                  <Text style={styles.title}>
+                    Albums <AntDesign name="right" size={24} color="black" />
+                  </Text>
+                </TouchableOpacity>
               ) : (
                 <Text style={styles.title}>Albums</Text>
               )}
@@ -206,18 +178,6 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                   )
                 )}
               </View>
-=======
-            <View style={styles.songsList}>
-              <Text style={styles.title}>Profiles</Text>
-              {profiles?.map((profile, idx) => (
-                <ProfileChip
-                  display_name={profile.display_name}
-                  profile_picture={profile.profile_picture}
-                  id={profile.id}
-                  key={idx}
-                />
-              ))}
->>>>>>> main
             </View>
           )}
 
@@ -227,12 +187,12 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 
               {albums.map((album, index) => (
                 <AlbumSearchCard
-                  id={album.id}
-                  key={album.id}
+                  id={album.media.id}
+                  key={album.media.id}
                   rank={index + 1}
-                  artist_name={album.artist_name}
-                  album_name={album.title}
-                  cover={album.cover}
+                  artist_name={album.media.artist_name}
+                  album_name={album.media.title}
+                  cover={album.media.cover}
                 />
               ))}
             </View>
@@ -245,10 +205,10 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                   <SongChip
                     key={index}
                     rank={index + 1}
-                    id={song.id}
-                    title={song.title}
-                    artist_name={song.artist_name}
-                    cover={song.cover}
+                    id={song.media.id}
+                    title={song.media.title}
+                    artist_name={song.media.artist_name}
+                    cover={song.media.cover}
                   />
                 ))}
               </ScrollView>
@@ -261,14 +221,11 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 };
 
 const styles = StyleSheet.create({
-<<<<<<< HEAD
   profileContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "flex-start",
   },
-=======
->>>>>>> main
   title: {
     fontSize: 24,
     fontWeight: "bold",
@@ -309,7 +266,6 @@ const styles = StyleSheet.create({
     marginRight: 20,
   },
   albumsList: {
-<<<<<<< HEAD
     width: "48%",
     marginBottom: 16,
     paddingHorizontal: 4,
@@ -320,18 +276,12 @@ const styles = StyleSheet.create({
   gridContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    width: 500, // Fixed width
+    width: 500,
   },
   gridItem: {
     width: "33.33%",
     marginBottom: 16,
   },
-=======
-    width: "48%", // Slightly less than 50% to allow for spacing
-    marginBottom: 16,
-    paddingHorizontal: 4,
-  },
->>>>>>> main
   noResults: {
     textAlign: "center",
     marginTop: 20,

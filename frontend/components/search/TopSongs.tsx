@@ -1,5 +1,4 @@
 import { StyleSheet, View, Text, ScrollView } from "react-native";
-import { StyleSheet, View, Text, ScrollView } from "react-native";
 import SongChip from "@/components/search/SongChip";
 
 type SongCardProp = {
@@ -40,7 +39,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: 16,
-    width: 500, // Fixed width 
+    width: 500,
   },
   gridItem: {
     width: '33.33%',
