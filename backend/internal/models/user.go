@@ -13,3 +13,8 @@ type User struct {
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
 }
+
+type Connections struct {
+	Followees []User `json:"followees"`
+	Followers []User `json:"followers"`
+}
