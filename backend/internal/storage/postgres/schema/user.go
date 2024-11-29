@@ -560,11 +560,11 @@ func (r *UserRepository) GetUserSectionOptions(ctx context.Context, user_id stri
 
 func (r *UserRepository) GetConnections(ctx context.Context, id uuid.UUID, limit int, offset int) (models.Connections, error) {
 	const followersQuery string = `
-		SELECT u.id, u.username, u.display_name, u.bio, u.profile_picture, u.linked_account, u.created_at, u.updated_at
+		SELECT u.id, u.username, u.email, u.display_name, u.bio, u.profile_picture, u.linked_account, u.created_at, u.updated_at
 		FROM "user" AS u
-		LEFT JOIN follower AS f on f.follower_id = u.id
+		LEFT JOIN follower AS f on f.followee_id = u.id
 		WHERE f.followee_id = $1
-		LIMIT $2 OFFSET $3
+	    LIMIT $2 OFFSET $3
 	`
 
 	rows, err := r.db.Query(ctx, followersQuery, id, limit, offset)
@@ -580,13 +580,16 @@ func (r *UserRepository) GetConnections(ctx context.Context, id uuid.UUID, limit
 
 		return follower, nil
 	})
+	if err != nil {
+		return models.Connections{}, err
+	}
 
 	const followeesQuery string = `
-		SELECT u.id, u.username, u.display_name, u.bio, u.profile_picture, u.linked_account, u.created_at, u.updated_at
+		SELECT u.id, u.username, u.email, u.display_name, u.bio, u.profile_picture, u.linked_account, u.created_at, u.updated_at
 		FROM "user" AS u
 		LEFT JOIN follower AS f on f.followee_id = u.id
 		WHERE f.follower_id = $1
-		LIMIT $2 OFFSET $3
+	    LIMIT $2 OFFSET $3
 	`
 
 	rows, err = r.db.Query(ctx, followeesQuery, id, limit, offset)
@@ -602,6 +605,9 @@ func (r *UserRepository) GetConnections(ctx context.Context, id uuid.UUID, limit
 
 		return followee, nil
 	})
+	if err != nil {
+		return models.Connections{}, err
+	}
 
 	return models.Connections{
 		Followees: followees,

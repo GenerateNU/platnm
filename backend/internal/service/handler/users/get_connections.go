@@ -23,6 +23,10 @@ func (h *Handler) GetConnections(c *fiber.Ctx) error {
 		return errs.InvalidJSON()
 	}
 
+	if errMap := req.Validate(); len(errMap) > 0 {
+		return errs.InvalidRequestData(errMap)
+	}
+
 	connections, err := h.userRepository.GetConnections(c.Context(), id, req.Limit, req.GetOffset())
 	if err != nil {
 		return err
