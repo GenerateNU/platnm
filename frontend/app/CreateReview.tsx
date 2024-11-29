@@ -86,7 +86,6 @@ const CreateReview = () => {
     if (showNudges) {
       setShowNudges(false);
       router.push("/explore");
-      console.log("outside click");
     }
   };
 
@@ -149,11 +148,11 @@ const CreateReview = () => {
                   style={styles.sliderWrapper}
                   {...panResponder.panHandlers}
                 >
-                  <View style={styles.slider}>
-                    {/* Render your slider here, adjust based on touch */}
-                    <View collapsable={false}>
-                      <RatingSlider onRatingChange={handleRatingChange} />
-                    </View>
+                  <View collapsable={false}>
+                    <RatingSlider
+                      value={rating}
+                      onRatingChange={handleRatingChange}
+                    />
                   </View>
                 </View>
               </GestureDetector>
@@ -221,9 +220,6 @@ const styles = StyleSheet.create({
   sliderWrapper: {
     marginBottom: 20,
     width: "100%",
-  },
-  slider: {
-    //  flexDirection: "row", // Ensures horizontal scrolling
   },
 });
 

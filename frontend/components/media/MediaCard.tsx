@@ -94,7 +94,7 @@ const MediaCard = ({ media, full = false }: MediaCardProps) => {
                     pathname: "/CreateReview",
                     params: {
                       mediaName: media.title,
-                      mediaType: media.media_type,
+                      mediaType: isTrack(media) ? "track" : "album",
                       mediaId: media.id,
                       cover: media.cover,
                       artistName: media.artist_name,

@@ -13,32 +13,31 @@ import axios from "axios";
 import ReviewPreview from "@/components/ReviewPreview";
 import Icon from "react-native-vector-icons/Feather";
 import { router, useFocusEffect } from "expo-router";
+import { useAuthContext } from "@/components/AuthProvider";
 
 export default function HomeScreen() {
-  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-
   const [feedReviews, setFeedReviews] = useState<Preview[]>();
-  const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
+  const { userId } = useAuthContext();
   const hasNotification = true; // Hardcoding - Get notification status from somewhere else
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
   const fetchFeedReviews = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/users/feed/${userId}`);
-      setFeedReviews(response.data);
+      setFeedReviews(response.data.slice(0, 20));
     } catch (error) {
       console.error("Error fetching feed reviews:", error);
     }
   };
 
   useEffect(() => {
-    fetchFeedReviews();
-  }, []);
+    if (userId) fetchFeedReviews();
+  }, [userId]);
 
   useFocusEffect(
     useCallback(() => {
-      // Refetch reviews whenever the screen is focused
-      fetchFeedReviews();
-    }, []),
+      if (userId) fetchFeedReviews();
+    }, [userId]),
   );
 
   const handleNotifPress = () => {
@@ -46,25 +45,17 @@ export default function HomeScreen() {
     router.push("/Notifications");
   };
 
-  const handleMusicPress = () => {
-    console.log("music icon pressed");
-    router.push("/Recommendations");
-  };
-
+  const handleMusicPress = () => router.push("/Recommendations");
   return (
     <ScrollView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
-        {/* Top icons */}
         <View style={styles.topIconsContainer}>
-          {/* Activity icon with notification badge */}
           <Text style={[styles.titleContainer, styles.titleText]}>
             <ThemedText type="title" style={styles.titleText}>
               Platnm
             </ThemedText>
           </Text>
 
-          {/* Grouping the settings and share icons on the right */}
           <View style={styles.rightIconsContainer}>
             <TouchableOpacity
               onPress={handleNotifPress}
