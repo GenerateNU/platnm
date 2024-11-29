@@ -88,7 +88,31 @@ func (r *UserRepository) Follow(ctx context.Context, follower uuid.UUID, followi
 	if err != nil {
 		return false, err
 	}
+	println("inserted into follower table")
 
+	// get the username and profile picture of the followee
+	var followeeUsername string
+	var followeeProfilePicture string
+
+	// I tried to condesnse this into the insertion but im unsure about syntax,
+	// if its possible to do it in one query some help on that would be appreciated!
+	err = r.db.QueryRow(ctx, `SELECT username, profile_picture FROM "user" WHERE id = $1`, following).Scan(&followeeUsername, &followeeProfilePicture)
+	if err != nil {
+		println(err.Error(), "from transactions err ")
+		return false, err
+	}
+
+	// Add a notificaiton for the followee
+	_, err = r.db.Exec(ctx, `
+		INSERT INTO notifications (reciever_id, tagged_entity_id, type, tagged_entity_type, thumbnail_url, tagged_entity_name)
+		VALUES ($1, $2, 'follow', 'user', $3, $4)
+	`, following, follower, followeeProfilePicture, followeeUsername)
+
+	if err != nil {
+		println(err.Error(), "from transactions err ")
+		return false, err
+	}
+	
 	// Match found
 	return true, nil
 }
@@ -459,7 +483,7 @@ func (r *UserRepository) DeleteSection(ctx context.Context, section_type_item mo
 		return err
 	}
 
-	return nil
+	return nil 
 }
 
 func (r *UserRepository) GetUserSections(ctx context.Context, user_id string) ([]models.UserSection, error) {
@@ -556,6 +580,44 @@ func (r *UserRepository) GetUserSectionOptions(ctx context.Context, user_id stri
 	return options, nil
 
 }
+
+func (r *UserRepository) GetNotifications(ctx context.Context, id string) ([]*models.Notification, error) {
+	rows, err := r.db.Query(ctx,`
+	   SELECT * FROM notifications 
+		 WHERE reciever_id = $1
+	`, id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var notifications []*models.Notification
+
+	for rows.Next() {
+		var notification models.Notification
+		if err := rows.Scan(
+			&notification.ID, // Scan into notification.ID first
+			&notification.Type, // Scan into notification.Type eighth
+			&notification.CreatedAt, // Scan into notification.CreatedAt third
+			&notification.RecieverID, // Scan into notification.RecieverID fourth
+			&notification.TaggedEntityID, // Scan into notification.TaggedEntityID fifth
+			&notification.TaggedEntityName, // Scan into notification.TaggedEntityName seventh
+			&notification.TaggedEntityType, // Scan into notification.TaggedEntityType sixth
+			&notification.Thumbnail, // Scan into notification.Type second
+		); err != nil {
+			return nil, err
+		}
+		notifications = append(notifications, &notification)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return notifications, nil
+
+}
+
 
 func NewUserRepository(db *pgxpool.Pool) *UserRepository {
 	return &UserRepository{

@@ -1,48 +1,46 @@
 import { View, Text } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuthContext } from '@/components/AuthProvider';
 import HeaderComponent from '@/components/HeaderComponent';
 import { StyleSheet } from 'react-native';
 import Notification from '@/components/notifications/Notification';
-
+import axios from 'axios';
 enum NotificationType {
 	Follow = 'follow',
 }
 
 const Notifications = () => {
-	const { userId } = useAuthContext();
+	// const { userId } = useAuthContext();
+	const userId = '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d'; // Hardcoding - Get userId from navigation
 	const [notifications, setNotifications] = useState<CustomNotification[]>([
 		{
+			created_at: '2024-11-28T22:05:59.617625-05:00',
 			id: 1,
-			text: 'beak has now followed you!',
-			type: NotificationType.Follow,
-			taggedUser: 'beak',
-			thumbnail: 'https://miro.medium.com/v2/resize:fit:736/1*YqfVlyCe06DfcPsR3kpYrw.jpeg',
-			createdAt: 'now',
+			tagged_entity_id: '5e6f7a8b-9c0d-1e2f-3a4b-5c6d7e8f9d0e',
+			tagged_entity_name: 'john_doe',
+			tagged_entity_type: 'user',
+			thumbnail:
+				'https://preview.redd.it/tgnwy4m2ju741.jpg?width=640&crop=smart&auto=webp&s=90ad3b579c14db0dee54a4157dc3d5d71251baa4',
+			type: 'follow' as NotificationType,
 			read: false,
-		},
-		{
-			id: 2,
-			text: 'beak has now followed you!',
-			type: NotificationType.Follow,
-			taggedUser: 'beak',
-			thumbnail: 'https://i.redd.it/tgnwy4m2ju741.jpg',
-			createdAt: '2m',
-			read: true,
 		},
 	]);
 
-	const [oldNotifications, setOldNotifications] = useState<CustomNotification[]>([
-		{
-			id: 2,
-			text: 'beak has now followed you!',
-			type: NotificationType.Follow,
-			taggedUser: 'beak',
-			thumbnail: 'https://pbs.twimg.com/profile_images/1773603749438595072/m7Eqb-lP_400x400.jpg',
-			createdAt: '2m',
-			read: true,
-		},
-	]);
+	const [oldNotifications, setOldNotifications] = useState<CustomNotification[]>([]);
+
+	useEffect(() => {
+		const fetchNotifications = async () => {
+			try {
+				console.log(userId);
+				const response = await axios.get(`${process.env.EXPO_PUBLIC_BASE_URL}/users/notifications/${userId}`);
+				console.log(response.data);
+				// setNotifications(response.data);
+			} catch (error) {
+				console.error('Error fetching notifications:', error);
+			}
+		};
+		fetchNotifications();
+	}, []);
 
 	return (
 		<View style={styles.container}>

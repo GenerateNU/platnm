@@ -19,10 +19,11 @@ enum NotificationType {
 
 type CustomNotification = {
 	id: number;
-	text: string;
-	taggedUser: string;
+	tagged_entity_name: string;
+	tagged_entity_type: string;
+	tagged_entity_id: string;
 	thumbnail: string;
-	createdAt: string;
+	created_at: string;
 	read: boolean;
 	type: NotificationType;
 };

@@ -6,6 +6,21 @@ import FollowNotification from './FollowNotification';
 export default function Notification({ notification }: { notification: CustomNotification }) {
 	const fadeAnim = useAnimatedValue(9); // Initial value for opacity: 0
 
+	const toReadableTime = (time: Date) => {
+		let diffms = new Date().getTime() - time.getTime();
+		let minuteDiff = Math.floor(diffms / 60000);
+		if (minuteDiff < 1) {
+			return 'now';
+		}
+		if (minuteDiff < 60) {
+			return minuteDiff + 'm';
+		}
+		if (minuteDiff < 1440) {
+			return Math.floor(minuteDiff / 60) + ' h';
+		}
+		return Math.floor(minuteDiff / 1440) + ' day' + (Math.floor(minuteDiff / 1440) > 1 ? 's' : '') + ' ago';
+	};
+
 	useEffect(() => {
 		Animated.timing(fadeAnim, {
 			toValue: 0,
@@ -38,9 +53,9 @@ export default function Notification({ notification }: { notification: CustomNot
 				}
 			/>
 			<Image source={{ uri: notification.thumbnail }} style={styles.thumbnail} />
-			<FollowNotification tagged={notification.taggedUser} time={notification.createdAt} />
-			<View style={{ alignItems: 'flex-end', justifyContent: 'flex-end', marginRight: 16 }}>
-				<Text style={{ textAlign: 'right' }}>{notification.createdAt}</Text>
+			<FollowNotification tagged={notification.tagged_entity_name} time={notification.created_at} />
+			<View style={{ alignItems: 'flex-end', marginRight: 16 }}>
+				<Text>{toReadableTime(new Date(notification.created_at))}</Text>
 				<Text style={{ fontWeight: 'bold', fontSize: 28, textAlign: 'right' }}>...</Text>
 			</View>
 		</Animated.View>
@@ -70,7 +85,6 @@ const styles = StyleSheet.create({
 		height: 50,
 		borderRadius: 25,
 		left: 0,
-		position: 'absolute',
 		marginVertical: 'auto',
 		marginTop: 16,
 	},
