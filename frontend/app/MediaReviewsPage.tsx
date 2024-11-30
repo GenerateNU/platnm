@@ -19,7 +19,12 @@ const MediaReviewsPage = () => {
   const [userReviews, setUserReviews] = useState<Preview[]>([]);
   const [friendsReviews, setFriendsReviews] = useState<Preview[]>([]);
   const [allReviews, setAllReviews] = useState<Preview[]>([]);
-  const [mediaStats, setMediaStats] = useState<{ userScore: number; friendScore: number; avgScore: Number; totalRatings: number }>({
+  const [mediaStats, setMediaStats] = useState<{
+    userScore: number;
+    friendScore: number;
+    avgScore: Number;
+    totalRatings: number;
+  }>({
     userScore: 0,
     friendScore: 0,
     avgScore: 0,
@@ -35,7 +40,9 @@ const MediaReviewsPage = () => {
     const fetchAll = async () => {
       try {
         console.log(`${BASE_URL}/reviews/${media_type}/${media_id}`);
-        const response = await axios.get(`${BASE_URL}/reviews/${media_type}/${media_id}`);
+        const response = await axios.get(
+          `${BASE_URL}/reviews/${media_type}/${media_id}`,
+        );
         console.log(response.data);
         setAllReviews(response.data.reviews);
         setMediaStats({
@@ -47,7 +54,7 @@ const MediaReviewsPage = () => {
       } catch (error) {
         console.error(error);
       }
-    }
+    };
 
     const fetchMediaCover = async () => {
       axios
@@ -56,33 +63,40 @@ const MediaReviewsPage = () => {
           setMediaCover(response.data.cover);
         })
         .catch((error) => console.error(error));
-    }
-    
+    };
+
     const fetchUserReviews = async () => {
-    // Fetch user reviews
-    try {
-      const response = await axios.get(`${BASE_URL}/reviews/media/${media_id}/${user_id}`, {
-        params: {
-          media_type: media_type,
-        },
-      });
-  
-      const reviews = response.data;
-      setUserReviews(reviews);
-  
-      // Calculate the average score
-      const totalScore = reviews.reduce((sum: any, review: { rating: any; }) => sum + review.rating, 0); // Sum of all ratings
-      const averageScore = reviews.length > 0 ? totalScore / reviews.length : 0; // Avoid division by 0
-  
-      // Update userScore in mediaStats
-      setMediaStats((prevStats) => ({
-        ...prevStats,
-        userScore: averageScore,
-      }));
-    } catch (error) {
-      console.error(error);
-    }
-    }
+      // Fetch user reviews
+      try {
+        const response = await axios.get(
+          `${BASE_URL}/reviews/media/${media_id}/${user_id}`,
+          {
+            params: {
+              media_type: media_type,
+            },
+          },
+        );
+
+        const reviews = response.data;
+        setUserReviews(reviews);
+
+        // Calculate the average score
+        const totalScore = reviews.reduce(
+          (sum: any, review: { rating: any }) => sum + review.rating,
+          0,
+        ); // Sum of all ratings
+        const averageScore =
+          reviews.length > 0 ? totalScore / reviews.length : 0; // Avoid division by 0
+
+        // Update userScore in mediaStats
+        setMediaStats((prevStats) => ({
+          ...prevStats,
+          userScore: averageScore,
+        }));
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
     // TODO ALEX: Here you would also fetch the reviews from friends
 
@@ -105,29 +119,41 @@ const MediaReviewsPage = () => {
   return (
     <View>
       <ScrollView style={{ backgroundColor: "#FFF" }}>
-      <HeaderComponent title="" />
-      <View style={styles.headerContainer}>
-        <View style={styles.vinylContainer}>
-          <Vinyl style={styles.vinyl} />
-          {mediaCover && (
-            <Image
-              source={{ uri: mediaCover }}
-              style={styles.mediaCover}
-              resizeMode="cover"
-            />
-          )}
+        <HeaderComponent title="" />
+        <View style={styles.headerContainer}>
+          <View style={styles.vinylContainer}>
+            <Vinyl style={styles.vinyl} />
+            {mediaCover && (
+              <Image
+                source={{ uri: mediaCover }}
+                style={styles.mediaCover}
+                resizeMode="cover"
+              />
+            )}
+          </View>
+          <View style={styles.statsContainer}>
+            {selectedFilter === "you" && (
+              <View style={styles.scoreContainer}>
+                <Text style={styles.score}>
+                  {mediaStats.userScore.toFixed(1)}
+                </Text>
+                <Text style={styles.scoreLabel}>Your Avg Score</Text>
+              </View>
+            )}
+            {selectedFilter === "friend" && (
+              <View style={styles.scoreContainer}>
+                <Text style={styles.score}>
+                  {mediaStats.friendScore.toFixed(1)}
+                </Text>
+                <Text style={styles.scoreLabel}>Friend Score</Text>
+              </View>
+            )}
+            <Text style={styles.totalRatings}>
+              {formatLargeNumber(mediaStats.totalRatings)}
+            </Text>
+            <Text style={styles.totalRatingsText}>Total Ratings</Text>
+          </View>
         </View>
-        <View style={styles.statsContainer}>
-          {selectedFilter === "you" && (
-            <View style={styles.scoreContainer}><Text style={styles.score}>{mediaStats.userScore.toFixed(1)}</Text><Text style={styles.scoreLabel}>Your Avg Score</Text></View>
-          )}
-          {selectedFilter === "friend" && (
-            <View style={styles.scoreContainer}><Text style={styles.score}>{mediaStats.friendScore.toFixed(1)}</Text><Text style={styles.scoreLabel}>Friend Score</Text></View>
-          )}
-          <Text style={styles.totalRatings}>{formatLargeNumber(mediaStats.totalRatings)}</Text>
-          <Text style={styles.totalRatingsText}>Total Ratings</Text>
-        </View>
-      </View>
         <Filter
           currentFilter={selectedFilter}
           filterOptions={filterOptions}
