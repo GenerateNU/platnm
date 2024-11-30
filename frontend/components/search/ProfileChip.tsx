@@ -19,9 +19,9 @@ const ProfileChip: React.FC<ProfileChipProps> = ({
       style={styles.chipContainer}
       onPress={() =>
         router.push({
-          pathname: "/profile",
+          pathname: "/(tabs)/user",
           params: {
-            userID: id,
+            userId: id,
           },
         })
       }
