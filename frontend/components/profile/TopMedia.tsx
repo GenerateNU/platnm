@@ -8,10 +8,11 @@ import Section from "./Section";
 import SectionItem from "./SectionItem";
 
 type MediaCardProps = {
-  media: MediaResponse[];
+  sectionId: string;
+  media: SectionItem[];
 };
 
-const TopMedia = ({ media }: MediaCardProps) => {
+const TopMedia = ({ sectionId, media }: MediaCardProps) => {
   const image =
     "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png";
 
@@ -20,18 +21,16 @@ const TopMedia = ({ media }: MediaCardProps) => {
       <Text style={styles.title}>Add Item</Text>
 
       <ScrollView
-        horizontal
         style={styles.container}
         showsHorizontalScrollIndicator={false}
       >
         {media?.map((m, index) => (
           <SectionItem
-            key={m.media.id}
-            id={m.media.id.toString()}
+            key={m.id}
+            id={sectionId}
             rank={index + 1}
-            artist_name={m.media.artist_name} // hardcoded
-            title={m.media.title}
-            cover={m.media.cover}
+            title={m.title}
+            cover={m.cover_photo}
           />
         ))}
       </ScrollView>

@@ -1,7 +1,6 @@
 package users
 
 import (
-	"fmt"
 	"platnm/internal/models"
 
 	"github.com/gofiber/fiber/v2"
@@ -50,7 +49,7 @@ func (h *Handler) CreateSectionItem(c *fiber.Ctx) error {
 	item, err := h.userRepository.CreateSectionItem(c.Context(), body.SectionItem, id, sectionId)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to unfollow user",
+			"error": "Failed to create section item",
 		})
 	}
 	return c.Status(fiber.StatusOK).JSON(item)
@@ -68,7 +67,7 @@ func (h *Handler) UpdateSectionItem(c *fiber.Ctx) error {
 	err := h.userRepository.UpdateSectionItem(c.Context(), body.SectionItem)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to unfollow user",
+			"error": "Failed to create section item",
 		})
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -80,7 +79,6 @@ func (h *Handler) DeleteSectionItem(c *fiber.Ctx) error {
 	var body SectionTypeItem
 
 	if err := c.BodyParser(&body); err != nil {
-		fmt.Println(err.Error())
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Cannot parse JSON",
 		})
@@ -88,7 +86,6 @@ func (h *Handler) DeleteSectionItem(c *fiber.Ctx) error {
 
 	err := h.userRepository.DeleteSectionItem(c.Context(), body.SectionTypeItem)
 	if err != nil {
-		fmt.Println(err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to Delete Section Item",
 		})
@@ -102,7 +99,6 @@ func (h *Handler) DeleteSection(c *fiber.Ctx) error {
 	var body SectionTypeItem
 
 	if err := c.BodyParser(&body); err != nil {
-		fmt.Println(err.Error())
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Cannot parse JSON",
 		})
@@ -110,7 +106,6 @@ func (h *Handler) DeleteSection(c *fiber.Ctx) error {
 
 	err := h.userRepository.DeleteSection(c.Context(), body.SectionTypeItem)
 	if err != nil {
-		fmt.Println(err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to Delete Section Item",
 		})

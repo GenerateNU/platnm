@@ -29,9 +29,6 @@ const Section: React.FC<SectionProps> = ({
   const ITEM_LIMIT = 5;
 
   const addItemImage = require("@/assets/images/add-item-placeholder.png");
-  {
-    console.log(items);
-  }
 
   return (
     <View style={styles.section}>

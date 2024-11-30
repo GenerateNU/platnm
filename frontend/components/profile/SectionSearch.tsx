@@ -4,11 +4,13 @@ import Section from "./Section";
 import SectionItem from "./SectionItem";
 
 interface SectionSearchResultsProps {
-  media: MediaResponse[];
+  sectionId: string;
+  media: SectionItem[];
   isLoading: boolean;
 }
 
 const SectionSearchResults: React.FC<SectionSearchResultsProps> = ({
+  sectionId,
   media,
   isLoading,
 }) => {
@@ -30,13 +32,12 @@ const SectionSearchResults: React.FC<SectionSearchResultsProps> = ({
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
           {media?.map((m, index) => (
             <SectionItem
-              key={m.media.id}
-              id={m.media.id.toString()}
-              rank={index + 1}
-              artist_name={m.media.artist_name}
-              title={m.media.title}
-              cover={m.media.cover}
-            />
+            key={m.id}
+            id={sectionId}
+            rank={index + 1}
+            title={m.title}
+            cover={m.cover_photo}
+          />
           ))}
           <View />
         </ScrollView>

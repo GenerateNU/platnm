@@ -34,7 +34,6 @@ export default function ProfileScreen() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [bio, setBio] = useState(userProfile?.bio);
-  const [nextId, setNextId] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
@@ -128,7 +127,7 @@ export default function ProfileScreen() {
     setSelectedOption(option);
     setSelectSectionVisible(false);
     const newSection = {
-      section_id: nextId,
+      section_id: option.section_id,
       title: `${option.title}`,
       items: [],
       search_type: option.search_type,
@@ -137,7 +136,6 @@ export default function ProfileScreen() {
       prevOptions.filter((item) => item.title !== option.title),
     );
     setSections([...(sections || []), newSection]);
-    setNextId(nextId + 1);
   };
 
   const handleAddSection = () => {
@@ -145,12 +143,9 @@ export default function ProfileScreen() {
   };
 
   const handleAddItem = (section: Section) => {
-    console.log("Adding item to section", section.section_id);
-    console.log("Selected option", section.title);
-    console.log("Selected option", section.search_type);
     router.push({
       pathname: "/SectionResults",
-      params: { type: section.search_type },
+      params: { type: section.search_type, sectionId: section.section_id },
     });
     setSections(
       sections.map((section) => {
@@ -196,6 +191,7 @@ export default function ProfileScreen() {
         {
           title: sectionToDelete.title,
           search_type: sectionToDelete.search_type,
+          section_id: sectionToDelete.section_id,
         },
       ]);
     }

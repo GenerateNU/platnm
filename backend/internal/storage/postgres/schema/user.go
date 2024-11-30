@@ -529,7 +529,7 @@ func (r *UserRepository) GetUserSections(ctx context.Context, user_id string) ([
 func (r *UserRepository) GetUserSectionOptions(ctx context.Context, user_id string) ([]models.SectionOption, error) {
 	var options []models.SectionOption
 	rows, err := r.db.Query(ctx,
-		`SELECT section_type.title, section_type.search_type
+		`SELECT section_type.title, section_type.search_type, section_type.id
 		FROM section_type
 		WHERE section_type.id NOT IN  
   		  (SELECT section_type_item.section_type_id 
@@ -543,7 +543,7 @@ func (r *UserRepository) GetUserSectionOptions(ctx context.Context, user_id stri
 
 	for rows.Next() {
 		var option models.SectionOption
-		if err := rows.Scan(&option.SectionTitle, &option.SearchType); err != nil {
+		if err := rows.Scan(&option.SectionTitle, &option.SearchType, &option.SectionId); err != nil {
 			return nil, err
 		}
 		options = append(options, option)

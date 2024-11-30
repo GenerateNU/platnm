@@ -387,6 +387,7 @@ func (r *MediaRepository) GetArtistByName(ctx context.Context, name string) ([]m
 			bio 
 		FROM artist 
 		WHERE name ILIKE '%' || $1 || '%'
+		LIMIT 15
 	`
 
 	rows, err := r.Query(ctx, query, decodedName)
@@ -399,6 +400,7 @@ func (r *MediaRepository) GetArtistByName(ctx context.Context, name string) ([]m
 		var artist models.Artist
 		err := row.Scan(&artist.ID, &artist.Name, &artist.SpotifyID, &artist.Photo, &artist.Bio)
 		if err != nil {
+
 			return models.Artist{}, err
 		}
 		return artist, nil

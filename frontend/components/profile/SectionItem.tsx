@@ -7,7 +7,6 @@ import { useAuthContext } from "../AuthProvider";
 interface SectionItemProps {
   rank: number;
   id: string;
-  artist_name: string;
   title: string;
   cover: string;
 }
@@ -15,16 +14,12 @@ interface SectionItemProps {
 const SectionItem: React.FC<SectionItemProps> = ({
   id,
   rank,
-  artist_name,
   title,
   cover,
 }) => {
   const placeholderImage =
     "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png";
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-  // const { userId, sectionId } = useLocalSearchParams<{
-  //   type: string;
-  // }>();
 
   const { userId } = useAuthContext();
   const sectionId = id;
@@ -33,9 +28,9 @@ const SectionItem: React.FC<SectionItemProps> = ({
     <TouchableOpacity
       style={styles.cardContainer}
       onPress={async () => {
-        console.log(title, artist_name, cover);
+        console.log(title, cover);
         console.log(`${BASE_URL}/users/section/item/${userId}/${sectionId}`);
-        const response = await axios.post(
+        await axios.post(
           `${BASE_URL}/users/section/item/${userId}/${sectionId}`,
           {
             title: title,
@@ -68,7 +63,6 @@ const SectionItem: React.FC<SectionItemProps> = ({
 
       {/* Album and Artist Name */}
       <Text style={styles.title}>{title}</Text>
-      <Text style={styles.artistName}>{artist_name}</Text>
     </TouchableOpacity>
   );
 };
