@@ -81,25 +81,28 @@ func (h *Handler) handleSearchResults(client *spotify.Client, ctx context.Contex
 	var wg sync.WaitGroup
 	var errCh = make(chan error, 100)
 
-	for _, album := range result.Albums.Albums {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			albumId, err := h.handleSearchAlbum(ctx, &wg, album, errCh)
-			if err != nil {
-				return // error should've been reported in handleSearchAlbum. don't proceed to handleSearchAlbumTracks
-			}
-			h.handleSearchAlbumTracks(client, ctx, &wg, albumId, album.ID, errCh)
-		}()
+	if (result.Albums) != nil {
+		for _, album := range result.Albums.Albums {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				albumId, err := h.handleSearchAlbum(ctx, &wg, &album, errCh)
+				if err != nil {
+					return // error should've been reported in handleSearchAlbum. don't proceed to handleSearchAlbumTracks
+				}
+				h.handleSearchAlbumTracks(client, ctx, &wg, albumId, album.ID, errCh)
+			}()
+		}
 	}
 
-	for _, track := range result.Tracks.Tracks {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			h.handleSearchTrack(ctx, &wg, &track, errCh)
-		}()
-
+	if (result.Tracks) != nil {
+		for _, track := range result.Tracks.Tracks {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				h.handleSearchTrack(ctx, &wg, &track, errCh)
+			}()
+		}
 	}
 
 	wg.Wait()
@@ -119,7 +122,7 @@ func (h *Handler) handleSearchResults(client *spotify.Client, ctx context.Contex
 	return nil
 }
 
-func (h *Handler) handleSearchAlbum(ctx context.Context, wg *sync.WaitGroup, album spotify.SimpleAlbum, errCh chan<- error) (int, error) {
+func (h *Handler) handleSearchAlbum(ctx context.Context, wg *sync.WaitGroup, album *spotify.SimpleAlbum, errCh chan<- error) (int, error) {
 	addedAlbum, err := h.mediaRepository.AddAlbum(ctx, &models.Album{
 		MediaType:   models.AlbumMedia,
 		SpotifyID:   album.ID.String(),

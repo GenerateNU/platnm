@@ -45,7 +45,7 @@ const YourRatings = ({ media_id, media_type }: YourRatingsProps) => {
         }
       >
         <View style={styles.textContainer}>
-          <Text style={styles.text}>You've rated this song</Text>
+          <Text style={styles.text}>You've rated this {media_type}</Text>
           <View style={styles.countBubble}>
             <Text style={styles.countText}>{userReviews?.length ?? 0}x</Text>
           </View>
