@@ -61,9 +61,9 @@ const SearchPage: React.FC = () => {
         ]);
 
       setSearchResults({
-        songs: songsResponse.data,
-        albums: albumsResponse.data,
-        profiles: profilesResponse.data,
+        songs: songsResponse.data ?? [],
+        albums: albumsResponse.data ?? [],
+        profiles: profilesResponse.data ?? [],
       });
       setIsSearchActive(true);
     } catch (error) {

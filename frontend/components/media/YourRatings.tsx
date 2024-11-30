@@ -3,56 +3,56 @@ import { router } from "expo-router";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import ArrowRight from "@/assets/images/Media/arrowRight.svg";
 import axios from "axios";
+import { useAuthContext } from "../AuthProvider";
 
 type YourRatingsProps = {
-  user_id: string;
   media_id: string;
   media_type: string;
 };
 
-const YourRatings = ({ user_id, media_id, media_type }: YourRatingsProps) => {
+const YourRatings = ({ media_id, media_type }: YourRatingsProps) => {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-
   const [userReviews, setUserReviews] = useState<Preview[]>([]);
+  const { userId } = useAuthContext();
 
   useEffect(() => {
-    // Fetch user reviews
-    axios
-      .get(`${BASE_URL}/reviews/media/${media_id}/${user_id}`, {
-        params: {
-          media_type: media_type,
-        },
-      })
-      .then((response) => {
-        setUserReviews(response.data);
-      })
-      .catch((error) => console.error(error));
+    if (userId)
+      axios
+        .get(`${BASE_URL}/reviews/media/${media_id}/${userId}`, {
+          params: {
+            media_type: media_type,
+          },
+        })
+        .then((response) => setUserReviews(response.data))
+        .catch((error) => console.error(error));
   }, []);
 
   return (
-    <TouchableOpacity
-      style={styles.container}
-      disabled={!userReviews || userReviews.length === 0}
-      onPress={() =>
-        router.push({
-          pathname: "/MediaReviewsPage",
-          params: {
-            media_id: media_id,
-            user_id: user_id,
-            media_type: media_type,
-            filter: "user",
-          },
-        })
-      }
-    >
-      <View style={styles.textContainer}>
-        <Text style={styles.text}>You've rated this {media_type}</Text>
-        <View style={styles.countBubble}>
-          <Text style={styles.countText}>{userReviews?.length ?? 0}x</Text>
+    userId && (
+      <TouchableOpacity
+        style={styles.container}
+        disabled={!userReviews || userReviews.length === 0}
+        onPress={() =>
+          router.push({
+            pathname: "/MediaReviewsPage",
+            params: {
+              media_id: media_id,
+              user_id: userId,
+              media_type: media_type,
+              filter: "user",
+            },
+          })
+        }
+      >
+        <View style={styles.textContainer}>
+          <Text style={styles.text}>You've rated this {media_type}</Text>
+          <View style={styles.countBubble}>
+            <Text style={styles.countText}>{userReviews?.length ?? 0}x</Text>
+          </View>
         </View>
-      </View>
-      {userReviews && userReviews.length > 0 && <ArrowRight />}
-    </TouchableOpacity>
+        {userReviews && userReviews.length > 0 && <ArrowRight />}
+      </TouchableOpacity>
+    )
   );
 };
 

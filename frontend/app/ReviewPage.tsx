@@ -28,6 +28,7 @@ import Downvote from "@/assets/images/ReviewPreview/downvote.svg";
 import Upvote from "@/assets/images/ReviewPreview/upvote.svg";
 import Comment from "@/assets/images/ReviewPreview/comment.svg";
 import Share from "@/assets/images/ReviewPreview/share.svg";
+import { useAuthContext } from "@/components/AuthProvider";
 
 interface ReviewPageProps {
   route: {
@@ -46,7 +47,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
   const [review, setReview] = useState<Preview>();
   const [comments, setComments] = useState<UserComment[]>();
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-  const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
+  const { userId } = useAuthContext();
   const MusicDisk = require("../assets/images/music-disk.png");
 
   const [currentVote, setCurrentVote] = useState<boolean>(false); // does a vote currently exist?
