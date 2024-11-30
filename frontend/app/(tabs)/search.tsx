@@ -75,25 +75,27 @@ const SearchPage: React.FC = () => {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <SearchBar onSearch={handleSearch} />
 
-      {isSearchActive ? (
-        <SearchResults
-          songs={searchResults.songs}
-          albums={searchResults.albums}
-          isLoading={isLoading}
-          profiles={searchResults.profiles}
-          filter={"all"}
-        />
-      ) : (
-        <View>
-          <TopSongs songs={initialSongs} />
-          <TopAlbums albums={initialAlbums} />
-          <TopReviews reviews={initialReviews} />
-        </View>
-      )}
-    </ScrollView>
+      <ScrollView>
+        {isSearchActive ? (
+          <SearchResults
+            songs={searchResults.songs}
+            albums={searchResults.albums}
+            isLoading={isLoading}
+            profiles={searchResults.profiles}
+            filter={"all"}
+          />
+        ) : (
+          <View>
+            <TopSongs songs={initialSongs} />
+            <TopAlbums albums={initialAlbums} />
+            <TopReviews reviews={initialReviews} />
+          </View>
+        )}
+      </ScrollView>
+    </View>
   );
 };
 
