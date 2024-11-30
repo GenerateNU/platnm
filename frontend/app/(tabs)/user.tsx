@@ -31,7 +31,7 @@ export default function ProfilePage() {
     const fetchUserProfile = async () => {
       try {
         const response = await axios.get(
-          `${BASE_URL}/users/profile/id/${userId}`
+          `${BASE_URL}/users/profile/id/${userId}`,
         );
         const profile = {
           user_id: response.data.user_id,
