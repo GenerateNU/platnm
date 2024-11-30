@@ -83,33 +83,28 @@ func (r *UserRepository) FollowExists(ctx context.Context, follower uuid.UUID, f
 }
 
 func (r *UserRepository) Follow(ctx context.Context, follower uuid.UUID, following uuid.UUID) (bool, error) {
-
-	_, err := r.db.Exec(ctx, `INSERT INTO follower (follower_id, followee_id) VALUES ($1, $2)`, follower, following)
-	if err != nil {
-		return false, err
-	}
-	println("inserted into follower table")
-
-	// get the username and profile picture of the followee
+	query := `
+	WITH inserted_follower AS ( 
+		INSERT INTO follower (follower_id, followee_id) VALUES ($1, $2) RETURNING follower_id
+	)
+	SELECT u.username, u.profile_picture FROM "user" u 
+	LEFT JOIN (SELECT * FROM inserted_follower) inserted_follower
+	ON inserted_follower.follower_id = u.id;
+	`
 	var followerUsername string
 	var followerProfilePicture string
+	err := r.db.QueryRow(ctx, query, follower, following).Scan(&followerUsername, &followerProfilePicture)
 
-	// I tried to condesnse this into the insertion but im unsure about syntax,
-	// if its possible to do it in one query some help on that would be appreciated!
-	err = r.db.QueryRow(ctx, `SELECT username, profile_picture FROM "user" WHERE id = $1`, follower).Scan(&followerUsername, &followerProfilePicture)
 	if err != nil {
-		println(err.Error(), "from transactions err ")
 		return false, err
 	}
-
 	// Add a notificaiton for the followee
 	_, err = r.db.Exec(ctx, `
-		INSERT INTO notifications (reciever_id, tagged_entity_id, type, tagged_entity_type, thumbnail_url, tagged_entity_name)
+		INSERT INTO notifications (receiver_id, tagged_entity_id, type, tagged_entity_type, thumbnail_url, tagged_entity_name)
 		VALUES ($1, $2, 'follow', 'user', $3, $4)
 	`, following, follower, followerProfilePicture, followerUsername)
 
 	if err != nil {
-		println(err.Error(), "from transactions err ")
 		return false, err
 	}
 
@@ -584,7 +579,7 @@ func (r *UserRepository) GetUserSectionOptions(ctx context.Context, user_id stri
 func (r *UserRepository) GetNotifications(ctx context.Context, id string) ([]*models.Notification, error) {
 	rows, err := r.db.Query(ctx, `
 	   SELECT * FROM notifications 
-		 WHERE reciever_id = $1
+		 WHERE receiver_id = $1
 		 ORDER BY "created_at" DESC
 	`, id)
 
@@ -600,7 +595,7 @@ func (r *UserRepository) GetNotifications(ctx context.Context, id string) ([]*mo
 			&notification.ID,               // Scan into notification.ID first
 			&notification.Type,             // Scan into notification.Type eighth
 			&notification.CreatedAt,        // Scan into notification.CreatedAt third
-			&notification.RecieverID,       // Scan into notification.RecieverID fourth
+			&notification.ReceiverID,       // Scan into notification.RecieverID fourth
 			&notification.TaggedEntityID,   // Scan into notification.TaggedEntityID fifth
 			&notification.TaggedEntityName, // Scan into notification.TaggedEntityName seventh
 			&notification.TaggedEntityType, // Scan into notification.TaggedEntityType sixth
