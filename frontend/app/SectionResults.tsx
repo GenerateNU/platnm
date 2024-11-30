@@ -32,7 +32,7 @@ const SectionResults: React.FC<SectionResultsProps> = () => {
 
   // Fetch initial top songs and albums
   useEffect(() => {
-    if (type === 'artist') {
+    if (type === "artist") {
       axios
         .get(`${BASE_URL}/media/artist/ `)
         .then((response) => {
@@ -46,18 +46,20 @@ const SectionResults: React.FC<SectionResultsProps> = () => {
         })
         .catch((error) => console.error(error));
     } else {
-    axios
-      .get(`${BASE_URL}/media?sort=review&type=${type}`)
-      .then((response) => {
-        const medias: SectionItem[] = response.data.map((item: MediaResponse) => ({
-          id: item.media.id,
-          title: item.media.title,
-          cover_photo: item.media.cover,
-          media_type: item.media.media_type
-        }));
-        setMediaResults(medias);
-      })
-      .catch((error) => console.error(error));
+      axios
+        .get(`${BASE_URL}/media?sort=review&type=${type}`)
+        .then((response) => {
+          const medias: SectionItem[] = response.data.map(
+            (item: MediaResponse) => ({
+              id: item.media.id,
+              title: item.media.title,
+              cover_photo: item.media.cover,
+              media_type: item.media.media_type,
+            }),
+          );
+          setMediaResults(medias);
+        })
+        .catch((error) => console.error(error));
     }
   }, []);
 
@@ -70,20 +72,20 @@ const SectionResults: React.FC<SectionResultsProps> = () => {
 
     setIsLoading(true);
     try {
-      if (type === 'artist') {
+      if (type === "artist") {
         const [mediaResponse] = await Promise.all([
           axios.get(`${BASE_URL}/media/artist/${query}`),
         ]);
-        const artists: SectionItem[] = mediaResponse.data.map((item: Artist) => ({
-          id: item.id,
-          title: item.name,
-          cover_photo: item.photo,
-          media_type: "artist",
-        }));
+        const artists: SectionItem[] = mediaResponse.data.map(
+          (item: Artist) => ({
+            id: item.id,
+            title: item.name,
+            cover_photo: item.photo,
+            media_type: "artist",
+          }),
+        );
         setSearchResults(artists);
-
-      }
-      else {
+      } else {
         const [mediaResponse] = await Promise.all([
           axios.get(`${BASE_URL}/media/${query}`),
         ]);
@@ -112,12 +114,16 @@ const SectionResults: React.FC<SectionResultsProps> = () => {
       <SearchBar onSearch={handleSearch} />
 
       {isSearchActive ? (
-        <SectionSearchResults sectionId={sectionId} media={searchResults} isLoading={isLoading} />
+        <SectionSearchResults
+          sectionId={sectionId}
+          media={searchResults}
+          isLoading={isLoading}
+        />
       ) : (
         <View>
           <TopMedia sectionId={sectionId} media={mediaResults} />
         </View>
-       )}
+      )}
     </ScrollView>
   );
 };

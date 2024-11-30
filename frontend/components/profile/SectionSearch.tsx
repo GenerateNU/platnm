@@ -32,12 +32,12 @@ const SectionSearchResults: React.FC<SectionSearchResultsProps> = ({
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
           {media?.map((m, index) => (
             <SectionItem
-            key={m.id}
-            id={sectionId}
-            rank={index + 1}
-            title={m.title}
-            cover={m.cover_photo}
-          />
+              key={m.id}
+              id={sectionId}
+              rank={index + 1}
+              title={m.title}
+              cover={m.cover_photo}
+            />
           ))}
           <View />
         </ScrollView>
