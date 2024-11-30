@@ -13,7 +13,6 @@ import axios from "axios";
 import Section from "@/components/profile/Section";
 import { router, useLocalSearchParams } from "expo-router";
 import ProfilePicture from "@/components/profile/ProfilePicture";
-import { useAuthContext } from "@/components/AuthProvider";
 
 export default function ProfilePage() {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -24,8 +23,7 @@ export default function ProfilePage() {
 
   const [userProfile, setUserProfile] = useState<UserProfile>();
   const [userReviews, setUserReviews] = useState<Review[]>();
-  const loggedInUser = useAuthContext().userId;
-  const [sections, setSections] = useState<Section[]>([]); //TODO depending on what we do with sections
+  const [sections, setSections] = useState<Section[]>([]);
 
   useEffect(() => {
     const fetchUserProfile = async () => {

@@ -49,7 +49,7 @@ export default function ProfileScreen() {
           `${BASE_URL}/users/profile/id/${userId}`,
         );
         const profile = {
-          id: response.data.user_id,
+          user_id: response.data.user_id,
           username: response.data.username,
           display_name: response.data.display_name,
           bio: response.data.bio.String,
