@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -109,23 +110,23 @@ func (r *UserRepository) CalculateScore(ctx context.Context, id uuid.UUID) (int,
 	// Coalesce returns first non-null value in the set of arguments, so if SUM returns null, 0 is defaulted to.
 	// urv, rec, and u are aliases to user_review_vote, recommendation, and user tables.
 	query := `
-    SELECT 
+    SELECT
         COALESCE((
-            SELECT 
+            SELECT
                 SUM(CASE WHEN urv.upvote = TRUE THEN 1 ELSE -1 END)
-            FROM 
+            FROM
                 user_vote urv
-            WHERE 
+            WHERE
                 urv.user_id = $1
-        ), 0) + 
+        ), 0) +
         COALESCE((
-            SELECT 
+            SELECT
                 SUM(CASE WHEN rec.reaction = TRUE THEN 1 ELSE 0 END)
-            FROM 
+            FROM
                 recommendation rec
-            WHERE 
+            WHERE
                 rec.recommender_id = $1
-        ), 0) AS score 
+        ), 0) AS score
 `
 
 	var score int
@@ -150,7 +151,7 @@ func (r *UserRepository) CreateUser(ctx context.Context, user models.User) (mode
 func (r *UserRepository) UpdateUserBio(ctx context.Context, user uuid.UUID, bio string) error {
 	query := `
 		UPDATE "user"
-		SET bio = $1 
+		SET bio = $1
 		WHERE id = $2;
 	`
 
@@ -275,20 +276,20 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 	reviewRepo := NewReviewRepository(r.db)
 
 	query := `
-	SELECT 
-		r.id, 
-		r.user_id, 
+	SELECT
+		r.id,
+		r.user_id,
 		u.username,
 		u.display_name,
     u.profile_picture,
-		r.media_type, 
-		r.media_id, 
-		r.rating, 
+		r.media_type,
+		r.media_id,
+		r.rating,
 		r.comment,
-		r.created_at, 
+		r.created_at,
 		r.updated_at,
-		COALESCE(a.cover, t.cover) AS media_cover, 
-		COALESCE(a.title, t.title) AS media_title, 
+		COALESCE(a.cover, t.cover) AS media_cover,
+		COALESCE(a.title, t.title) AS media_title,
 		COALESCE(a.artists, t.artists) AS media_artist,
 		ARRAY_AGG(tag.name) FILTER (WHERE tag.name IS NOT NULL) AS tags
 	FROM review r
@@ -531,8 +532,8 @@ func (r *UserRepository) GetUserSectionOptions(ctx context.Context, user_id stri
 	rows, err := r.db.Query(ctx,
 		`SELECT section_type.title, section_type.search_type
 		FROM section_type
-		WHERE section_type.id NOT IN  
-  		  (SELECT section_type_item.section_type_id 
+		WHERE section_type.id NOT IN
+  		  (SELECT section_type_item.section_type_id
   		  FROM section_type_item
    		  WHERE section_type_item.user_id = $1)`, user_id)
 
@@ -555,6 +556,63 @@ func (r *UserRepository) GetUserSectionOptions(ctx context.Context, user_id stri
 
 	return options, nil
 
+}
+
+func (r *UserRepository) GetConnections(ctx context.Context, id uuid.UUID, limit int, offset int) (models.Connections, error) {
+	const followersQuery string = `
+		SELECT u.id, u.username, u.email, u.display_name, u.bio, u.profile_picture, u.linked_account, u.created_at, u.updated_at
+		FROM "user" AS u
+		LEFT JOIN follower AS f on f.followee_id = u.id
+		WHERE f.followee_id = $1
+	    LIMIT $2 OFFSET $3
+	`
+
+	rows, err := r.db.Query(ctx, followersQuery, id, limit, offset)
+	if err != nil {
+		return models.Connections{}, err
+	}
+
+	followers, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.User, error) {
+		follower, err := pgx.RowToStructByName[models.User](row)
+		if err != nil {
+			return models.User{}, err
+		}
+
+		return follower, nil
+	})
+	if err != nil {
+		return models.Connections{}, err
+	}
+
+	const followeesQuery string = `
+		SELECT u.id, u.username, u.email, u.display_name, u.bio, u.profile_picture, u.linked_account, u.created_at, u.updated_at
+		FROM "user" AS u
+		LEFT JOIN follower AS f on f.followee_id = u.id
+		WHERE f.follower_id = $1
+	    LIMIT $2 OFFSET $3
+	`
+
+	rows, err = r.db.Query(ctx, followeesQuery, id, limit, offset)
+	if err != nil {
+		return models.Connections{}, err
+	}
+
+	followees, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (models.User, error) {
+		followee, err := pgx.RowToStructByName[models.User](row)
+		if err != nil {
+			return models.User{}, err
+		}
+
+		return followee, nil
+	})
+	if err != nil {
+		return models.Connections{}, err
+	}
+
+	return models.Connections{
+		Followees: followees,
+		Followers: followers,
+	}, nil
 }
 
 func NewUserRepository(db *pgxpool.Pool) *UserRepository {
