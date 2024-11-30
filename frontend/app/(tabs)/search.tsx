@@ -79,7 +79,6 @@ const SearchPage: React.FC = () => {
       <SearchBar onSearch={handleSearch} />
 
       <ScrollView>
-
         {isSearchActive ? (
           <SearchResults
             songs={searchResults.songs}
@@ -97,7 +96,6 @@ const SearchPage: React.FC = () => {
         )}
       </ScrollView>
     </View>
-    
   );
 };
 
