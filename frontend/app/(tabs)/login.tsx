@@ -15,9 +15,10 @@ import {
 import axios from "axios";
 import { useAuthContext } from "@/components/AuthProvider";
 import { router } from "expo-router";
+import { access } from "fs";
 
 export default function Login() {
-  const { sessionToken, updateAccessToken, updateSession, updateUserId } =
+  const { sessionToken, accessToken, updateAccessToken, updateSession, updateUserId, updateUsername } =
     useAuthContext();
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
@@ -43,10 +44,11 @@ export default function Login() {
           Alert.alert("Error", res.data.error);
           return;
         }
-        updateAccessToken(res.data.token);
+        updateAccessToken(res.data.access_token);
         const sessionHeader = res.headers["x-session"];
         updateSession(sessionHeader);
         updateUserId(res.data.user.id);
+        updateUsername(res.data.user.username); //TODO: Change according depending on how username is added to backend response
         router.push("/(tabs)/profile");
       })
       .catch((error) => {

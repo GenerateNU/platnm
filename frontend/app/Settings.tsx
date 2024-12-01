@@ -20,11 +20,12 @@ function Settings() {
   const [recommendations, setRecommendations] = useState(false);
   const [reviewInteractions, setReviewInteractions] = useState(true);
   const [hideActivity, setHideActivity] = useState(false);
-  const { username, accessToken, sessionToken } = useAuthContext();
+  const { username, accessToken, sessionToken, userId } = useAuthContext();
 
   async function handleSignOut() {
     console.log("TOKEN:", accessToken); //curr showing undefined
     console.log("\n", username); // curr showing ""
+    console.log("\n", userId);
     // WHY IS THIS UNDEFINED ABOVE?
     axios
       .post(`${BASE_URL}/auth/platnm/signout`, {
@@ -33,6 +34,8 @@ function Settings() {
       .then((response) => {
         console.log(response.data);
         router.push("/(tabs)/login");
+      }).catch((error) => {
+        console.log(error)
       });
   }
 
