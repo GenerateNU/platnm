@@ -8,13 +8,14 @@ import {
   ScrollView,
   Dimensions,
   TextInput,
+  Touchable,
 } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
 import axios from "axios";
 import Section from "@/components/profile/Section";
-import ReviewCard from "@/components/ReviewCard";
-import { router, useFocusEffect } from "expo-router";
+import { router, useFocusEffect, useNavigation } from "expo-router";
 import SelectSection from "@/components/profile/SelectSection";
+import ProfilePicture from "@/components/profile/ProfilePicture";
 import { useAuthContext } from "@/components/AuthProvider";
 
 export default function ProfileScreen() {
@@ -23,29 +24,11 @@ export default function ProfileScreen() {
   const [userProfile, setUserProfile] = useState<UserProfile>();
   const [userReviews, setUserReviews] = useState<Review[]>();
   const { userId } = useAuthContext();
-
-  const [sections, setSections] = useState<Section[]>([
-    {
-      id: 0,
-      title: "Section 1",
-      items: [
-        {
-          id: 0,
-          title: "Add Item",
-          media_type: "placeholder",
-          cover: "path_to_placeholder_image_or_url",
-        },
-      ],
-    },
-  ]); //TODO depending on what we do with sections
+  const [sections, setSections] = useState<Section[]>([]); //TODO depending on what we do with sections
 
   const [selectSectionVisible, setSelectSectionVisible] = useState(false);
-  const [selectedOption, setSelectedOption] = useState("");
-  const [options, setOptions] = useState([
-    "Favorite Artists",
-    "Peak Albums",
-    "Featured Tracks",
-  ]);
+  const [selectedOption, setSelectedOption] = useState<SectionOption>();
+  const [options, setOptions] = useState<SectionOption[]>([]);
 
   const hasNotification = true; // Hardcoding - Get notification status from somewhere else
 
@@ -55,18 +38,28 @@ export default function ProfileScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      if (!userId) {
-        router.push("/(tabs)/login");
-      }
-    }, [userId]),
+      if (!userId) router.push("/(tabs)/login");
+    }, [userId])
   );
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/users/profile/${userId}`);
-        setUserProfile(response.data);
-        setBio(response.data.bio);
+        const response = await axios.get(
+          `${BASE_URL}/users/profile/id/${userId}`
+        );
+        const profile = {
+          id: response.data.user_id,
+          username: response.data.username,
+          display_name: response.data.display_name,
+          bio: response.data.bio.String,
+          profile_picture: response.data.profile_picture.String,
+          followers: response.data.followers,
+          followed: response.data.followed,
+          score: response.data.score,
+        };
+        setUserProfile(profile);
+        setBio(response.data.bio.String);
       } catch (error) {
         console.error("Error fetching user profile:", error);
       }
@@ -81,8 +74,32 @@ export default function ProfileScreen() {
       }
     };
 
-    fetchUserProfile();
-    fetchUserReviews();
+    const fetchUserSections = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/users/section/${userId}`);
+        setSections(response.data);
+      } catch (error) {
+        console.error("Error fetching user sections:", error);
+      }
+    };
+
+    const fetchSectionOptions = async () => {
+      try {
+        const response = await axios.get(
+          `${BASE_URL}/users/section/options/${userId}`
+        );
+        setOptions(response.data);
+      } catch (error) {
+        console.error("Error fetching section options:", error);
+      }
+    };
+
+    if (userId) {
+      fetchUserProfile();
+      fetchUserReviews();
+      fetchUserSections();
+      fetchSectionOptions();
+    }
   }, [userId]);
 
   const handleActivityPress = () => {
@@ -94,7 +111,7 @@ export default function ProfileScreen() {
   };
 
   const handleSettingsPress = () => {
-    router.push("/settings");
+    router.push("/Settings");
   };
 
   const handleSharePress = () => {
@@ -108,23 +125,19 @@ export default function ProfileScreen() {
     setIsEditing(!isEditing);
   };
 
-  const handleSelect = (option: string) => {
+  const handleSelect = (option: SectionOption) => {
     setSelectedOption(option);
     setSelectSectionVisible(false);
     const newSection = {
-      id: nextId,
-      title: `${option}`,
-      items: [
-        {
-          id: 0,
-          title: "Add Item",
-          media_type: "placeholder",
-          cover: "path_to_placeholder_image_or_url",
-        },
-      ],
+      section_id: nextId,
+      title: `${option.title}`,
+      items: [],
+      search_type: option.search_type,
     };
-    setOptions((prevOptions) => prevOptions.filter((item) => item !== option));
-    setSections([...sections, newSection]);
+    setOptions((prevOptions) =>
+      prevOptions.filter((item) => item.title !== option.title)
+    );
+    setSections([...(sections || []), newSection]);
     setNextId(nextId + 1);
   };
 
@@ -132,43 +145,68 @@ export default function ProfileScreen() {
     setSelectSectionVisible(true);
   };
 
-  const handleAddItem = (sectionId: number) => {
+  const handleAddItem = (section: Section) => {
+    console.log("Adding item to section", section.section_id);
+    console.log("Selected option", section.title);
+    console.log("Selected option", section.search_type);
+    router.push({
+      pathname: "/SectionResults",
+      params: { type: section.search_type },
+    });
     setSections(
       sections.map((section) => {
-        if (section.id === sectionId) {
+        if (section.section_id === section.section_id) {
           return {
             ...section,
-            items: [
-              ...section.items,
-              {
-                id: Math.floor(Math.random() * 1000),
-                title: "Add Item",
-                media_type: "placeholder",
-                cover: "../../assets/images/add-item-placeholder.png",
-              },
-            ],
+            items: [...section.items],
           };
         }
         return section;
-      }),
+      })
     );
   };
 
   const handleDeleteItem = (sectionId: number, itemId: number) => {
     setSections((prevSections) =>
       prevSections.map((section) =>
-        section.id === sectionId
+        section.section_id === sectionId
           ? {
               ...section,
               items: section.items.filter((item) => item.id !== itemId),
             }
-          : section,
-      ),
+          : section
+      )
     );
+
+    axios.delete(`${BASE_URL}/users/section/item`, {
+      data: {
+        user_id: userId,
+        section_type_id: sectionId,
+        section_item_id: itemId,
+      },
+    });
   };
 
   const handleDeleteSection = (id: number) => {
-    setSections(sections.filter((section) => section.id !== id));
+    const sectionToDelete = sections.find(
+      (section) => section.section_id === id
+    );
+    if (sectionToDelete) {
+      setOptions([
+        ...options,
+        {
+          title: sectionToDelete.title,
+          search_type: sectionToDelete.search_type,
+        },
+      ]);
+    }
+    setSections(sections.filter((section) => section.section_id !== id));
+    axios.delete(`${BASE_URL}/users/section`, {
+      data: {
+        section_type_id: id,
+        user_id: userId,
+      },
+    });
   };
 
   return (
@@ -213,13 +251,12 @@ export default function ProfileScreen() {
               source={require("@/assets/images/Profile/record.png")}
               style={styles.recordImage}
             />
-            {userProfile.profile_picture ? ( // Check if profilePicture exists
-              <Image
-                source={{ uri: userProfile.profile_picture }} // Use uri for remote images
-                style={styles.profileImage}
-                resizeMode="cover"
-              />
-            ) : null}
+
+            <ProfilePicture
+              uri={userProfile.profile_picture}
+              editing={isEditing}
+            />
+
             {/* Don't render anything if there's no profile picture */}
             <TouchableOpacity onPress={handleEditPress} style={styles.editIcon}>
               <Icon name="edit-2" size={20} color="#888" />
@@ -269,21 +306,21 @@ export default function ProfileScreen() {
         </TouchableOpacity>
 
         {/* Sections */}
-        {sections.map((section, index) => (
-          <View key={index}>
-            <Section
-              title={section.title}
-              items={section.items}
-              isEditing={isEditing}
-              sectionId={section.id}
-              onAddItem={() => handleAddItem(section.id)}
-              onDeleteSection={() => handleDeleteSection(section.id)}
-              onDeleteItem={(itemIndex) =>
-                handleDeleteItem(section.id, itemIndex)
-              }
-            />
-          </View>
-        ))}
+        {sections &&
+          sections.map((section, index) => (
+            <View key={index}>
+              <Section
+                title={section.title}
+                items={section.items}
+                isEditing={isEditing}
+                onAddItem={() => handleAddItem(section)}
+                onDeleteSection={() => handleDeleteSection(section.section_id)}
+                onDeleteItem={(itemIndex) =>
+                  handleDeleteItem(section.section_id, itemIndex)
+                }
+              />
+            </View>
+          ))}
         {/* Button to Add a New Section */}
         {isEditing && (
           <TouchableOpacity
@@ -356,14 +393,7 @@ const styles = StyleSheet.create({
     height: "100%",
     resizeMode: "cover",
   },
-  profileImage: {
-    position: "absolute", // Overlay the profile picture on the record
-    width: 60, // Adjust size to fit within the center of the record
-    height: 60, // Adjust size to fit within the center of the record
-    borderRadius: 30, // To make it circular
-    borderWidth: 2, // Optional: add a border around the profile image
-    borderColor: "#fff", // Optional: white border
-  },
+
   editIcon: {
     position: "absolute",
     right: -25,

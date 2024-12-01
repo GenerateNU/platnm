@@ -1,5 +1,6 @@
-import { router } from "expo-router";
-import React, { useState } from "react";
+import axios from "axios";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -7,26 +8,42 @@ import {
   Image,
   ScrollView,
   TouchableOpacity,
+  Modal,
+  TextInput,
 } from "react-native";
 
+import Rating0 from "@/assets/images/Ratings/Radial-0.svg";
+import Rating1 from "@/assets/images/Ratings/Radial-1.svg";
+import Rating2 from "@/assets/images/Ratings/Radial-2.svg";
+import Rating3 from "@/assets/images/Ratings/Radial-3.svg";
+import Rating4 from "@/assets/images/Ratings/Radial-4.svg";
+import Rating5 from "@/assets/images/Ratings/Radial-5.svg";
+import Rating6 from "@/assets/images/Ratings/Radial-6.svg";
+import Rating7 from "@/assets/images/Ratings/Radial-7.svg";
+import Rating8 from "@/assets/images/Ratings/Radial-8.svg";
+import Rating9 from "@/assets/images/Ratings/Radial-9.svg";
+import Rating10 from "@/assets/images/Ratings/Radial-10.svg";
+
+import Downvote from "@/assets/images/ReviewPreview/downvote.svg";
+import Upvote from "@/assets/images/ReviewPreview/upvote.svg";
+import Comment from "@/assets/images/ReviewPreview/comment.svg";
+import { useAuthContext } from "./AuthProvider";
+
 const MusicDisk = require("../assets/images/music-disk.png");
-const Comments = require("../assets/images/ReviewPreview/comments.png");
-const Upvotes = require("../assets/images/ReviewPreview/upvote.png");
-const Downvotes = require("../assets/images/ReviewPreview/downvote.png");
-const Share = require("../assets/images/ReviewPreview/share.png");
+const ThreeDotsMenu = require("../assets/images/three_dots_menu.png");
 
 const ratingImages = {
-  0: require("../assets/images/Ratings/0Rating.png"),
-  1: require("../assets/images/Ratings/1Rating.png"),
-  2: require("../assets/images/Ratings/2Rating.png"),
-  3: require("../assets/images/Ratings/3Rating.png"),
-  4: require("../assets/images/Ratings/4Rating.png"),
-  5: require("../assets/images/Ratings/5Rating.png"),
-  6: require("../assets/images/Ratings/6Rating.png"),
-  7: require("../assets/images/Ratings/7Rating.png"),
-  8: require("../assets/images/Ratings/8Rating.png"),
-  9: require("../assets/images/Ratings/9Rating.png"),
-  10: require("../assets/images/Ratings/10Rating.png"),
+  0: Rating0,
+  1: Rating1,
+  2: Rating2,
+  3: Rating3,
+  4: Rating4,
+  5: Rating5,
+  6: Rating6,
+  7: Rating7,
+  8: Rating8,
+  9: Rating9,
+  10: Rating10,
 };
 
 interface PreviewProps {
@@ -36,17 +53,183 @@ interface PreviewProps {
 const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
   const [showFullComment, setShowFullComment] = useState(false);
 
+  const [currentVote, setCurrentVote] = useState<boolean>(false); // does a vote currently exist?
+  const [currentVoteValue, setCurrentVoteValue] = useState<boolean>(false); // what is the current vote's value?
+
+  const [upvoteCount, setUpvoteCount] = useState<number>(
+    preview.review_stat.upvotes,
+  );
+  const [downvoteCount, setDownvoteCount] = useState<number>(
+    preview.review_stat.downvotes,
+  );
+  const [reviewText, setReviewText] = useState<string>(preview.comment || "");
+  const [isEditable, setIsEditable] = useState(false);
+  const [editedComment, setEditedComment] = useState<string>("");
+
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
+  const { userId } = useAuthContext();
+
+  const isOwner = userId === preview.user_id;
+  const [menuVisible, setMenuVisible] = useState(false);
+
+  const handleMenuToggle = () => setMenuVisible(!menuVisible);
+
+  const handleMenuOption = (option: string) => {
+    handleMenuToggle();
+    if (option === "edit") {
+      setIsEditable(true);
+      setEditedComment(preview?.comment || "");
+    } else if (option === "delete") {
+      // Add delete functionality
+    } else if (option === "manage comments") {
+      // Add manage comments functionality
+    } else if (option === "share") {
+      // Add share functionality
+    } else if (option === "report") {
+      // Add share functionality
+    }
+  };
+
   const getRatingImage = (rating: keyof typeof ratingImages) => {
-    return ratingImages[rating]; // Access the image from the preloaded images object
+    return ratingImages[rating];
   };
 
-  const handleUpvotePress = () => {
-    console.log("upvote icon pressed");
+  const handleUpvotePress = async () => {
+    if (!currentVote) {
+      setCurrentVote(true);
+      setCurrentVoteValue(true);
+      setUpvoteCount(upvoteCount + 1);
+    } else if (currentVote && currentVoteValue) {
+      // if there's already a vote and it's an upvote, cancel it out
+      setCurrentVote(false);
+      setUpvoteCount(upvoteCount - 1);
+    } else {
+      // if there's already a vote and it's a downvote
+      setCurrentVoteValue(true);
+      setUpvoteCount(upvoteCount + 1);
+      setDownvoteCount(downvoteCount - 1);
+    }
+
+    try {
+      await axios.post(`${BASE_URL}/reviews/vote`, {
+        user_id: userId,
+        post_id: String(preview.review_id),
+        upvote: true,
+      });
+      // Sync upvote with review page or feed
+    } catch (error) {
+      console.error("Error upvoting review:", error);
+    }
   };
 
-  const handleDownvotePress = () => {
-    console.log("downvote icon pressed");
+  const handleDownvotePress = async () => {
+    if (!currentVote) {
+      setCurrentVote(true);
+      setCurrentVoteValue(false);
+      setDownvoteCount(downvoteCount + 1);
+    } else if (currentVote && !currentVoteValue) {
+      // if there's already a vote and it's a downvote, cancel it out
+      setCurrentVote(false);
+      setDownvoteCount(downvoteCount - 1);
+    } else {
+      // if there's already a vote and it's an upvote, replace it
+      setCurrentVoteValue(false);
+      setUpvoteCount(upvoteCount - 1);
+      setDownvoteCount(downvoteCount + 1);
+    }
+
+    try {
+      await axios.post(`${BASE_URL}/reviews/vote`, {
+        user_id: userId,
+        post_id: String(preview.review_id),
+        upvote: false,
+      });
+      // Sync downvote with review page or feed
+    } catch (error) {
+      console.error("Error downvoting review:", error);
+    }
   };
+
+  const handleEditSave = async () => {
+    try {
+      const requestBody = {
+        user_id: userId, // User ID to validate ownership
+        comment: editedComment, // The updated comment
+      };
+
+      await axios.patch(
+        `${BASE_URL}/reviews/${preview.review_id}`,
+        requestBody,
+      );
+      setIsEditable(false);
+      setReviewText(editedComment);
+    } catch (error) {
+      console.error("Error saving edited review:", error);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchReview = async () => {
+        try {
+          const response = await axios.get(
+            `${BASE_URL}/reviews/${preview.review_id}`,
+          );
+          if (response.data) {
+            setUpvoteCount(response.data.review_stat.upvotes);
+            setDownvoteCount(response.data.review_stat.downvotes);
+          }
+        } catch (error) {
+          console.error("Error fetching review:", error);
+        }
+      };
+
+      fetchReview();
+    }, []),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchVote = async () => {
+        try {
+          const response = await axios.get(
+            `${BASE_URL}/reviews/vote/${userId}/${preview.review_id}`,
+          );
+          if (response.data) {
+            const { upvote } = response.data;
+            setCurrentVote(true);
+            setCurrentVoteValue(upvote);
+          } else {
+            setCurrentVote(false);
+          }
+        } catch (error) {
+          console.error("Error fetching vote:", error);
+        }
+      };
+
+      const fetchReview = async () => {
+        try {
+          const response = await axios.get(
+            `${BASE_URL}/reviews/${preview.review_id}`,
+          );
+          if (response.data) {
+            setUpvoteCount(response.data.review_stat.upvotes);
+            setDownvoteCount(response.data.review_stat.downvotes);
+            setReviewText(response.data.comment);
+          }
+        } catch (error) {
+          console.error("Error fetching review:", error);
+        }
+      };
+
+      if (userId) {
+        fetchVote();
+      }
+
+      fetchReview();
+    }, []),
+  );
 
   const handleCommentPress = () => {
     console.log("comment icon pressed");
@@ -58,29 +241,26 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
 
   const handlePreviewPress = () => {
     // Navigate to the ReviewPage when the preview is clicked
-    // navigation.navigate("ReviewPage", { review_id: preview.review_id });
     router.push({
       pathname: "/ReviewPage",
-      params: { review_id: preview.review_id },
+      params: { review_id: preview.review_id, userId: userId },
     });
   };
 
   return (
-    //<TouchableOpacity onPress={handlePreviewPress}> {/* Wrap the card with TouchableOpacity */}
     <View style={styles.card}>
       <View style={styles.vinyl}>
         <Image source={MusicDisk} style={styles.musicDisk} />
-        {preview.media_cover ? (
+        {preview.media_cover && (
           <Image
-            source={{ uri: preview.media_cover }} // Use uri for remote images
+            source={{ uri: preview.media_cover }}
             style={styles.mediaCover}
             resizeMode="cover"
           />
-        ) : null}
+        )}
       </View>
 
       <View style={styles.container}>
-        {/* Top Section with Profile Picture and Name */}
         <View style={styles.topContainer}>
           <View style={styles.leftSection}>
             <Image
@@ -94,43 +274,23 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
           </View>
         </View>
 
-        {/* Song Name and Artist Name */}
         <View style={styles.mediaContainer}>
           <View style={styles.ratingContainer}>
             <Text style={styles.songName}>{preview.media_title}</Text>
             <Text style={styles.artistName}>{preview.media_artist}</Text>
           </View>
 
-          {/* Rating Image on the right side of the song title */}
           <View>
-            <Image
-              source={getRatingImage(
-                preview.rating as keyof typeof ratingImages,
-              )}
-            />
+            {React.createElement(
+              getRatingImage(preview.rating as keyof typeof ratingImages),
+              {
+                style: styles.ratingImage,
+              },
+            )}
           </View>
         </View>
       </View>
 
-      {/* Comment Section */}
-      <TouchableOpacity onPress={handlePreviewPress}>
-        <Text style={styles.commentText}>
-          {preview.comment && preview.comment.length > 100
-            ? showFullComment
-              ? preview.comment
-              : `${preview.comment.slice(0, 100)}...`
-            : preview.comment}
-        </Text>
-        {preview.comment && preview.comment.length > 100 && (
-          <TouchableOpacity onPress={handleViewMorePress}>
-            <Text style={styles.readMore}>
-              {showFullComment ? "Show less" : "Read more"}
-            </Text>
-          </TouchableOpacity>
-        )}
-      </TouchableOpacity>
-
-      {/* Tags Section */}
       {preview.tags && preview.tags.length > 0 && (
         <ScrollView
           horizontal
@@ -145,44 +305,162 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
         </ScrollView>
       )}
 
-      {/* Action Buttons */}
+      <TouchableOpacity onPress={handlePreviewPress}>
+        {isEditable ? (
+          <View>
+            <TextInput
+              style={styles.editInput}
+              value={editedComment}
+              onChangeText={setEditedComment}
+              multiline
+            />
+            <TouchableOpacity
+              style={styles.saveButton}
+              onPress={handleEditSave}
+            >
+              <Text>Save</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <Text style={styles.commentText}>
+            {reviewText && reviewText.length > 100
+              ? showFullComment
+                ? reviewText
+                : `${reviewText.slice(0, 100)}...`
+              : reviewText}
+          </Text>
+        )}
+
+        {reviewText && reviewText.length > 100 && (
+          <TouchableOpacity onPress={handleViewMorePress}>
+            <Text style={styles.readMore}>
+              {showFullComment ? "Show less" : "Read more"}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </TouchableOpacity>
+
       <View style={styles.actionsContainer}>
         <View style={styles.voteContainer}>
-          <TouchableOpacity onPress={handleUpvotePress}>
-            <Image source={Upvotes} style={styles.voteIcon} />
+          <TouchableOpacity
+            onPress={() => handleUpvotePress()}
+            style={styles.voteButton}
+          >
+            <Upvote
+              width={24}
+              height={24}
+              fill={currentVote && currentVoteValue ? "#F28037" : "#555"}
+              style={{
+                color: currentVote && currentVoteValue ? "#F28037" : "#555",
+              }}
+            />
+            <Text>{upvoteCount}</Text>
           </TouchableOpacity>
-          <Text>{preview.review_stat.upvotes}</Text>
-          <TouchableOpacity onPress={handleDownvotePress}>
-            <Image source={Downvotes} style={styles.voteIcon} />
+          <TouchableOpacity
+            onPress={() => handleDownvotePress()}
+            style={styles.voteButton}
+          >
+            <Downvote
+              width={24}
+              height={24}
+              fill={currentVote && !currentVoteValue ? "#F28037" : "#555"}
+              style={{
+                color: currentVote && !currentVoteValue ? "#F28037" : "#555",
+              }}
+            />
+            <Text>{downvoteCount}</Text>
           </TouchableOpacity>
-          <Text>{preview.review_stat.downvotes}</Text>
-          <TouchableOpacity onPress={handleCommentPress}>
-            <Image source={Comments} style={styles.voteIcon} />
+          <TouchableOpacity
+            onPress={handleCommentPress}
+            style={styles.voteButton}
+          >
+            <Comment width={24} height={24} />
           </TouchableOpacity>
           <Text>{preview.review_stat.comment_count}</Text>
         </View>
-        <TouchableOpacity onPress={() => console.log("share pressed")}>
-          <Image source={Share} style={styles.voteIcon} />
+        <TouchableOpacity onPress={handleMenuToggle}>
+          <Image source={ThreeDotsMenu} style={styles.voteIcon} />
         </TouchableOpacity>
+
+        {/* Modal for menu */}
+        <Modal
+          visible={menuVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setMenuVisible(false)}
+        >
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            onPress={() => setMenuVisible(false)}
+          >
+            <View style={styles.menuContainer}>
+              {isOwner ? (
+                <>
+                  <TouchableOpacity
+                    onPress={() => handleMenuOption("share")}
+                    style={styles.menuItem}
+                  >
+                    <Text style={styles.menuText}>Share</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => handleMenuOption("edit")}
+                    style={styles.menuItem}
+                  >
+                    <Text style={styles.menuText}>Edit</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => handleMenuOption("delete")}
+                    style={styles.menuItem}
+                  >
+                    <Text style={styles.menuText}>Delete</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => handleMenuOption("manage comments")}
+                    style={styles.menuItem}
+                  >
+                    <Text style={styles.menuText}>Manage Comments</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <TouchableOpacity
+                    onPress={() => handleMenuOption("share")}
+                    style={styles.menuItem}
+                  >
+                    <Text style={styles.menuText}>Share</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => handleMenuOption("report")}
+                    style={styles.menuItem}
+                  >
+                    <Text style={styles.menuText}>Report</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          </TouchableOpacity>
+        </Modal>
       </View>
     </View>
-    //</TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#F0F0F0",
+    backgroundColor: "#fff",
     padding: 15,
-    marginVertical: 20,
+    width: "100%",
+    marginVertical: 16,
     borderRadius: 15,
-    width: "90%",
     alignSelf: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
     alignItems: "flex-start",
+    overflow: "scroll",
+    boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.2)",
+  },
+  voteButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 5,
   },
   vinyl: {
     position: "absolute",
@@ -216,6 +494,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between", // Align left and right sections
     width: "100%",
     marginBottom: 10,
+    overflow: "scroll",
   },
   leftSection: {
     flexDirection: "row",
@@ -245,14 +524,15 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#111",
     marginTop: 5,
-    width: 200,
+    width: 175,
     textAlign: "left",
+    marginLeft: 5,
   },
   artistName: {
     fontSize: 13,
     color: "#666",
-    marginBottom: 10,
     textAlign: "left",
+    marginLeft: 5,
   },
   ratingContainer: {
     justifyContent: "flex-start",
@@ -268,6 +548,7 @@ const styles = StyleSheet.create({
     color: "#333",
     textAlign: "left",
     marginVertical: 8,
+    marginLeft: 5,
   },
   readMore: {
     fontSize: 14,
@@ -275,17 +556,18 @@ const styles = StyleSheet.create({
   },
   tagsContainer: {
     flexDirection: "row",
-    marginVertical: 10,
+    marginBottom: 10,
     paddingHorizontal: 5,
   },
   tag: {
-    backgroundColor: "#E8E8E8",
+    backgroundColor: "rgba(242, 128, 55, 0.65)",
     paddingVertical: 5,
     paddingHorizontal: 12,
     borderRadius: 20,
     marginHorizontal: 5,
     borderWidth: 1,
     borderColor: "#C0C0C0",
+    marginLeft: 2,
   },
   tagText: {
     color: "#333",
@@ -308,6 +590,50 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     marginHorizontal: 10,
+  },
+  ratingImage: {
+    width: 30, // Smaller size
+    height: 30, // Match smaller size
+    marginRight: 30, // Adjust horizontal placement
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  menuContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 10,
+    width: 200,
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  menuItem: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+  },
+  menuText: {
+    fontSize: 16,
+    color: "#333",
+  },
+  editInput: {
+    borderColor: "#ddd",
+    borderWidth: 1,
+    margin: 10,
+    padding: 10,
+    marginRight: 25,
+  },
+  saveButton: {
+    backgroundColor: "#ddd",
+    padding: 10,
+    borderRadius: 10,
+    margin: 10,
+    width: 60,
   },
 });
 

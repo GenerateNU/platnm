@@ -1,25 +1,18 @@
 import { useState, useEffect, useCallback } from "react";
-import { Button, StyleSheet, ScrollView, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useFocusEffect, useLocalSearchParams, router } from "expo-router";
+import { StyleSheet, ScrollView, View } from "react-native";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import axios from "axios";
 import Histogram from "@/components/media/Histogram";
 import YourRatings from "@/components/media/YourRatings";
 import FriendRatings from "@/components/media/FriendRatings";
 import MediaCard from "@/components/media/MediaCard";
 import ReviewStats from "@/components/media/ReviewStats";
-import HeaderComponent from "@/components/HeaderComponent";
 import ReviewPreview from "@/components/ReviewPreview";
-
-type MediaResponse = {
-  media: Media;
-  reviewCount: number;
-};
 
 export default function MediaPage() {
   const [media, setMedia] = useState<Media>();
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [rating, setReviewAvgRating] = useState<number | null>(null);
+  const [avgRating, setAvgRating] = useState<number | null>(null);
   const [ratingDistributions, setRatingDistributions] = useState<
     RatingDistribution[]
   >([]);
@@ -29,8 +22,6 @@ export default function MediaPage() {
     mediaId: string;
     mediaType: string;
   }>();
-
-  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     axios
@@ -43,6 +34,10 @@ export default function MediaPage() {
   useEffect(() => {
     const calculateRatingDistribution = () => {
       const distributionMap = new Map<number, number>();
+      if (!reviews) {
+        setRatingDistributions([]);
+        return;
+      }
 
       reviews.forEach((review) => {
         distributionMap.set(
@@ -72,7 +67,7 @@ export default function MediaPage() {
           .get(`${BASE_URL}/reviews/${mediaType}/${mediaId}`)
           .then((response) => {
             setReviews(response.data.reviews);
-            setReviewAvgRating(response.data.avgRating.toFixed(2) / 2 || null);
+            setAvgRating(Math.round(response.data.avgRating) || null);
           })
           .catch((error) => console.error(error));
       }
@@ -82,68 +77,46 @@ export default function MediaPage() {
   return (
     media && (
       <View style={{ backgroundColor: "#FFF" }}>
-        <HeaderComponent title="" />
         <ScrollView
           style={{
             ...styles.scrollView,
-            marginTop: 15,
           }}
           contentContainerStyle={{
             paddingBottom: 80, // Add padding at the bottom equal to the height of the bottom tab bar
           }}
         >
-          <View>
-            <MediaCard media={media} />
-          </View>
-          <View style={styles.buttonContainer}>
-            <View style={styles.addReviewContainer}>
-              <Button
-                onPress={() =>
-                  router.push({
-                    pathname: "/CreateReview",
-                    params: {
-                      mediaName: media.title,
-                      mediaType: media.media_type,
-                      mediaId: media.id,
-                      cover: media.cover,
-                      artistName: media.artist_name,
-                    },
-                  })
-                }
-                color={"white"}
-                title="Add rating"
-              />
+          <MediaCard media={media} />
+          <View style={styles.bodyContainer}>
+            <View style={styles.titleContainer}>
+              {avgRating && (
+                <ReviewStats rating={avgRating} reviews={reviews} />
+              )}
             </View>
-            <View style={styles.saveReviewContainer}>
-              <Button color={"white"} title="Save" />
+            {ratingDistributions && ratingDistributions.length > 0 && (
+              <Histogram distribution={ratingDistributions} />
+            )}
+            <View style={styles.socialContainer}>
+              <YourRatings media_id={mediaId} media_type={mediaType} />
+              <FriendRatings count={5} />
             </View>
-          </View>
-          <View style={styles.titleContainer}>
-            {rating && <ReviewStats rating={rating} reviews={reviews} />}
-          </View>
-          <Histogram distribution={ratingDistributions} />
-          <View style={styles.socialContainer}>
-            <YourRatings count={3} />
-            <FriendRatings count={5} />
-          </View>
-          <View>
-            {reviews?.map((review) => (
-              <ReviewPreview
-                key={review.id}
-                preview={{
-                  ...review,
-                  review_id: review.id,
-                  created_at: new Date(review.created_at),
-                  updated_at: new Date(review.updated_at),
-                  media_title: media.title,
-                  tags: ["Excitement"],
-                  review_stat: { comment_count: 5, upvotes: 4, downvotes: 2 },
-                  media_artist: "Taylor Swift",
-                  media_cover:
-                    "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png",
-                }}
-              />
-            ))}
+            <View>
+              {reviews?.map((review) => (
+                <ReviewPreview
+                  key={review.id}
+                  preview={{
+                    ...review,
+                    review_id: review.id,
+                    created_at: new Date(review.created_at),
+                    updated_at: new Date(review.updated_at),
+                    media_title: media.title,
+                    tags: ["Excitement"],
+                    review_stat: { comment_count: 5, upvotes: 4, downvotes: 2 },
+                    media_artist: media.artist_name,
+                    media_cover: media.cover,
+                  }}
+                />
+              ))}
+            </View>
           </View>
         </ScrollView>
       </View>
@@ -153,7 +126,6 @@ export default function MediaPage() {
 
 const styles = StyleSheet.create({
   scrollView: {
-    paddingHorizontal: 16,
     backgroundColor: "#FFF",
     paddingBottom: 100,
   },
@@ -170,6 +142,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     gap: 8,
   },
+  bodyContainer: { marginTop: 16, paddingHorizontal: 16 },
 
   buttonContainer: {
     flexDirection: "row",
@@ -180,12 +153,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#000000",
     borderRadius: 8,
     flexGrow: 2,
-    padding: 8,
-  },
-  saveReviewContainer: {
-    backgroundColor: "#444242",
-    borderRadius: 8,
-    flexGrow: 1,
     padding: 8,
   },
 });
