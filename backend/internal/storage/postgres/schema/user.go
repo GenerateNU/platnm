@@ -487,27 +487,6 @@ func (r *UserRepository) GetUserSections(ctx context.Context, user_id string) ([
 	}
 	defer rows.Close()
 
-<<<<<<< HEAD
-	// Create a slice to hold the result
-	var users []*models.User
-
-	// Iterate over the rows
-	for rows.Next() {
-		var user models.User
-		if err := rows.Scan(&user.ID, &user.Username, &user.Email, &user.DisplayName,
-			&user.Bio, &user.ProfilePicture, &user.LinkedAccount, &user.CreatedAt, &user.UpdatedAt); err != nil {
-			return nil, err
-		}
-		users = append(users, &user)
-	}
-
-	if len(users) == 0 {
-		return nil, errs.NotFound("User", "id", id)
-	}
-
-	// Check for errors that occurred during the iteration.
-	// Necessary because rows.Next() defers errors to rows.Err().
-=======
 	sectionMap := make(map[string]*models.UserSection)
 
 	for rows.Next() {
@@ -545,14 +524,10 @@ func (r *UserRepository) GetUserSections(ctx context.Context, user_id string) ([
 		})
 	}
 
->>>>>>> f95170d6f5988b6711657ad52e5956209a838afb
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
-<<<<<<< HEAD
-	return users, nil
-=======
 	var sections []models.UserSection
 	for _, section := range sectionMap {
 		sections = append(sections, *section)
@@ -647,7 +622,6 @@ func (r *UserRepository) GetConnections(ctx context.Context, id uuid.UUID, limit
 		Followees: followees,
 		Followers: followers,
 	}, nil
->>>>>>> f95170d6f5988b6711657ad52e5956209a838afb
 }
 
 func NewUserRepository(db *pgxpool.Pool) *UserRepository {
