@@ -1,14 +1,13 @@
-import { useNavigation } from "expo-router";
 import React from "react";
+import { router } from "expo-router";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
-import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
 
 interface SongChipProps {
-  rank: number;
   id: number;
   title: string;
   artist_name: string;
   cover: string;
+  rank?: number;
 }
 
 const SongChip: React.FC<SongChipProps> = ({
@@ -18,39 +17,48 @@ const SongChip: React.FC<SongChipProps> = ({
   artist_name,
   cover,
 }) => {
-  const navigation = useNavigation<NativeStackNavigationProp<any>>();
-
   return (
     <TouchableOpacity
-      style={styles.container}
+      style={[styles.container, !rank && styles.noRankContainer]}
       onPress={() =>
-        navigation.navigate("MediaPage", {
-          mediaType: "track",
-          mediaId: id,
+        router.push({
+          pathname: "/MediaPage",
+          params: {
+            mediaType: "track",
+            mediaId: id,
+          },
         })
       }
     >
-      <Text style={styles.id}>{rank}.</Text>
+      {rank !== undefined && <Text style={styles.rank}>{rank}.</Text>}
       <Image style={styles.cover} source={{ uri: cover }} />
-      <View style={styles.textContainer}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.artist}>{artist_name}</Text>
+      <View style={[styles.textContainer, !rank && styles.noRankTextContainer]}>
+        <Text style={styles.title} numberOfLines={1}>
+          {title}
+        </Text>
+        <Text style={styles.artist} numberOfLines={1}>
+          {artist_name}
+        </Text>
       </View>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  id: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginRight: 8,
-  },
   container: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 8,
-    gap: 5,
+    paddingRight: 8,
+    paddingVertical: 4,
+  },
+  noRankContainer: {
+    paddingLeft: 8,
+  },
+  rank: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginRight: 8,
+    width: 20,
   },
   cover: {
     width: 40,
@@ -60,10 +68,14 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1,
+    marginLeft: 8,
     justifyContent: "center",
   },
+  noRankTextContainer: {
+    marginLeft: 8,
+  },
   title: {
-    fontSize: 14,
+    fontSize: 13,
     color: "#000000",
     fontWeight: "500",
   },

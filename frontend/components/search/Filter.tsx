@@ -1,69 +1,69 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import Icon from "react-native-vector-icons/Ionicons";
-
-type FilterOption = "all" | "songs" | "albums";
 
 interface FilterProps {
+  currentFilter: FilterOption;
+  filterOptions: FilterOption[];
   onFilterChange: (filter: FilterOption) => void;
 }
 
-const Filter: React.FC<FilterProps> = ({ onFilterChange }) => {
-  const [selectedFilter, setSelectedFilter] = useState<FilterOption>("all");
-
-  const handleFilterChange = (filter: FilterOption) => {
-    setSelectedFilter(filter);
-    onFilterChange(filter);
-  };
-
+const Filter: React.FC<FilterProps> = ({
+  currentFilter,
+  filterOptions,
+  onFilterChange,
+}) => {
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        onPress={() => handleFilterChange("all")}
-        style={[
-          styles.button,
-          selectedFilter === "all" && styles.selectedButton,
-        ]}
-      >
-        <Icon name="apps-outline" size={20} color="white" />
-        <Text style={styles.buttonText}>All</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => handleFilterChange("songs")}
-        style={[
-          styles.button,
-          selectedFilter === "songs" && styles.selectedButton,
-        ]}
-      >
-        <Icon name="musical-notes-outline" size={20} color="white" />
-        <Text style={styles.buttonText}>Songs</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => handleFilterChange("albums")}
-        style={[
-          styles.button,
-          selectedFilter === "albums" && styles.selectedButton,
-        ]}
-      >
-        <Icon name="albums-outline" size={20} color="white" />
-        <Text style={styles.buttonText}>Albums</Text>
-      </TouchableOpacity>
+      <View style={styles.buttonsRow}>
+        {filterOptions.map((filter) => (
+          <TouchableOpacity
+            key={filter}
+            onPress={() => onFilterChange(filter)}
+            style={[styles.button]}
+          >
+            <Text
+              style={[
+                styles.buttonText,
+                currentFilter === filter && styles.selectedButtonText,
+              ]}
+            >
+              {filter.charAt(0).toUpperCase() + filter.slice(1)} {}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+      <View style={styles.underline} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flexDirection: "row", justifyContent: "center", margin: 10 },
+  container: {
+    margin: 10,
+  },
+  buttonsRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginBottom: 8,
+  },
   button: {
     flexDirection: "row",
     alignItems: "center",
     padding: 10,
-    borderRadius: 5,
     marginHorizontal: 5,
-    backgroundColor: "#ccc",
   },
-  selectedButton: { backgroundColor: "#007AFF" },
-  buttonText: { color: "white", marginLeft: 5 },
+  buttonText: {
+    color: "black",
+    marginLeft: 5,
+  },
+  selectedButtonText: {
+    color: "orange",
+  },
+  underline: {
+    width: "100%",
+    height: 2,
+    backgroundColor: "#E0E0E0",
+  },
 });
 
 export default Filter;

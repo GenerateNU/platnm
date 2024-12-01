@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import RatingSvg from "./RatingSvg";
 
 type ReviewStatsProps = {
   rating: number;
@@ -14,10 +15,7 @@ const ReviewStats = ({ rating, reviews }: ReviewStatsProps) => {
         <Text>Total ratings</Text>
       </View>
       <View style={styles.statContainer}>
-        <View>
-          <Text style={styles.statText}>{rating}</Text>
-          {/* <Icon></Icon> */}
-        </View>
+        <RatingSvg rating={rating} width={50} height={50} />
         <Text>Avg. rating</Text>
       </View>
     </View>

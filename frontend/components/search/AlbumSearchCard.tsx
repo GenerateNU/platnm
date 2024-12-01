@@ -1,7 +1,6 @@
-import { useNavigation } from "expo-router";
 import React from "react";
+import { router } from "expo-router";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
-import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
 
 interface AlbumSearchCardProps {
   id: number;
@@ -20,15 +19,17 @@ const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({
 }) => {
   const placeholderImage =
     "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png";
-  const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
   return (
     <TouchableOpacity
       style={styles.cardContainer}
       onPress={() =>
-        navigation.navigate("MediaPage", {
-          mediaType: "album",
-          mediaId: id,
+        router.push({
+          pathname: "/MediaPage",
+          params: {
+            mediaType: "album",
+            mediaId: id,
+          },
         })
       }
     >

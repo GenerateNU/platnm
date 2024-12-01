@@ -8,60 +8,54 @@ import {
 } from "react-native";
 
 import { ThemedText } from "@/components/ThemedText";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import ReviewPreview from "@/components/ReviewPreview";
 import Icon from "react-native-vector-icons/Feather";
-import { router, useNavigation } from "expo-router";
-import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
+import { router, useFocusEffect } from "expo-router";
+import { useAuthContext } from "@/components/AuthProvider";
 
 export default function HomeScreen() {
-  //const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-  const BASE_URL = "https://tqjwyhqmpmdjigoyjnrr.supabase.co";
-
   const [feedReviews, setFeedReviews] = useState<Preview[]>();
-  const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
+  const { userId } = useAuthContext();
   const hasNotification = true; // Hardcoding - Get notification status from somewhere else
-  const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
+  const fetchFeedReviews = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/users/feed/${userId}`);
+      setFeedReviews(response.data.slice(0, 20));
+    } catch (error) {
+      console.error("Error fetching feed reviews:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchFeedReviews = async () => {
-      console.log("fetchFeedReviews");
-      try {
-        const response = await axios.get(`${BASE_URL}/users/feed/${userId}`);
-        setFeedReviews(response.data);
-      } catch (error) {
-        console.error("Error fetching feed reviews:", error);
-      }
-    };
+    if (userId) fetchFeedReviews();
+  }, [userId]);
 
-    fetchFeedReviews();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      if (userId) fetchFeedReviews();
+    }, [userId]),
+  );
 
   const handleNotifPress = () => {
     console.log("Notif icon pressed");
     // Add activity icon press handling logic here
   };
 
-  const handleMusicPress = () => {
-    console.log("music icon pressed");
-    navigation.navigate("Recommendations");
-  };
-
+  const handleMusicPress = () => router.push("/Recommendations");
   return (
     <ScrollView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
-        {/* Top icons */}
         <View style={styles.topIconsContainer}>
-          {/* Activity icon with notification badge */}
           <Text style={[styles.titleContainer, styles.titleText]}>
             <ThemedText type="title" style={styles.titleText}>
               Platnm
             </ThemedText>
           </Text>
 
-          {/* Grouping the settings and share icons on the right */}
           <View style={styles.rightIconsContainer}>
             <TouchableOpacity
               onPress={handleNotifPress}
@@ -92,10 +86,7 @@ export default function HomeScreen() {
         <View>
           {feedReviews && feedReviews.length > 0 ? (
             feedReviews.map((review, index) => {
-              return (
-                console.log("Review: ", review),
-                (<ReviewPreview key={index} preview={review} />)
-              );
+              return <ReviewPreview key={index} preview={review} />;
             })
           ) : (
             <Text style={styles.noReviewsText}>No reviews found.</Text>

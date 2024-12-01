@@ -10,21 +10,29 @@ const TopReviews = ({ reviews }: TopReviewsProps) => {
   return (
     <View>
       <Text style={styles.title}>Top Reviews</Text>
-      {reviews.map((review, index) => {
-        return <ReviewPreview key={index} preview={review} />;
-      })}
+      <View style={styles.reviewsContainer}>
+        {reviews.map((review, index) => {
+          return <ReviewPreview key={index} preview={review} />;
+        })}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
-    padding: 16,
+    paddingHorizontal: 28,
+    paddingBottom: 12,
+    paddingTop: 32,
   },
   container: {
     flexDirection: "row",
+  },
+  reviewsContainer: {
+    marginTop: -8,
+    paddingHorizontal: 8,
   },
   songName: {
     fontSize: 18,

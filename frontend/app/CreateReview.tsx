@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useLocalSearchParams, useNavigation } from "expo-router";
-import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
+import { router, useLocalSearchParams } from "expo-router";
 
 import {
   View,
@@ -24,6 +23,9 @@ import { usePublishReview } from "@/hooks/usePublishReview";
 import TagSelector from "@/components/media/TagSelector";
 import Divider from "@/components/Divider";
 import NudgePage from "@/components/NudgePage";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { Button } from "react-native-paper";
+import { runOnJS } from "react-native-reanimated";
 
 const CreateReview = () => {
   const { mediaName, mediaType, mediaId, cover, artistName } =
@@ -37,6 +39,7 @@ const CreateReview = () => {
 
   const [rating, setRating] = useState(1);
   const [review, setReview] = useState("");
+  const [sliderInteracting, setSliderInteracting] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const [showNudges, setShowNudges] = useState(false);
@@ -55,8 +58,6 @@ const CreateReview = () => {
       setSelectedTags([...selectedTags, tag]);
     }
   };
-
-  const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
   const handleDraftSubmit = () => {
     publishReview(
@@ -79,22 +80,14 @@ const CreateReview = () => {
       false,
     );
     setShowNudges(true);
-    // navigation.navigate("NudgePage");
   };
 
   const handleOutsideClick = () => {
     if (showNudges) {
       setShowNudges(false);
-      navigation.navigate("explore");
-      console.log("outside click");
+      router.push("/explore");
     }
   };
-
-  // useEffect(() => {
-  //   if (showNudges) {
-  //       navigation.navigate("explore");
-  //     };
-  //   }, [showNudges]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -113,6 +106,23 @@ const CreateReview = () => {
     }),
   ).current;
 
+  const handleScrollBegin = () => {
+    console.log("handleScrollBegin");
+  };
+  const tap = Gesture.Tap()
+    .onBegin(() => {
+      runOnJS(setSliderInteracting)(true);
+    })
+    .onTouchesUp(() => {
+      runOnJS(setSliderInteracting)(false);
+    })
+    .onEnd(() => {
+      runOnJS(setSliderInteracting)(false);
+    })
+    .onTouchesCancelled(() => {
+      runOnJS(setSliderInteracting)(false);
+    });
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -121,7 +131,11 @@ const CreateReview = () => {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <TouchableWithoutFeedback onPress={handleOutsideClick}>
           <View style={styles.inner}>
-            <ScrollView contentContainerStyle={styles.scrollview}>
+            <ScrollView
+              scrollEnabled={!sliderInteracting}
+              onScrollEndDrag={() => setSliderInteracting(false)}
+              contentContainerStyle={styles.scrollview}
+            >
               <HeaderComponent title="Log Song" />
               <SongCard
                 mediaName={mediaName}
@@ -129,12 +143,19 @@ const CreateReview = () => {
                 cover={cover}
                 artistName={artistName}
               />
-              <View style={styles.sliderWrapper} {...panResponder.panHandlers}>
-                <View style={styles.slider}>
-                  {/* Render your slider here, adjust based on touch */}
-                  <RatingSlider onRatingChange={handleRatingChange} />
+              <GestureDetector gesture={tap}>
+                <View
+                  style={styles.sliderWrapper}
+                  {...panResponder.panHandlers}
+                >
+                  <View collapsable={false}>
+                    <RatingSlider
+                      value={rating}
+                      onRatingChange={handleRatingChange}
+                    />
+                  </View>
                 </View>
-              </View>
+              </GestureDetector>
               <DateInputRating />
               <Divider />
               <TextInput
@@ -199,9 +220,6 @@ const styles = StyleSheet.create({
   sliderWrapper: {
     marginBottom: 20,
     width: "100%",
-  },
-  slider: {
-    //  flexDirection: "row", // Ensures horizontal scrolling
   },
 });
 

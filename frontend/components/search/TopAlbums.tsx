@@ -1,7 +1,6 @@
 import React from "react";
 import { useState } from "react";
 
-//"Import SongChip from @/components/SongChip" where?
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import AlbumSearchCard from "@/components/search/AlbumSearchCard";
 import { ScrollView } from "react-native";
@@ -40,9 +39,11 @@ const TopAlbums = ({ albums }: AlbumCardProps) => {
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
-    padding: 16,
+    paddingHorizontal: 28,
+    paddingBottom: 12,
+    paddingTop: 32,
   },
   container: {
     flexDirection: "row",
@@ -50,8 +51,8 @@ const styles = StyleSheet.create({
   },
   songName: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#434343",
+    fontWeight: 500,
+    color: "#000",
     marginBottom: 4,
   },
   artistName: {
