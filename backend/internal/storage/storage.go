@@ -3,8 +3,10 @@ package storage
 import (
 	"context"
 	"platnm/internal/models"
+	"platnm/internal/storage/postgres/schema"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/zmb3/spotify/v2"
 )
 
@@ -102,6 +104,7 @@ type PlaylistRepository interface {
 
 // Repository storage of all repositories.
 type Repository struct {
+	db             *pgxpool.Pool
 	User           UserRepository
 	Review         ReviewRepository
 	UserReviewVote VoteRepository
@@ -109,4 +112,22 @@ type Repository struct {
 	Recommendation RecommendationRepository
 	UserAuth       UserAuthRepository
 	Playlist       PlaylistRepository
+}
+
+func NewRepository(db *pgxpool.Pool) *Repository {
+	return &Repository{
+		db:             db,
+		User:           schema.NewUserRepository(db),
+		Review:         schema.NewReviewRepository(db),
+		UserReviewVote: schema.NewVoteRepository(db),
+		Media:          schema.NewMediaRepository(db),
+		Recommendation: schema.NewRecommendationRepository(db),
+		UserAuth:       schema.NewUserAuthRepository(db),
+		Playlist:       schema.NewPlaylistRepository(db),
+	}
+}
+
+func (r *Repository) Close() error {
+	r.db.Close()
+	return nil
 }
