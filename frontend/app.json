@@ -1,45 +1,56 @@
 {
-  "expo": {
-    "name": "platnm",
-    "slug": "platnm",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
-    "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/images/splash-transition.gif",
-      "resizeMode": "cover",
-      "backgroundColor": "#000"
-    },
-    "ios": {
-      "supportsTablet": true,
-      "splash": {
-        "image": "./assets/images/splash-transition.gif",
-        "resizeMode": "cover",
-        "backgroundColor": "#000"
-      },
-      "bundleIdentifier": "com.generate.platnm"
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
-    },
-    "plugins": ["expo-router", "expo-font"],
-    "experiments": {
-      "typedRoutes": true
-    },
-    "extra": {
-      "eas": {
-        "projectId": "2ade4389-2c02-473b-a3c5-46830434a83e"
-      }
-    }
-  }
+	"expo": {
+		"name": "platnm",
+		"slug": "platnm",
+		"version": "1.0.0",
+		"orientation": "portrait",
+		"icon": "./assets/images/icon.png",
+		"scheme": "myapp",
+		"userInterfaceStyle": "automatic",
+		"plugins": [
+			[
+				"expo-image-picker",
+				{
+					"photosPermission": "Allow $(PRODUCT_NAME) to access your photos"
+				}
+			],
+			[
+				"expo-splash-screen",
+				{
+					"backgroundColor": "#F28037",
+					"image": "./assets/images/icon.png",
+					"imageWidth": 100
+				}
+			]
+		],
+		"ios": {
+			"supportsTablet": true,
+			"bundleIdentifier": "com.generate.platnm",
+			"splash": {
+				"image": "./assets/images/icon.png",
+				"backgroundColor": "#F28037",
+				"imageWidth": 50
+			}
+		},
+		"android": {
+			"adaptiveIcon": {
+				"foregroundImage": "./assets/images/adaptive-icon.png",
+				"backgroundColor": "#ffffff"
+			}
+		},
+		"web": {
+			"bundler": "metro",
+			"output": "static",
+			"favicon": "./assets/images/favicon.png"
+		},
+		"plugins": ["expo-router", "expo-font"],
+		"experiments": {
+			"typedRoutes": true
+		},
+		"extra": {
+			"eas": {
+				"projectId": "2ade4389-2c02-473b-a3c5-46830434a83e"
+			}
+		}
+	}
 }
