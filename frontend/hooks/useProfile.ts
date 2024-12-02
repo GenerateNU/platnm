@@ -20,14 +20,14 @@ export function useProfile(userId: string) {
   useFocusEffect(
     useCallback(() => {
       if (!userId) router.push("/(tabs)/login");
-    }, [userId])
+    }, [userId]),
   );
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
         const response = await axios.get(
-          `${BASE_URL}/users/profile/id/${userId}`
+          `${BASE_URL}/users/profile/id/${userId}`,
         );
         const profile = {
           user_id: response.data.user_id,
@@ -67,7 +67,7 @@ export function useProfile(userId: string) {
     const fetchSectionOptions = async () => {
       try {
         const response = await axios.get(
-          `${BASE_URL}/users/section/options/${userId}`
+          `${BASE_URL}/users/section/options/${userId}`,
         );
         setOptions(response.data);
       } catch (error) {
@@ -116,7 +116,7 @@ export function useProfile(userId: string) {
       search_type: option.search_type,
     };
     setOptions((prevOptions) =>
-      prevOptions.filter((item) => item.title !== option.title)
+      prevOptions.filter((item) => item.title !== option.title),
     );
     setSections([...(sections || []), newSection]);
     setNextId(nextId + 1);
@@ -127,9 +127,6 @@ export function useProfile(userId: string) {
   };
 
   const handleAddItem = (section: Section) => {
-    console.log("Adding item to section", section.section_id);
-    console.log("Selected option", section.title);
-    console.log("Selected option", section.search_type);
     router.push({
       pathname: "/SectionResults",
       params: { type: section.search_type },
@@ -143,7 +140,7 @@ export function useProfile(userId: string) {
           };
         }
         return section;
-      })
+      }),
     );
   };
 
@@ -155,8 +152,8 @@ export function useProfile(userId: string) {
               ...section,
               items: section.items.filter((item) => item.id !== itemId),
             }
-          : section
-      )
+          : section,
+      ),
     );
 
     axios.delete(`${BASE_URL}/users/section/item`, {
@@ -170,7 +167,7 @@ export function useProfile(userId: string) {
 
   const handleDeleteSection = (id: number) => {
     const sectionToDelete = sections.find(
-      (section) => section.section_id === id
+      (section) => section.section_id === id,
     );
     if (sectionToDelete) {
       setOptions([
