@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -8,11 +8,11 @@ import {
   ScrollView,
   Dimensions,
 } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 import Icon from "react-native-vector-icons/Feather";
-import axios from "axios";
 import Section from "@/components/profile/Section";
-import { router, useLocalSearchParams } from "expo-router";
 import ProfilePicture from "@/components/profile/ProfilePicture";
+import { useProfile } from "@/hooks/useProfile";
 
 export default function ProfilePage() {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -21,65 +21,8 @@ export default function ProfilePage() {
     userId: string;
   }>();
 
-  const [userProfile, setUserProfile] = useState<UserProfile>();
-  const [userReviews, setUserReviews] = useState<Review[]>();
-  const [sections, setSections] = useState<Section[]>([]);
-
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const response = await axios.get(
-          `${BASE_URL}/users/profile/id/${userId}`,
-        );
-        const profile = {
-          user_id: response.data.user_id,
-          username: response.data.username,
-          display_name: response.data.display_name,
-          bio: response.data.bio.String,
-          profile_picture: response.data.profile_picture.String,
-          followers: response.data.followers,
-          followed: response.data.followed,
-          score: response.data.score,
-        };
-        setUserProfile(profile);
-      } catch (error) {
-        console.error("Error fetching user profile:", error);
-      }
-    };
-
-    const fetchUserReviews = async () => {
-      try {
-        const response = await axios.get(`${BASE_URL}/reviews/user/${userId}`);
-        setUserReviews(response.data);
-      } catch (error) {
-        console.error("Error fetching user reviews:", error);
-      }
-    };
-
-    const fetchUserSections = async () => {
-      try {
-        const response = await axios.get(`${BASE_URL}/users/section/${userId}`);
-        setSections(response.data);
-      } catch (error) {
-        console.error("Error fetching user sections:", error);
-      }
-    };
-
-    if (userId) {
-      fetchUserProfile();
-      fetchUserReviews();
-      fetchUserSections();
-    }
-  }, [userId]);
-
-  const handleActivityPress = () => {
-    router.push("/Activity");
-  };
-
-  const handleSharePress = () => {
-    console.log("Share icon pressed");
-  };
-
+  const { userProfile, handleActivityPress, handleSharePress, sections } =
+    useProfile(userId);
   return (
     userProfile && (
       <ScrollView style={styles.container}>
