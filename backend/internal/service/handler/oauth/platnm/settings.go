@@ -14,10 +14,7 @@ func (h *Handler) ForgotPassword(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		return errs.BadRequest("failed to parse request body")
 	}
-	
-	redirectTo := "http://localhost:3000/reset-password"
-
-	err := auth.SendForgotPasswordEmail(&h.config, redirectTo, req.Email)
+	err := auth.RecoverPassword(&h.config, req.Email)
 	if err != nil {
 		fmt.Println("Error: ", err)
 		return errs.BadRequest("failed to send reset password email")

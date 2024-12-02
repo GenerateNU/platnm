@@ -3,6 +3,7 @@ import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
 import axios from "axios";
 import OnboardingHeader from "@/components/onboarding/Header";
 import OnboardButton from "@/components/onboarding/OnboardButton";
+import { router } from "expo-router";
 
 const ForgotPassword: React.FC = () => {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -18,6 +19,7 @@ const ForgotPassword: React.FC = () => {
       if (response.status === 200) {
         setMessage("Email sent successfully!");
         Alert.alert("Success", "Email sent successfully!");
+        router.push("../ResetPassword");
       } else {
         setMessage("Failed to send email. Please try again.");
         Alert.alert("Error", "Failed to send email. Please try again.");
@@ -42,7 +44,11 @@ const ForgotPassword: React.FC = () => {
         keyboardType="email-address"
         autoCapitalize="none"
       />
-      <OnboardButton text="Submit" onPress={handleSubmit} />
+      <OnboardButton
+        backgroundColor="#000"
+        text="Submit"
+        onPress={handleSubmit}
+      />
       {message ? <Text style={styles.message}>{message}</Text> : null}
     </View>
   );
@@ -54,6 +60,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 20,
     backgroundColor: "#fff",
+    gap: 30,
   },
 
   input: {
@@ -65,6 +72,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     paddingHorizontal: 10,
     backgroundColor: "#F1F1F1",
+    color: "000",
   },
   message: {
     marginTop: 16,

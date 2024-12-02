@@ -2,25 +2,22 @@ package auth
 
 import (
 	"bytes"
-	// "context"
 	"encoding/json"
 	"net/http"
 	"platnm/internal/config"
 	"platnm/internal/errs"
 	"fmt"
+	"strings"
 )
 
-func SendForgotPasswordEmail(cfg *config.Supabase, redirectTo string, email string) error {
-	apiURL := fmt.Sprintf(cfg.URL, "/auth/v1/recover")
+func RecoverPassword(cfg *config.Supabase, email string) error {
+	apiURL := fmt.Sprintf("%s/auth/v1/recover", strings.TrimRight(cfg.URL, "/"))
 	apiKey := cfg.Key
 
-	fmt.Println("Email: ", email)
+	fmt.Println("Email: ", apiURL)
 
 	payload := map[string]interface{}{
 		"email": email,
-		"options": map[string]string{
-			"redirectTo": redirectTo,
-		},
 	}
 	
 	payloadBytes, err := json.Marshal(payload)
