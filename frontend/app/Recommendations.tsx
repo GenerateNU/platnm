@@ -25,7 +25,7 @@ export default function RecommendationsScreen() {
       try {
         setIsLoading(true);
         const response = await axios.get(
-          `${BASE_URL}/recommendation/${userId}`,
+          `${BASE_URL}/recommendation/${userId}`
         );
 
         if (response.data) {
@@ -42,10 +42,10 @@ export default function RecommendationsScreen() {
 
   const reactToRecommendation = (id: number, reaction: boolean) => {
     setCurrentRecIndex((prev) => prev + 1);
-    // axios.patch(`${BASE_URL}/recommendation/${id}`, {
-    //   reaction: reaction,
-    //   user_id: userId,
-    // });
+    axios.patch(`${BASE_URL}/recommendation/${id}`, {
+      reaction: reaction,
+      user_id: userId,
+    });
   };
 
   const addToQueue = async (mediaType: string, id: string) => {
