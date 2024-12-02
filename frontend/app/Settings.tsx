@@ -31,10 +31,9 @@ function Settings() {
           headers: {
             Authorization: accessToken,
           },
-        },
+        }
       )
-      .then((response) => {
-        console.log(response.data);
+      .then(() => {
         AuthContextUtils.updateUsername("");
         AuthContextUtils.updateSession("");
         AuthContextUtils.updateAccessToken("");
@@ -42,7 +41,12 @@ function Settings() {
         router.push("/(tabs)/login");
       })
       .catch((error) => {
-        console.log(error);
+        if (error.response && error.response.status === 401) {
+          alert("You are already signed out!");
+          router.push("/(tabs)/login");
+        } else {
+          console.log(error);
+        }
       });
   }
 

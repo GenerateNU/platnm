@@ -32,6 +32,10 @@ func SignOut(cfg *config.Supabase, token string) error {
 		return errs.BadRequest("failed to read response body")
 	}
 
+	if resp.StatusCode == 401 {
+		return errs.Unauthorized() // already signed out
+	}
+
 	if resp.StatusCode != 204 {
 		return errs.BadRequest(fmt.Sprintf("sign out failed with status %d: %s", resp.StatusCode, body))
 	}

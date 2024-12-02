@@ -158,6 +158,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 				return c.SendStatus(http.StatusOK)
 			})
 			r.Post("/resetpassword", h.ResetPassword)
+			r.Post("/forgot", h.ForgotPassword)
 			r.Post("/signout", h.SignOut)
 			r.Post("/deactivate", h.DeactivateAccount)
 		})

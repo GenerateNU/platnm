@@ -4,7 +4,27 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"platnm/internal/auth"
 	"platnm/internal/errs"
+	"fmt"
 )
+
+func (h *Handler) ForgotPassword(c *fiber.Ctx) error {
+	var req struct {
+		Email string `json:"email"`
+	}
+	if err := c.BodyParser(&req); err != nil {
+		return errs.BadRequest("failed to parse request body")
+	}
+	
+	redirectTo := "http://localhost:3000/reset-password"
+
+	err := auth.SendForgotPasswordEmail(&h.config, redirectTo, req.Email)
+	if err != nil {
+		fmt.Println("Error: ", err)
+		return errs.BadRequest("failed to send reset password email")
+	}
+
+	return c.SendStatus(fiber.StatusOK)
+}
 
 func (h *Handler) ResetPassword(c *fiber.Ctx) error {
 	var req struct {

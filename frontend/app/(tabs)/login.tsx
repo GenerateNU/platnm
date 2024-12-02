@@ -32,7 +32,6 @@ export default function Login() {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     throw new Error("Missing Supabase URL or anon key");
   }
-  // const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -65,7 +64,7 @@ export default function Login() {
   };
 
   const forgotUsernamePassword = () => {
-    router.push("../ResetPassword");
+    router.push("../ForgotPassword");
   };
 
   const handleSignUpPress = () => {
@@ -125,7 +124,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     padding: 20,
-    backgroundColor: "#fff", // Dark theme background
+    backgroundColor: "#fff",
   },
   title: {
     fontSize: 22,
