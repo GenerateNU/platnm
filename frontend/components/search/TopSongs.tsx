@@ -38,17 +38,20 @@ const styles = StyleSheet.create({
   gridContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     width: 500, // Fixed width
   },
   gridItem: {
     width: "33.33%",
     marginBottom: 16,
+    fontWeight: "light",
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
+    paddingHorizontal: 28,
+    paddingBottom: 12,
+    paddingTop: 32,
     fontWeight: "bold",
-    padding: 16,
   },
 });
 

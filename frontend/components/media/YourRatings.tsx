@@ -1,26 +1,71 @@
-import React from "react";
+import { useState, useEffect } from "react";
+import { router } from "expo-router";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import ArrowRight from "@/assets/images/Media/arrowRight.svg";
+import axios from "axios";
+import { useAuthContext } from "../AuthProvider";
 
 type YourRatingsProps = {
+<<<<<<< HEAD
   count: number | null;
 };
 
 const YourRatings = ({ count }: YourRatingsProps) => {
   console.log(count)
+=======
+  media_id: string;
+  media_type: string;
+};
+
+const YourRatings = ({ media_id, media_type }: YourRatingsProps) => {
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+  const [userReviews, setUserReviews] = useState<Preview[]>([]);
+  const { userId } = useAuthContext();
+
+  useEffect(() => {
+    if (userId)
+      axios
+        .get(`${BASE_URL}/reviews/media/${media_id}/${userId}`, {
+          params: {
+            media_type: media_type,
+          },
+        })
+        .then((response) => setUserReviews(response.data))
+        .catch((error) => console.error(error));
+  }, []);
+
+  // Don't display if there are no reviews
+  if (!userReviews || userReviews.length === 0) {
+    return <></>;
+  }
+
+>>>>>>> 4fa3da7c52eb50f581c24e77e7083be0dc74adde
   return (
-    <TouchableOpacity
-      style={styles.container}
-      onPress={() => console.log("pressed!")}
-    >
-      <View style={styles.textContainer}>
-        <Text style={styles.text}>You've rated this song</Text>
-        <View style={styles.countBubble}>
-          <Text style={styles.countText}>{count}x</Text>
+    userId && (
+      <TouchableOpacity
+        style={styles.container}
+        disabled={!userReviews || userReviews.length === 0}
+        onPress={() =>
+          router.push({
+            pathname: "/MediaReviewsPage",
+            params: {
+              media_id: media_id,
+              user_id: userId,
+              media_type: media_type,
+              filter: "you",
+            },
+          })
+        }
+      >
+        <View style={styles.textContainer}>
+          <Text style={styles.text}>You've rated this {media_type}</Text>
+          <View style={styles.countBubble}>
+            <Text style={styles.countText}>{userReviews?.length ?? 0}x</Text>
+          </View>
         </View>
-      </View>
-      <ArrowRight />
-    </TouchableOpacity>
+        {userReviews && userReviews.length > 0 && <ArrowRight />}
+      </TouchableOpacity>
+    )
   );
 };
 

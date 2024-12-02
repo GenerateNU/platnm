@@ -61,8 +61,8 @@ const styles = StyleSheet.create({
     width: 20,
   },
   cover: {
-    width: 32,
-    height: 32,
+    width: 40,
+    height: 40,
     borderRadius: 4,
     backgroundColor: "#e0e0e0",
   },

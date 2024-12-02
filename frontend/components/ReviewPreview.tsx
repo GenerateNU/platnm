@@ -27,6 +27,7 @@ import Rating10 from "@/assets/images/Ratings/Radial-10.svg";
 import Downvote from "@/assets/images/ReviewPreview/downvote.svg";
 import Upvote from "@/assets/images/ReviewPreview/upvote.svg";
 import Comment from "@/assets/images/ReviewPreview/comment.svg";
+import { useAuthContext } from "./AuthProvider";
 
 const MusicDisk = require("../assets/images/music-disk.png");
 const ThreeDotsMenu = require("../assets/images/three_dots_menu.png");
@@ -67,9 +68,9 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
 
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
-  const user_Id = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
+  const { userId } = useAuthContext();
 
-  const isOwner = user_Id === preview.user_id;
+  const isOwner = userId === preview.user_id;
   const [menuVisible, setMenuVisible] = useState(false);
 
   const handleMenuToggle = () => setMenuVisible(!menuVisible);
@@ -112,7 +113,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
 
     try {
       await axios.post(`${BASE_URL}/reviews/vote`, {
-        user_id: user_Id,
+        user_id: userId,
         post_id: String(preview.review_id),
         upvote: true,
       });
@@ -140,7 +141,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
 
     try {
       await axios.post(`${BASE_URL}/reviews/vote`, {
-        user_id: user_Id,
+        user_id: userId,
         post_id: String(preview.review_id),
         upvote: false,
       });
@@ -153,7 +154,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
   const handleEditSave = async () => {
     try {
       const requestBody = {
-        user_id: user_Id, // User ID to validate ownership
+        user_id: userId, // User ID to validate ownership
         comment: editedComment, // The updated comment
       };
 
@@ -193,7 +194,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
       const fetchVote = async () => {
         try {
           const response = await axios.get(
-            `${BASE_URL}/reviews/vote/${user_Id}/${preview.review_id}`,
+            `${BASE_URL}/reviews/vote/${userId}/${preview.review_id}`,
           );
           if (response.data) {
             const { upvote } = response.data;
@@ -222,7 +223,10 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
         }
       };
 
-      fetchVote();
+      if (userId) {
+        fetchVote();
+      }
+
       fetchReview();
     }, []),
   );
@@ -239,7 +243,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
     // Navigate to the ReviewPage when the preview is clicked
     router.push({
       pathname: "/ReviewPage",
-      params: { review_id: preview.review_id, userId: user_Id },
+      params: { review_id: preview.review_id, userId: userId },
     });
   };
 
@@ -279,7 +283,9 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
           <View>
             {React.createElement(
               getRatingImage(preview.rating as keyof typeof ratingImages),
-              { style: styles.ratingImage },
+              {
+                style: styles.ratingImage,
+              },
             )}
           </View>
         </View>
@@ -441,18 +447,15 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#F0F0F0",
+    backgroundColor: "#fff",
     padding: 15,
-    marginVertical: 20,
+    width: "100%",
+    marginVertical: 16,
     borderRadius: 15,
-    width: "90%",
     alignSelf: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
     alignItems: "flex-start",
     overflow: "scroll",
+    boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.2)",
   },
   voteButton: {
     flexDirection: "row",

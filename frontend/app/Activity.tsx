@@ -12,11 +12,12 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { router } from "expo-router";
 import axios from "axios";
 import ReviewCard from "@/components/ReviewCard";
+import { useAuthContext } from "@/components/AuthProvider";
 
 const Activity = () => {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const [userReviews, setUserReviews] = useState<Review[]>();
-  const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
+  const { userId } = useAuthContext();
 
   const handleDraftPress = () => {
     console.log("Draft Button pressed");
@@ -32,7 +33,8 @@ const Activity = () => {
         console.error("Error fetching user reviews:", error);
       }
     };
-    fetchUserReviews();
+
+    if (userId) fetchUserReviews();
   }, [userId]);
 
   return (

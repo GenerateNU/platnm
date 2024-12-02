@@ -10,7 +10,23 @@ interface Album {
   genre_id: number;
   media_type: string;
   artist_name: string;
+  artist_photo: string;
 }
+
+enum NotificationType {
+  Follow = "follow",
+}
+
+type CustomNotification = {
+  id: number;
+  tagged_entity_name: string;
+  tagged_entity_type: string;
+  tagged_entity_id: string;
+  thumbnail: string;
+  created_at: string;
+  read: boolean;
+  type: NotificationType;
+};
 
 interface Track {
   media: MediaType;
@@ -23,6 +39,7 @@ interface Track {
   cover: string;
   media_type: string;
   artist_name: string;
+  artist_photo: string;
 }
 
 type Media = Album | Track;
@@ -129,3 +146,5 @@ type RatingDistribution = {
   rating: number;
   count: number;
 };
+
+type FilterOption = string;

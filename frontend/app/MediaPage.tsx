@@ -1,26 +1,21 @@
 import { useState, useEffect, useCallback } from "react";
-import { Button, StyleSheet, ScrollView, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useFocusEffect, useLocalSearchParams, router } from "expo-router";
+import { StyleSheet, ScrollView, View, Text } from "react-native";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import axios from "axios";
 import Histogram from "@/components/media/Histogram";
 import YourRatings from "@/components/media/YourRatings";
 import FriendRatings from "@/components/media/FriendRatings";
 import MediaCard from "@/components/media/MediaCard";
 import ReviewStats from "@/components/media/ReviewStats";
-import HeaderComponent from "@/components/HeaderComponent";
 import ReviewPreview from "@/components/ReviewPreview";
-
-type MediaResponse = {
-  media: Media;
-  reviewCount: number;
-};
+import SkeletonLoader from "expo-skeleton-loader";
 
 export default function MediaPage() {
 
   const [media, setMedia] = useState<Media>();
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [rating, setReviewAvgRating] = useState<number | null>(null);
+  const [reviewsLoading, setReviewsLoading] = useState<boolean>(true);
+  const [avgRating, setAvgRating] = useState<number | null>(null);
   const [ratingDistributions, setRatingDistributions] = useState<
     RatingDistribution[]
   >([]);
@@ -33,9 +28,8 @@ export default function MediaPage() {
   }>();
   const [yourRatings, setYourRatings] = useState<number | null>(null);
 
-  const insets = useSafeAreaInsets();
-
   useEffect(() => {
+    setReviewsLoading(true);
     axios
       .get(`${BASE_URL}/media/${mediaType}/${mediaId}`)
       .then((response) => setMedia(response.data))
@@ -46,6 +40,10 @@ export default function MediaPage() {
   useEffect(() => {
     const calculateRatingDistribution = () => {
       const distributionMap = new Map<number, number>();
+      if (!reviews) {
+        setRatingDistributions([]);
+        return;
+      }
 
       reviews.forEach((review) => {
         distributionMap.set(
@@ -82,51 +80,116 @@ export default function MediaPage() {
           .get(`${BASE_URL}/reviews/${mediaType}/${mediaId}`)
           .then((response) => {
             setReviews(response.data.reviews);
-            setReviewAvgRating(response.data.avgRating.toFixed(2) / 2 || null);
+            setReviewsLoading(false);
+            setAvgRating(Math.round(response.data.avgRating) || null);
           })
           .catch((error) => console.error(error));
       }
     }, [media]),
   );
 
+  if (media) {
+    // We have the media, but no reviews
+    if ((!reviewsLoading && reviews?.length === 0) || reviews == null) {
+      return (
+        <View>
+          <MediaCard media={media} full={true} />
+        </View>
+      );
+    }
+  } else {
+    // This is technically an error state
+    // TODO: add a fallback screen
+    return (
+      <View>
+        <Text>{mediaId}</Text>
+        <Text>{mediaType}</Text>
+      </View>
+    );
+  }
+
   return (
     media && (
       <View style={{ backgroundColor: "#FFF" }}>
-        <HeaderComponent title="" />
         <ScrollView
           style={{
             ...styles.scrollView,
-            marginTop: 15,
           }}
           contentContainerStyle={{
             paddingBottom: 80, // Add padding at the bottom equal to the height of the bottom tab bar
           }}
         >
-          <View>
-            <MediaCard media={media} />
-          </View>
-          <View style={styles.buttonContainer}>
-            <View style={styles.addReviewContainer}>
-              <Button
-                onPress={() =>
-                  router.push({
-                    pathname: "/CreateReview",
-                    params: {
-                      mediaName: media.title,
-                      mediaType: media.media_type,
-                      mediaId: media.id,
-                      cover: media.cover,
-                      artistName: media.artist_name,
-                    },
-                  })
-                }
-                color={"white"}
-                title="Add rating"
-              />
+          <MediaCard media={media} />
+          {reviewsLoading ? (
+            <View style={styles.bodyContainer}>
+              <SkeletonLoader
+                duration={1000}
+                boneColor="#f0f0f0"
+                highlightColor="#fff"
+              >
+                <SkeletonLoader.Container
+                  style={[
+                    { flex: 1, flexDirection: "row" },
+                    styles.titleContainer,
+                  ]}
+                >
+                  <SkeletonLoader.Item
+                    style={{ width: 150, height: 50, marginBottom: 5 }}
+                  />
+                  <SkeletonLoader.Item
+                    style={{ width: 150, height: 50, marginLeft: 30 }}
+                  />
+                </SkeletonLoader.Container>
+                <SkeletonLoader.Container style={styles.titleContainer}>
+                  <SkeletonLoader.Item
+                    style={{ width: 335, height: 100, marginTop: 25 }}
+                  />
+                </SkeletonLoader.Container>
+                <SkeletonLoader.Container style={styles.titleContainer}>
+                  <SkeletonLoader.Item
+                    style={{ width: 335, height: 80, marginTop: 25 }}
+                  />
+                </SkeletonLoader.Container>
+              </SkeletonLoader>
             </View>
-            <View style={styles.saveReviewContainer}>
-              <Button color={"white"} title="Save" />
+          ) : (
+            <View style={styles.bodyContainer}>
+              <View style={styles.titleContainer}>
+                {avgRating && (
+                  <ReviewStats rating={avgRating} reviews={reviews} />
+                )}
+              </View>
+              {ratingDistributions && ratingDistributions.length > 0 && (
+                <Histogram distribution={ratingDistributions} />
+              )}
+              <View style={styles.socialContainer}>
+                <YourRatings media_id={mediaId} media_type={mediaType} />
+                <FriendRatings count={5} />
+              </View>
+              <View>
+                {reviews?.map((review) => (
+                  <ReviewPreview
+                    key={review.id}
+                    preview={{
+                      ...review,
+                      review_id: review.id,
+                      created_at: new Date(review.created_at),
+                      updated_at: new Date(review.updated_at),
+                      media_title: media.title,
+                      tags: ["Excitement"],
+                      review_stat: {
+                        comment_count: 5,
+                        upvotes: 4,
+                        downvotes: 2,
+                      },
+                      media_artist: media.artist_name,
+                      media_cover: media.cover,
+                    }}
+                  />
+                ))}
+              </View>
             </View>
+<<<<<<< HEAD
           </View>
           <View style={styles.titleContainer}>
             {rating && <ReviewStats rating={rating} reviews={reviews} />}
@@ -155,6 +218,9 @@ export default function MediaPage() {
               />
             ))}
           </View>
+=======
+          )}
+>>>>>>> 4fa3da7c52eb50f581c24e77e7083be0dc74adde
         </ScrollView>
       </View>
     )
@@ -163,7 +229,6 @@ export default function MediaPage() {
 
 const styles = StyleSheet.create({
   scrollView: {
-    paddingHorizontal: 16,
     backgroundColor: "#FFF",
     paddingBottom: 100,
   },
@@ -180,6 +245,13 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     gap: 8,
   },
+  bodyContainer: {
+    marginTop: 16,
+    paddingTop: 32,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    backgroundColor: "#fff",
+  },
 
   buttonContainer: {
     flexDirection: "row",
@@ -190,12 +262,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#000000",
     borderRadius: 8,
     flexGrow: 2,
-    padding: 8,
-  },
-  saveReviewContainer: {
-    backgroundColor: "#444242",
-    borderRadius: 8,
-    flexGrow: 1,
     padding: 8,
   },
 });
