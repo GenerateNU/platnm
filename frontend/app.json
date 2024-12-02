@@ -7,19 +7,30 @@
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/images/splash-transition.gif",
-      "resizeMode": "cover",
-      "backgroundColor": "#000"
-    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos"
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F28037",
+          "image": "./assets/images/icon.png",
+          "imageWidth": 100
+        }
+      ]
+    ],
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.generate.platnm",
       "splash": {
-        "image": "./assets/images/splash-transition.gif",
-        "resizeMode": "cover",
-        "backgroundColor": "#000"
-      },
-      "bundleIdentifier": "com.generate.platnm"
+        "image": "./assets/images/icon.png",
+        "backgroundColor": "#F28037",
+        "imageWidth": 50
+      }
     },
     "android": {
       "adaptiveIcon": {
