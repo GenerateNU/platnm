@@ -500,38 +500,63 @@ func (r *ReviewRepository) ReviewBelongsToUser(ctx context.Context, reviewID str
 	return false, nil
 }
 
-func (r *ReviewRepository) GetReviewsByMediaID(ctx context.Context, id string, mediaType string) ([]*models.Review, error) {
+func (r *ReviewRepository) GetReviewsByMediaID(ctx context.Context, id string, mediaType string) ([]*models.Preview, error) {
 
 	rows, err := r.Query(ctx, `
-	SELECT r.id, r.user_id, r.media_id, r.media_type, r.rating, r.comment, r.created_at, r.updated_at, u.display_name, u.username, u.profile_picture
+	SELECT r.id, r.user_id, r.media_id, r.media_type, r.rating, r.comment, r.created_at, r.updated_at, u.display_name, u.username, u.profile_picture, COALESCE(vote_counts.upvotes, 0) AS upvotes,
+    COALESCE(vote_counts.downvotes, 0) AS downvotes,
+    COALESCE(comment_counts.comments, 0) AS comments_count
 	FROM review r
 	JOIN "user" u ON r.user_id = u.id
+	LEFT JOIN (
+    SELECT 
+        post_id,
+        SUM(CASE WHEN upvote = TRUE THEN 1 ELSE 0 END) AS upvotes,
+        SUM(CASE WHEN upvote = FALSE THEN 1 ELSE 0 END) AS downvotes
+    FROM 
+        user_vote
+		WHERE post_type = 'review'
+    GROUP BY 
+        post_id
+) vote_counts ON r.id = vote_counts.post_id
+LEFT JOIN (
+    SELECT 
+        review_id,
+        COUNT(id) AS comments
+    FROM 
+        comment
+    GROUP BY 
+        review_id
+) comment_counts ON r.id = comment_counts.review_id
 	WHERE media_id = $1 and media_type = $2 
 	ORDER BY updated_at DESC`, id, mediaType)
 
 	if err != nil {
-		return []*models.Review{}, err
+		return []*models.Preview{}, err
 	}
 
 	defer rows.Close()
 
-	var reviews []*models.Review
+	var reviews []*models.Preview
+	var comment sql.NullString
 	for rows.Next() {
-		var review models.Review
+		var review models.Preview
 
-		if err := rows.Scan(
-			&review.ID,
+		if err := rows.Scan(&review.ReviewID,
 			&review.UserID,
-			&review.MediaID,
+			&review.Username,
+			&review.DisplayName,
+			&review.ProfilePicture,
 			&review.MediaType,
+			&review.MediaID,
 			&review.Rating,
-			&review.Comment,
+			&comment, // Scan into comment first
 			&review.CreatedAt,
 			&review.UpdatedAt,
-			&review.DisplayName,
-			&review.Username,
-			&review.ProfilePicture,
-		); err != nil {
+			&review.ReviewStat.Upvotes,
+			&review.ReviewStat.Downvotes,
+			&review.ReviewStat.CommentCount,
+			&review.Tags); err != nil {
 			return nil, err
 		}
 		reviews = append(reviews, &review)
@@ -539,7 +564,7 @@ func (r *ReviewRepository) GetReviewsByMediaID(ctx context.Context, id string, m
 
 	if err := rows.Err(); err != nil {
 		print(err.Error(), "from transactions err ")
-		return []*models.Review{}, err
+		return []*models.Preview{}, err
 	}
 
 	return reviews, nil

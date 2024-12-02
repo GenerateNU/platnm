@@ -45,7 +45,7 @@ type ReviewRepository interface {
 	UpdateReview(ctx context.Context, update *models.Review) (*models.Review, error)
 	GetExistingReview(ctx context.Context, id string) (*models.Review, error)
 	ReviewBelongsToUser(ctx context.Context, reviewID string, userID string) (bool, error)
-	GetReviewsByMediaID(ctx context.Context, id string, media_type string) ([]*models.Review, error)
+	GetReviewsByMediaID(ctx context.Context, id string, media_type string) ([]*models.Preview, error)
 	CreateComment(ctx context.Context, comment *models.Comment) (*models.Comment, error)
 	CommentExists(ctx context.Context, id string) (bool, error)
 	GetUserReviewOfTrack(ctx context.Context, id string, id2 string) (*models.Review, error)
