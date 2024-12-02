@@ -12,6 +12,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { LogBox } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { View } from "react-native";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();

@@ -157,7 +157,7 @@ const CommentComponent: React.FC<CommentProps> = ({ comment }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#FAFAFA",
+    backgroundColor: "#FFF",
     padding: 20,
     width: "100%",
     alignSelf: "center",
