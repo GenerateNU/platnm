@@ -24,7 +24,6 @@ func ResetPassword(cfg *config.Supabase, accessToken, newPassword string) error 
 
 	req, err := http.NewRequest("PUT", apiURL, bytes.NewBuffer(payloadBytes))
 	if err != nil {
-		fmt.Println(fmt.Sprintf("failed to create request: %v", err))
 		return errs.InternalServerError()
 	}
 

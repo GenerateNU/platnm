@@ -31,7 +31,7 @@ function Settings() {
           headers: {
             Authorization: accessToken,
           },
-        },
+        }
       )
       .then(() => {
         AuthContextUtils.updateUsername("");
@@ -83,7 +83,7 @@ function Settings() {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.item}
-          onPress={() => router.push("/reset")}
+          onPress={() => router.push("/ResetPassword")}
         >
           <Text style={styles.itemText}>Reset Password</Text>
         </TouchableOpacity>
