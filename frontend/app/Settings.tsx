@@ -31,7 +31,7 @@ function Settings() {
           headers: {
             Authorization: accessToken,
           },
-        }
+        },
       )
       .then(() => {
         AuthContextUtils.updateUsername("");
