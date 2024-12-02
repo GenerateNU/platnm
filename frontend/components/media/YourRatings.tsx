@@ -27,6 +27,11 @@ const YourRatings = ({ media_id, media_type }: YourRatingsProps) => {
         .catch((error) => console.error(error));
   }, []);
 
+  // Don't display if there are no reviews
+  if (!userReviews || userReviews.length === 0) {
+    return <></>;
+  }
+
   return (
     userId && (
       <TouchableOpacity

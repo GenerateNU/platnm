@@ -128,6 +128,7 @@ const CreateReview = () => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
+      <HeaderComponent title="Log Song" centered />
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <TouchableWithoutFeedback onPress={handleOutsideClick}>
           <View style={styles.inner}>
@@ -136,7 +137,6 @@ const CreateReview = () => {
               onScrollEndDrag={() => setSliderInteracting(false)}
               contentContainerStyle={styles.scrollview}
             >
-              <HeaderComponent title="Log Song" />
               <SongCard
                 mediaName={mediaName}
                 mediaType={mediaType}

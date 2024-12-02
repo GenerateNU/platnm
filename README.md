@@ -15,24 +15,28 @@ This guide assumes that you are using Linux/MacOS. **If you are using Windows, p
 Clone the repository by running `git clone https://github.com/GenerateNU/platnm.git`
 
 ## NIX Installation (Recommended)
+
 1. [Install Nix](https://zero-to-nix.com/start/install)
    <!-- markdownlint-disable MD013 -->
    ```sh
    curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
    ```
    <!-- markdownlint-enable MD013 -->
-  - Type in computer password if prompted
-  - Say yes to prompt
-  
+
+- Type in computer password if prompted
+- Say yes to prompt
+
 2. In a new terminal activate the development environment by running the following:
 
 <!-- markdownlint-disable MD013 -->
-   ```sh
-   nix develop --impure
-   ```
+
+```sh
+nix develop --impure
+```
+
 <!-- markdownlint-enable MD013 -->
 
-
 ### If NIX does not work (Ask TL first)
+
 - Ask Tech Lead for Help first if Nix is not working
 - If all else fails follow the steps in ManualInstall.md

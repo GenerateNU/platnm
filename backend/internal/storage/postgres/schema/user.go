@@ -85,8 +85,27 @@ func (r *UserRepository) FollowExists(ctx context.Context, follower uuid.UUID, f
 }
 
 func (r *UserRepository) Follow(ctx context.Context, follower uuid.UUID, following uuid.UUID) (bool, error) {
+	query := `
+	WITH inserted_follower AS ( 
+		INSERT INTO follower (follower_id, followee_id) VALUES ($1, $2) RETURNING follower_id
+	)
+	SELECT u.username, u.profile_picture FROM "user" u 
+	LEFT JOIN (SELECT * FROM inserted_follower) inserted_follower
+	ON inserted_follower.follower_id = u.id;
+	`
+	var followerUsername string
+	var followerProfilePicture string
+	err := r.db.QueryRow(ctx, query, follower, following).Scan(&followerUsername, &followerProfilePicture)
 
-	_, err := r.db.Exec(ctx, `INSERT INTO follower (follower_id, followee_id) VALUES ($1, $2)`, follower, following)
+	if err != nil {
+		return false, err
+	}
+	// Add a notificaiton for the followee
+	_, err = r.db.Exec(ctx, `
+		INSERT INTO notifications (receiver_id, tagged_entity_id, type, tagged_entity_type, thumbnail_url, tagged_entity_name)
+		VALUES ($1, $2, 'follow', 'user', $3, $4)
+	`, following, follower, followerProfilePicture, followerUsername)
+
 	if err != nil {
 		return false, err
 	}
@@ -595,6 +614,44 @@ func (r *UserRepository) GetUserSectionOptions(ctx context.Context, user_id stri
 	}
 
 	return options, nil
+
+}
+
+func (r *UserRepository) GetNotifications(ctx context.Context, id string) ([]*models.Notification, error) {
+	rows, err := r.db.Query(ctx, `
+	   SELECT * FROM notifications 
+		 WHERE receiver_id = $1
+		 ORDER BY "created_at" DESC
+	`, id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var notifications []*models.Notification
+
+	for rows.Next() {
+		var notification models.Notification
+		if err := rows.Scan(
+			&notification.ID,
+			&notification.Type,
+			&notification.CreatedAt,
+			&notification.ReceiverID,
+			&notification.TaggedEntityID,
+			&notification.TaggedEntityName,
+			&notification.TaggedEntityType,
+			&notification.Thumbnail,
+		); err != nil {
+			return nil, err
+		}
+		notifications = append(notifications, &notification)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return notifications, nil
 
 }
 
