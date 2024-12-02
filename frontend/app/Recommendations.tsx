@@ -25,7 +25,7 @@ export default function RecommendationsScreen() {
       try {
         setIsLoading(true);
         const response = await axios.get(
-          `${BASE_URL}/recommendation/${userId}`
+          `${BASE_URL}/recommendation/${userId}`,
         );
 
         if (response.data) {
