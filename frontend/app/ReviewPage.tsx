@@ -381,6 +381,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
 						) : (
 							<Text style={styles.noReviewsText}>No comments found.</Text>
 						)}
+						<View style={{ paddingVertical: 40 }} />
 					</View>
 				</View>
 			</ScrollView>
@@ -397,12 +398,10 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
 					value={newComment}
 					onChangeText={setNewComment}
 					placeholder='Add a comment...'
-					multiline>
-					<TouchableOpacity style={{ marginRight: 10, width: 24, height: 24 }} onPress={handleCommentSubmit}>
-						<Upload width={24} height={24} style={{ marginLeft: 10, marginRight: 10 }} />
-						<Image source={{ uri: './assets/images/Icons/Vector.png' }} style={{ width: 24, height: 24 }} />
-					</TouchableOpacity>
-				</TextInput>
+					multiline></TextInput>
+				<TouchableOpacity style={{}} onPress={handleCommentSubmit}>
+					<Upload width={16} height={16} style={{ marginLeft: 10, marginRight: 10 }} />
+				</TouchableOpacity>
 			</KeyboardAvoidingView>
 		</View>
 	) : (
@@ -601,7 +600,7 @@ const styles = StyleSheet.create({
 	commentInput: {
 		flex: 1,
 		flexDirection: 'row',
-		height: 40,
+		height: 50,
 		borderRadius: 5,
 		paddingHorizontal: 16,
 		paddingVertical: 16,
