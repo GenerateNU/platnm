@@ -43,9 +43,6 @@ const MediaReviewsPage = () => {
         const response = await axios.get(
           `${BASE_URL}/reviews/${media_type}/${media_id}`,
         );
-        console.log(response.data);
-        console.log('revies');
-        console.log(response.data.reviews);
         setAllReviews(response.data.reviews);
         setMediaStats({
           userScore: 4.2,

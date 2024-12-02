@@ -247,18 +247,39 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
     });
   };
 
+  const handleUserPress = () => {
+    // Navigate to the UserPage when the user is clicked
+    // TODO
+    // router.push({
+    //   pathname: "/UserPage",
+    //   params: { userId: preview.user_id },
+    // });
+  };
+
+  const handleMediaPress = () => {
+    // Navigate to the MediaPage
+    console.log("Media pressed");
+    router.push({
+      pathname: "/MediaPage",
+      params: { mediaId: preview.media_id, mediaType: preview.media_type },
+    });
+  };
+
   return (
+    <TouchableOpacity onPress={handlePreviewPress}>
     <View style={styles.card}>
-      <View style={styles.vinyl}>
-        <Image source={MusicDisk} style={styles.musicDisk} />
-        {preview.media_cover && (
-          <Image
-            source={{ uri: preview.media_cover }}
-            style={styles.mediaCover}
-            resizeMode="cover"
-          />
-        )}
-      </View>
+      <TouchableOpacity onPress={handleMediaPress}>
+        <View style={styles.vinyl}>
+          <Image source={MusicDisk} style={styles.musicDisk} />
+          {preview.media_cover && (
+            <Image
+              source={{ uri: preview.media_cover }}
+              style={styles.mediaCover}
+              resizeMode="cover"
+            />
+          )}
+        </View>
+      </TouchableOpacity>
 
       <View style={styles.container}>
         <View style={styles.topContainer}>
@@ -276,8 +297,10 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
 
         <View style={styles.mediaContainer}>
           <View style={styles.ratingContainer}>
-            <Text style={styles.songName}>{preview.media_title}</Text>
-            <Text style={styles.artistName}>{preview.media_artist}</Text>
+            <TouchableOpacity onPress={handleMediaPress}>
+              <Text style={styles.songName}>{preview.media_title}</Text>
+              <Text style={styles.artistName}>{preview.media_artist}</Text>
+            </TouchableOpacity>
           </View>
 
           <View>
@@ -442,6 +465,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
         </Modal>
       </View>
     </View>
+    </TouchableOpacity>
   );
 };
 
