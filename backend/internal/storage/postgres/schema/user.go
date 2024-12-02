@@ -385,7 +385,7 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 
 }
 
-func (r *UserRepository) GetUserFollowing(ctx context.Context, id uuid.UUID) ([]*models.User, error) {
+func (r *UserRepository) GetUserFollowing(ctx context.Context, id uuid.UUID) ([]*models.Follower, error) {
 	query := `SELECT id, username, email, display_name, bio, profile_picture, linked_account, created_at, updated_at
 	FROM "user" u
 	JOIN follower f ON u.id = f.follower_id
@@ -393,6 +393,37 @@ func (r *UserRepository) GetUserFollowing(ctx context.Context, id uuid.UUID) ([]
 
 	// Execute the query
 	rows, err := r.db.Query(ctx, query, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Create a slice to hold the result
+	var users []*models.Follower
+
+	// Iterate over the rows
+	for rows.Next() {
+		var user models.Follower
+		if err := rows.Scan(&user.ID, &user.Username, &user.Email, &user.DisplayName,
+			&user.Bio, &user.ProfilePicture, &user.LinkedAccount, &user.CreatedAt, &user.UpdatedAt); err != nil {
+				return nil, err
+		}
+		users = append(users, &user)
+	}
+
+	if len(users) == 0 {
+		return nil, errs.NotFound("User", "id", id)
+	}
+
+	// Check for errors that occurred during the iteration.
+	// Necessary because rows.Next() defers errors to rows.Err().
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+} 
+
 func (r *UserRepository) CreateSection(ctx context.Context, sectiontype models.SectionType) (models.SectionType, error) {
 
 	if err := r.db.QueryRow(ctx, `INSERT INTO "section_type" (id, title, search_type) VALUES ($1, $2, $3) RETURNING id`, sectiontype.ID, sectiontype.Title, sectiontype.SearchType).Scan(&sectiontype.ID); err != nil {

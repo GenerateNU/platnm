@@ -25,10 +25,11 @@ const [following, setFollowing] = useState([]);
 useEffect(() => {
   const fetchFollowing = async () => {
     try {
+      console.log(userId);
       const response = await axios.get(
-        `${BASE_URL}/following/${userId}`,
+        `${BASE_URL}/users/following/${userId}`,
       );
-      setFollowing(response.data);
+      //setFollowing(response.data);
     } catch (error) {
       console.error("Error fetching following:", error);
     }
