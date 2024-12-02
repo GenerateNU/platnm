@@ -241,13 +241,14 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
 
   const handleUserPress = () => {
     // Navigate to the UserPage when the user is clicked
-    const pathName = review?.user_id === userId ? "/(tabs)/profile" : "/(tabs)/user";
+    const pathName =
+      review?.user_id === userId ? "/(tabs)/profile" : "/(tabs)/user";
     router.push({
       pathname: pathName,
       params: {
         userId: review?.user_id,
       },
-    })
+    });
   };
 
   const handleMediaPress = () => {
