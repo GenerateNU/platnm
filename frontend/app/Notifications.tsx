@@ -31,7 +31,6 @@ const Notifications = () => {
         const response = await axios.get(
           `${process.env.EXPO_PUBLIC_BASE_URL}/users/notifications/${userId}`,
         );
-        console.log(response.status);
         // TODO: sort into old and new notifications if its older than 7 days
         const notifications = response.data.map((notification: any) => ({
           ...notification,
