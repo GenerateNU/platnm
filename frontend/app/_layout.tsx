@@ -51,6 +51,7 @@ export default function RootLayout() {
             <Stack.Screen name="ReviewPage" />
             <Stack.Screen name="SectionResults" />
             <Stack.Screen name="Recommendations" />
+            <Stack.Screen name="Notifications" />
             <Stack.Screen name="+not-found" />
           </Stack>
         </GestureHandlerRootView>

@@ -109,6 +109,18 @@ func (h *Handler) CalculateScore(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(score)
 }
 
+func (h *Handler) GetNotifications(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	notifications, err := h.userRepository.GetNotifications(c.Context(), id)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(notifications)
+
+}
+
 func (h *Handler) GetUserProfile(c *fiber.Ctx) error {
 	id := c.Params("id")
 
@@ -166,7 +178,6 @@ func (h *Handler) UpdateUserBio(c *fiber.Ctx) error {
 
 	exists, err := h.userRepository.UserExists(c.Context(), id)
 	if err != nil {
-		print(err.Error())
 		return err
 	}
 

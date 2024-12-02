@@ -58,6 +58,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	userHandler := users.NewHandler(repository.User, repository.Playlist, config.Supabase, sessionStore)
 	app.Route("/users", func(r fiber.Router) {
 		r.Get("/", userHandler.GetUsers)
+		r.Get("/:id/connections", userHandler.GetConnections)
 		r.Get("/:id", userHandler.GetUserById)
 		r.Get("/profile/id/:id", userHandler.GetUserProfile)
 		r.Post("/follow", userHandler.FollowUnfollowUser)
@@ -75,6 +76,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Get("/section/:id", userHandler.GetUserSections)
 		r.Get("/section/options/:id", userHandler.GetUserSectionOptions)
 		r.Get("/profile/name/:name", userHandler.GetProfileByName)
+		r.Get("/notifications/:id", userHandler.GetNotifications)
 	})
 
 	app.Route("/reviews", func(r fiber.Router) {
