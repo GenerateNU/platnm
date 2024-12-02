@@ -11,37 +11,13 @@ import HeaderComponent from "@/components/HeaderComponent";
 import NoRecommendations from "@/components/recommendations/NoRecommendations";
 import RecommendationSwipeCard from "@/components/recommendations/RecommendationSwipeCard";
 
-export type RecommendationsCard = {
-  media_type: string;
-  since: string;
-  artist: string;
-  title: string;
-  url: string;
-  id: string;
-  media_id: string;
-};
-
-type RecommendationResponse = {
-  id: number;
-  media_type: string;
-  media_id: string;
-  recommender_id: string;
-  recommender_name: string;
-  recommendee_id: string;
-  created_at: string;
-  reaction: boolean;
-  artist_name: string;
-  title: string;
-  recommender_picture: string;
-  cover: string;
-};
-
 export default function RecommendationsScreen() {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const { userId } = useAuthContext();
-  const [recommendations, setRecommendations] = useState<RecommendationsCard[]>(
-    [],
-  );
+  const [recommendations, setRecommendations] = useState<
+    RecommendationResponse[]
+  >([]);
+  const [currentRecIndex, setCurrentRecIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -53,21 +29,7 @@ export default function RecommendationsScreen() {
         );
 
         if (response.data) {
-          setRecommendations(
-            response.data.map((recommendation: RecommendationResponse) => {
-              return {
-                media_type: recommendation.media_type,
-                since: recommendation.created_at,
-                artist: recommendation.artist_name,
-                title: recommendation.title,
-                url: recommendation.cover,
-                id: recommendation.id,
-                recomender_name: recommendation.recommender_name,
-                recommender_picture: recommendation.recommender_picture,
-                media_id: recommendation.media_id,
-              };
-            }),
-          );
+          setRecommendations(response.data);
         }
         setIsLoading(false);
       } catch (error) {
@@ -78,11 +40,12 @@ export default function RecommendationsScreen() {
     fetchUserProfile();
   }, [userId]);
 
-  const reactToRecommendation = (id: string, reaction: boolean) => {
-    axios.patch(`${BASE_URL}/recommendation/${id}`, {
-      reaction: reaction,
-      user_id: userId,
-    });
+  const reactToRecommendation = (id: number, reaction: boolean) => {
+    setCurrentRecIndex((prev) => prev + 1);
+    // axios.patch(`${BASE_URL}/recommendation/${id}`, {
+    //   reaction: reaction,
+    //   user_id: userId,
+    // });
   };
 
   const addToQueue = async (mediaType: string, id: string) => {
@@ -106,41 +69,36 @@ export default function RecommendationsScreen() {
   return (
     <View style={styles.container}>
       <HeaderComponent title="Recommendations" />
-      <UserRow recomendations={recommendations} />
+      <UserRow
+        recommendations={recommendations}
+        currentRecIndex={currentRecIndex}
+      />
       <View
         style={{
           height: Dimensions.get("window").height * 0.4,
         }}
       >
         <SwipeCards
-          handleYup={(card: RecommendationsCard) => {
+          handleYup={(card: RecommendationResponse) => {
             reactToRecommendation(card.id, true);
             addToQueue(card.media_type, card.media_id);
           }}
-          handleNope={(card: RecommendationsCard) =>
+          handleNope={(card: RecommendationResponse) =>
             reactToRecommendation(card.id, false)
           }
           cards={recommendations}
-          renderCard={({
-            artist,
-            title,
-            media_type,
-            url,
-          }: RecommendationsCard) => {
-            return (
-              <RecommendationSwipeCard
-                artist={artist}
-                title={title}
-                media_type={media_type}
-                url={url}
-              />
-            );
+          renderCard={(card: RecommendationResponse) => {
+            return <RecommendationSwipeCard card={card} />;
           }}
         />
       </View>
+      {/* TODO: BUTTONS ARE NOT FUNCTIONAL */}
       <View style={styles.reactButtonWrapper}>
-        <RatingButton icon={"cross"} />
-        <RatingButton icon={"heart"} />
+        <RatingButton icon={"cross"} handlePress={() => console.log("hit X")} />
+        <RatingButton
+          icon={"heart"}
+          handlePress={() => console.log("hit like")}
+        />
       </View>
     </View>
   );

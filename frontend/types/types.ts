@@ -148,3 +148,18 @@ type RatingDistribution = {
 };
 
 type FilterOption = string;
+
+type RecommendationResponse = {
+  id: number;
+  media_type: string;
+  media_id: string;
+  recommender_id: string;
+  recommender_name: string;
+  recommendee_id: string;
+  created_at: string;
+  reaction: boolean;
+  artist_name: string;
+  title: string;
+  recommender_picture: string;
+  cover: string;
+};

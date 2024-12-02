@@ -11,18 +11,10 @@ import Play from "@/assets/images/Icons/play.svg";
 import Info from "@/assets/images/Icons/info.svg";
 
 export type RecommendationSwipeCardProps = {
-  title: string;
-  artist: string;
-  media_type: string;
-  url: string;
+  card: RecommendationResponse;
 };
 
-const RecommendationSwipeCard = ({
-  title,
-  artist,
-  media_type,
-  url,
-}: RecommendationSwipeCardProps) => {
+const RecommendationSwipeCard = ({ card }: RecommendationSwipeCardProps) => {
   return (
     <View
       style={{
@@ -31,7 +23,7 @@ const RecommendationSwipeCard = ({
     >
       <View style={styles.swipeContainer} />
       <ImageBackground
-        source={{ uri: url }}
+        source={{ uri: card.cover }}
         imageStyle={{
           borderRadius: 16,
         }}
@@ -40,9 +32,11 @@ const RecommendationSwipeCard = ({
         <View style={styles.cardBottom}>
           <View style={{ flexDirection: "row" }}>
             <View style={{ padding: 20 }}>
-              <Text style={{ color: "white", fontSize: 16 }}>{title}</Text>
+              <Text style={{ color: "white", fontSize: 16 }}>{card.title}</Text>
               <View style={{ flexDirection: "row", gap: 10 }}>
-                <Text style={{ color: "#fff7", fontSize: 14 }}>{artist}</Text>
+                <Text style={{ color: "#fff7", fontSize: 14 }}>
+                  {card.artist_name}
+                </Text>
                 <View
                   style={{
                     width: 5,
@@ -53,7 +47,7 @@ const RecommendationSwipeCard = ({
                   }}
                 />
                 <Text style={{ color: "#fff7", fontSize: 14 }}>
-                  {media_type}
+                  {card.media_type}
                 </Text>
               </View>
             </View>
