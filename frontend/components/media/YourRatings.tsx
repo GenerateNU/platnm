@@ -44,7 +44,7 @@ const YourRatings = ({ media_id, media_type }: YourRatingsProps) => {
               media_id: media_id,
               user_id: userId,
               media_type: media_type,
-              filter: "user",
+              filter: "you",
             },
           })
         }

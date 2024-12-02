@@ -29,6 +29,7 @@ type UserRepository interface {
 	DeleteSection(ctx context.Context, section_type_item models.SectionTypeItem) error
 	GetUserSections(ctx context.Context, id string) ([]models.UserSection, error)
 	GetUserSectionOptions(ctx context.Context, id string) ([]models.SectionOption, error)
+	GetConnections(ctx context.Context, id uuid.UUID, limit int, offset int) (models.Connections, error)
 
 	GetProfileByName(ctx context.Context, name string) ([]*models.Profile, error)
 	GetNotifications(ctx context.Context, id string) ([]*models.Notification, error)
