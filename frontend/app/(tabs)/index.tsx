@@ -22,7 +22,6 @@ export default function HomeScreen() {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
   const fetchFeedReviews = async () => {
-    console.log(BASE_URL);
     try {
       const response = await axios.get(`${BASE_URL}/users/feed/${userId}`);
       setFeedReviews(response.data.slice(0, 20));

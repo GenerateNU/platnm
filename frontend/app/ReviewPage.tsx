@@ -1,7 +1,7 @@
 import HeaderComponent from "@/components/HeaderComponent";
 import CommentComponent from "@/components/CommentComponent";
 import axios from "axios";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -239,6 +239,26 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
     fetchVote();
   }, [review_id, userId, newComment]);
 
+  const handleUserPress = () => {
+    // Navigate to the UserPage when the user is clicked
+    const pathName = review?.user_id === userId ? "/(tabs)/profile" : "/(tabs)/user";
+    router.push({
+      pathname: pathName,
+      params: {
+        userId: review?.user_id,
+      },
+    })
+  };
+
+  const handleMediaPress = () => {
+    // Navigate to the MediaPage
+    console.log("Media pressed");
+    router.push({
+      pathname: "/MediaPage",
+      params: { mediaId: review?.media_id, mediaType: review?.media_type },
+    });
+  };
+
   return review ? (
     <View style={styles.container}>
       <HeaderComponent title="Review" />
@@ -257,22 +277,26 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
                 </View>
               </View>
             </View>
-            <View style={styles.vinyl}>
-              <Image source={MusicDisk} style={styles.musicDisk} />
-              {review.media_cover && (
-                <Image
-                  source={{ uri: review.media_cover }} // Use uri for remote images
-                  style={styles.mediaCover}
-                  resizeMode="cover"
-                />
-              )}
-            </View>
+            <TouchableOpacity onPress={handleMediaPress} style={styles.vinyl}>
+              <View style={styles.vinyl}>
+                <Image source={MusicDisk} style={styles.musicDisk} />
+                {review.media_cover && (
+                  <Image
+                    source={{ uri: review.media_cover }} // Use uri for remote images
+                    style={styles.mediaCover}
+                    resizeMode="cover"
+                  />
+                )}
+              </View>
+            </TouchableOpacity>
           </View>
           <View style={styles.mediaContainer}>
-            <View style={styles.ratingContainer}>
-              <Text style={styles.songName}>{review.media_title}</Text>
-              <Text style={styles.artistName}>{review.media_artist}</Text>
-            </View>
+            <TouchableOpacity onPress={handleMediaPress}>
+              <View style={styles.ratingContainer}>
+                <Text style={styles.songName}>{review.media_title}</Text>
+                <Text style={styles.artistName}>{review.media_artist}</Text>
+              </View>
+            </TouchableOpacity>
           </View>
 
           <View style={styles.rating}>
@@ -343,17 +367,13 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
           )}
           {/* Tags Section */}
           {review.tags && review.tags.length > 0 && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.tagsContainer}
-            >
+            <View style={styles.tagsContainer}>
               {review.tags.map((tag, index) => (
                 <View key={index} style={styles.tag}>
                   <Text style={styles.tagText}>{tag}</Text>
                 </View>
               ))}
-            </ScrollView>
+            </View>
           )}
 
           {/* Action Buttons */}
@@ -528,6 +548,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingVertical: 15,
     minHeight: 60, // Change from fixed height to minHeight
+    flexWrap: "wrap", // Allows wrapping to a new line
+    gap: 8, // Space between tags
   },
 
   tag: {
@@ -538,7 +560,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     borderWidth: 1,
     borderColor: "#C0C0C0",
-    marginBottom: 10,
     minHeight: 25, // Change from height to minHeight
     justifyContent: "center", // Add this
   },

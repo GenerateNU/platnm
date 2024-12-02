@@ -249,11 +249,13 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
 
   const handleUserPress = () => {
     // Navigate to the UserPage when the user is clicked
-    // TODO
-    // router.push({
-    //   pathname: "/UserPage",
-    //   params: { userId: preview.user_id },
-    // });
+    const pathName = preview.user_id === userId ? "/(tabs)/profile" : "/(tabs)/user";
+    router.push({
+      pathname: pathName,
+      params: {
+        userId: preview.user_id,
+      },
+    })
   };
 
   const handleMediaPress = () => {
@@ -268,7 +270,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
   return (
     <TouchableOpacity onPress={handlePreviewPress}>
     <View style={styles.card}>
-      <TouchableOpacity onPress={handleMediaPress}>
+      <TouchableOpacity onPress={handleMediaPress} style={styles.vinyl}>
         <View style={styles.vinyl}>
           <Image source={MusicDisk} style={styles.musicDisk} />
           {preview.media_cover && (
@@ -282,18 +284,20 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
       </TouchableOpacity>
 
       <View style={styles.container}>
-        <View style={styles.topContainer}>
-          <View style={styles.leftSection}>
-            <Image
-              style={styles.profilePicture}
-              source={{ uri: preview.profile_picture }}
-            />
-            <View style={styles.textContainer}>
-              <Text style={styles.displayName}>{preview.display_name}</Text>
-              <Text style={styles.username}>@{preview.username}</Text>
+        <TouchableOpacity onPress={handleUserPress}>
+          <View style={styles.topContainer}>
+            <View style={styles.leftSection}>
+              <Image
+                style={styles.profilePicture}
+                source={{ uri: preview.profile_picture }}
+              />
+              <View style={styles.textContainer}>
+                <Text style={styles.displayName}>{preview.display_name}</Text>
+                <Text style={styles.username}>@{preview.username}</Text>
+              </View>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
 
         <View style={styles.mediaContainer}>
           <View style={styles.ratingContainer}>
@@ -315,17 +319,13 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
       </View>
 
       {preview.tags && preview.tags.length > 0 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.tagsContainer}
-        >
+        <View style={styles.tagsContainer}>
           {preview.tags.map((tag, index) => (
             <View key={index} style={styles.tag}>
               <Text style={styles.tagText}>{tag}</Text>
             </View>
           ))}
-        </ScrollView>
+        </View>
       )}
 
       <TouchableOpacity onPress={handlePreviewPress}>
@@ -491,6 +491,8 @@ const styles = StyleSheet.create({
     top: 0,
     right: 0,
     alignItems: "center",
+    paddingLeft: 100,
+    paddingBottom: 100,
   },
   musicDisk: {
     position: "absolute",
@@ -580,8 +582,9 @@ const styles = StyleSheet.create({
   },
   tagsContainer: {
     flexDirection: "row",
-    marginBottom: 10,
-    paddingHorizontal: 5,
+    flexWrap: "wrap", // Allows wrapping to a new line
+    marginVertical: 8,
+    gap: 8, // Space between tags
   },
   tag: {
     backgroundColor: "rgba(242, 128, 55, 0.65)",
