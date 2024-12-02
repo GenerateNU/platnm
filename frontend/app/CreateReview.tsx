@@ -178,14 +178,14 @@ const CreateReview = () => {
               </View>
             </ScrollView>
             {showNudges && (
-            <NudgePage      
-              media_type={mediaType}
-              media_id={mediaId}
-              title={mediaName}
-              artist_name={artistName}
-              cover={cover}
-            />
-          )}
+              <NudgePage
+                media_type={mediaType}
+                media_id={mediaId}
+                title={mediaName}
+                artist_name={artistName}
+                cover={cover}
+              />
+            )}
           </View>
         </TouchableWithoutFeedback>
       </TouchableWithoutFeedback>

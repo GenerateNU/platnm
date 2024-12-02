@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import axios from "axios";
 import { useAuthContext } from "@/components/AuthProvider";
 
@@ -39,10 +33,14 @@ const NudgePage: React.FC<NudgePageProps> = ({
     const fetchFollowing = async () => {
       try {
         console.log(userId);
-        const response = await axios.get(`${BASE_URL}/users/following/${userId}`);
-        
+        const response = await axios.get(
+          `${BASE_URL}/users/following/${userId}`,
+        );
+
         const mappedProfiles = response.data.map((user: any) => ({
-          profile_picture: user.ProfilePicture?.Valid ? user.ProfilePicture.String : null,
+          profile_picture: user.ProfilePicture?.Valid
+            ? user.ProfilePicture.String
+            : null,
           name: user.DisplayName || user.Username,
           id: user.ID,
         }));
@@ -68,8 +66,9 @@ const NudgePage: React.FC<NudgePageProps> = ({
         recommender_id: userId,
         recommender_username: username,
         recommender_name: username, // Replace with displayname
-        recommender_picture: "https://t3.ftcdn.net/jpg/03/64/62/36/360_F_364623623_ERzQYfO4HHHyawYkJ16tREsizLyvcaeg.jpg",
-        reaction: null, 
+        recommender_picture:
+          "https://t3.ftcdn.net/jpg/03/64/62/36/360_F_364623623_ERzQYfO4HHHyawYkJ16tREsizLyvcaeg.jpg",
+        reaction: null,
         created_at: new Date().toISOString(), // Current timestamp
       };
 
@@ -95,13 +94,13 @@ const NudgePage: React.FC<NudgePageProps> = ({
             <View style={styles.artist}>
               <Image
                 source={{
-                  uri: user.profile_picture || "https://t3.ftcdn.net/jpg/03/64/62/36/360_F_364623623_ERzQYfO4HHHyawYkJ16tREsizLyvcaeg.jpg",
+                  uri:
+                    user.profile_picture ||
+                    "https://t3.ftcdn.net/jpg/03/64/62/36/360_F_364623623_ERzQYfO4HHHyawYkJ16tREsizLyvcaeg.jpg",
                 }}
                 style={styles.artistCircle}
               />
-              <Text style={styles.artistName}>
-                {user.name}
-              </Text>
+              <Text style={styles.artistName}>{user.name}</Text>
             </View>
           </TouchableOpacity>
         ))}
