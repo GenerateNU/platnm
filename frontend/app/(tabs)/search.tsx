@@ -55,14 +55,14 @@ const SearchPage: React.FC = () => {
     try {
       const [songsResponse, albumsResponse, profilesResponse] =
         await Promise.all([
-          axios.get(`${BASE_URL}/media/${query}`),
-          axios.get(`${BASE_URL}/media/${query}`),
+          axios.get(`${BASE_URL}/media/${query}?media_type=track`),
+          axios.get(`${BASE_URL}/media/${query}?media_type=album`),
           axios.get(`${BASE_URL}/users/profile/name/${query}`),
         ]);
 
       setSearchResults({
-        songs: songsResponse.data,
-        albums: albumsResponse.data,
+        songs: songsResponse.data ?? [],
+        albums: albumsResponse.data ?? [],
         profiles: profilesResponse.data,
       });
       setIsSearchActive(true);
@@ -79,6 +79,7 @@ const SearchPage: React.FC = () => {
       <SearchBar onSearch={handleSearch} />
 
       {isSearchActive ? (
+        console.log(searchResults.profiles),
         <SearchResults
           songs={searchResults.songs}
           albums={searchResults.albums}

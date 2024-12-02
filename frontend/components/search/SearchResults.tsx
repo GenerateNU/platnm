@@ -8,8 +8,8 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import SongCard from "@/components/SongCard";
 
 interface SearchResultsProps {
-  songs: MediaResponse[];
-  albums: MediaResponse[];
+  songs: Media[];
+  albums: Media[];
   profiles: UserProfile[];
   isLoading: boolean;
   filter: "all" | "songs" | "albums" | "profile";
@@ -27,11 +27,9 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     return <Text style={styles.loadingText}>Searching...</Text>;
   }
 
-  if (songs.length === 0 && albums.length === 0 && profiles.length == 0) {
+  if (songs.length === null && albums.length === null && profiles.length === null) {
     return <Text style={styles.noResults}>No results found</Text>;
   }
-
-  const filterOptions = ["all", "songs", "albums", "profile"];
 
   const [selectedFilter, setSelectedFilter] = useState<FilterOption>("all");
 
@@ -43,7 +41,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     <View style={styles.container}>
       <Filter
         currentFilter={selectedFilter}
-        filterOptions={filterOptions}
+        filterOptions={["all", "songs", "albums", "profile"]}
         onFilterChange={handleFilterChange}
       />
       <View style={styles.resultGrid}>
@@ -60,26 +58,27 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                 <Text style={styles.title}>Profiles</Text>
               )}
               <View style={styles.profileContainer}>
-                {profiles === null ? (
+                {profiles == null || profiles.length === 0  ? (
                   <Text style={styles.noResults}>No profiles found</Text>
                 ) : selectedFilter === "all" ? (
+                  console.log(profiles[0]),
                   profiles
                     .slice(0, 2)
-                    .map((profile) => (
+                    .map((profile, idx) => (
                       <ProfileChip
+                        key = {idx}
                         display_name={profile.display_name}
                         profile_picture={profile.profile_picture}
                         id={profile.id}
-                        key={profile.id}
                       />
                     ))
                 ) : (
-                  profiles.map((profile) => (
+                  profiles.map((profile, idx) => (
                     <ProfileChip
+                      key = {idx}
                       display_name={profile.display_name}
                       profile_picture={profile.profile_picture}
                       id={profile.id}
-                      key={profile.id}
                     />
                   ))
                 )}
@@ -98,7 +97,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
               ) : (
                 <Text style={styles.title}>Songs</Text>
               )}
-              {selectedFilter === "songs" ? (
+              {songs.length === 0 ? ( <Text style={styles.noResults}>No songs found</Text>): selectedFilter === "songs" ? (
                 <View
                   style={{
                     flexDirection: "row",
@@ -107,16 +106,17 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                     paddingHorizontal: 16,
                   }}
                 >
-                  {songs?.map((song) => (
+                  {songs?.map((song, idx) => (
                     <View
                       style={{ width: "48%", marginBottom: 16 }}
-                      key={song.media.id}
                     >
-                      <SongCard
-                        mediaName={song.media.title}
-                        mediaType="Song"
-                        artistName={song.media.artist_name}
-                        cover={song.media.cover}
+                     <AlbumSearchCard
+                        type ={"Song"}
+                        key = {idx}
+                        id={song.id}
+                        artist_name={song.artist_name}
+                        album_name={song.title}
+                        cover={song.cover}
                       />
                     </View>
                   ))}
@@ -130,20 +130,21 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                     }}
                   >
                     <View style={styles.gridContainer}>
-                      {songs?.slice(0, 9).map((song, id) => (
-                        <View style={styles.gridItem} key={song.media.id}>
+                      {songs?.slice(0, 9).map((song, idx) => (
+                        <View style={styles.gridItem}>
                           <SongChip
-                            id={song.media.id}
-                            title={song.media.title}
-                            artist_name={song.media.artist_name}
-                            cover={song.media.cover}
+                            key = {idx}
+                            id={song.id}
+                            title={song.title}
+                            artist_name={song.artist_name}
+                            cover={song.cover}
                           />
                         </View>
                       ))}
                     </View>
                   </View>
                 </ScrollView>
-              )}
+              )}            
             </View>
           )}
           {(selectedFilter === "all" || selectedFilter === "albums") && (
@@ -165,53 +166,21 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                   paddingHorizontal: 16,
                 }}
               >
-                {(selectedFilter === "all" ? albums?.slice(0, 2) : albums)?.map(
-                  (album) => (
-                    <View style={styles.albumsList} key={album.media.id}>
+                {songs.length === 0 ? ( <Text style={styles.noResults}>No albums found</Text>): (selectedFilter === "all" ? albums.slice(0, 2) : albums)?.map(
+                  (album, idx) => (
+                    <View style={styles.albumsList} >
                       <AlbumSearchCard
-                        id={album.media.id}
-                        artist_name={album.media.artist_name}
-                        album_name={album.media.title}
-                        cover={album.media.cover}
+                        type = {"album"}
+                       key = {idx}
+                        id={album.id}
+                        artist_name={album.artist_name}
+                        album_name={album.title}
+                        cover={album.cover}
                       />
                     </View>
                   )
                 )}
               </View>
-            </View>
-          )}
-
-          {(selectedFilter === "all" || selectedFilter === "songs") && (
-            <View style={styles.albumsList}>
-              <Text style={styles.title}>Albums</Text>
-
-              {albums.map((album, index) => (
-                <AlbumSearchCard
-                  id={album.media.id}
-                  key={album.media.id}
-                  rank={index + 1}
-                  artist_name={album.media.artist_name}
-                  album_name={album.media.title}
-                  cover={album.media.cover}
-                />
-              ))}
-            </View>
-          )}
-          {(selectedFilter === "all" || selectedFilter === "songs") && (
-            <View style={styles.songsList}>
-              <Text style={styles.title}>Songs</Text>
-              <ScrollView>
-                {songs?.map((song, index) => (
-                  <SongChip
-                    key={index}
-                    rank={index + 1}
-                    id={song.media.id}
-                    title={song.media.title}
-                    artist_name={song.media.artist_name}
-                    cover={song.media.cover}
-                  />
-                ))}
-              </ScrollView>
             </View>
           )}
         </ScrollView>

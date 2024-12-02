@@ -8,6 +8,7 @@ interface AlbumSearchCardProps {
   artist_name: string;
   album_name: string;
   cover: string;
+  type?: string;
 }
 
 const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({
@@ -16,18 +17,18 @@ const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({
   artist_name,
   album_name,
   cover,
+  type,
 }) => {
   const placeholderImage =
     "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png";
-
-  return (
+    return (
     <TouchableOpacity
       style={styles.cardContainer}
       onPress={() =>
         router.push({
           pathname: "/MediaPage",
           params: {
-            mediaType: "album",
+            mediaType: type === "Song" ? "track" : "album",
             mediaId: id,
           },
         })
@@ -45,7 +46,6 @@ const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({
           />
         </View>
 
-        {/* Record Image */}
         <View style={styles.recordContainer}>
           <Image
             source={require("@/assets/images/Profile/record.png")}
@@ -54,14 +54,23 @@ const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({
         </View>
       </View>
 
-      {/* Album and Artist Name */}
       <Text style={styles.albumName}>{album_name}</Text>
       <Text style={styles.artistName}>{artist_name}</Text>
+      {type && <Text style={styles.type}>{type === "album" ? "Album" : type === "Song" ? "Song": ""}</Text>}
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
+  type: {
+    fontSize: 15,
+    color: "#9E9E9E",
+    marginTop: 2,
+    textAlign: "left",
+    marginLeft: 24,
+    fontStyle: "italic",
+  },
+  
   cardContainer: {
     alignItems: "flex-start",
     marginRight: 25,
@@ -69,23 +78,23 @@ const styles = StyleSheet.create({
     width: 140,
   },
   albumContainer: {
-    flexDirection: "row", // Set horizontal layout to align rank and cover side-by-side
-    alignItems: "center", // Align items vertically centered
-    position: "relative",
+    flexDirection: "row", 
+      alignItems: "flex-start",    position: "relative",
+    justifyContent: "flex-start"
   },
   rank: {
     color: "#000",
     fontSize: 18,
     fontWeight: "600",
     lineHeight: 20,
-    marginRight: 6, // Spacing between rank and cover image
+    marginRight: 6, 
     marginTop: -85,
   },
   coverContainer: {
-    zIndex: 2, // Ensure cover is on top
+    zIndex: 2, 
   },
   recordContainer: {
-    position: "absolute", // Position record on top of cover
+    position: "absolute",
     bottom: 5,
     left: "50%",
     transform: [{ translateX: 0 }],

@@ -5,7 +5,7 @@ type FilterOption = "all" | "songs" | "albums" | "profile";
 
 interface FilterProps {
   currentFilter: FilterOption;
-  filterOptions: String[];
+  filterOptions: FilterOption[];
   onFilterChange: (filter: FilterOption) => void;
 }
 
