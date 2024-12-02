@@ -39,14 +39,14 @@ export default function ProfileScreen() {
   useFocusEffect(
     useCallback(() => {
       if (!userId) router.push("/(tabs)/login");
-    }, [userId])
+    }, [userId]),
   );
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
         const response = await axios.get(
-          `${BASE_URL}/users/profile/id/${userId}`
+          `${BASE_URL}/users/profile/id/${userId}`,
         );
         const profile = {
           id: response.data.user_id,
@@ -86,7 +86,7 @@ export default function ProfileScreen() {
     const fetchSectionOptions = async () => {
       try {
         const response = await axios.get(
-          `${BASE_URL}/users/section/options/${userId}`
+          `${BASE_URL}/users/section/options/${userId}`,
         );
         setOptions(response.data);
       } catch (error) {
@@ -135,7 +135,7 @@ export default function ProfileScreen() {
       search_type: option.search_type,
     };
     setOptions((prevOptions) =>
-      prevOptions.filter((item) => item.title !== option.title)
+      prevOptions.filter((item) => item.title !== option.title),
     );
     setSections([...(sections || []), newSection]);
     setNextId(nextId + 1);
@@ -162,7 +162,7 @@ export default function ProfileScreen() {
           };
         }
         return section;
-      })
+      }),
     );
   };
 
@@ -174,8 +174,8 @@ export default function ProfileScreen() {
               ...section,
               items: section.items.filter((item) => item.id !== itemId),
             }
-          : section
-      )
+          : section,
+      ),
     );
 
     axios.delete(`${BASE_URL}/users/section/item`, {
@@ -189,7 +189,7 @@ export default function ProfileScreen() {
 
   const handleDeleteSection = (id: number) => {
     const sectionToDelete = sections.find(
-      (section) => section.section_id === id
+      (section) => section.section_id === id,
     );
     if (sectionToDelete) {
       setOptions([

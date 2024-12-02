@@ -20,22 +20,29 @@ function Settings() {
   const [recommendations, setRecommendations] = useState(false);
   const [reviewInteractions, setReviewInteractions] = useState(true);
   const [hideActivity, setHideActivity] = useState(false);
-  const { username, accessToken, sessionToken, userId } = useAuthContext();
+  const { accessToken, ...AuthContextUtils } = useAuthContext();
 
   async function handleSignOut() {
-    console.log("TOKEN:", accessToken); //curr showing undefined
-    console.log("\n", username); // curr showing ""
-    console.log("\n", userId);
-    // WHY IS THIS UNDEFINED ABOVE?
     axios
-      .post(`${BASE_URL}/auth/platnm/signout`, {
-        Authorization: accessToken,
-      })
+      .post(
+        `${BASE_URL}/auth/platnm/signout`,
+        {},
+        {
+          headers: {
+            Authorization: accessToken,
+          },
+        },
+      )
       .then((response) => {
         console.log(response.data);
+        AuthContextUtils.updateUsername("");
+        AuthContextUtils.updateSession("");
+        AuthContextUtils.updateAccessToken("");
+        AuthContextUtils.updateUserId("");
         router.push("/(tabs)/login");
-      }).catch((error) => {
-        console.log(error)
+      })
+      .catch((error) => {
+        console.log(error);
       });
   }
 

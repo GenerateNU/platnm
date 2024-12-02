@@ -37,7 +37,7 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       if (userId) fetchFeedReviews();
-    }, [userId])
+    }, [userId]),
   );
 
   const handleNotifPress = () => {

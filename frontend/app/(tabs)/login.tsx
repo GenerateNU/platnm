@@ -18,8 +18,14 @@ import { router } from "expo-router";
 import { access } from "fs";
 
 export default function Login() {
-  const { sessionToken, accessToken, updateAccessToken, updateSession, updateUserId, updateUsername } =
-    useAuthContext();
+  const {
+    sessionToken,
+    accessToken,
+    updateAccessToken,
+    updateSession,
+    updateUserId,
+    updateUsername,
+  } = useAuthContext();
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
   const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;

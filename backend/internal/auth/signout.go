@@ -8,7 +8,6 @@ import (
 	"platnm/internal/errs"
 )
 
-// func SignOut(cfg *config.Supabase, accessToken string) error {
 func SignOut(cfg *config.Supabase, token string) error {
 	apiKey := cfg.Key
 	apiURL := fmt.Sprintf("%s/auth/v1/logout?scope=global", cfg.URL)
@@ -33,11 +32,9 @@ func SignOut(cfg *config.Supabase, token string) error {
 		return errs.BadRequest("failed to read response body")
 	}
 
-	// Check if the request was successful
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != 204 {
 		return errs.BadRequest(fmt.Sprintf("sign out failed with status %d: %s", resp.StatusCode, body))
 	}
 
-	// If successful, return nil
 	return nil
 }

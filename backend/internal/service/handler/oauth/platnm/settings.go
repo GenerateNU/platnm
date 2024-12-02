@@ -4,7 +4,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"platnm/internal/auth"
 	"platnm/internal/errs"
-	"strings"
 )
 
 func (h *Handler) ResetPassword(c *fiber.Ctx) error {
@@ -33,7 +32,6 @@ func (h *Handler) ResetPassword(c *fiber.Ctx) error {
 
 func (h *Handler) SignOut(c *fiber.Ctx) error {
 	bearerToken := c.Get("Authorization")
-	bearerToken = strings.TrimPrefix(bearerToken, "Bearer ")
 	err := auth.SignOut(&h.config, bearerToken)
 	if err != nil {
 		return err
