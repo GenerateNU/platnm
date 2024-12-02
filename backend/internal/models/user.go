@@ -2,8 +2,7 @@ package models
 
 import ( 
 	"time"
-"database/sql"
-
+	"database/sql"
 )
 
 type User struct {
