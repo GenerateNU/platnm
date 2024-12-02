@@ -11,12 +11,14 @@ import { RatingButton } from "@/components/RatingButton";
 import SwipeCards from "react-native-swipe-cards";
 import { ImageBackground } from "react-native";
 import axios from "axios";
+import { router } from "expo-router";
 
 import Play from "@/assets/images/Icons/play.svg";
 import Info from "@/assets/images/Icons/info.svg";
 import { TouchableOpacity } from "react-native";
 import { useAuthContext } from "@/components/AuthProvider";
 import HeaderComponent from "@/components/HeaderComponent";
+import Ghost from "@/assets/images/Recommendation/empty-rec.svg";
 
 export type RecommendationsCard = {
   songType: string;
@@ -96,14 +98,56 @@ export default function RecommendationsScreen() {
   const addToQueue = async (id: string) => {
     // need to pass the track itself not just the id
     const { data } = await axios.get(`${BASE_URL}/media/track/${id}`);
-    console.log("track");
-    console.log(data);
     const add = await axios.post(`${BASE_URL}/playlist/${userId}`, {
       ...data,
     });
-    console.log("add");
-    console.log(add);
   };
+
+  if (reccomendations.length === 0) {
+    return (
+      <View
+        style={{
+          backgroundColor: "#fff",
+          minHeight: Dimensions.get("window").height,
+        }}
+      >
+        <HeaderComponent title="Recommendations" />
+        <View
+          style={{
+            marginTop: 64,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Ghost />
+        </View>
+        <View>
+          <Text
+            style={{
+              fontWeight: "bold",
+              fontSize: 24,
+              textAlign: "center",
+            }}
+          >
+            Your friends are on mute!
+          </Text>
+          <View style={styles.emptyWrapper}>
+            <Text style={styles.emptyText}>Guess you’re the DJ now—</Text>
+            <Text style={styles.emptyText}>hope you have good taste!</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.exploreButton}
+            onPress={() => {
+              router.push("/search");
+            }}
+          >
+            <Text style={styles.exploreText}>Explore Music</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View
       style={{
@@ -112,6 +156,7 @@ export default function RecommendationsScreen() {
       }}
     >
       <HeaderComponent title="Recommendations" />
+
       <UserRow recomendations={reccomendations} />
       <View
         style={{
@@ -207,6 +252,29 @@ export default function RecommendationsScreen() {
 }
 
 const styles = StyleSheet.create({
+  emptyText: {
+    textAlign: "center",
+    fontWeight: 300,
+    fontSize: 20,
+  },
+  emptyWrapper: {
+    marginTop: 16,
+  },
+  exploreText: {
+    color: "#475569",
+    fontWeight: "bold",
+    fontSize: 16,
+    textAlign: "center",
+  },
+  exploreButton: {
+    padding: 8,
+    borderRadius: 12,
+    borderColor: "#D0D5DD",
+    borderWidth: 1,
+    width: 156,
+    margin: "auto",
+    marginTop: 32,
+  },
   headerImage: {
     color: "#808080",
     bottom: -90,

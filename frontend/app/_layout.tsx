@@ -53,6 +53,10 @@ export default function RootLayout() {
               options={{ headerShown: false }}
             />
             <Stack.Screen name="MediaPage" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="MediaReviewsPage"
+              options={{ headerShown: false }}
+            />
             <Stack.Screen name="Settings" options={{ headerShown: false }} />
             <Stack.Screen name="Activity" options={{ headerShown: false }} />
             <Stack.Screen name="OnQueue" options={{ headerShown: false }} />
@@ -61,13 +65,16 @@ export default function RootLayout() {
               name="ForgotPassword"
               options={{ headerShown: false }}
             />
-
             <Stack.Screen
               name="SectionResults"
               options={{ headerShown: false }}
             />
             <Stack.Screen
               name="Recommendations"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Notifications"
               options={{ headerShown: false }}
             />
             <Stack.Screen name="+not-found" />

@@ -7,19 +7,27 @@ import {
   View,
 } from "react-native";
 import { router } from "expo-router";
-
+import Back from "@/assets/images/Icons/Back.svg";
 interface HeaderComponentProps {
   title: string;
+  centered?: boolean;
 }
 
-const HeaderComponent: React.FC<HeaderComponentProps> = ({ title }) => {
+const HeaderComponent: React.FC<HeaderComponentProps> = ({
+  title,
+  centered = false,
+}) => {
   return (
-    <SafeAreaView style={styles.headerContainer}>
+    <SafeAreaView
+      style={centered ? styles.containerCentered : styles.headerContainer}
+    >
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-        <Text style={styles.backText}>Back</Text>
+        <Back />
       </TouchableOpacity>
-      <View style={styles.titleContainer}>
-        <Text style={styles.headerTitle}>{title}</Text>
+      <View>
+        <Text style={centered ? styles.headerTitleCenter : styles.headerTitle}>
+          {title}
+        </Text>
       </View>
       <View style={styles.spacer} />
     </SafeAreaView>
@@ -29,30 +37,47 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({ title }) => {
 const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
     backgroundColor: "#fff",
+    width: "100%",
     padding: 15,
+    marginTop: 56,
+    gap: 24,
+    alignItems: "flex-start",
+  },
+  containerCentered: {
+    marginTop: 0,
+    alignItems: "center",
+    flexDirection: "row",
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    height: 100,
+    display: "flex",
+  },
+  headerTitleCenter: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#434343",
+    borderRadius: 5,
+    padding: 5,
+    textAlign: "center",
   },
   backButton: {
-    flex: 1,
+    padding: 4,
+    marginLeft: 20,
   },
   backText: {
     color: "#B7B6B6",
     fontSize: 16,
     marginLeft: 20,
   },
-  titleContainer: {
-    flex: 2,
-    alignItems: "center",
-  },
+  titleContainer: {},
   headerTitle: {
-    fontSize: 22,
+    fontSize: 16,
     fontWeight: "bold",
     color: "#434343",
-    fontFamily: "Roboto",
     borderRadius: 5,
     padding: 5,
+    textAlign: "left",
   },
   spacer: {
     flex: 1,

@@ -13,6 +13,21 @@ interface Album {
   artist_photo: string;
 }
 
+enum NotificationType {
+  Follow = "follow",
+}
+
+type CustomNotification = {
+  id: number;
+  tagged_entity_name: string;
+  tagged_entity_type: string;
+  tagged_entity_id: string;
+  thumbnail: string;
+  created_at: string;
+  read: boolean;
+  type: NotificationType;
+};
+
 interface Track {
   media: MediaType;
   id: number;

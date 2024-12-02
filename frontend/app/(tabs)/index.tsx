@@ -41,7 +41,7 @@ export default function HomeScreen() {
   );
 
   const handleNotifPress = () => {
-    console.log("Notif icon pressed");
+    router.push("/Notifications");
   };
 
   const handleMusicPress = () => router.push("/Recommendations");
