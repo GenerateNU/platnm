@@ -593,14 +593,14 @@ func (r *UserRepository) GetNotifications(ctx context.Context, id string) ([]*mo
 	for rows.Next() {
 		var notification models.Notification
 		if err := rows.Scan(
-			&notification.ID,               
-			&notification.Type,             
-			&notification.CreatedAt,        
-			&notification.ReceiverID,       
-			&notification.TaggedEntityID,   
-			&notification.TaggedEntityName, 
-			&notification.TaggedEntityType, 
-			&notification.Thumbnail,        
+			&notification.ID,
+			&notification.Type,
+			&notification.CreatedAt,
+			&notification.ReceiverID,
+			&notification.TaggedEntityID,
+			&notification.TaggedEntityName,
+			&notification.TaggedEntityType,
+			&notification.Thumbnail,
 		); err != nil {
 			return nil, err
 		}
@@ -612,7 +612,6 @@ func (r *UserRepository) GetNotifications(ctx context.Context, id string) ([]*mo
 	}
 
 	return notifications, nil
-
 
 }
 
