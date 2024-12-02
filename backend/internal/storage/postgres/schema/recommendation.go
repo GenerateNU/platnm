@@ -103,7 +103,7 @@ func (r *RecommendationRepository) GetRecommendations(ctx context.Context, id st
 				JOIN artist ar ON aa.artist_id = ar.id
 				GROUP BY a.id, cover, a.title
 		) a ON (r.media_type = 'album' AND r.media_id = a.id)
-	WHERE recommendee_id = $1`, id)
+	WHERE reaction IS NULL AND recommendee_id = $1`, id)
 
 	if err != nil {
 		return []*models.Recommendation{}, err
