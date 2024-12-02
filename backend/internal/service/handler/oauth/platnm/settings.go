@@ -1,10 +1,10 @@
 package platnm
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"platnm/internal/auth"
 	"platnm/internal/errs"
-	"fmt"
 )
 
 func (h *Handler) ForgotPassword(c *fiber.Ctx) error {

@@ -19,7 +19,7 @@ func SignOut(cfg *config.Supabase, token string) error {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("apikey", apiKey)
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-	
+
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {

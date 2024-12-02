@@ -3,10 +3,10 @@ package auth
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"platnm/internal/config"
 	"platnm/internal/errs"
-	"fmt"
 	"strings"
 )
 
@@ -19,7 +19,7 @@ func RecoverPassword(cfg *config.Supabase, email string) error {
 	payload := map[string]interface{}{
 		"email": email,
 	}
-	
+
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
 		return errs.BadRequest("failed to marshal payload")
