@@ -941,6 +941,46 @@ WHERE NOT EXISTS (SELECT 1 FROM deleted_vote) OR $3 <> (SELECT upvote FROM user_
 	return nil
 }
 
+func (r *ReviewRepository) GetCommentByCommentID(ctx context.Context, commentID string) (*models.UserComment, error) {
+	var comment models.UserComment
+
+	query := `
+		SELECT c.id, text, review_id, c.user_id, username, display_name, profile_picture, c.created_at, COALESCE(upvotes, 0) AS upvotes, 
+	COALESCE(downvotes, 0) AS downvotes
+		FROM "comment" c
+		JOIN "user" u ON c.user_id = u.id
+		LEFT JOIN (
+			SELECT 
+					post_id,
+					SUM(CASE WHEN upvote = TRUE THEN 1 ELSE 0 END) AS upvotes,
+					SUM(CASE WHEN upvote = FALSE THEN 1 ELSE 0 END) AS downvotes
+			FROM 
+					user_vote
+			WHERE post_type = 'comment'
+			GROUP BY 
+					post_id
+	) vote_counts ON c.id = vote_counts.post_id
+	 WHERE c.id = $1`
+
+	err := r.QueryRow(ctx, query, commentID).Scan(&comment.CommentID,
+		&comment.Comment,
+		&comment.ReviewID,
+		&comment.UserID,
+		&comment.Username,
+		&comment.DisplayName,
+		&comment.ProfilePicture,
+		&comment.CreatedAt,
+		&comment.Upvotes,
+		&comment.Downvotes)
+
+	if err != nil {
+		print(err.Error(), "from transactions err ")
+		return nil, err
+	}
+
+	return &comment, nil
+}
+
 func NewReviewRepository(db *pgxpool.Pool) *ReviewRepository {
 	return &ReviewRepository{
 		db,

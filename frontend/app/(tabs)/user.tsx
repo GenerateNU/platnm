@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import Icon from "react-native-vector-icons/Feather";
 import Section from "@/components/profile/Section";
 import ProfilePicture from "@/components/profile/ProfilePicture";
 import { useProfile } from "@/hooks/useProfile";
+import { useAuthContext } from "@/components/AuthProvider";
 
 export default function ProfilePage() {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -20,9 +21,22 @@ export default function ProfilePage() {
   const { userId } = useLocalSearchParams<{
     userId: string;
   }>();
+  const loggedInUser = useAuthContext().userId;
 
   const { userProfile, handleActivityPress, handleSharePress, sections } =
     useProfile(userId);
+  const [following, setFollowing] = useState(false);
+
+  const handleFollowToggle = () => {
+    // Toggle the following state
+    setFollowing(!following);
+
+    // Optionally, trigger API call to update follow state in the backend
+    fetch('/users/follow', { method: 'POST', body: JSON.stringify({ userId }) })
+      .then(response => response.json())
+      .catch(error => console.error('Error updating follow state:', error));
+  };
+  
   return (
     userProfile && (
       <ScrollView style={styles.container}>
@@ -65,6 +79,13 @@ export default function ProfilePage() {
               <Text style={styles.statLabel}>Platinum</Text>
             </View>
           </View>
+          <TouchableOpacity onPress={handleFollowToggle}>
+            <View style={styles.followButton}>
+              <Text style={styles.followButtonText}>
+                {following ? 'Following' : 'Follow'}
+              </Text>
+            </View>
+          </TouchableOpacity>
 
           <Text style={styles.aboutMe}>{userProfile.bio}</Text>
         </View>
@@ -172,5 +193,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 10,
     color: "#666",
+  },
+  followButton: {
+    backgroundColor: '#d3d3d3', // Grey background
+    borderRadius: 20, // Rounded corners
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  followButtonText: {
+    color: '#000', // Black text
+    fontWeight: 'bold',
   },
 });
