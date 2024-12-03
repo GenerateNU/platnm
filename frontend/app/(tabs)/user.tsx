@@ -50,6 +50,7 @@ export default function ProfilePage() {
     const followerList = response.data.followers;
     const followingList = response.data.followees;
     setFollowerList(followerList);
+    console.log(followerList);
     setFollowingList(followingList);
     setFollowing(false);
     for (const f of followerList) {
@@ -133,13 +134,6 @@ export default function ProfilePage() {
               <Text style={styles.statLabel}>Platinum</Text>
             </View>
           </View>
-          <TouchableOpacity onPress={handleFollowToggle}>
-            <View style={styles.followButton}>
-              <Text style={styles.followButtonText}>
-                {following ? "Following" : "Follow"}
-              </Text>
-            </View>
-          </TouchableOpacity>
           <TouchableOpacity onPress={handleFollowToggle}>
             <View style={styles.followButton}>
               <Text style={styles.followButtonText}>
@@ -296,7 +290,7 @@ const styles = StyleSheet.create({
     color: "#666",
   },
   followButton: {
-    backgroundColor: "#000", // Grey background
+    backgroundColor: "#d3d3d3", // Grey background
     borderRadius: 20, // Rounded corners
     paddingVertical: 10,
     paddingHorizontal: 20,
@@ -341,7 +335,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: "#ccc", // Light grey color
+    backgroundColor: "#d3d3d3", // Light grey color
   },
   closeButton: {
     marginTop: 20,

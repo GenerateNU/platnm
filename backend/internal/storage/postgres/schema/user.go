@@ -334,7 +334,8 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 	LEFT JOIN tag tag ON rt.tag_id = tag.id
 	WHERE f.follower_id = $1
 	GROUP BY r.id, r.user_id, u.username, u.display_name, u.profile_picture, r.media_type, r.media_id, r.rating, r.comment, r.created_at, r.updated_at, media_cover, media_title, media_artist
-	ORDER BY r.updated_at DESC;`
+	ORDER BY r.updated_at DESC
+	LIMIT 30;`
 
 	// Execute the query
 	rows, err := r.db.Query(ctx, query, id)
