@@ -141,7 +141,6 @@ func (h *Handler) handleSearchResults(client *spotify.Client, ctx context.Contex
 			}(artist)
 		}
 	}
-  
 
 	if (result.Albums) != nil {
 		for _, album := range result.Albums.Albums {

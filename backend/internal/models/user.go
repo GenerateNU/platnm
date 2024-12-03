@@ -1,8 +1,8 @@
 package models
 
-import ( 
-	"time"
+import (
 	"database/sql"
+	"time"
 )
 
 type User struct {
