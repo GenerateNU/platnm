@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import axios from "axios";
+import { router } from "expo-router";
 import { useAuthContext } from "@/components/AuthProvider";
 
 interface Profile {
@@ -38,9 +39,8 @@ const NudgePage: React.FC<NudgePageProps> = ({
         );
 
         const mappedProfiles = response.data.map((user: any) => ({
-          profile_picture: user.ProfilePicture?.Valid
-            ? user.ProfilePicture.String
-            : null,
+          profile_picture:
+            user.ProfilePicture?.Valid && user.ProfilePicture.String,
           name: user.DisplayName || user.Username,
           id: user.ID,
         }));
@@ -54,26 +54,26 @@ const NudgePage: React.FC<NudgePageProps> = ({
     fetchFollowing();
   }, [userId, BASE_URL]);
 
+  const routeToMediaPage = () => {
+    router.push({
+      pathname: "/MediaPage",
+      params: { mediaId: media_id, mediaType: media_type },
+    });
+  };
+
   const handleProfileClick = async (recommendeeId: string) => {
     try {
       const payload = {
-        media_type, // Using the prop values
+        media_type,
         media_id,
         title,
-        artist_name,
         cover,
         recommendee_id: recommendeeId,
         recommender_id: userId,
-        recommender_username: username,
-        recommender_name: username, // Replace with displayname
-        recommender_picture:
-          "https://t3.ftcdn.net/jpg/03/64/62/36/360_F_364623623_ERzQYfO4HHHyawYkJ16tREsizLyvcaeg.jpg",
-        reaction: null,
-        created_at: new Date().toISOString(), // Current timestamp
       };
 
-      const response = await axios.post(`${BASE_URL}/recommendation/`, payload);
-      console.log("Recommendation created:", response.data);
+      await axios.post(`${BASE_URL}/recommendation`, payload);
+      routeToMediaPage();
     } catch (error) {
       console.error("Error creating recommendation:", error);
     }
@@ -81,30 +81,35 @@ const NudgePage: React.FC<NudgePageProps> = ({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Review Published!</Text>
-      <View style={styles.nudgeContainer}>
-        <Text style={styles.nudgeText}>Send nudge</Text>
+      <View style={styles.center}>
+        <Text style={styles.heading}>Review Published!</Text>
+        <View style={styles.nudgeContainer}>
+          <Text style={styles.nudgeText}>Send nudge</Text>
+        </View>
+        <View style={styles.followingGrid}>
+          {profiles.map((user, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => handleProfileClick(user.id)}
+            >
+              <View style={styles.followingUser}>
+                <Image
+                  source={{
+                    uri:
+                      user.profile_picture ||
+                      "https://t3.ftcdn.net/jpg/03/64/62/36/360_F_364623623_ERzQYfO4HHHyawYkJ16tREsizLyvcaeg.jpg",
+                  }}
+                  style={styles.followingUserCircle}
+                />
+                <Text style={styles.artistName}>{user.name}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
-      <View style={styles.artistsGrid}>
-        {profiles.map((user, index) => (
-          <TouchableOpacity
-            key={index}
-            onPress={() => handleProfileClick(user.id)}
-          >
-            <View style={styles.artist}>
-              <Image
-                source={{
-                  uri:
-                    user.profile_picture ||
-                    "https://t3.ftcdn.net/jpg/03/64/62/36/360_F_364623623_ERzQYfO4HHHyawYkJ16tREsizLyvcaeg.jpg",
-                }}
-                style={styles.artistCircle}
-              />
-              <Text style={styles.artistName}>{user.name}</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
-      </View>
+      <Text style={styles.text} onPress={routeToMediaPage}>
+        Skip
+      </Text>
     </View>
   );
 };
@@ -114,6 +119,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#333", // Dark background color
     padding: 20,
     borderRadius: 8,
+  },
+  center: {
     alignItems: "center",
   },
   heading: {
@@ -139,18 +146,17 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 14,
   },
-  artistsGrid: {
+  followingGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-around",
     width: "100%",
   },
-  artist: {
+  followingUser: {
     alignItems: "center",
     marginBottom: 15,
-    width: "30%",
   },
-  artistCircle: {
+  followingUserCircle: {
     width: 60,
     height: 60,
     borderRadius: 30,
@@ -160,6 +166,10 @@ const styles = StyleSheet.create({
   artistName: {
     color: "white",
     fontSize: 12,
+  },
+  text: {
+    color: "white",
+    textAlign: "right",
   },
 });
 

@@ -6,13 +6,12 @@ import {
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import "react-native-reanimated";
 import { AuthProvider } from "@/components/AuthProvider";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { LogBox } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { View } from "react-native";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -42,6 +41,7 @@ export default function RootLayout() {
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="onboarding/signup" />
+            <Stack.Screen name="CreateRating" />
             <Stack.Screen name="CreateReview" />
             <Stack.Screen name="PreviewReview" />
             <Stack.Screen name="MediaReviewsPage" />

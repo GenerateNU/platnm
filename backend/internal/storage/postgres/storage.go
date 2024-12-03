@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"log"
+	"log/slog"
 	"platnm/internal/config"
 	"platnm/internal/storage"
 
@@ -17,7 +18,7 @@ func ConnectDatabase(config config.DB) *pgxpool.Pool {
 	}
 
 	dbConfig.BeforeClose = func(c *pgx.Conn) {
-		log.Fatal("Closed the connection pool to the database!")
+		slog.Info("Closed the connection pool to the database!")
 	}
 
 	conn, err := pgxpool.NewWithConfig(context.Background(), dbConfig)

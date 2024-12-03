@@ -122,6 +122,7 @@ type Preview = {
   media_type: MediaType;
   media_id: number;
   rating: number;
+  title?: string;
   comment?: string;
   created_at: Date;
   updated_at: Date;
@@ -170,4 +171,15 @@ type RecommendationResponse = {
   title: string;
   recommender_picture: string;
   cover: string;
+};
+
+type PublishReviewRequest = {
+  user_id: string;
+  media_type: string;
+  media_id: number;
+  title?: string;
+  comment?: string;
+  rating: number;
+  tags: string[];
+  draft: boolean;
 };

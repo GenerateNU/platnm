@@ -62,13 +62,13 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 		FROM album
 		WHERE id = $2 AND $3 = 'album'
 	)
-	INSERT INTO review (user_id, media_id, media_type, rating, comment, draft)
-	SELECT $1, $2, $3::media_type, $4, $5, $6
+	INSERT INTO review (user_id, media_id, media_type, rating, title, comment, draft)
+	SELECT $1, $2, $3::media_type, $4, $5, $6, $7
 	FROM media_check
 	RETURNING id, created_at, updated_at;
 	`
 
-	if err := r.QueryRow(ctx, query, review.UserID, review.MediaID, review.MediaType, review.Rating, review.Comment, review.Draft).Scan(&review.ID, &review.CreatedAt, &review.UpdatedAt); err != nil {
+	if err := r.QueryRow(ctx, query, review.UserID, review.MediaID, review.MediaType, review.Rating, review.Title, review.Comment, review.Draft).Scan(&review.ID, &review.CreatedAt, &review.UpdatedAt); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, errs.NotFound(string(review.MediaType), "id", review.MediaID)
 		} else if errs.IsUniqueViolation(err, uniqueUserMediaConstraint) {
@@ -83,8 +83,6 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 	// Fetch or create tag IDs and add them to the review_tags table
 	for _, label := range review.Tags {
 		var tagID int
-
-		// Check if the tag already exists
 		tagQuery := `SELECT id FROM tag WHERE name = $1`
 		err := r.QueryRow(ctx, tagQuery, label).Scan(&tagID)
 
@@ -108,7 +106,6 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int, offset int) ([]*models.Preview, error) {
 
 	// shoutout to ally for this legendary query, and like 90% of this code
-
 	query := `
 	SELECT 
 		r.id, 
@@ -118,7 +115,8 @@ func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int
 		u.profile_picture,
 		r.media_type, 
 		r.media_id, 
-		r.rating, 
+		r.rating,
+		r.title, 
 		r.comment,
 		r.created_at, 
 		r.updated_at,
@@ -171,7 +169,7 @@ func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int
 	// Scan results into the feedPosts slice
 	for rows.Next() {
 		var preview models.Preview
-		var comment sql.NullString // Use sql.NullString for nullable strings
+		var title, comment sql.NullString // Use sql.NullString for nullable strings
 		err := rows.Scan(
 			&preview.ReviewID,
 			&preview.UserID,
@@ -181,7 +179,8 @@ func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int
 			&preview.MediaType,
 			&preview.MediaID,
 			&preview.Rating,
-			&comment, // Scan into comment first
+			&title,
+			&comment,
 			&preview.CreatedAt,
 			&preview.UpdatedAt,
 			&preview.MediaCover,
@@ -194,11 +193,17 @@ func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int
 			return nil, err
 		}
 
-		// Assign comment to feedPost.Comment, handling null case
+		// Assign string values if not null
 		if comment.Valid {
 			preview.Comment = &comment.String // Point to the string if valid
 		} else {
 			preview.Comment = nil // Set to nil if null
+		}
+
+		if title.Valid {
+			preview.Title = &title.String // Point to the string if valid
+		} else {
+			preview.Title = nil // Set to nil if null
 		}
 
 		// Ensure tags is an empty array if null
@@ -244,7 +249,7 @@ func (r *ReviewRepository) CreateComment(ctx context.Context, comment *models.Co
 			return nil, errs.NotFound("user", "id", comment.UserID)
 		} else if errs.IsForeignKeyViolation(err, commentReviewFKeyConstraint) {
 			return nil, errs.NotFound("review", "id", comment.UserID)
-		} 
+		}
 		fmt.Println(err)
 
 		return nil, err
@@ -284,7 +289,8 @@ func (r *ReviewRepository) GetUserReviewsOfMedia(ctx context.Context, media_type
 		u.profile_picture,
 		r.media_type, 
 		r.media_id, 
-		r.rating, 
+		r.rating,
+		r.title, 
 		r.comment,
 		r.created_at, 
 		r.updated_at,
@@ -334,7 +340,7 @@ func (r *ReviewRepository) GetUserReviewsOfMedia(ctx context.Context, media_type
 	// Scan results into the feedPosts slice
 	for rows.Next() {
 		var preview models.Preview
-		var comment sql.NullString // Use sql.NullString for nullable strings
+		var title, comment sql.NullString // Use sql.NullString for nullable strings
 		err := rows.Scan(
 			&preview.ReviewID,
 			&preview.UserID,
@@ -344,7 +350,8 @@ func (r *ReviewRepository) GetUserReviewsOfMedia(ctx context.Context, media_type
 			&preview.MediaType,
 			&preview.MediaID,
 			&preview.Rating,
-			&comment, // Scan into comment first
+			&title,
+			&comment,
 			&preview.CreatedAt,
 			&preview.UpdatedAt,
 			&preview.MediaCover,
@@ -362,6 +369,12 @@ func (r *ReviewRepository) GetUserReviewsOfMedia(ctx context.Context, media_type
 			preview.Comment = &comment.String // Point to the string if valid
 		} else {
 			preview.Comment = nil // Set to nil if null
+		}
+
+		if title.Valid {
+			preview.Title = &title.String // Point to the string if valid
+		} else {
+			preview.Title = nil // Set to nil if null
 		}
 
 		// Ensure tags is an empty array if null
@@ -410,12 +423,15 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 	var reviews []*models.Review
 	for rows.Next() {
 		var review models.Review
+		var title sql.NullString
+
 		if err := rows.Scan(
 			&review.ID,
 			&review.UserID,
 			&review.MediaID,
 			&review.MediaType,
 			&review.Rating,
+			&title,
 			&review.Comment,
 			&review.CreatedAt,
 			&review.UpdatedAt,
@@ -423,6 +439,13 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 		); err != nil {
 			return nil, err
 		}
+
+		if title.Valid {
+			review.Title = &title.String // Point to the string if valid
+		} else {
+			review.Title = nil // Set to nil if null
+		}
+
 		reviews = append(reviews, &review)
 	}
 
@@ -444,6 +467,7 @@ func (r *ReviewRepository) GetUserReviewOfTrack(ctx context.Context, mediaId str
 		&review.MediaID,
 		&review.MediaType,
 		&review.Rating,
+		&review.Title,
 		&review.Comment,
 		&review.CreatedAt,
 		&review.UpdatedAt,
@@ -488,12 +512,12 @@ func (r *ReviewRepository) GetExistingReview(ctx context.Context, id string) (*m
 	var review models.Review
 
 	row := r.QueryRow(ctx, `
-		SELECT id, user_id, media_type, media_id, rating, comment, created_at, updated_at, draft
+		SELECT id, user_id, media_type, media_id, rating, title, comment, created_at, updated_at, draft
 		FROM review 
 		WHERE id = $1`, id)
 
 	// Scan the row into the review object
-	err := row.Scan(&review.ID, &review.UserID, &review.MediaType, &review.MediaID, &review.Rating, &review.Comment, &review.CreatedAt, &review.UpdatedAt, &review.Draft)
+	err := row.Scan(&review.ID, &review.UserID, &review.MediaType, &review.MediaID, &review.Rating, &review.Title, &review.Comment, &review.CreatedAt, &review.UpdatedAt, &review.Draft)
 	if err != nil {
 		// If no rows were found, return nil, no error
 		if err == sql.ErrNoRows {
@@ -522,7 +546,6 @@ func (r *ReviewRepository) ReviewBelongsToUser(ctx context.Context, reviewID str
 }
 
 func (r *ReviewRepository) GetReviewsByMediaID(ctx context.Context, id string, mediaType string) ([]*models.Preview, error) {
-
 	query := `
 	SELECT 
 		r.id, 
@@ -533,6 +556,7 @@ func (r *ReviewRepository) GetReviewsByMediaID(ctx context.Context, id string, m
 		r.media_type, 
 		r.media_id, 
 		r.rating, 
+		r.title,
 		r.comment,
 		r.created_at, 
 		r.updated_at,
@@ -582,7 +606,7 @@ func (r *ReviewRepository) GetReviewsByMediaID(ctx context.Context, id string, m
 	// Scan results into the feedPosts slice
 	for rows.Next() {
 		var preview models.Preview
-		var comment sql.NullString // Use sql.NullString for nullable strings
+		var title, comment sql.NullString // Use sql.NullString for nullable strings
 		err := rows.Scan(
 			&preview.ReviewID,
 			&preview.UserID,
@@ -592,7 +616,8 @@ func (r *ReviewRepository) GetReviewsByMediaID(ctx context.Context, id string, m
 			&preview.MediaType,
 			&preview.MediaID,
 			&preview.Rating,
-			&comment, // Scan into comment first
+			&title,
+			&comment,
 			&preview.CreatedAt,
 			&preview.UpdatedAt,
 			&preview.MediaCover,
@@ -610,6 +635,12 @@ func (r *ReviewRepository) GetReviewsByMediaID(ctx context.Context, id string, m
 			preview.Comment = &comment.String // Point to the string if valid
 		} else {
 			preview.Comment = nil // Set to nil if null
+		}
+
+		if title.Valid {
+			preview.Title = &title.String // Point to the string if valid
+		} else {
+			preview.Title = nil // Set to nil if null
 		}
 
 		// Ensure tags is an empty array if null
@@ -844,7 +875,8 @@ func (r *ReviewRepository) GetReviewByID(ctx context.Context, id string) (*model
     u.profile_picture,
 		r.media_type, 
 		r.media_id, 
-		r.rating, 
+		r.rating,
+		r.title, 
 		r.comment,
 		r.created_at, 
 		r.updated_at,
@@ -874,7 +906,7 @@ func (r *ReviewRepository) GetReviewByID(ctx context.Context, id string) (*model
 	WHERE r.id = $1
 	GROUP BY r.id, r.user_id, u.username, u.display_name, u.profile_picture, r.media_type, r.media_id, r.rating, r.comment, r.created_at, r.updated_at, media_cover, media_title, media_artist;`
 
-	var comment sql.NullString // Use sql.NullString for nullable strings
+	var title, comment sql.NullString // Use sql.NullString for nullable strings
 
 	err := r.QueryRow(ctx, query, id).Scan(&preview.ReviewID,
 		&preview.UserID,
@@ -884,7 +916,8 @@ func (r *ReviewRepository) GetReviewByID(ctx context.Context, id string) (*model
 		&preview.MediaType,
 		&preview.MediaID,
 		&preview.Rating,
-		&comment, // Scan into comment first
+		&title,
+		&comment,
 		&preview.CreatedAt,
 		&preview.UpdatedAt,
 		&preview.MediaCover,
@@ -902,6 +935,12 @@ func (r *ReviewRepository) GetReviewByID(ctx context.Context, id string) (*model
 		preview.Comment = &comment.String // Point to the string if valid
 	} else {
 		preview.Comment = nil // Set to nil if null
+	}
+
+	if title.Valid {
+		preview.Title = &title.String // Point to the string if valid
+	} else {
+		preview.Title = nil // Set to nil if null
 	}
 
 	// Ensure tags is an empty array if null
