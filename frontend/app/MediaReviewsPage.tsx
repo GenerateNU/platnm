@@ -1,3 +1,4 @@
+import React from "react";
 import { useState, useEffect } from "react";
 import { View, ScrollView, Image, Text } from "react-native";
 import ReviewPreview from "@/components/ReviewPreview";

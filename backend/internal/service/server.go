@@ -126,7 +126,12 @@ func setupRoutes(app *fiber.App, repo *storage.Repository, config config.Config)
 		r.Get("/social/album/:albumid", func(c *fiber.Ctx) error {
 			return reviewHandler.GetSocialReviews(c, "album")
 		})
-		r.Get("/comments/:id", reviewHandler.GetComments)
+		r.Get("/comments/:reviewid", reviewHandler.GetComments)
+	})
+
+	app.Route("/comments", func(r fiber.Router) {
+		reviewHandler := reviews.NewHandler(repo.Review, repo.User, repo.UserReviewVote)
+		r.Get("/:commentid", reviewHandler.GetCommentByCommentID)
 	})
 
 	mediaHandler := media.NewHandler(repo.Media)

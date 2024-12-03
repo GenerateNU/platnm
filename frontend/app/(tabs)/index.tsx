@@ -1,3 +1,4 @@
+import React from "react";
 import {
   StyleSheet,
   View,
@@ -30,10 +31,6 @@ export default function HomeScreen() {
       console.error("Error fetching feed reviews:", error);
     }
   };
-
-  useEffect(() => {
-    if (userId) fetchFeedReviews();
-  }, [userId]);
 
   useFocusEffect(
     useCallback(() => {

@@ -171,26 +171,6 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
 
   useFocusEffect(
     useCallback(() => {
-      const fetchReview = async () => {
-        try {
-          const response = await axios.get(
-            `${BASE_URL}/reviews/${preview.review_id}`,
-          );
-          if (response.data) {
-            setUpvoteCount(response.data.review_stat.upvotes);
-            setDownvoteCount(response.data.review_stat.downvotes);
-          }
-        } catch (error) {
-          console.error("Error fetching review:", error);
-        }
-      };
-
-      fetchReview();
-    }, []),
-  );
-
-  useFocusEffect(
-    useCallback(() => {
       const fetchVote = async () => {
         try {
           const response = await axios.get(

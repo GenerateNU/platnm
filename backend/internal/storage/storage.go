@@ -56,6 +56,7 @@ type ReviewRepository interface {
 	GetReviewByID(ctx context.Context, id string) (*models.Preview, error)
 	GetReviewsByPopularity(ctx context.Context, limit int, offset int) ([]*models.Preview, error)
 	UserVote(ctx context.Context, userID string, postID string, vote bool, postType string) error
+	GetCommentByCommentID(ctx context.Context, id string) (*models.UserFullComment, error)
 }
 
 type MediaRepository interface {

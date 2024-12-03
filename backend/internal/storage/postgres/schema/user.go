@@ -425,7 +425,7 @@ func (r *UserRepository) GetUserFollowing(ctx context.Context, id uuid.UUID) ([]
 		var user models.Follower
 		if err := rows.Scan(&user.ID, &user.Username, &user.Email, &user.DisplayName,
 			&user.Bio, &user.ProfilePicture, &user.LinkedAccount, &user.CreatedAt, &user.UpdatedAt); err != nil {
-				return nil, err
+			return nil, err
 		}
 		users = append(users, &user)
 	}
@@ -441,7 +441,7 @@ func (r *UserRepository) GetUserFollowing(ctx context.Context, id uuid.UUID) ([]
 	}
 
 	return users, nil
-} 
+}
 
 func (r *UserRepository) CreateSection(ctx context.Context, sectiontype models.SectionType) (models.SectionType, error) {
 

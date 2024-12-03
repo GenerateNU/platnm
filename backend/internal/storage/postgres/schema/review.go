@@ -941,6 +941,67 @@ WHERE NOT EXISTS (SELECT 1 FROM deleted_vote) OR $3 <> (SELECT upvote FROM user_
 	return nil
 }
 
+func (r *ReviewRepository) GetCommentByCommentID(ctx context.Context, commentID string) (*models.UserFullComment, error) {
+	var comment models.UserFullComment
+
+	query := `
+		SELECT c.id, text, review_id, c.user_id, username, display_name, profile_picture, c.created_at, COALESCE(upvotes, 0) AS upvotes, 
+	COALESCE(downvotes, 0) AS downvotes, COALESCE(a.cover, t.cover) AS media_cover, 
+		COALESCE(a.title, t.title) AS media_title, 
+		COALESCE(a.artists, t.artists) AS media_artist
+		FROM "comment" c
+		JOIN "user" u ON c.user_id = u.id
+		LEFT JOIN (
+			SELECT 
+					post_id,
+					SUM(CASE WHEN upvote = TRUE THEN 1 ELSE 0 END) AS upvotes,
+					SUM(CASE WHEN upvote = FALSE THEN 1 ELSE 0 END) AS downvotes
+			FROM 
+					user_vote
+			WHERE post_type = 'comment'
+			GROUP BY 
+					post_id
+	) vote_counts ON c.id = vote_counts.post_id
+	 LEFT JOIN review r ON c.review_id = r.id
+	 LEFT JOIN (
+    SELECT t.title, t.id, STRING_AGG(ar.name, ', ') AS artists, cover
+		FROM track t
+    JOIN track_artist ta on t.id = ta.track_id
+		JOIN artist ar ON ta.artist_id = ar.id
+    JOIN album a on t.album_id = a.id
+		GROUP BY t.id, cover, t.title
+    ) t ON r.media_type = 'track' AND r.media_id = t.id
+  LEFT JOIN (
+    SELECT a.id, a.title, STRING_AGG(ar.name, ', ') AS artists, cover
+		FROM album a
+    JOIN album_artist aa on a.id = aa.album_id
+		JOIN artist ar ON aa.artist_id = ar.id
+		GROUP BY a.id, cover, a.title
+  ) a ON r.media_type = 'album' AND r.media_id = a.id
+	 WHERE c.id = $1`
+
+	err := r.QueryRow(ctx, query, commentID).Scan(&comment.CommentID,
+		&comment.Comment,
+		&comment.ReviewID,
+		&comment.UserID,
+		&comment.Username,
+		&comment.DisplayName,
+		&comment.ProfilePicture,
+		&comment.CreatedAt,
+		&comment.Upvotes,
+		&comment.Downvotes,
+		&comment.MediaCover,
+		&comment.MediaTitle,
+		&comment.MediaArtists)
+
+	if err != nil {
+		print(err.Error(), "from transactions err ")
+		return nil, err
+	}
+
+	return &comment, nil
+}
+
 func NewReviewRepository(db *pgxpool.Pool) *ReviewRepository {
 	return &ReviewRepository{
 		db,
