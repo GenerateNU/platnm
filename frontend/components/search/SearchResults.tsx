@@ -53,7 +53,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                   <ProfileChip
                     display_name={profile.display_name}
                     profile_picture={profile.profile_picture}
-                    id={profile.id}
+                    id={profile.user_id}
                     key={idx}
                   />
                 ))}

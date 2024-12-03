@@ -3,6 +3,7 @@ package users
 import (
 	"platnm/internal/config"
 	"platnm/internal/errs"
+	"platnm/internal/models"
 	"platnm/internal/service/session"
 	"platnm/internal/storage"
 
@@ -116,7 +117,9 @@ func (h *Handler) GetNotifications(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-
+	if notifications == nil {
+		return c.Status(fiber.StatusOK).JSON([]*models.Notification{})
+	}
 	return c.Status(fiber.StatusOK).JSON(notifications)
 
 }
