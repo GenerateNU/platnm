@@ -80,13 +80,13 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
 
   const [sharePopupVisible, setSharePopupVisible] = useState(false);
 
-const handleSharePress = () => {
-  setSharePopupVisible(true); // Show the share popup
-};
+  const handleSharePress = () => {
+    setSharePopupVisible(true); // Show the share popup
+  };
 
-const closeSharePopup = () => {
-  setSharePopupVisible(false); // Close the share popup
-};
+  const closeSharePopup = () => {
+    setSharePopupVisible(false); // Close the share popup
+  };
 
   const getRatingImage = (rating: keyof typeof ratingImages) => {
     return ratingImages[rating]; // Access the image from the preloaded images object
@@ -306,12 +306,17 @@ const closeSharePopup = () => {
           <View style={styles.mediaContainer}>
             <TouchableOpacity onPress={handleMediaPress}>
               <View style={styles.ratingContainer}>
-                <Text style={styles.songName}>{review.media_title}</Text>
+                <Text
+                  style={styles.songName}
+                  numberOfLines={2} // Limits to 2 lines, change as needed
+                  ellipsizeMode="tail" // Adds ellipsis (...) if the text overflows
+                >
+                  {review.media_title}
+                </Text>
                 <Text style={styles.artistName}>{review.media_artist}</Text>
               </View>
             </TouchableOpacity>
           </View>
-
           <View style={styles.rating}>
             {React.createElement(
               getRatingImage(review.rating as keyof typeof ratingImages),
@@ -324,7 +329,6 @@ const closeSharePopup = () => {
               } as any,
             )}
           </View>
-
           <Modal visible={showPopup} transparent>
             <TouchableOpacity
               style={styles.modalOverlay}
@@ -359,7 +363,6 @@ const closeSharePopup = () => {
               </View>
             </TouchableOpacity>
           </Modal>
-
           <Modal visible={sharePopupVisible} transparent animationType="slide">
             <TouchableOpacity
               style={styles.modalOverlay}
@@ -368,13 +371,16 @@ const closeSharePopup = () => {
             >
               <View style={styles.sharePopupContainer}>
                 <Text style={styles.sharePopupTitle}>Share This Review</Text>
-                <TouchableOpacity style={styles.shareButton} onPress={() => console.log("Share to Friends Pressed")}>
+                <TouchableOpacity
+                  style={styles.shareButton}
+                  onPress={() => console.log("Share to Friends Pressed")}
+                >
                   <Text style={styles.shareButtonText}>Share to Friends</Text>
                 </TouchableOpacity>
               </View>
             </TouchableOpacity>
-          </Modal>;
-
+          </Modal>
+          ;
           {isEditable ? (
             <View>
               <TextInput
@@ -403,7 +409,6 @@ const closeSharePopup = () => {
               ))}
             </View>
           )}
-
           {/* Action Buttons */}
           <View style={styles.actionsContainer}>
             <View style={styles.voteContainer}>
@@ -447,7 +452,8 @@ const closeSharePopup = () => {
                 <View style={{ marginLeft: 7 }}>
                   <Share width={24} height={24} />
                 </View>
-              </TouchableOpacity>;
+              </TouchableOpacity>
+              ;
             </View>
             {review.user_id === userId && (
               <TouchableOpacity
@@ -544,8 +550,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   songName: {
-    fontSize: 20,
+    fontSize: 20, // Adjust size as needed
     fontWeight: "bold",
+    color: "#000", // Adjust color as needed
+    flexWrap: "wrap",
+    width: "95%",
   },
   artistName: {
     fontSize: 16,
@@ -740,28 +749,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   sharePopupContainer: {
-    width: '80%',
-    backgroundColor: '#fff',
+    width: "80%",
+    backgroundColor: "#fff",
     borderRadius: 10,
     padding: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   sharePopupTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 20,
   },
   shareButton: {
-    backgroundColor: '#6200ee',
+    backgroundColor: "#6200ee",
     padding: 10,
     borderRadius: 5,
-    width: '100%',
-    alignItems: 'center',
+    width: "100%",
+    alignItems: "center",
   },
   shareButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
 
