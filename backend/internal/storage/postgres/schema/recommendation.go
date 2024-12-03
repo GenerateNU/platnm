@@ -85,10 +85,11 @@ func (r *RecommendationRepository) GetRecommendations(ctx context.Context, id st
 		r.reaction,
 		r.created_at,
 		u.username AS recommender_username,
-		u.display_name AS recommender_name
+		u.display_name AS recommender_name,
+		u.profile_picture AS recommender_picture
 	FROM recommendation r
 	JOIN "user" u ON r.recommender_id = u.id
-	LEFT JOIN (
+	JOIN (
 			SELECT t.title, t.id, STRING_AGG(ar.name, ', ') AS artists, cover, album_id, duration_seconds, release_date
 				FROM track t
 			LEFT JOIN track_artist ta on t.id = ta.track_id
@@ -103,7 +104,7 @@ func (r *RecommendationRepository) GetRecommendations(ctx context.Context, id st
 				JOIN artist ar ON aa.artist_id = ar.id
 				GROUP BY a.id, cover, a.title
 		) a ON (r.media_type = 'album' AND r.media_id = a.id)
-	WHERE recommendee_id = $1`, id)
+	WHERE reaction IS NULL AND recommendee_id = $1`, id)
 
 	if err != nil {
 		return []*models.Recommendation{}, err
@@ -127,7 +128,8 @@ func (r *RecommendationRepository) GetRecommendations(ctx context.Context, id st
 			&recommendation.Reaction,
 			&recommendation.CreatedAt,
 			&recommendation.RecommenderUsername,
-			&recommendation.RecommenderName); err != nil {
+			&recommendation.RecommenderName,
+			&recommendation.RecommenderPicture); err != nil {
 			return nil, err
 		}
 		recs = append(recs, &recommendation)

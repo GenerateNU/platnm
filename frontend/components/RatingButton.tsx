@@ -1,19 +1,18 @@
-import { View, Text, Touchable } from "react-native";
-import { Dimensions } from "react-native";
-import Cross from "@/assets/images/Icons/Cross";
-import Heart from "@/assets/images/Icons/Heart";
+import { View } from "react-native";
+import Cross from "@/assets/images/Icons/Cross.svg";
+import Heart from "@/assets/images/Icons/Heart.svg";
+
 import { TouchableOpacity } from "react-native";
 
-type Props = {
+type RatingButtonProps = {
   icon: any;
+  handlePress: () => void;
 };
 
-export const RatingButton = ({ icon }: Props) => {
+export const RatingButton = ({ icon, handlePress }: RatingButtonProps) => {
   return (
     <TouchableOpacity
-      onPress={() => {
-        console.log("pressed some rating button");
-      }}
+      onPress={handlePress}
       style={{
         width: 64,
         height: 64,
