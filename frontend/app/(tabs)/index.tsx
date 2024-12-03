@@ -26,7 +26,7 @@ export default function HomeScreen() {
   const fetchFeedReviews = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/users/feed/${userId}`);
-      setFeedReviews(response.data.slice(0, 20));
+      setFeedReviews(response.data);
     } catch (error) {
       console.error("Error fetching feed reviews:", error);
     }
