@@ -1,7 +1,7 @@
 import React from "react";
 import { router } from "expo-router";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
-import { ScrollView } from "react-native";
+import { useAuthContext } from "../AuthProvider";
 
 export interface ProfileChipProps {
   display_name: string;
@@ -14,14 +14,16 @@ const ProfileChip: React.FC<ProfileChipProps> = ({
   profile_picture,
   id,
 }) => {
+  const loggedInUser = useAuthContext().userId;
+  const pathName = id === loggedInUser ? "/(tabs)/profile" : "/(tabs)/user";
   return (
     <TouchableOpacity
       style={styles.chipContainer}
       onPress={() =>
         router.push({
-          pathname: "/profile",
+          pathname: pathName,
           params: {
-            userID: id,
+            userId: id,
           },
         })
       }

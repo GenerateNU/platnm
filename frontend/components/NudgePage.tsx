@@ -1,13 +1,84 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-} from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import axios from "axios";
+import { useAuthContext } from "@/components/AuthProvider";
 
-const NudgePage = () => {
+interface Profile {
+  profile_picture: string | null;
+  name: string;
+  id: string;
+}
+
+interface NudgePageProps {
+  media_type: string;
+  media_id: string;
+  title: string;
+  artist_name: string;
+  cover: string;
+}
+
+const NudgePage: React.FC<NudgePageProps> = ({
+  media_type,
+  media_id,
+  title,
+  artist_name,
+  cover,
+}) => {
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+  const { userId, username } = useAuthContext(); // Assuming you have username in AuthProvider
+
+  useEffect(() => {
+    const fetchFollowing = async () => {
+      try {
+        console.log(userId);
+        const response = await axios.get(
+          `${BASE_URL}/users/following/${userId}`,
+        );
+
+        const mappedProfiles = response.data.map((user: any) => ({
+          profile_picture: user.ProfilePicture?.Valid
+            ? user.ProfilePicture.String
+            : null,
+          name: user.DisplayName || user.Username,
+          id: user.ID,
+        }));
+
+        setProfiles(mappedProfiles);
+      } catch (error) {
+        console.error("Error fetching following:", error);
+      }
+    };
+
+    fetchFollowing();
+  }, [userId, BASE_URL]);
+
+  const handleProfileClick = async (recommendeeId: string) => {
+    try {
+      const payload = {
+        media_type, // Using the prop values
+        media_id,
+        title,
+        artist_name,
+        cover,
+        recommendee_id: recommendeeId,
+        recommender_id: userId,
+        recommender_username: username,
+        recommender_name: username, // Replace with displayname
+        recommender_picture:
+          "https://t3.ftcdn.net/jpg/03/64/62/36/360_F_364623623_ERzQYfO4HHHyawYkJ16tREsizLyvcaeg.jpg",
+        reaction: null,
+        created_at: new Date().toISOString(), // Current timestamp
+      };
+
+      const response = await axios.post(`${BASE_URL}/recommendation/`, payload);
+      console.log("Recommendation created:", response.data);
+    } catch (error) {
+      console.error("Error creating recommendation:", error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>Review Published!</Text>
@@ -15,11 +86,23 @@ const NudgePage = () => {
         <Text style={styles.nudgeText}>Send nudge</Text>
       </View>
       <View style={styles.artistsGrid}>
-        {Array.from({ length: 6 }).map((_, index) => (
-          <View key={index} style={styles.artist}>
-            <View style={styles.artistCircle}></View>
-            <Text style={styles.artistName}>User Name</Text>
-          </View>
+        {profiles.map((user, index) => (
+          <TouchableOpacity
+            key={index}
+            onPress={() => handleProfileClick(user.id)}
+          >
+            <View style={styles.artist}>
+              <Image
+                source={{
+                  uri:
+                    user.profile_picture ||
+                    "https://t3.ftcdn.net/jpg/03/64/62/36/360_F_364623623_ERzQYfO4HHHyawYkJ16tREsizLyvcaeg.jpg",
+                }}
+                style={styles.artistCircle}
+              />
+              <Text style={styles.artistName}>{user.name}</Text>
+            </View>
+          </TouchableOpacity>
         ))}
       </View>
     </View>

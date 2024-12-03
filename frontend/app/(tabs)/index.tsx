@@ -1,3 +1,4 @@
+import React, { useCallback, useState } from "react";
 import {
   StyleSheet,
   View,
@@ -5,15 +6,16 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
+  Image,
 } from "react-native";
-
-import { ThemedText } from "@/components/ThemedText";
-import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
-import ReviewPreview from "@/components/ReviewPreview";
-import Icon from "react-native-vector-icons/Feather";
 import { router, useFocusEffect } from "expo-router";
 import { useAuthContext } from "@/components/AuthProvider";
+import ReviewPreview from "@/components/ReviewPreview";
+import { ThemedText } from "@/components/ThemedText";
+
+import Icon from "react-native-vector-icons/Feather";
+const logo = require("@/assets/images/icon.png");
 
 export default function HomeScreen() {
   const [feedReviews, setFeedReviews] = useState<Preview[]>();
@@ -30,10 +32,6 @@ export default function HomeScreen() {
     }
   };
 
-  useEffect(() => {
-    if (userId) fetchFeedReviews();
-  }, [userId]);
-
   useFocusEffect(
     useCallback(() => {
       if (userId) fetchFeedReviews();
@@ -49,10 +47,13 @@ export default function HomeScreen() {
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.topIconsContainer}>
-          <Text style={[styles.titleContainer, styles.titleText]}>
-            <ThemedText type="title" style={styles.titleText}>
-              Platnm
-            </ThemedText>
+          <Text style={styles.titleContainer}>
+            <Image source={logo} style={styles.reactLogo} />
+            <View style={styles.title}>
+              <ThemedText type="title" style={styles.titleText}>
+                Platnm
+              </ThemedText>
+            </View>
           </Text>
 
           <View style={styles.rightIconsContainer}>
@@ -148,16 +149,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: "absolute",
+    marginTop: 5,
+    width: 42,
+    height: 45,
   },
   noReviewsText: {
     textAlign: "center",
     color: "#888",
     marginVertical: 20,
+  },
+  title: {
+    paddingBottom: 8,
+    paddingLeft: 8,
   },
   titleText: {
     color: "#F28037",

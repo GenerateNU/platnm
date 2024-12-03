@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -8,206 +8,37 @@ import {
   ScrollView,
   Dimensions,
   TextInput,
-  Touchable,
 } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
-import axios from "axios";
 import Section from "@/components/profile/Section";
-import { router, useFocusEffect, useNavigation } from "expo-router";
 import SelectSection from "@/components/profile/SelectSection";
 import ProfilePicture from "@/components/profile/ProfilePicture";
 import { useAuthContext } from "@/components/AuthProvider";
+import { useProfile } from "@/hooks/useProfile";
 
 export default function ProfileScreen() {
-  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-
-  const [userProfile, setUserProfile] = useState<UserProfile>();
-  const [userReviews, setUserReviews] = useState<Review[]>();
-  const { userId } = useAuthContext();
-  const [sections, setSections] = useState<Section[]>([]); //TODO depending on what we do with sections
-
-  const [selectSectionVisible, setSelectSectionVisible] = useState(false);
-  const [selectedOption, setSelectedOption] = useState<SectionOption>();
-  const [options, setOptions] = useState<SectionOption[]>([]);
-
-  const hasNotification = true; // Hardcoding - Get notification status from somewhere else
-
-  const [isEditing, setIsEditing] = useState(false);
-  const [bio, setBio] = useState(userProfile?.bio);
-  const [nextId, setNextId] = useState(0);
-
-  useFocusEffect(
-    useCallback(() => {
-      if (!userId) router.push("/(tabs)/login");
-    }, [userId]),
-  );
-
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const response = await axios.get(
-          `${BASE_URL}/users/profile/id/${userId}`,
-        );
-        const profile = {
-          id: response.data.user_id,
-          username: response.data.username,
-          display_name: response.data.display_name,
-          bio: response.data.bio.String,
-          profile_picture: response.data.profile_picture.String,
-          followers: response.data.followers,
-          followed: response.data.followed,
-          score: response.data.score,
-        };
-        setUserProfile(profile);
-        setBio(response.data.bio.String);
-      } catch (error) {
-        console.error("Error fetching user profile:", error);
-      }
-    };
-
-    const fetchUserReviews = async () => {
-      try {
-        const response = await axios.get(`${BASE_URL}/reviews/user/${userId}`);
-        setUserReviews(response.data);
-      } catch (error) {
-        console.error("Error fetching user reviews:", error);
-      }
-    };
-
-    const fetchUserSections = async () => {
-      try {
-        const response = await axios.get(`${BASE_URL}/users/section/${userId}`);
-        setSections(response.data);
-      } catch (error) {
-        console.error("Error fetching user sections:", error);
-      }
-    };
-
-    const fetchSectionOptions = async () => {
-      try {
-        const response = await axios.get(
-          `${BASE_URL}/users/section/options/${userId}`,
-        );
-        setOptions(response.data);
-      } catch (error) {
-        console.error("Error fetching section options:", error);
-      }
-    };
-
-    if (userId) {
-      fetchUserProfile();
-      fetchUserReviews();
-      fetchUserSections();
-      fetchSectionOptions();
-    }
-  }, [userId]);
-
-  const handleActivityPress = () => {
-    router.push("/Activity");
-  };
-
-  const handleOnQueuePress = () => {
-    router.push("/OnQueue");
-  };
-
-  const handleSettingsPress = () => {
-    router.push("/Settings");
-  };
-
-  const handleSharePress = () => {
-    console.log("Share icon pressed");
-  };
-
-  const handleEditPress = () => {
-    if (isEditing) {
-      axios.patch(`${BASE_URL}/users/bio/${userId}`, { bio });
-    }
-    setIsEditing(!isEditing);
-  };
-
-  const handleSelect = (option: SectionOption) => {
-    setSelectedOption(option);
-    setSelectSectionVisible(false);
-    const newSection = {
-      section_id: nextId,
-      title: `${option.title}`,
-      items: [],
-      search_type: option.search_type,
-    };
-    setOptions((prevOptions) =>
-      prevOptions.filter((item) => item.title !== option.title),
-    );
-    setSections([...(sections || []), newSection]);
-    setNextId(nextId + 1);
-  };
-
-  const handleAddSection = () => {
-    setSelectSectionVisible(true);
-  };
-
-  const handleAddItem = (section: Section) => {
-    console.log("Adding item to section", section.section_id);
-    console.log("Selected option", section.title);
-    console.log("Selected option", section.search_type);
-    router.push({
-      pathname: "/SectionResults",
-      params: { type: section.search_type },
-    });
-    setSections(
-      sections.map((section) => {
-        if (section.section_id === section.section_id) {
-          return {
-            ...section,
-            items: [...section.items],
-          };
-        }
-        return section;
-      }),
-    );
-  };
-
-  const handleDeleteItem = (sectionId: number, itemId: number) => {
-    setSections((prevSections) =>
-      prevSections.map((section) =>
-        section.section_id === sectionId
-          ? {
-              ...section,
-              items: section.items.filter((item) => item.id !== itemId),
-            }
-          : section,
-      ),
-    );
-
-    axios.delete(`${BASE_URL}/users/section/item`, {
-      data: {
-        user_id: userId,
-        section_type_id: sectionId,
-        section_item_id: itemId,
-      },
-    });
-  };
-
-  const handleDeleteSection = (id: number) => {
-    const sectionToDelete = sections.find(
-      (section) => section.section_id === id,
-    );
-    if (sectionToDelete) {
-      setOptions([
-        ...options,
-        {
-          title: sectionToDelete.title,
-          search_type: sectionToDelete.search_type,
-        },
-      ]);
-    }
-    setSections(sections.filter((section) => section.section_id !== id));
-    axios.delete(`${BASE_URL}/users/section`, {
-      data: {
-        section_type_id: id,
-        user_id: userId,
-      },
-    });
-  };
+  const userId = useAuthContext().userId;
+  const {
+    userProfile,
+    sections,
+    bio,
+    setBio,
+    isEditing,
+    hasNotification,
+    selectSectionVisible,
+    setSelectSectionVisible,
+    options,
+    handleEditPress,
+    handleActivityPress,
+    handleSettingsPress,
+    handleSharePress,
+    handleOnQueuePress,
+    handleAddItem,
+    handleDeleteSection,
+    handleDeleteItem,
+    handleAddSection,
+    handleSelect,
+  } = useProfile(userId);
 
   return (
     userProfile && (
@@ -282,7 +113,6 @@ export default function ProfileScreen() {
                 <Text style={styles.statLabel}>Platinum</Text>
               </View>
             </View>
-
             {/* Bio */}
             {isEditing ? (
               <TextInput

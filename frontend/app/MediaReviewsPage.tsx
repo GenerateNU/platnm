@@ -1,3 +1,4 @@
+import React from "react";
 import { useState, useEffect } from "react";
 import { View, ScrollView, Image, Text } from "react-native";
 import ReviewPreview from "@/components/ReviewPreview";
@@ -32,7 +33,7 @@ const MediaReviewsPage = () => {
   });
   const [mediaCover, setMediaCover] = useState<string | null>(null);
 
-  const filterOptions = ["you", "friend"];
+  const filterOptions = ["you", "friend", "all"];
 
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -43,7 +44,6 @@ const MediaReviewsPage = () => {
         const response = await axios.get(
           `${BASE_URL}/reviews/${media_type}/${media_id}`,
         );
-        console.log(response.data);
         setAllReviews(response.data.reviews);
         setMediaStats({
           userScore: 4.2,
@@ -137,7 +137,7 @@ const MediaReviewsPage = () => {
                 <Text style={styles.score}>
                   {mediaStats.userScore.toFixed(1)}
                 </Text>
-                <Text style={styles.scoreLabel}>Your Avg Score</Text>
+                <Text style={styles.scoreLabel}>Your Avg Rating</Text>
               </View>
             )}
             {selectedFilter === "friend" && (
@@ -145,7 +145,15 @@ const MediaReviewsPage = () => {
                 <Text style={styles.score}>
                   {mediaStats.friendScore.toFixed(1)}
                 </Text>
-                <Text style={styles.scoreLabel}>Friend Score</Text>
+                <Text style={styles.scoreLabel}>Friend Rating</Text>
+              </View>
+            )}
+            {selectedFilter === "all" && (
+              <View style={styles.scoreContainer}>
+                <Text style={styles.score}>
+                  {mediaStats.avgScore.toFixed(1)}
+                </Text>
+                <Text style={styles.scoreLabel}>Avg Rating</Text>
               </View>
             )}
             <Text style={styles.totalRatings}>
@@ -169,6 +177,13 @@ const MediaReviewsPage = () => {
           )}
           {selectedFilter === "friend" && (
             <View></View> // TODO ALEX: Map each fetched review to a ReviewPreview component which will take care of the rest
+          )}
+          {selectedFilter === "all" && (
+            <View>
+              {allReviews.map((review, index) => {
+                return <ReviewPreview key={index} preview={review} />;
+              })}
+            </View>
           )}
         </View>
       </ScrollView>

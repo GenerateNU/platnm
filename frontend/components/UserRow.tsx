@@ -1,15 +1,17 @@
-import { View, Text, Image } from "react-native";
 import React from "react";
-import { RecommendationsCard } from "@/components/recomendations/RecommendationsScreen";
+import { View, Text, Image } from "react-native";
+import { toReadableTime } from "@/utils/utils";
 
 type Props = {
-  recomendations: RecommendationsCard[];
+  recommendations: RecommendationResponse[];
+  currentRecIndex: number;
 };
 
-const UserRow = ({ recomendations }: Props) => {
-  console.log("recomendations");
-  console.log(recomendations);
-  if (recomendations.length === 0) {
+const UserRow = ({ recommendations, currentRecIndex }: Props) => {
+  if (
+    recommendations.length === 0 ||
+    currentRecIndex >= recommendations.length
+  ) {
     return <View />;
   }
   return (
@@ -22,7 +24,7 @@ const UserRow = ({ recomendations }: Props) => {
       }}
     >
       <Image
-        source={{ uri: recomendations[0].receommender_picture }}
+        source={{ uri: recommendations[currentRecIndex].recommender_picture }}
         style={{ width: 50, height: 50, borderRadius: 25 }}
       />
       <View style={{ marginVertical: "auto" }}>
@@ -33,7 +35,7 @@ const UserRow = ({ recomendations }: Props) => {
             fontWeight: "500",
           }}
         >
-          {recomendations[0].recomender_name}
+          {recommendations[currentRecIndex].recommender_name}
         </Text>
         <Text
           style={{
@@ -42,7 +44,9 @@ const UserRow = ({ recomendations }: Props) => {
             fontWeight: "500",
           }}
         >
-          19h
+          {toReadableTime(
+            new Date(recommendations[currentRecIndex].created_at),
+          )}
         </Text>
       </View>
     </View>

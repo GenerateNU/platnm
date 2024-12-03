@@ -38,7 +38,7 @@ func SupabaseSignup(cfg *config.Supabase, email string, password string) (signup
 	// Create the HTTP POST request
 	req, err := http.NewRequest("POST", fmt.Sprintf("%s/auth/v1/signup", supabaseURL), bytes.NewBuffer(payloadBytes))
 	if err != nil {
-		return signupResponse{}, err
+		return signupResponse{}, errs.BadRequest(fmt.Sprintf("failed to create request: %v", err))
 	}
 
 	// Set headers
@@ -50,7 +50,7 @@ func SupabaseSignup(cfg *config.Supabase, email string, password string) (signup
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return signupResponse{}, errs.BadRequest("failed to execute request")
+		return signupResponse{}, errs.BadRequest(fmt.Sprintf("failed to execute request: %v, %s", err, supabaseURL))
 	}
 	defer resp.Body.Close()
 
