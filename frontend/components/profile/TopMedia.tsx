@@ -26,7 +26,7 @@ const TopMedia = ({ sectionId, media }: MediaCardProps) => {
       >
         {media?.map((m, index) => (
           <SectionItem
-            key={m.id}
+            key={index}
             id={sectionId}
             rank={index + 1}
             title={m.title}
