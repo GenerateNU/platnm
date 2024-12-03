@@ -42,6 +42,13 @@ interface Track {
   artist_photo: string;
 }
 
+interface Artist {
+  id: number;
+  name: string;
+  photo: string;
+  bio: string;
+}
+
 type Media = Album | Track;
 
 type Review = {
@@ -91,10 +98,11 @@ interface SectionItem {
   id: number;
   title: string;
   media_type: string;
-  cover: string;
+  cover_photo: string;
 }
 
 type SectionOption = {
+  section_id: number;
   title: string;
   search_type: string;
 };

@@ -13,7 +13,6 @@ export function useProfile(userId: string) {
   const [options, setOptions] = useState<SectionOption[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [bio, setBio] = useState(userProfile?.bio);
-  const [nextId, setNextId] = useState(0);
 
   const hasNotification = true; // Hardcoding - Get notification status from somewhere else
 
@@ -110,7 +109,7 @@ export function useProfile(userId: string) {
     setSelectedOption(option);
     setSelectSectionVisible(false);
     const newSection = {
-      section_id: nextId,
+      section_id: option.section_id,
       title: `${option.title}`,
       items: [],
       search_type: option.search_type,
@@ -119,7 +118,6 @@ export function useProfile(userId: string) {
       prevOptions.filter((item) => item.title !== option.title),
     );
     setSections([...(sections || []), newSection]);
-    setNextId(nextId + 1);
   };
 
   const handleAddSection = () => {
@@ -129,7 +127,7 @@ export function useProfile(userId: string) {
   const handleAddItem = (section: Section) => {
     router.push({
       pathname: "/SectionResults",
-      params: { type: section.search_type },
+      params: { type: section.search_type, sectionId: section.section_id },
     });
     setSections(
       sections.map((section) => {
@@ -175,6 +173,7 @@ export function useProfile(userId: string) {
         {
           title: sectionToDelete.title,
           search_type: sectionToDelete.search_type,
+          section_id: sectionToDelete.section_id,
         },
       ]);
     }
