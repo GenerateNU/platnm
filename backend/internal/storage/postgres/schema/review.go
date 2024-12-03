@@ -249,7 +249,7 @@ func (r *ReviewRepository) CreateComment(ctx context.Context, comment *models.Co
 			return nil, errs.NotFound("user", "id", comment.UserID)
 		} else if errs.IsForeignKeyViolation(err, commentReviewFKeyConstraint) {
 			return nil, errs.NotFound("review", "id", comment.UserID)
-		} 
+		}
 		fmt.Println(err)
 
 		return nil, err
@@ -517,7 +517,7 @@ func (r *ReviewRepository) GetExistingReview(ctx context.Context, id string) (*m
 		WHERE id = $1`, id)
 
 	// Scan the row into the review object
-	err := row.Scan(&review.ID, &review.UserID, &review.MediaType, &review.MediaID, &review.Rating, &review.Comment, &review.Comment, &review.CreatedAt, &review.UpdatedAt, &review.Draft)
+	err := row.Scan(&review.ID, &review.UserID, &review.MediaType, &review.MediaID, &review.Rating, &review.Title, &review.Comment, &review.CreatedAt, &review.UpdatedAt, &review.Draft)
 	if err != nil {
 		// If no rows were found, return nil, no error
 		if err == sql.ErrNoRows {

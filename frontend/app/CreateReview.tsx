@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useLocalSearchParams } from "expo-router";
 import {
   View,
   TextInput,
@@ -10,6 +9,8 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import axios from "axios";
+import { useLocalSearchParams } from "expo-router";
 import HeaderComponent from "@/components/HeaderComponent";
 import DraftButton from "@/components/DraftButton";
 import PublishButton from "@/components/PublishButton";
@@ -18,7 +19,6 @@ import TagSelector from "@/components/media/TagSelector";
 import Divider from "@/components/Divider";
 import NudgePage from "@/components/NudgePage";
 import MediaCard from "@/components/media/MediaCard";
-import axios from "axios";
 import { useAuthContext } from "@/components/AuthProvider";
 
 const CreateReview = () => {
@@ -173,10 +173,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlignVertical: "top",
     justifyContent: "flex-end",
-  },
-  sliderWrapper: {
-    marginBottom: 20,
-    width: "100%",
   },
 });
 
