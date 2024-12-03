@@ -76,6 +76,16 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
     10: Rating10,
   };
 
+  const [sharePopupVisible, setSharePopupVisible] = useState(false);
+
+const handleSharePress = () => {
+  setSharePopupVisible(true); // Show the share popup
+};
+
+const closeSharePopup = () => {
+  setSharePopupVisible(false); // Close the share popup
+};
+
   const getRatingImage = (rating: keyof typeof ratingImages) => {
     return ratingImages[rating]; // Access the image from the preloaded images object
   };
@@ -348,6 +358,21 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
             </TouchableOpacity>
           </Modal>
 
+          <Modal visible={sharePopupVisible} transparent animationType="slide">
+            <TouchableOpacity
+              style={styles.modalOverlay}
+              onPress={closeSharePopup}
+              activeOpacity={1} // Prevent modal from closing when clicking on content
+            >
+              <View style={styles.sharePopupContainer}>
+                <Text style={styles.sharePopupTitle}>Share This Review</Text>
+                <TouchableOpacity style={styles.shareButton} onPress={() => console.log("Share to Friends Pressed")}>
+                  <Text style={styles.shareButtonText}>Share to Friends</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          </Modal>;
+
           {isEditable ? (
             <View>
               <TextInput
@@ -416,12 +441,11 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
                 <Comment width={24} height={24} />
               </TouchableOpacity>
               <Text>{review.review_stat.comment_count}</Text>
-              <TouchableOpacity
-                onPress={() => console.log("share pressed")}
-                style={styles.voteButton}
-              >
-                <Share width={24} height={24} style={{ marginLeft: 10 }} />
-              </TouchableOpacity>
+              <TouchableOpacity onPress={handleSharePress}>
+                <View style={{ marginLeft: 7 }}>
+                  <Share width={24} height={24} />
+                </View>
+              </TouchableOpacity>;
             </View>
             {review.user_id === userId && (
               <TouchableOpacity
@@ -500,7 +524,7 @@ const styles = StyleSheet.create({
   },
   ratingContainer: {
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "flex-start",
   },
   mediaContainer: {
     flexDirection: "row",
@@ -710,6 +734,30 @@ const styles = StyleSheet.create({
     borderBottomColor: "#ddd",
     width: "100%",
     alignItems: "center",
+  },
+  sharePopupContainer: {
+    width: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+  },
+  sharePopupTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  shareButton: {
+    backgroundColor: '#6200ee',
+    padding: 10,
+    borderRadius: 5,
+    width: '100%',
+    alignItems: 'center',
+  },
+  shareButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 
