@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import ( 
+	"time"
+	"database/sql"
+)
 
 type User struct {
 	ID             string    `json:"user_id" db:"id"`
@@ -17,6 +20,18 @@ type User struct {
 type Connections struct {
 	Followees []User `json:"followees"`
 	Followers []User `json:"followers"`
+}
+
+type Follower struct {
+	ID             string         `db:"id"`
+	Username       string         `db:"username"`
+	Email          string         `db:"email"`
+	DisplayName    string         `db:"display_name"`
+	Bio            sql.NullString `db:"bio"`
+	ProfilePicture sql.NullString `db:"profile_picture"`
+	LinkedAccount  sql.NullString `db:"linked_account"`
+	CreatedAt      time.Time      `db:"created_at"`
+	UpdatedAt      time.Time      `db:"updated_at"`
 }
 
 type Notification struct {

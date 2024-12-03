@@ -177,7 +177,15 @@ const CreateReview = () => {
                 <PublishButton handleClick={handlePublish} />
               </View>
             </ScrollView>
-            {showNudges && <NudgePage />}
+            {showNudges && (
+              <NudgePage
+                media_type={mediaType}
+                media_id={mediaId}
+                title={mediaName}
+                artist_name={artistName}
+                cover={cover}
+              />
+            )}
           </View>
         </TouchableWithoutFeedback>
       </TouchableWithoutFeedback>
