@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+
 import { StyleSheet, ScrollView, View, Text } from "react-native";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import axios from "axios";
@@ -8,6 +9,7 @@ import FriendRatings from "@/components/media/FriendRatings";
 import MediaCard from "@/components/media/MediaCard";
 import ReviewStats from "@/components/media/ReviewStats";
 import ReviewPreview from "@/components/ReviewPreview";
+
 import SkeletonLoader from "expo-skeleton-loader";
 
 export default function MediaPage() {
@@ -211,7 +213,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: "#fff",
   },
-
   buttonContainer: {
     flexDirection: "row",
     gap: 8,

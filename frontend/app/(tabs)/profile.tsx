@@ -113,7 +113,6 @@ export default function ProfileScreen() {
                 <Text style={styles.statLabel}>Platinum</Text>
               </View>
             </View>
-
             {/* Bio */}
             {isEditing ? (
               <TextInput
