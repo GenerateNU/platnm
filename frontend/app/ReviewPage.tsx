@@ -1,7 +1,7 @@
 import HeaderComponent from "@/components/HeaderComponent";
 import CommentComponent from "@/components/CommentComponent";
 import axios from "axios";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   TextInput,
   Modal,
+  KeyboardAvoidingView,
 } from "react-native";
 import Rating0 from "@/assets/images/Ratings/Radial-0.svg";
 import Rating1 from "@/assets/images/Ratings/Radial-1.svg";
@@ -28,6 +29,7 @@ import Downvote from "@/assets/images/ReviewPreview/downvote.svg";
 import Upvote from "@/assets/images/ReviewPreview/upvote.svg";
 import Comment from "@/assets/images/ReviewPreview/comment.svg";
 import Share from "@/assets/images/ReviewPreview/share.svg";
+import Upload from "@/assets/images/Icons/Upload.svg";
 import { useAuthContext } from "@/components/AuthProvider";
 
 interface ReviewPageProps {
@@ -74,6 +76,16 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
     8: Rating8,
     9: Rating9,
     10: Rating10,
+  };
+
+  const [sharePopupVisible, setSharePopupVisible] = useState(false);
+
+  const handleSharePress = () => {
+    setSharePopupVisible(true); // Show the share popup
+  };
+
+  const closeSharePopup = () => {
+    setSharePopupVisible(false); // Close the share popup
   };
 
   const getRatingImage = (rating: keyof typeof ratingImages) => {
@@ -239,6 +251,27 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
     fetchVote();
   }, [review_id, userId, newComment]);
 
+  const handleUserPress = () => {
+    // Navigate to the UserPage when the user is clicked
+    const pathName =
+      review?.user_id === userId ? "/(tabs)/profile" : "/(tabs)/user";
+    router.push({
+      pathname: pathName,
+      params: {
+        userId: review?.user_id,
+      },
+    });
+  };
+
+  const handleMediaPress = () => {
+    // Navigate to the MediaPage
+    console.log("Media pressed");
+    router.push({
+      pathname: "/MediaPage",
+      params: { mediaId: review?.media_id, mediaType: review?.media_type },
+    });
+  };
+
   return review ? (
     <View style={styles.container}>
       <HeaderComponent title="Review" />
@@ -257,24 +290,33 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
                 </View>
               </View>
             </View>
-            <View style={styles.vinyl}>
-              <Image source={MusicDisk} style={styles.musicDisk} />
-              {review.media_cover && (
-                <Image
-                  source={{ uri: review.media_cover }} // Use uri for remote images
-                  style={styles.mediaCover}
-                  resizeMode="cover"
-                />
-              )}
-            </View>
+            <TouchableOpacity onPress={handleMediaPress} style={styles.vinyl}>
+              <View style={styles.vinyl}>
+                <Image source={MusicDisk} style={styles.musicDisk} />
+                {review.media_cover && (
+                  <Image
+                    source={{ uri: review.media_cover }} // Use uri for remote images
+                    style={styles.mediaCover}
+                    resizeMode="cover"
+                  />
+                )}
+              </View>
+            </TouchableOpacity>
           </View>
           <View style={styles.mediaContainer}>
-            <View style={styles.ratingContainer}>
-              <Text style={styles.songName}>{review.media_title}</Text>
-              <Text style={styles.artistName}>{review.media_artist}</Text>
-            </View>
+            <TouchableOpacity onPress={handleMediaPress}>
+              <View style={styles.ratingContainer}>
+                <Text
+                  style={styles.songName}
+                  numberOfLines={2} // Limits to 2 lines, change as needed
+                  ellipsizeMode="tail" // Adds ellipsis (...) if the text overflows
+                >
+                  {review.media_title}
+                </Text>
+                <Text style={styles.artistName}>{review.media_artist}</Text>
+              </View>
+            </TouchableOpacity>
           </View>
-
           <View style={styles.rating}>
             {React.createElement(
               getRatingImage(review.rating as keyof typeof ratingImages),
@@ -287,7 +329,6 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
               } as any,
             )}
           </View>
-
           <Modal visible={showPopup} transparent>
             <TouchableOpacity
               style={styles.modalOverlay}
@@ -322,7 +363,23 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
               </View>
             </TouchableOpacity>
           </Modal>
-
+          <Modal visible={sharePopupVisible} transparent animationType="slide">
+            <TouchableOpacity
+              style={styles.modalOverlay}
+              onPress={closeSharePopup}
+              activeOpacity={1} // Prevent modal from closing when clicking on content
+            >
+              <View style={styles.sharePopupContainer}>
+                <Text style={styles.sharePopupTitle}>Share This Review</Text>
+                <TouchableOpacity
+                  style={styles.shareButton}
+                  onPress={() => console.log("Share to Friends Pressed")}
+                >
+                  <Text style={styles.shareButtonText}>Share to Friends</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          </Modal>
           {isEditable ? (
             <View>
               <TextInput
@@ -343,19 +400,14 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
           )}
           {/* Tags Section */}
           {review.tags && review.tags.length > 0 && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.tagsContainer}
-            >
+            <View style={styles.tagsContainer}>
               {review.tags.map((tag, index) => (
                 <View key={index} style={styles.tag}>
                   <Text style={styles.tagText}>{tag}</Text>
                 </View>
               ))}
-            </ScrollView>
+            </View>
           )}
-
           {/* Action Buttons */}
           <View style={styles.actionsContainer}>
             <View style={styles.voteContainer}>
@@ -395,11 +447,10 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
                 <Comment width={24} height={24} />
               </TouchableOpacity>
               <Text>{review.review_stat.comment_count}</Text>
-              <TouchableOpacity
-                onPress={() => console.log("share pressed")}
-                style={styles.voteButton}
-              >
-                <Share width={24} height={24} style={{ marginLeft: 10 }} />
+              <TouchableOpacity onPress={handleSharePress}>
+                <View style={{ marginLeft: 7 }}>
+                  <Share width={24} height={24} />
+                </View>
               </TouchableOpacity>
             </View>
             {review.user_id === userId && (
@@ -419,26 +470,34 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
             ) : (
               <Text style={styles.noReviewsText}>No comments found.</Text>
             )}
+            <View style={{ paddingVertical: 40 }} />
           </View>
         </View>
       </ScrollView>
 
       {/* Fixed TextBox for Comment */}
-      <View style={styles.commentBoxContainer}>
+
+      <KeyboardAvoidingView
+        style={styles.commentBoxContainer}
+        keyboardVerticalOffset={32}
+        behavior="padding"
+        enabled
+      >
         <TextInput
           style={styles.commentInput}
           value={newComment}
           onChangeText={setNewComment}
           placeholder="Add a comment..."
           multiline
-        />
-        <TouchableOpacity
-          style={styles.submitButton}
-          onPress={handleCommentSubmit}
-        >
-          <Text style={styles.submitButtonText}>Submit</Text>
+        ></TextInput>
+        <TouchableOpacity style={{}} onPress={handleCommentSubmit}>
+          <Upload
+            width={16}
+            height={16}
+            style={{ marginLeft: 10, marginRight: 10 }}
+          />
         </TouchableOpacity>
-      </View>
+      </KeyboardAvoidingView>
     </View>
   ) : (
     <View style={styles.container}>
@@ -479,7 +538,7 @@ const styles = StyleSheet.create({
   },
   ratingContainer: {
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "flex-start",
   },
   mediaContainer: {
     flexDirection: "row",
@@ -489,8 +548,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   songName: {
-    fontSize: 20,
+    fontSize: 20, // Adjust size as needed
     fontWeight: "bold",
+    color: "#000", // Adjust color as needed
+    flexWrap: "wrap",
+    width: "95%",
   },
   artistName: {
     fontSize: 16,
@@ -528,6 +590,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingVertical: 15,
     minHeight: 60, // Change from fixed height to minHeight
+    flexWrap: "wrap", // Allows wrapping to a new line
+    gap: 8, // Space between tags
   },
 
   tag: {
@@ -538,7 +602,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     borderWidth: 1,
     borderColor: "#C0C0C0",
-    marginBottom: 10,
     minHeight: 25, // Change from height to minHeight
     justifyContent: "center", // Add this
   },
@@ -622,7 +685,7 @@ const styles = StyleSheet.create({
   },
   commentBoxContainer: {
     position: "absolute",
-    bottom: 0,
+    bottom: 50,
     left: 0,
     right: 0,
     backgroundColor: "#fff",
@@ -635,18 +698,12 @@ const styles = StyleSheet.create({
   },
   commentInput: {
     flex: 1,
-    height: 40,
-    borderColor: "#ccc",
-    borderWidth: 1,
+    flexDirection: "row",
+    height: 50,
     borderRadius: 5,
-    paddingHorizontal: 10,
-  },
-  submitButton: {
-    backgroundColor: "#D3D3D3",
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 5,
-    marginLeft: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: "#EFF1F5",
   },
   submitButtonText: {
     color: "#333",
@@ -688,6 +745,30 @@ const styles = StyleSheet.create({
     borderBottomColor: "#ddd",
     width: "100%",
     alignItems: "center",
+  },
+  sharePopupContainer: {
+    width: "80%",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 20,
+    alignItems: "center",
+  },
+  sharePopupTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+  shareButton: {
+    backgroundColor: "#6200ee",
+    padding: 10,
+    borderRadius: 5,
+    width: "100%",
+    alignItems: "center",
+  },
+  shareButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
 

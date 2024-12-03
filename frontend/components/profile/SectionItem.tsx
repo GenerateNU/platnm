@@ -7,7 +7,6 @@ import { useAuthContext } from "../AuthProvider";
 interface SectionItemProps {
   rank: number;
   id: string;
-  artist_name: string;
   title: string;
   cover: string;
 }
@@ -15,7 +14,6 @@ interface SectionItemProps {
 const SectionItem: React.FC<SectionItemProps> = ({
   id,
   rank,
-  artist_name,
   title,
   cover,
 }) => {
@@ -29,9 +27,9 @@ const SectionItem: React.FC<SectionItemProps> = ({
     <TouchableOpacity
       style={styles.cardContainer}
       onPress={async () => {
-        console.log(title, artist_name, cover);
+        console.log(title, cover);
         console.log(`${BASE_URL}/users/section/item/${userId}/${sectionId}`);
-        const response = await axios.post(
+        await axios.post(
           `${BASE_URL}/users/section/item/${userId}/${sectionId}`,
           {
             title: title,
@@ -64,7 +62,6 @@ const SectionItem: React.FC<SectionItemProps> = ({
 
       {/* Album and Artist Name */}
       <Text style={styles.title}>{title}</Text>
-      <Text style={styles.artistName}>{artist_name}</Text>
     </TouchableOpacity>
   );
 };

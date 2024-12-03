@@ -3,6 +3,10 @@ package main
 import (
 	"context"
 	"log"
+	"log/slog"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"platnm/internal/config"
 	"platnm/internal/service"
@@ -19,8 +23,23 @@ func main() {
 	}
 
 	app := service.InitApp(config)
+	defer app.Repo.Close()
 
-	if err := app.Listen(":" + config.Application.Port); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+	go func() {
+		if err := app.Server.Listen(":" + config.Application.Port); err != nil {
+			log.Fatalf("Failed to start server: %v", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	<-quit
+
+	slog.Info("Shutting down server")
+	if err := app.Server.Shutdown(); err != nil {
+		slog.Error("failed to shutdown server", "error", err)
 	}
+
+	slog.Info("Server shutdown")
 }

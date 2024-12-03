@@ -20,21 +20,47 @@ interface SectionResultsProps {
 }
 
 const SectionResults: React.FC<SectionResultsProps> = () => {
-  const [mediaResults, setMediaResults] = useState<MediaResponse[]>([]);
+  const [mediaResults, setMediaResults] = useState<SectionItem[]>([]);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [searchResults, setSearchResults] = useState<MediaResponse[]>([]);
+  const [searchResults, setSearchResults] = useState<SectionItem[]>([]);
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-  const { type } = useLocalSearchParams<{
+  const { type, sectionId } = useLocalSearchParams<{
     type: string;
+    sectionId: string;
   }>();
 
   // Fetch initial top songs and albums
   useEffect(() => {
-    axios
-      .get(`${BASE_URL}/media?sort=review&type=${type}`)
-      .then((response) => setMediaResults(response.data))
-      .catch((error) => console.error(error));
+    if (type === "artist") {
+      axios
+        .get(`${BASE_URL}/media/artist/ `)
+        .then((response) => {
+          const artists: SectionItem[] = response.data.map((item: Artist) => ({
+            id: sectionId,
+            title: item.name,
+            cover_photo: item.photo,
+            media_type: "artist",
+          }));
+          setMediaResults(artists);
+        })
+        .catch((error) => console.error(error));
+    } else {
+      axios
+        .get(`${BASE_URL}/media?sort=review&type=${type}`)
+        .then((response) => {
+          const medias: SectionItem[] = response.data.map(
+            (item: MediaResponse) => ({
+              id: sectionId,
+              title: item.media.title,
+              cover_photo: item.media.cover,
+              media_type: item.media.media_type,
+            }),
+          );
+          setMediaResults(medias);
+        })
+        .catch((error) => console.error(error));
+    }
   }, []);
 
   const handleSearch = async (query: string) => {
@@ -46,13 +72,33 @@ const SectionResults: React.FC<SectionResultsProps> = () => {
 
     setIsLoading(true);
     try {
-      const [mediaResponse] = await Promise.all([
-        axios.get(`${BASE_URL}/media?name=${query}&type=${type}`),
-      ]);
-
-      setSearchResults(mediaResponse.data);
+      if (type === "artist") {
+        const [mediaResponse] = await Promise.all([
+          axios.get(`${BASE_URL}/media/artist/${query}`),
+        ]);
+        const artists: SectionItem[] = mediaResponse.data.map(
+          (item: Artist) => ({
+            id: sectionId,
+            title: item.name,
+            cover_photo: item.photo,
+            media_type: "artist",
+          }),
+        );
+        setSearchResults(artists);
+      } else {
+        const [mediaResponse] = await Promise.all([
+          axios.get(`${BASE_URL}/media/${query}`),
+        ]);
+        const medias: SectionItem[] = mediaResponse.data.map((item: Media) => ({
+          id: item.id,
+          title: item.title,
+          cover_photo: item.cover,
+          media_type: item.media_type,
+        }));
+        setSearchResults(medias);
+        console.log("mediaResponse", mediaResponse.data);
+      }
       setIsSearchActive(true);
-      console.log("searchResults", searchResults);
     } catch (error) {
       console.error("Search error:", error);
       setSearchResults([]);
@@ -66,10 +112,14 @@ const SectionResults: React.FC<SectionResultsProps> = () => {
       <SearchBar onSearch={handleSearch} />
 
       {isSearchActive ? (
-        <SectionSearchResults media={searchResults} isLoading={isLoading} />
+        <SectionSearchResults
+          sectionId={sectionId}
+          media={searchResults}
+          isLoading={isLoading}
+        />
       ) : (
         <View>
-          <TopMedia media={mediaResults} />
+          <TopMedia sectionId={sectionId} media={mediaResults} />
         </View>
       )}
     </ScrollView>

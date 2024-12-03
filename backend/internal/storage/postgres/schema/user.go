@@ -3,6 +3,7 @@ package schema
 import (
 	"context"
 	"database/sql"
+	"platnm/internal/errs"
 	"platnm/internal/models"
 	"strconv"
 
@@ -403,6 +404,45 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 
 }
 
+func (r *UserRepository) GetUserFollowing(ctx context.Context, id uuid.UUID) ([]*models.Follower, error) {
+	query := `SELECT id, username, email, display_name, bio, profile_picture, linked_account, created_at, updated_at
+	FROM "user" u
+	JOIN follower f ON u.id = f.follower_id
+	WHERE f.followee_id = $1`
+
+	// Execute the query
+	rows, err := r.db.Query(ctx, query, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Create a slice to hold the result
+	var users []*models.Follower
+
+	// Iterate over the rows
+	for rows.Next() {
+		var user models.Follower
+		if err := rows.Scan(&user.ID, &user.Username, &user.Email, &user.DisplayName,
+			&user.Bio, &user.ProfilePicture, &user.LinkedAccount, &user.CreatedAt, &user.UpdatedAt); err != nil {
+				return nil, err
+		}
+		users = append(users, &user)
+	}
+
+	if len(users) == 0 {
+		return nil, errs.NotFound("User", "id", id)
+	}
+
+	// Check for errors that occurred during the iteration.
+	// Necessary because rows.Next() defers errors to rows.Err().
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+} 
+
 func (r *UserRepository) CreateSection(ctx context.Context, sectiontype models.SectionType) (models.SectionType, error) {
 
 	if err := r.db.QueryRow(ctx, `INSERT INTO "section_type" (id, title, search_type) VALUES ($1, $2, $3) RETURNING id`, sectiontype.ID, sectiontype.Title, sectiontype.SearchType).Scan(&sectiontype.ID); err != nil {
@@ -549,7 +589,7 @@ func (r *UserRepository) GetUserSections(ctx context.Context, user_id string) ([
 func (r *UserRepository) GetUserSectionOptions(ctx context.Context, user_id string) ([]models.SectionOption, error) {
 	var options []models.SectionOption
 	rows, err := r.db.Query(ctx,
-		`SELECT section_type.title, section_type.search_type
+		`SELECT section_type.title, section_type.search_type, section_type.id
 		FROM section_type
 		WHERE section_type.id NOT IN
   		  (SELECT section_type_item.section_type_id
@@ -563,7 +603,7 @@ func (r *UserRepository) GetUserSectionOptions(ctx context.Context, user_id stri
 
 	for rows.Next() {
 		var option models.SectionOption
-		if err := rows.Scan(&option.SectionTitle, &option.SearchType); err != nil {
+		if err := rows.Scan(&option.SectionTitle, &option.SearchType, &option.SectionId); err != nil {
 			return nil, err
 		}
 		options = append(options, option)

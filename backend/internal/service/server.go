@@ -15,11 +15,11 @@ import (
 	spotify_handler "platnm/internal/service/handler/spotify"
 	spotify_middleware "platnm/internal/service/middleware/spotify"
 	platnm_session "platnm/internal/service/session"
+	"platnm/internal/storage"
+	"platnm/internal/storage/postgres"
 
 	"platnm/internal/service/handler/reviews"
 	"platnm/internal/service/handler/users"
-
-	"platnm/internal/storage/postgres"
 
 	go_json "github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
@@ -33,15 +33,23 @@ import (
 	"github.com/gofiber/storage/memory"
 )
 
-func InitApp(config config.Config) *fiber.App {
-	app := setupApp()
-
-	setupRoutes(app, config)
-
-	return app
+type App struct {
+	Server *fiber.App
+	Repo   *storage.Repository
 }
 
-func setupRoutes(app *fiber.App, config config.Config) {
+func InitApp(config config.Config) *App {
+	app := setupApp()
+	repo := postgres.NewRepository(config.DB)
+	setupRoutes(app, repo, config)
+
+	return &App{
+		Server: app,
+		Repo:   repo,
+	}
+}
+
+func setupRoutes(app *fiber.App, repo *storage.Repository, config config.Config) {
 	sessionStore := platnm_session.NewSessionStore(session.Config{
 		Storage:    memory.New(),
 		Expiration: constants.SessionDuration,
@@ -54,8 +62,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		return c.SendStatus(http.StatusOK)
 	})
 
-	repository := postgres.NewRepository(config.DB)
-	userHandler := users.NewHandler(repository.User, repository.Playlist, config.Supabase, sessionStore)
+	userHandler := users.NewHandler(repo.User, repo.Playlist, config.Supabase, sessionStore)
 	app.Route("/users", func(r fiber.Router) {
 		r.Get("/", userHandler.GetUsers)
 		r.Get("/:id/connections", userHandler.GetConnections)
@@ -67,6 +74,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Patch("/bio/:id", userHandler.UpdateUserBio)
 		r.Put("/enthusiasm", userHandler.UpdateUserOnboard)
 		r.Get("/feed/:id", userHandler.GetUserFeed)
+		r.Get("following/:id", userHandler.GetUserFollowing)
 		r.Patch("/pfp/:id", userHandler.UpdateUserProfilePicture)
 		r.Post("/section", userHandler.CreateSection)
 		r.Post("/section/item/:userId/:sectionId", userHandler.CreateSectionItem)
@@ -80,7 +88,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	})
 
 	app.Route("/reviews", func(r fiber.Router) {
-		reviewHandler := reviews.NewHandler(repository.Review, repository.User, repository.UserReviewVote)
+		reviewHandler := reviews.NewHandler(repo.Review, repo.User, repo.UserReviewVote)
 		r.Post("/", reviewHandler.CreateReview)
 		r.Get("/popular", reviewHandler.GetReviewsByPopularity)
 		r.Get("/tags", reviewHandler.GetTags)
@@ -121,24 +129,25 @@ func setupRoutes(app *fiber.App, config config.Config) {
 		r.Get("/comments/:id", reviewHandler.GetComments)
 	})
 
-	mediaHandler := media.NewHandler(repository.Media)
+	mediaHandler := media.NewHandler(repo.Media)
 	app.Route("/media", func(r fiber.Router) {
-		m := spotify_middleware.NewMiddleware(config.Spotify, repository.UserAuth, sessionStore)
+		m := spotify_middleware.NewMiddleware(config.Spotify, repo.UserAuth, sessionStore)
 		// Apply middleware only to the specific route
 		r.Get("/:name", m.WithSpotifyClient(), mediaHandler.GetMediaByName)
+		r.Get("/artist/:name", m.WithSpotifyClient(), mediaHandler.GetArtistByName)
 		r.Get("/track/:id", mediaHandler.GetTrackById)
 		r.Get("/album/:id", mediaHandler.GetAlbumById)
 		r.Get("/", mediaHandler.GetMedia)
 	})
 
-	recommendationHandler := recommendation.NewHandler(repository.Recommendation, repository.User)
+	recommendationHandler := recommendation.NewHandler(repo.Recommendation, repo.User)
 	app.Route("/recommendation", func(r fiber.Router) {
 		r.Post("/", recommendationHandler.CreateRecommendation)
 		r.Patch("/:recommendationId", recommendationHandler.ReactToRecommendation)
 		r.Get("/:recommendeeId", recommendationHandler.GetRecommendations)
 	})
 
-	playlistHandler := playlist.NewHandler(repository.Playlist)
+	playlistHandler := playlist.NewHandler(repo.Playlist)
 	app.Route("/playlist", func(r fiber.Router) {
 		r.Post("/on_queue/:userId", playlistHandler.AddToUserOnQueue)
 		r.Get("/on_queue/:userId", playlistHandler.GetUserOnQueue)
@@ -147,7 +156,7 @@ func setupRoutes(app *fiber.App, config config.Config) {
 	// change to /oauth once its changed in spotify dashboard
 	app.Route("/auth", func(r fiber.Router) {
 		r.Route("/spotify", func(r fiber.Router) {
-			h := spotify_oauth_handler.NewHandler(sessionStore, stateStore, config.Spotify, repository.UserAuth)
+			h := spotify_oauth_handler.NewHandler(sessionStore, stateStore, config.Spotify, repo.UserAuth)
 
 			r.Get("/begin", h.Begin)
 			r.Get("/callback", h.Callback)
@@ -158,12 +167,16 @@ func setupRoutes(app *fiber.App, config config.Config) {
 			r.Get("/health", func(c *fiber.Ctx) error {
 				return c.SendStatus(http.StatusOK)
 			})
+			r.Post("/forgot", h.ForgotPassword)
+			r.Post("/signout", h.SignOut)
+			r.Post("/deactivate", h.DeactivateAccount)
+			r.Put("/resetpassword", h.ResetPassword)
 		})
 	})
 
 	app.Route("/spotify", func(r fiber.Router) {
-		h := spotify_handler.NewHandler(repository.Media)
-		m := spotify_middleware.NewMiddleware(config.Spotify, repository.UserAuth, sessionStore)
+		h := spotify_handler.NewHandler(repo.Media)
+		m := spotify_middleware.NewMiddleware(config.Spotify, repo.UserAuth, sessionStore)
 
 		r.Route("/clientCreds", func(clientCredRoute fiber.Router) {
 			clientCredRoute.Use(m.WithSpotifyClient())

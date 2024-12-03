@@ -247,201 +247,226 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
     });
   };
 
+  const handleUserPress = () => {
+    // Navigate to the UserPage when the user is clicked
+    const pathName =
+      preview.user_id === userId ? "/(tabs)/profile" : "/(tabs)/user";
+    router.push({
+      pathname: pathName,
+      params: {
+        userId: preview.user_id,
+      },
+    });
+  };
+
+  const handleMediaPress = () => {
+    // Navigate to the MediaPage
+    console.log("Media pressed");
+    router.push({
+      pathname: "/MediaPage",
+      params: { mediaId: preview.media_id, mediaType: preview.media_type },
+    });
+  };
+
   return (
-    <View style={styles.card}>
-      <View style={styles.vinyl}>
-        <Image source={MusicDisk} style={styles.musicDisk} />
-        {preview.media_cover && (
-          <Image
-            source={{ uri: preview.media_cover }}
-            style={styles.mediaCover}
-            resizeMode="cover"
-          />
-        )}
-      </View>
-
-      <View style={styles.container}>
-        <View style={styles.topContainer}>
-          <View style={styles.leftSection}>
-            <Image
-              style={styles.profilePicture}
-              source={{ uri: preview.profile_picture }}
-            />
-            <View style={styles.textContainer}>
-              <Text style={styles.displayName}>{preview.display_name}</Text>
-              <Text style={styles.username}>@{preview.username}</Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.mediaContainer}>
-          <View style={styles.ratingContainer}>
-            <Text style={styles.songName}>{preview.media_title}</Text>
-            <Text style={styles.artistName}>{preview.media_artist}</Text>
-          </View>
-
-          <View>
-            {React.createElement(
-              getRatingImage(preview.rating as keyof typeof ratingImages),
-              {
-                style: styles.ratingImage,
-              },
+    <TouchableOpacity onPress={handlePreviewPress}>
+      <View style={styles.card}>
+        <TouchableOpacity onPress={handleMediaPress} style={styles.vinyl}>
+          <View style={styles.vinyl}>
+            <Image source={MusicDisk} style={styles.musicDisk} />
+            {preview.media_cover && (
+              <Image
+                source={{ uri: preview.media_cover }}
+                style={styles.mediaCover}
+                resizeMode="cover"
+              />
             )}
           </View>
-        </View>
-      </View>
-
-      {preview.tags && preview.tags.length > 0 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.tagsContainer}
-        >
-          {preview.tags.map((tag, index) => (
-            <View key={index} style={styles.tag}>
-              <Text style={styles.tagText}>{tag}</Text>
-            </View>
-          ))}
-        </ScrollView>
-      )}
-
-      <TouchableOpacity onPress={handlePreviewPress}>
-        {isEditable ? (
-          <View>
-            <TextInput
-              style={styles.editInput}
-              value={editedComment}
-              onChangeText={setEditedComment}
-              multiline
-            />
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={handleEditSave}
-            >
-              <Text>Save</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <Text style={styles.commentText}>
-            {reviewText && reviewText.length > 100
-              ? showFullComment
-                ? reviewText
-                : `${reviewText.slice(0, 100)}...`
-              : reviewText}
-          </Text>
-        )}
-
-        {reviewText && reviewText.length > 100 && (
-          <TouchableOpacity onPress={handleViewMorePress}>
-            <Text style={styles.readMore}>
-              {showFullComment ? "Show less" : "Read more"}
-            </Text>
-          </TouchableOpacity>
-        )}
-      </TouchableOpacity>
-
-      <View style={styles.actionsContainer}>
-        <View style={styles.voteContainer}>
-          <TouchableOpacity
-            onPress={() => handleUpvotePress()}
-            style={styles.voteButton}
-          >
-            <Upvote
-              width={24}
-              height={24}
-              fill={currentVote && currentVoteValue ? "#F28037" : "#555"}
-              style={{
-                color: currentVote && currentVoteValue ? "#F28037" : "#555",
-              }}
-            />
-            <Text>{upvoteCount}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => handleDownvotePress()}
-            style={styles.voteButton}
-          >
-            <Downvote
-              width={24}
-              height={24}
-              fill={currentVote && !currentVoteValue ? "#F28037" : "#555"}
-              style={{
-                color: currentVote && !currentVoteValue ? "#F28037" : "#555",
-              }}
-            />
-            <Text>{downvoteCount}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleCommentPress}
-            style={styles.voteButton}
-          >
-            <Comment width={24} height={24} />
-          </TouchableOpacity>
-          <Text>{preview.review_stat.comment_count}</Text>
-        </View>
-        <TouchableOpacity onPress={handleMenuToggle}>
-          <Image source={ThreeDotsMenu} style={styles.voteIcon} />
         </TouchableOpacity>
 
-        {/* Modal for menu */}
-        <Modal
-          visible={menuVisible}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => setMenuVisible(false)}
-        >
-          <TouchableOpacity
-            style={styles.modalOverlay}
-            onPress={() => setMenuVisible(false)}
-          >
-            <View style={styles.menuContainer}>
-              {isOwner ? (
-                <>
-                  <TouchableOpacity
-                    onPress={() => handleMenuOption("share")}
-                    style={styles.menuItem}
-                  >
-                    <Text style={styles.menuText}>Share</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => handleMenuOption("edit")}
-                    style={styles.menuItem}
-                  >
-                    <Text style={styles.menuText}>Edit</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => handleMenuOption("delete")}
-                    style={styles.menuItem}
-                  >
-                    <Text style={styles.menuText}>Delete</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => handleMenuOption("manage comments")}
-                    style={styles.menuItem}
-                  >
-                    <Text style={styles.menuText}>Manage Comments</Text>
-                  </TouchableOpacity>
-                </>
-              ) : (
-                <>
-                  <TouchableOpacity
-                    onPress={() => handleMenuOption("share")}
-                    style={styles.menuItem}
-                  >
-                    <Text style={styles.menuText}>Share</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => handleMenuOption("report")}
-                    style={styles.menuItem}
-                  >
-                    <Text style={styles.menuText}>Report</Text>
-                  </TouchableOpacity>
-                </>
-              )}
+        <View style={styles.container}>
+          <TouchableOpacity onPress={handleUserPress}>
+            <View style={styles.topContainer}>
+              <View style={styles.leftSection}>
+                <Image
+                  style={styles.profilePicture}
+                  source={{ uri: preview.profile_picture }}
+                />
+                <View style={styles.textContainer}>
+                  <Text style={styles.displayName}>{preview.display_name}</Text>
+                  <Text style={styles.username}>@{preview.username}</Text>
+                </View>
+              </View>
             </View>
           </TouchableOpacity>
-        </Modal>
+
+          <View style={styles.mediaContainer}>
+            <View style={styles.ratingContainer}>
+              <TouchableOpacity onPress={handleMediaPress}>
+                <Text style={styles.songName}>{preview.media_title}</Text>
+                <Text style={styles.artistName}>{preview.media_artist}</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View>
+              {React.createElement(
+                getRatingImage(preview.rating as keyof typeof ratingImages),
+                {
+                  style: styles.ratingImage,
+                },
+              )}
+            </View>
+          </View>
+        </View>
+
+        {preview.tags && preview.tags.length > 0 && (
+          <View style={styles.tagsContainer}>
+            {preview.tags.map((tag, index) => (
+              <View key={index} style={styles.tag}>
+                <Text style={styles.tagText}>{tag}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        <TouchableOpacity onPress={handlePreviewPress}>
+          {isEditable ? (
+            <View>
+              <TextInput
+                style={styles.editInput}
+                value={editedComment}
+                onChangeText={setEditedComment}
+                multiline
+              />
+              <TouchableOpacity
+                style={styles.saveButton}
+                onPress={handleEditSave}
+              >
+                <Text>Save</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <Text style={styles.commentText}>
+              {reviewText && reviewText.length > 100
+                ? showFullComment
+                  ? reviewText
+                  : `${reviewText.slice(0, 100)}...`
+                : reviewText}
+            </Text>
+          )}
+
+          {reviewText && reviewText.length > 100 && (
+            <TouchableOpacity onPress={handleViewMorePress}>
+              <Text style={styles.readMore}>
+                {showFullComment ? "Show less" : "Read more"}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </TouchableOpacity>
+
+        <View style={styles.actionsContainer}>
+          <View style={styles.voteContainer}>
+            <TouchableOpacity
+              onPress={() => handleUpvotePress()}
+              style={styles.voteButton}
+            >
+              <Upvote
+                width={24}
+                height={24}
+                fill={currentVote && currentVoteValue ? "#F28037" : "#555"}
+                style={{
+                  color: currentVote && currentVoteValue ? "#F28037" : "#555",
+                }}
+              />
+              <Text>{upvoteCount}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handleDownvotePress()}
+              style={styles.voteButton}
+            >
+              <Downvote
+                width={24}
+                height={24}
+                fill={currentVote && !currentVoteValue ? "#F28037" : "#555"}
+                style={{
+                  color: currentVote && !currentVoteValue ? "#F28037" : "#555",
+                }}
+              />
+              <Text>{downvoteCount}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleCommentPress}
+              style={styles.voteButton}
+            >
+              <Comment width={24} height={24} />
+            </TouchableOpacity>
+            <Text>{preview.review_stat.comment_count}</Text>
+          </View>
+          <TouchableOpacity onPress={handleMenuToggle}>
+            <Image source={ThreeDotsMenu} style={styles.voteIcon} />
+          </TouchableOpacity>
+
+          {/* Modal for menu */}
+          <Modal
+            visible={menuVisible}
+            transparent={true}
+            animationType="fade"
+            onRequestClose={() => setMenuVisible(false)}
+          >
+            <TouchableOpacity
+              style={styles.modalOverlay}
+              onPress={() => setMenuVisible(false)}
+            >
+              <View style={styles.menuContainer}>
+                {isOwner ? (
+                  <>
+                    <TouchableOpacity
+                      onPress={() => handleMenuOption("share")}
+                      style={styles.menuItem}
+                    >
+                      <Text style={styles.menuText}>Share</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => handleMenuOption("edit")}
+                      style={styles.menuItem}
+                    >
+                      <Text style={styles.menuText}>Edit</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => handleMenuOption("delete")}
+                      style={styles.menuItem}
+                    >
+                      <Text style={styles.menuText}>Delete</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => handleMenuOption("manage comments")}
+                      style={styles.menuItem}
+                    >
+                      <Text style={styles.menuText}>Manage Comments</Text>
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <>
+                    <TouchableOpacity
+                      onPress={() => handleMenuOption("share")}
+                      style={styles.menuItem}
+                    >
+                      <Text style={styles.menuText}>Share</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => handleMenuOption("report")}
+                      style={styles.menuItem}
+                    >
+                      <Text style={styles.menuText}>Report</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+              </View>
+            </TouchableOpacity>
+          </Modal>
+        </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -467,6 +492,8 @@ const styles = StyleSheet.create({
     top: 0,
     right: 0,
     alignItems: "center",
+    paddingLeft: 100,
+    paddingBottom: 100,
   },
   musicDisk: {
     position: "absolute",
@@ -556,8 +583,9 @@ const styles = StyleSheet.create({
   },
   tagsContainer: {
     flexDirection: "row",
-    marginBottom: 10,
-    paddingHorizontal: 5,
+    flexWrap: "wrap", // Allows wrapping to a new line
+    marginVertical: 8,
+    gap: 8, // Space between tags
   },
   tag: {
     backgroundColor: "rgba(242, 128, 55, 0.65)",
