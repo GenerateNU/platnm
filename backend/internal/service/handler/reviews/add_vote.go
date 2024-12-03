@@ -1,7 +1,6 @@
 package reviews
 
 import (
-	"fmt"
 	"platnm/internal/errs"
 	"platnm/internal/models"
 
@@ -16,7 +15,6 @@ func (h *Handler) UserVote(c *fiber.Ctx, postType string) error {
 	var req createVoteRequest
 
 	if err := c.BodyParser(&req); err != nil {
-		fmt.Println(err)
 		return errs.BadRequest("failed to parse request body")
 	}
 
