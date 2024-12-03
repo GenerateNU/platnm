@@ -68,7 +68,7 @@ export default function ProfileScreen() {
   useFocusEffect(
     useCallback(() => {
       fetchFollowing();
-    }, [userId]),
+    }, []),
   );
 
   const navigateToProfile = (user: User) => {
@@ -147,14 +147,14 @@ export default function ProfileScreen() {
                 onPress={() => openModal(followerList, "Followers")}
                 style={styles.statItemContainer}
               >
-                <Text style={styles.statNumber}>{userProfile.followers}</Text>
+                <Text style={styles.statNumber}>{followerList.length}</Text>
                 <Text style={styles.statLabel}>Followers</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => openModal(followingList, "Following")}
                 style={styles.statItemContainer}
               >
-                <Text style={styles.statNumber}>{userProfile.followed}</Text>
+                <Text style={styles.statNumber}>{followingList.length}</Text>
                 <Text style={styles.statLabel}>Following</Text>
               </TouchableOpacity>
               <View style={styles.statItemContainer}>
