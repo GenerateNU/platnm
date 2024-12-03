@@ -297,52 +297,53 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
               )}
             </View>
           </View>
-        </View>
 
-        {preview.tags && preview.tags.length > 0 && (
-          <View style={styles.tagsContainer}>
-            {preview.tags.map((tag, index) => (
-              <View key={index} style={styles.tag}>
-                <Text style={styles.tagText}>{tag}</Text>
-              </View>
-            ))}
-          </View>
-        )}
-
-        <TouchableOpacity onPress={handlePreviewPress}>
-          {isEditable ? (
-            <View>
-              <TextInput
-                style={styles.editInput}
-                value={editedComment}
-                onChangeText={setEditedComment}
-                multiline
-              />
-              <TouchableOpacity
-                style={styles.saveButton}
-                onPress={handleEditSave}
-              >
-                <Text>Save</Text>
-              </TouchableOpacity>
+          {preview.tags && preview.tags.length > 0 && (
+            <View style={styles.tagsContainer}>
+              {preview.tags.map((tag, index) => (
+                <View key={index} style={styles.tag}>
+                  <Text style={styles.tagText}>{tag}</Text>
+                </View>
+              ))}
             </View>
-          ) : (
-            <Text style={styles.commentText}>
-              {reviewText && reviewText.length > 100
-                ? showFullComment
-                  ? reviewText
-                  : `${reviewText.slice(0, 100)}...`
-                : reviewText}
-            </Text>
           )}
 
-          {reviewText && reviewText.length > 100 && (
-            <TouchableOpacity onPress={handleViewMorePress}>
-              <Text style={styles.readMore}>
-                {showFullComment ? "Show less" : "Read more"}
+          <TouchableOpacity onPress={handlePreviewPress}>
+            <Text style={styles.title}>{preview.title}</Text>
+            {isEditable ? (
+              <View>
+                <TextInput
+                  style={styles.editInput}
+                  value={editedComment}
+                  onChangeText={setEditedComment}
+                  multiline
+                />
+                <TouchableOpacity
+                  style={styles.saveButton}
+                  onPress={handleEditSave}
+                >
+                  <Text>Save</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <Text style={styles.commentText}>
+                {reviewText && reviewText.length > 100
+                  ? showFullComment
+                    ? reviewText
+                    : `${reviewText.slice(0, 100)}...`
+                  : reviewText}
               </Text>
-            </TouchableOpacity>
-          )}
-        </TouchableOpacity>
+            )}
+
+            {reviewText && reviewText.length > 100 && (
+              <TouchableOpacity onPress={handleViewMorePress}>
+                <Text style={styles.readMore}>
+                  {showFullComment ? "Show less" : "Read more"}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.actionsContainer}>
           <View style={styles.voteContainer}>
@@ -495,6 +496,7 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     alignItems: "flex-start",
+    marginLeft: 8,
   },
   topContainer: {
     flexDirection: "row",
@@ -533,13 +535,11 @@ const styles = StyleSheet.create({
     marginTop: 5,
     width: 175,
     textAlign: "left",
-    marginLeft: 5,
   },
   artistName: {
     fontSize: 13,
     color: "#666",
     textAlign: "left",
-    marginLeft: 5,
   },
   ratingContainer: {
     justifyContent: "flex-start",
@@ -550,12 +550,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
+  title: {
+    fontWeight: 700,
+  },
   commentText: {
     fontSize: 14,
     color: "#333",
     textAlign: "left",
     marginVertical: 8,
-    marginLeft: 5,
   },
   readMore: {
     fontSize: 14,
@@ -572,10 +574,8 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     paddingHorizontal: 12,
     borderRadius: 20,
-    marginHorizontal: 5,
     borderWidth: 1,
     borderColor: "#C0C0C0",
-    marginLeft: 2,
   },
   tagText: {
     color: "#333",

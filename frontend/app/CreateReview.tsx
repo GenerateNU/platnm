@@ -19,6 +19,7 @@ import Divider from "@/components/Divider";
 import NudgePage from "@/components/NudgePage";
 import MediaCard from "@/components/media/MediaCard";
 import axios from "axios";
+import { useAuthContext } from "@/components/AuthProvider";
 
 const CreateReview = () => {
   const { mediaType, mediaId, rating } = useLocalSearchParams<{
@@ -26,11 +27,13 @@ const CreateReview = () => {
     mediaId: string;
     rating: string;
   }>();
-
+  const userId = useAuthContext().userId;
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
   const [media, setMedia] = useState<Media>();
-  const [review, setReview] = useState("");
+  const [title, setTitle] = useState("");
+  const [comment, setComment] = useState("");
+
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showNudges, setShowNudges] = useState(false);
 
@@ -45,27 +48,21 @@ const CreateReview = () => {
     }
   };
 
-  const handleDraftSubmit = () => {
-    publishReview(
-      mediaType,
-      parseInt(mediaId),
-      review,
-      parseInt(rating),
-      selectedTags,
-      true,
-    );
-  };
-
-  const handlePublish = () => {
-    publishReview(
-      mediaType,
-      parseInt(mediaId),
-      review,
-      parseInt(rating),
-      selectedTags,
-      false,
-    );
-    setShowNudges(true);
+  const handleSubmit = (draft: boolean) => {
+    const request = {
+      user_id: userId,
+      media_type: mediaType,
+      media_id: parseInt(mediaId),
+      rating: parseInt(rating),
+      tags: selectedTags,
+      title,
+      comment,
+      draft,
+    };
+    publishReview(request);
+    if (!draft) {
+      setShowNudges(true);
+    }
   };
 
   useEffect(() => {
@@ -99,8 +96,8 @@ const CreateReview = () => {
                       multiline={true}
                       placeholderTextColor="#434343"
                       placeholder="Add a title..."
-                      value={review}
-                      onChangeText={setReview}
+                      value={title}
+                      onChangeText={setTitle}
                     />
                   </View>
                   <TextInput
@@ -108,8 +105,8 @@ const CreateReview = () => {
                     multiline={true}
                     placeholderTextColor="#434343"
                     placeholder="What do you want to talk about?"
-                    value={review}
-                    onChangeText={setReview}
+                    value={comment}
+                    onChangeText={setComment}
                   />
                   <Divider />
                   <TagSelector
@@ -117,8 +114,8 @@ const CreateReview = () => {
                     handleTagSelect={handleTagSelect}
                   />
                   <View style={styles.buttonContainer}>
-                    <DraftButton handleClick={() => handleDraftSubmit()} />
-                    <PublishButton handleClick={handlePublish} />
+                    <DraftButton handleClick={() => handleSubmit(true)} />
+                    <PublishButton handleClick={() => handleSubmit(false)} />
                   </View>
                 </View>
               </ScrollView>

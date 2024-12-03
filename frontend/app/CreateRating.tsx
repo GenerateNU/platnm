@@ -9,12 +9,14 @@ import PublishButton from "@/components/PublishButton";
 import RatingSlider from "@/components/media/RatingSlider";
 import MediaCard from "@/components/media/MediaCard";
 import { usePublishReview } from "@/hooks/usePublishReview";
+import { useAuthContext } from "@/components/AuthProvider";
 
 const CreateRating = () => {
   const { mediaType, mediaId } = useLocalSearchParams<{
     mediaType: string;
     mediaId: string;
   }>();
+  const userId = useAuthContext().userId;
 
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -28,7 +30,15 @@ const CreateRating = () => {
   };
 
   const handleDraftSubmit = () => {
-    publishReview(mediaType, parseInt(mediaId), "", rating, [], true);
+    const request = {
+      user_id: userId,
+      media_type: mediaType,
+      media_id: parseInt(mediaId),
+      rating: rating,
+      tags: [],
+      draft: true,
+    };
+    publishReview(request);
   };
 
   useEffect(() => {
@@ -54,6 +64,7 @@ const CreateRating = () => {
                   params: {
                     mediaType: mediaType,
                     mediaId: mediaId,
+                    rating: rating,
                   },
                 })
               }
