@@ -24,6 +24,7 @@ type UserRepository interface {
 	UpdateUserProfilePicture(ctx context.Context, user uuid.UUID, pfp string) error
 	GetUserFeed(ctx context.Context, id uuid.UUID) ([]*models.Preview, error)
 	UpdateUserOnboard(ctx context.Context, email string, enthusiasm string) (string, error)
+	GetUserFollowing(ctx context.Context, id uuid.UUID) ([]*models.Follower, error)
 	CreateSection(ctx context.Context, sectiontype models.SectionType) (models.SectionType, error)
 	CreateSectionItem(ctx context.Context, sectionitem models.SectionItem, user string, sectiontype string) (models.SectionItem, error)
 	UpdateSectionItem(ctx context.Context, sectionitem models.SectionItem) error
@@ -32,10 +33,8 @@ type UserRepository interface {
 	GetUserSections(ctx context.Context, id string) ([]models.UserSection, error)
 	GetUserSectionOptions(ctx context.Context, id string) ([]models.SectionOption, error)
 	GetConnections(ctx context.Context, id uuid.UUID, limit int, offset int) (models.Connections, error)
-
 	GetProfileByName(ctx context.Context, name string) ([]*models.Profile, error)
 	GetNotifications(ctx context.Context, id string) ([]*models.Notification, error)
-
 	// GetProfileByUser(ctx context.Context, userName string) (*models.Profile, error)
 }
 
@@ -47,7 +46,7 @@ type ReviewRepository interface {
 	UpdateReview(ctx context.Context, update *models.Review) (*models.Review, error)
 	GetExistingReview(ctx context.Context, id string) (*models.Review, error)
 	ReviewBelongsToUser(ctx context.Context, reviewID string, userID string) (bool, error)
-	GetReviewsByMediaID(ctx context.Context, id string, media_type string) ([]*models.Review, error)
+	GetReviewsByMediaID(ctx context.Context, id string, media_type string) ([]*models.Preview, error)
 	CreateComment(ctx context.Context, comment *models.Comment) (*models.Comment, error)
 	CommentExists(ctx context.Context, id string) (bool, error)
 	GetUserReviewOfTrack(ctx context.Context, id string, id2 string) (*models.Review, error)
@@ -57,6 +56,7 @@ type ReviewRepository interface {
 	GetReviewByID(ctx context.Context, id string) (*models.Preview, error)
 	GetReviewsByPopularity(ctx context.Context, limit int, offset int) ([]*models.Preview, error)
 	UserVote(ctx context.Context, userID string, postID string, vote bool, postType string) error
+	GetCommentByCommentID(ctx context.Context, id string) (*models.UserFullComment, error)
 }
 
 type MediaRepository interface {
@@ -65,6 +65,7 @@ type MediaRepository interface {
 	GetMediaByReviews(ctx context.Context, limit, offset int, mediaType *string) ([]models.MediaWithReviewCount, error)
 	GetTrackById(ctx context.Context, id string) (*models.Track, error)
 	GetAlbumById(ctx context.Context, id string) (*models.Album, error)
+	GetArtistByName(ctx context.Context, name string) ([]models.Artist, error)
 	GetExistingArtistBySpotifyID(ctx context.Context, id string) (*int, error)
 	AddArtist(ctx context.Context, artist *models.Artist) (*models.Artist, error)
 	GetExistingAlbumBySpotifyID(ctx context.Context, id string) (*int, error)

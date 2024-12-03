@@ -42,6 +42,13 @@ interface Track {
   artist_photo: string;
 }
 
+interface Artist {
+  id: number;
+  name: string;
+  photo: string;
+  bio: string;
+}
+
 type Media = Album | Track;
 
 type Review = {
@@ -70,7 +77,7 @@ type User = {
 };
 
 type UserProfile = {
-  id: string;
+  user_id: string;
   username: string;
   display_name: string;
   bio: string;
@@ -91,10 +98,11 @@ interface SectionItem {
   id: number;
   title: string;
   media_type: string;
-  cover: string;
+  cover_photo: string;
 }
 
 type SectionOption = {
+  section_id: number;
   title: string;
   search_type: string;
 };
@@ -148,3 +156,18 @@ type RatingDistribution = {
 };
 
 type FilterOption = string;
+
+type RecommendationResponse = {
+  id: number;
+  media_type: string;
+  media_id: string;
+  recommender_id: string;
+  recommender_name: string;
+  recommendee_id: string;
+  created_at: string;
+  reaction: boolean;
+  artist_name: string;
+  title: string;
+  recommender_picture: string;
+  cover: string;
+};

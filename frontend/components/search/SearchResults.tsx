@@ -53,7 +53,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                   <ProfileChip
                     display_name={profile.display_name}
                     profile_picture={profile.profile_picture}
-                    id={profile.id}
+                    id={profile.user_id}
                     key={idx}
                   />
                 ))}
@@ -75,6 +75,23 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                   />
                 ))}
               </View>
+            </View>
+          )}
+          {(selectedFilter === "all" || selectedFilter === "songs") && (
+            <View style={styles.songsList}>
+              <Text style={styles.title}>Songs</Text>
+              <ScrollView>
+                {songs?.map((song, index) => (
+                  <SongChip
+                    key={index}
+                    rank={index + 1}
+                    id={song.id}
+                    title={song.title}
+                    artist_name={song.artist_name}
+                    cover={song.cover}
+                  />
+                ))}
+              </ScrollView>
             </View>
           )}
           {(selectedFilter === "all" || selectedFilter === "songs") && (
@@ -149,6 +166,11 @@ const styles = StyleSheet.create({
   },
   albumsList: {
     width: "100%",
+    marginBottom: 16,
+    paddingHorizontal: 4,
+  },
+  albumsList: {
+    width: "48%", // Slightly less than 50% to allow for spacing
     marginBottom: 16,
     paddingHorizontal: 4,
   },

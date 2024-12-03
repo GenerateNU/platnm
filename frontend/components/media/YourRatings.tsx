@@ -31,7 +31,6 @@ const YourRatings = ({ media_id, media_type }: YourRatingsProps) => {
   if (!userReviews || userReviews.length === 0) {
     return <></>;
   }
-
   return (
     userId && (
       <TouchableOpacity

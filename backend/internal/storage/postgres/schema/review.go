@@ -520,49 +520,123 @@ func (r *ReviewRepository) ReviewBelongsToUser(ctx context.Context, reviewID str
 	return false, nil
 }
 
-func (r *ReviewRepository) GetReviewsByMediaID(ctx context.Context, id string, mediaType string) ([]*models.Review, error) {
+func (r *ReviewRepository) GetReviewsByMediaID(ctx context.Context, id string, mediaType string) ([]*models.Preview, error) {
 
-	rows, err := r.Query(ctx, `
-	SELECT r.id, r.user_id, r.media_id, r.media_type, r.rating, r.comment, r.created_at, r.updated_at, u.display_name, u.username, u.profile_picture
+	query := `
+	SELECT 
+		r.id, 
+		r.user_id, 
+		u.username,
+		u.display_name,
+		u.profile_picture,
+		r.media_type, 
+		r.media_id, 
+		r.rating, 
+		r.comment,
+		r.created_at, 
+		r.updated_at,
+		COALESCE(a.cover, t.cover) AS media_cover, 
+		COALESCE(a.title, t.title) AS media_title, 
+		COALESCE(a.artists, t.artists) AS media_artist,
+		ARRAY_AGG(tag.name) FILTER (WHERE tag.name IS NOT NULL) AS tags
 	FROM review r
-	JOIN "user" u ON r.user_id = u.id
-	WHERE media_id = $1 and media_type = $2 
-	ORDER BY updated_at DESC`, id, mediaType)
+	INNER JOIN "user" u ON u.id = r.user_id
+	LEFT JOIN (
+		SELECT t.title, t.id, STRING_AGG(ar.name, ', ') AS artists, cover
+		FROM track t
+		JOIN track_artist ta on t.id = ta.track_id
+		JOIN artist ar ON ta.artist_id = ar.id
+		JOIN album a on t.album_id = a.id
+		GROUP BY t.id, cover, t.title
+	) t ON r.media_type = 'track' AND r.media_id = t.id
+	LEFT JOIN (
+		SELECT a.id, a.title, STRING_AGG(ar.name, ', ') AS artists, cover
+		FROM album a
+		JOIN album_artist aa on a.id = aa.album_id
+		JOIN artist ar ON aa.artist_id = ar.id
+		GROUP BY a.id, cover, a.title
+	) a ON r.media_type = 'album' AND r.media_id = a.id
+	LEFT JOIN review_tag rt ON r.id = rt.review_id
+	LEFT JOIN tag tag ON rt.tag_id = tag.id
+	LEFT JOIN (
+		SELECT post_id as review_id, COUNT(*) AS vote_count
+		FROM user_vote
+		WHERE post_type = 'review'
+		GROUP BY post_id
+	) v ON r.id = v.review_id
+	WHERE r.media_id = $1 AND r.media_type = $2
+	GROUP BY r.id, r.user_id, u.username, u.display_name, u.profile_picture, r.media_type, r.media_id, r.rating, r.comment, r.created_at, r.updated_at, media_cover, media_title, media_artist, v.vote_count
+	`
+
+	rows, err := r.Query(ctx, query, id, mediaType)
 
 	if err != nil {
-		return []*models.Review{}, err
+		fmt.Println(err)
+		return nil, err
 	}
-
 	defer rows.Close()
 
-	var reviews []*models.Review
-	for rows.Next() {
-		var review models.Review
+	var previews []*models.Preview
 
-		if err := rows.Scan(
-			&review.ID,
-			&review.UserID,
-			&review.MediaID,
-			&review.MediaType,
-			&review.Rating,
-			&review.Comment,
-			&review.CreatedAt,
-			&review.UpdatedAt,
-			&review.DisplayName,
-			&review.Username,
-			&review.ProfilePicture,
-		); err != nil {
+	// Scan results into the feedPosts slice
+	for rows.Next() {
+		var preview models.Preview
+		var comment sql.NullString // Use sql.NullString for nullable strings
+		err := rows.Scan(
+			&preview.ReviewID,
+			&preview.UserID,
+			&preview.Username,
+			&preview.DisplayName,
+			&preview.ProfilePicture,
+			&preview.MediaType,
+			&preview.MediaID,
+			&preview.Rating,
+			&comment, // Scan into comment first
+			&preview.CreatedAt,
+			&preview.UpdatedAt,
+			&preview.MediaCover,
+			&preview.MediaTitle,
+			&preview.MediaArtist,
+			&preview.Tags,
+		)
+		if err != nil {
+			fmt.Println(err)
 			return nil, err
 		}
-		reviews = append(reviews, &review)
+
+		// Assign comment to feedPost.Comment, handling null case
+		if comment.Valid {
+			preview.Comment = &comment.String // Point to the string if valid
+		} else {
+			preview.Comment = nil // Set to nil if null
+		}
+
+		// Ensure tags is an empty array if null
+		if preview.Tags == nil {
+			preview.Tags = []string{}
+		}
+
+		// Fetch review statistics for the current review
+		reviewStat, err := r.GetReviewStats(ctx, strconv.Itoa(preview.ReviewID))
+		if err != nil {
+			return nil, err
+		}
+
+		// If reviewStat is not nil, populate the corresponding fields in FeedPost
+		if reviewStat != nil {
+			preview.ReviewStat = *reviewStat
+		}
+
+		// Append the populated FeedPost to the feedPosts slice
+		previews = append(previews, &preview)
 	}
 
 	if err := rows.Err(); err != nil {
 		print(err.Error(), "from transactions err ")
-		return []*models.Review{}, err
+		return []*models.Preview{}, err
 	}
 
-	return reviews, nil
+	return previews, nil
 }
 
 func (r *ReviewRepository) GetTags(ctx context.Context) ([]string, error) {
@@ -885,6 +959,67 @@ WHERE NOT EXISTS (SELECT 1 FROM deleted_vote) OR $3 <> (SELECT upvote FROM user_
 	}
 
 	return nil
+}
+
+func (r *ReviewRepository) GetCommentByCommentID(ctx context.Context, commentID string) (*models.UserFullComment, error) {
+	var comment models.UserFullComment
+
+	query := `
+		SELECT c.id, text, review_id, c.user_id, username, display_name, profile_picture, c.created_at, COALESCE(upvotes, 0) AS upvotes, 
+	COALESCE(downvotes, 0) AS downvotes, COALESCE(a.cover, t.cover) AS media_cover, 
+		COALESCE(a.title, t.title) AS media_title, 
+		COALESCE(a.artists, t.artists) AS media_artist
+		FROM "comment" c
+		JOIN "user" u ON c.user_id = u.id
+		LEFT JOIN (
+			SELECT 
+					post_id,
+					SUM(CASE WHEN upvote = TRUE THEN 1 ELSE 0 END) AS upvotes,
+					SUM(CASE WHEN upvote = FALSE THEN 1 ELSE 0 END) AS downvotes
+			FROM 
+					user_vote
+			WHERE post_type = 'comment'
+			GROUP BY 
+					post_id
+	) vote_counts ON c.id = vote_counts.post_id
+	 LEFT JOIN review r ON c.review_id = r.id
+	 LEFT JOIN (
+    SELECT t.title, t.id, STRING_AGG(ar.name, ', ') AS artists, cover
+		FROM track t
+    JOIN track_artist ta on t.id = ta.track_id
+		JOIN artist ar ON ta.artist_id = ar.id
+    JOIN album a on t.album_id = a.id
+		GROUP BY t.id, cover, t.title
+    ) t ON r.media_type = 'track' AND r.media_id = t.id
+  LEFT JOIN (
+    SELECT a.id, a.title, STRING_AGG(ar.name, ', ') AS artists, cover
+		FROM album a
+    JOIN album_artist aa on a.id = aa.album_id
+		JOIN artist ar ON aa.artist_id = ar.id
+		GROUP BY a.id, cover, a.title
+  ) a ON r.media_type = 'album' AND r.media_id = a.id
+	 WHERE c.id = $1`
+
+	err := r.QueryRow(ctx, query, commentID).Scan(&comment.CommentID,
+		&comment.Comment,
+		&comment.ReviewID,
+		&comment.UserID,
+		&comment.Username,
+		&comment.DisplayName,
+		&comment.ProfilePicture,
+		&comment.CreatedAt,
+		&comment.Upvotes,
+		&comment.Downvotes,
+		&comment.MediaCover,
+		&comment.MediaTitle,
+		&comment.MediaArtists)
+
+	if err != nil {
+		print(err.Error(), "from transactions err ")
+		return nil, err
+	}
+
+	return &comment, nil
 }
 
 func NewReviewRepository(db *pgxpool.Pool) *ReviewRepository {
