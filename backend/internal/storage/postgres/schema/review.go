@@ -231,6 +231,7 @@ func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int
 }
 
 func (r *ReviewRepository) CreateComment(ctx context.Context, comment *models.Comment) (*models.Comment, error) {
+
 	query := `
     INSERT INTO comment (text, review_id, user_id, created_at)
     VALUES ($1, $2, $3, NOW())
@@ -245,6 +246,25 @@ func (r *ReviewRepository) CreateComment(ctx context.Context, comment *models.Co
 			return nil, errs.NotFound("review", "id", comment.UserID)
 		}
 
+		return nil, err
+	}
+
+	// make a notification for this comment that just got created
+	// receiver_id: the person that is receiving the notification, which is the reviewer of comment.ReviewID
+	// tagged_entity_id: the comment that was created
+	// type: 'create_comment'
+	// tagged_entity_type: 'comment'
+	// thumbnail_url: cover of the media of the review that received a comment
+	// tagged_entity_name: content of the comment
+
+	review, _ := r.GetReviewByID(ctx, strconv.Itoa(comment.ReviewID))
+
+	_, err := r.Exec(ctx, `
+		INSERT INTO notifications (receiver_id, tagged_entity_id, type, tagged_entity_type, thumbnail_url, tagged_entity_name)
+		VALUES ($1, $2, 'create_comment', 'comment', $3, $4)
+	`, review.UserID, comment.ID, review.MediaCover, comment.Text)
+
+	if err != nil {
 		return nil, err
 	}
 
