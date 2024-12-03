@@ -1,3 +1,4 @@
+import axios from "axios";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -10,12 +11,51 @@ import {
   SafeAreaView,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
+import { useAuthContext } from "@/components/AuthProvider";
+
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 function Settings() {
   const [pushNotifications, setPushNotifications] = useState(false);
   const [recommendations, setRecommendations] = useState(false);
   const [reviewInteractions, setReviewInteractions] = useState(true);
   const [hideActivity, setHideActivity] = useState(false);
+  const { accessToken, ...AuthContextUtils } = useAuthContext();
+
+  async function handleSignOut() {
+    axios
+      .post(
+        `${BASE_URL}/auth/platnm/signout`,
+        {},
+        {
+          headers: {
+            Authorization: accessToken,
+          },
+        },
+      )
+      .then(() => {
+        AuthContextUtils.updateUsername("");
+        AuthContextUtils.updateSession("");
+        AuthContextUtils.updateAccessToken("");
+        AuthContextUtils.updateUserId("");
+        router.push("/(tabs)/login");
+      })
+      .catch((error) => {
+        if (error.response && error.response.status === 401) {
+          alert("You are already signed out!");
+          router.push("/(tabs)/login");
+        } else {
+          console.log(error);
+        }
+      });
+  }
+
+  async function handleDeactivate() {
+    axios.post(`${BASE_URL}/auth/platnm/deactivate`).then((response) => {
+      console.log(response.data);
+      router.push("/(tabs)/login");
+    });
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -41,7 +81,10 @@ function Settings() {
         <TouchableOpacity style={styles.item}>
           <Text style={styles.itemText}>Music Account</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.item}>
+        <TouchableOpacity
+          style={styles.item}
+          onPress={() => router.push("/ResetPassword")}
+        >
           <Text style={styles.itemText}>Reset Password</Text>
         </TouchableOpacity>
       </View>
@@ -118,12 +161,15 @@ function Settings() {
       </View>
 
       {/* Sign Out Button */}
-      <TouchableOpacity style={styles.signOutButton}>
+      <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
         <Text style={styles.signOutButtonText}>Sign Out</Text>
       </TouchableOpacity>
 
       {/* Deactivate Account Link */}
-      <TouchableOpacity style={styles.deactivateAccount}>
+      <TouchableOpacity
+        style={styles.deactivateAccount}
+        onPress={handleDeactivate}
+      >
         <Text style={styles.deactivateText}>Deactivate Account</Text>
       </TouchableOpacity>
     </ScrollView>

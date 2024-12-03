@@ -17,10 +17,11 @@ import { useAuthContext } from "@/components/AuthProvider";
 
 export default function HomeScreen() {
   const [feedReviews, setFeedReviews] = useState<Preview[]>();
-  const { userId } = useAuthContext();
+  //const { userId } = useAuthContext();
+  const userId = "9886bee0-0c75-4ace-bcd0-d75e78c35eb0";
   const hasNotification = true; // Hardcoding - Get notification status from somewhere else
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-
+  console.log(BASE_URL);
   const fetchFeedReviews = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/users/feed/${userId}`);
