@@ -407,8 +407,8 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 func (r *UserRepository) GetUserFollowing(ctx context.Context, id uuid.UUID) ([]*models.Follower, error) {
 	query := `SELECT id, username, email, display_name, bio, profile_picture, linked_account, created_at, updated_at
 	FROM "user" u
-	JOIN follower f ON u.id = f.follower_id
-	WHERE f.followee_id = $1`
+	JOIN follower f ON u.id = f.followee_id
+	WHERE f.follower_id = $1`
 
 	// Execute the query
 	rows, err := r.db.Query(ctx, query, id)
