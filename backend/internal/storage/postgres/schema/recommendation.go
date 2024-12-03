@@ -6,6 +6,7 @@ import (
 	"errors"
 	"platnm/internal/errs"
 	"platnm/internal/models"
+	"strconv"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -52,8 +53,8 @@ func (r *RecommendationRepository) CreateRecommendation(ctx context.Context, rec
 
 	_, err := r.Exec(ctx, `
 	INSERT INTO notifications (receiver_id, tagged_entity_id, type, tagged_entity_type, thumbnail_url, tagged_entity_name)
-	VALUES ($1, $2, 'review_got_upvotes', 'review', $3, $4)`, 
-	recommendation.RecommendeeId, recommendation.ID, recommendation.Cover, recommendation.Title)
+	VALUES ($1, $2, 'recommendation', 'review', $3, $4)`,
+		recommendation.RecommendeeId, recommendation.ID, recommendation.Cover, recommendation.Title)
 
 	if err != nil {
 		return nil, err
@@ -167,8 +168,8 @@ func (r *RecommendationRepository) UpdateRecommendation(ctx context.Context, rec
 
 	_, err = r.Exec(ctx, `
 	INSERT INTO notifications (receiver_id, tagged_entity_id, type, tagged_entity_type, thumbnail_url, tagged_entity_name)
-	VALUES ($1, $2, 'review_got_upvotes', 'review', $3, $4)`, 
-	recommendation.RecommenderId, recommendation.ID, recommendation.Cover, recommendation.Title)
+	VALUES ($1, $2, 'recommendation', 'review', $3, $4)`,
+		recommendation.RecommenderId, strconv.Itoa(recommendation.ID), recommendation.Cover, recommendation.Title)
 
 	if err != nil {
 		return err

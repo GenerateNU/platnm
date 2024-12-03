@@ -244,7 +244,8 @@ func (r *ReviewRepository) CreateComment(ctx context.Context, comment *models.Co
 			return nil, errs.NotFound("user", "id", comment.UserID)
 		} else if errs.IsForeignKeyViolation(err, commentReviewFKeyConstraint) {
 			return nil, errs.NotFound("review", "id", comment.UserID)
-		}
+		} 
+		fmt.Println(err)
 
 		return nil, err
 	}
@@ -261,8 +262,8 @@ func (r *ReviewRepository) CreateComment(ctx context.Context, comment *models.Co
 
 	_, err := r.Exec(ctx, `
 		INSERT INTO notifications (receiver_id, tagged_entity_id, type, tagged_entity_type, thumbnail_url, tagged_entity_name)
-		VALUES ($1, $2, 'create_comment', 'comment', $3, $4)
-	`, review.UserID, comment.ID, review.MediaCover, comment.Text)
+		VALUES ($1, $2, 'comment', 'comment', $3, $4)
+	`, review.UserID, strconv.Itoa(comment.ID), review.MediaCover, comment.Text)
 
 	if err != nil {
 		return nil, err
@@ -964,41 +965,40 @@ func (r *ReviewRepository) UserVote(ctx context.Context, userID string, postID s
 
 		// check if the review has more than 10 upvotes and if so notify the person that made the review
 		review, _ := r.GetReviewByID(ctx, postID)
-		
+
 		if review.ReviewStat.Upvotes >= 10 { // if we have more 10 upvotes on the review now
 
 			_, err = r.Exec(ctx, `
 			INSERT INTO notifications (receiver_id, tagged_entity_id, type, tagged_entity_type, thumbnail_url, tagged_entity_name)
-			VALUES ($1, $2, 'review_got_upvotes', 'review', $3, $4)`, 
-			review.UserID, postID, review.MediaCover, review.Comment)
+			VALUES ($1, $2, 'upvote', 'review', $3, $4)`,
+				review.UserID, postID, review.MediaCover, review.Comment)
 
 			if err != nil {
 				return err
 			}
-		
-		} 
+
+		}
 
 	} else if postType == "comment" {
 
 		comment, _ := r.GetCommentByCommentID(ctx, postID)
-		
+
 		if comment.Upvotes >= 10 { // if we have more 10 upvotes on the comment now
 
 			_, err = r.Exec(ctx, `
 			INSERT INTO notifications (receiver_id, tagged_entity_id, type, tagged_entity_type, thumbnail_url, tagged_entity_name)
-			VALUES ($1, $2, 'comment_got_upvotes', 'comment', $3, $4)`,
-			comment.UserID, postID, comment.MediaCover, comment.Comment)
+			VALUES ($1, $2, 'upvote', 'comment', $3, $4)`,
+				comment.UserID, postID, comment.MediaCover, comment.Comment)
 
 			if err != nil {
 				return err
 			}
-		
-		} 
+
+		}
 
 	} else {
 		return fmt.Errorf("post type not valid")
-	} 
-	
+	}
 
 	return nil
 }
