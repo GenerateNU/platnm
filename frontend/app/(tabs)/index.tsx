@@ -30,10 +30,6 @@ export default function HomeScreen() {
     }
   };
 
-  useEffect(() => {
-    if (userId) fetchFeedReviews();
-  }, [userId]);
-
   useFocusEffect(
     useCallback(() => {
       if (userId) fetchFeedReviews();
