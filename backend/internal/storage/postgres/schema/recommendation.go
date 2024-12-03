@@ -54,7 +54,7 @@ func (r *RecommendationRepository) CreateRecommendation(ctx context.Context, rec
 	_, err := r.Exec(ctx, `
 	INSERT INTO notifications (receiver_id, tagged_entity_id, type, tagged_entity_type, thumbnail_url, tagged_entity_name)
 	VALUES ($1, $2, 'recommendation', 'review', $3, $4)`,
-		recommendation.RecommendeeId, recommendation.ID, recommendation.Cover, recommendation.Title)
+		recommendation.RecommendeeId, strconv.Itoa(recommendation.ID), recommendation.Cover, recommendation.Title)
 
 	if err != nil {
 		return nil, err
