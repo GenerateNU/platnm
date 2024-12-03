@@ -50,6 +50,15 @@ func (r *RecommendationRepository) CreateRecommendation(ctx context.Context, rec
 		return nil, err
 	}
 
+	_, err := r.Exec(ctx, `
+	INSERT INTO notifications (receiver_id, tagged_entity_id, type, tagged_entity_type, thumbnail_url, tagged_entity_name)
+	VALUES ($1, $2, 'review_got_upvotes', 'review', $3, $4)`, 
+	recommendation.RecommendeeId, recommendation.ID, recommendation.Cover, recommendation.Title)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return recommendation, nil
 }
 
@@ -155,6 +164,16 @@ func (r *RecommendationRepository) UpdateRecommendation(ctx context.Context, rec
 	if err != nil {
 		return err
 	}
+
+	_, err = r.Exec(ctx, `
+	INSERT INTO notifications (receiver_id, tagged_entity_id, type, tagged_entity_type, thumbnail_url, tagged_entity_name)
+	VALUES ($1, $2, 'review_got_upvotes', 'review', $3, $4)`, 
+	recommendation.RecommenderId, recommendation.ID, recommendation.Cover, recommendation.Title)
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 
 }

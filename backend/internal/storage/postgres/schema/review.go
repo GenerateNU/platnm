@@ -970,7 +970,7 @@ func (r *ReviewRepository) UserVote(ctx context.Context, userID string, postID s
 			_, err = r.Exec(ctx, `
 			INSERT INTO notifications (receiver_id, tagged_entity_id, type, tagged_entity_type, thumbnail_url, tagged_entity_name)
 			VALUES ($1, $2, 'review_got_upvotes', 'review', $3, $4)`, 
-			review.UserID, postID, review.MediaCover, "")
+			review.UserID, postID, review.MediaCover, review.Comment)
 
 			if err != nil {
 				return err
