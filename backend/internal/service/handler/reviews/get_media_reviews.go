@@ -43,7 +43,7 @@ func (h *Handler) GetReviewsByMediaId(c *fiber.Ctx, mediaType string) error {
 	return c.Status(fiber.StatusOK).JSON(response)
 }
 
-func paginate(reviews []*models.Review, limit int, offset int) []*models.Review {
+func paginate(reviews []*models.Preview, limit int, offset int) []*models.Preview {
 	var start = offset * limit
 	var end = (offset * limit) + limit
 
@@ -69,7 +69,7 @@ func getAve(review []float64) float64 {
 }
 
 type Response struct {
-	AvgRating  float64          `json:"avgRating"`
-	TotalCount int              `json:"totalCount"`
-	Reviews    []*models.Review `json:"reviews"`
+	AvgRating  float64           `json:"avgRating"`
+	TotalCount int               `json:"totalCount"`
+	Reviews    []*models.Preview `json:"reviews"`
 }
