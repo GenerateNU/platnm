@@ -26,6 +26,7 @@ export default function ProfilePage() {
     userId: string;
   }>();
   const loggedInUser = useAuthContext().userId;
+  const loggedInUser = useAuthContext().userId;
 
   const { userProfile, handleActivityPress, handleSharePress, sections } =
     useProfile(userId);
@@ -133,6 +134,13 @@ export default function ProfilePage() {
               <Text style={styles.statLabel}>Platinum</Text>
             </View>
           </View>
+          <TouchableOpacity onPress={handleFollowToggle}>
+            <View style={styles.followButton}>
+              <Text style={styles.followButtonText}>
+                {following ? "Following" : "Follow"}
+              </Text>
+            </View>
+          </TouchableOpacity>
           <TouchableOpacity onPress={handleFollowToggle}>
             <View style={styles.followButton}>
               <Text style={styles.followButtonText}>

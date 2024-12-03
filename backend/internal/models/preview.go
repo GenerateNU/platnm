@@ -13,6 +13,7 @@ type Preview struct {
 	MediaType      MediaType  `json:"media_type"`
 	MediaID        int        `json:"media_id"`
 	Rating         int        `json:"rating"`
+	Title          *string    `json:"title"`
 	Comment        *string    `json:"comment"`
 	CreatedAt      time.Time  `json:"created_at"`
 	UpdatedAt      time.Time  `json:"updated_at"`

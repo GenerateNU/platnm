@@ -28,4 +28,5 @@ type UserSection struct {
 type SectionOption struct {
 	SectionTitle string `json:"title"`
 	SearchType   string `json:"search_type"`
+	SectionId    int    `json:"section_id"`
 }

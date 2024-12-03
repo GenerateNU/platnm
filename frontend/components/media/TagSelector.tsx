@@ -4,7 +4,7 @@ import Tag from "./Tag";
 
 const TAGS = [
   "Experimental",
-  "Head Scratcher",
+  "Headscratcher",
   "Magnum Opus",
   "Introspective",
   "Heartfelt",

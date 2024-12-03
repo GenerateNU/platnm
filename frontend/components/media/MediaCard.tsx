@@ -7,6 +7,7 @@ import {
   Image,
   ImageBackground,
   Dimensions,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { Button, IconButton } from "react-native-paper";
 import { LinearGradient } from "expo-linear-gradient";
@@ -14,103 +15,115 @@ import { LinearGradient } from "expo-linear-gradient";
 type MediaCardProps = {
   media: Media;
   full?: boolean;
+  showTopBar?: boolean;
+  showRateButton?: boolean;
 };
 
 function isTrack(media: Media): media is Track {
   return (media as Track).album_id !== undefined;
 }
 
-const MediaCard = ({ media, full = false }: MediaCardProps) => {
+const MediaCard = ({
+  media,
+  full = false,
+  showTopBar = true,
+  showRateButton = true,
+}: MediaCardProps) => {
   return (
-    <View style={styles.container}>
-      <ImageBackground
-        style={full ? styles.fullBackground : styles.imageBackground}
-        source={{ uri: media.cover }}
-      >
-        <LinearGradient
-          // Background Linear Gradient
-          colors={["rgba(0,0,0,0.6)", `rgba(242, 128, 55, ${full ? 1 : 0.6})`]}
-          style={full ? styles.fullBackground : styles.background}
+    <TouchableWithoutFeedback>
+      <View style={styles.container}>
+        <ImageBackground
+          style={full ? styles.fullBackground : styles.imageBackground}
+          source={{ uri: media.cover }}
         >
-          <View style={styles.contentContainer}>
-            <View>
-              <View style={styles.iconContainer}>
-                <IconButton
-                  icon="arrow-left"
-                  iconColor="white"
-                  size={24}
-                  onPress={() => router.back()}
-                />
-                <View style={styles.iconContainer}>
-                  <IconButton
-                    icon="export-variant"
-                    iconColor="white"
-                    size={24}
-                    onPress={() => console.log("More options pressed")}
+          <LinearGradient
+            colors={[
+              "rgba(0,0,0,0.6)",
+              `rgba(242, 128, 55, ${full ? 1 : 0.6})`,
+            ]}
+            style={full ? styles.fullBackground : styles.background}
+          >
+            <View style={styles.contentContainer}>
+              <View>
+                {showTopBar && (
+                  <View style={styles.iconContainer}>
+                    <IconButton
+                      icon="arrow-left"
+                      iconColor="white"
+                      size={24}
+                      onPress={() => router.back()}
+                    />
+                    <View style={styles.iconContainer}>
+                      <IconButton
+                        icon="export-variant"
+                        iconColor="white"
+                        size={24}
+                        onPress={() => console.log("More options pressed")}
+                      />
+                      <IconButton
+                        icon="bookmark-outline"
+                        iconColor="white"
+                        size={24}
+                        onPress={() => console.log("More options pressed")}
+                      />
+                    </View>
+                  </View>
+                )}
+                <View style={styles.artist}>
+                  <Image
+                    style={styles.image}
+                    source={{ uri: media.artist_photo }}
                   />
-                  <IconButton
-                    icon="bookmark-outline"
-                    iconColor="white"
-                    size={24}
-                    onPress={() => console.log("More options pressed")}
-                  />
+                  <Text style={styles.artistText}>{media.artist_name}</Text>
                 </View>
+                <Text style={styles.primaryMediaText}>{media.title}</Text>
+                {isTrack(media) && (
+                  <Text style={styles.albumText}>{media.album_title}</Text>
+                )}
               </View>
-              <View style={styles.artist}>
-                <Image
-                  style={styles.image}
-                  source={{ uri: media.artist_photo }}
-                />
-                <Text style={styles.artistText}>{media.artist_name}</Text>
-              </View>
-              <Text style={styles.primaryMediaText}>{media.title}</Text>
-              {isTrack(media) && (
-                <Text style={styles.albumText}>{media.album_title}</Text>
+              {full && (
+                <View style={styles.noReviewsContainer}>
+                  <Text
+                    style={{
+                      color: "white",
+                      fontSize: 24,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    You've got taste!
+                  </Text>
+                  <Text style={styles.emptyText}>
+                    We dont have any reviews for this {media.media_type} yet.
+                  </Text>
+                  <Text style={styles.emptyText}>
+                    Be the first to leave a rating
+                  </Text>
+                </View>
+              )}
+              {showRateButton && (
+                <View style={styles.addReviewContainer}>
+                  <Button
+                    onPress={() =>
+                      router.push({
+                        pathname: "/CreateRating",
+                        params: {
+                          mediaType: isTrack(media) ? "track" : "album",
+                          mediaId: media.id,
+                        },
+                      })
+                    }
+                    icon={"plus"}
+                    textColor="white"
+                  >
+                    Rate
+                  </Button>
+                </View>
               )}
             </View>
-            {full && (
-              <View style={styles.noReviewsContainer}>
-                <Text
-                  style={{
-                    color: "white",
-                    fontSize: 24,
-                    fontWeight: "bold",
-                  }}
-                >
-                  You've got taste!
-                </Text>
-                <Text style={styles.emptyText}>
-                  We dont have any reviews for this {media.media_type} yet.
-                </Text>
-                <Text style={styles.emptyText}>
-                  Be the first to leave a rating
-                </Text>
-              </View>
-            )}
-            <View style={styles.addReviewContainer}>
-              <Button
-                onPress={() =>
-                  router.push({
-                    pathname: "/CreateReview",
-                    params: {
-                      mediaName: media.title,
-                      mediaType: isTrack(media) ? "track" : "album",
-                      mediaId: media.id,
-                      cover: media.cover,
-                      artistName: media.artist_name,
-                    },
-                  })
-                }
-                icon={"plus"}
-                textColor="white"
-              >
-                Rate
-              </Button>
-            </View>
-          </View>
-        </LinearGradient>
-      </ImageBackground>
-    </View>
+          </LinearGradient>
+        </ImageBackground>
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -119,7 +132,6 @@ export default MediaCard;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "black",
   },
   noReviewsContainer: {
     flex: 1,
@@ -135,8 +147,6 @@ const styles = StyleSheet.create({
   },
   imageBackground: {
     width: "100%",
-    top: 32,
-    marginTop: -32,
   },
   fullBackground: {
     width: "100%",

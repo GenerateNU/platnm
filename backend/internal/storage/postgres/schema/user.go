@@ -407,8 +407,8 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 func (r *UserRepository) GetUserFollowing(ctx context.Context, id uuid.UUID) ([]*models.Follower, error) {
 	query := `SELECT id, username, email, display_name, bio, profile_picture, linked_account, created_at, updated_at
 	FROM "user" u
-	JOIN follower f ON u.id = f.follower_id
-	WHERE f.followee_id = $1`
+	JOIN follower f ON u.id = f.followee_id
+	WHERE f.follower_id = $1`
 
 	// Execute the query
 	rows, err := r.db.Query(ctx, query, id)
@@ -589,7 +589,7 @@ func (r *UserRepository) GetUserSections(ctx context.Context, user_id string) ([
 func (r *UserRepository) GetUserSectionOptions(ctx context.Context, user_id string) ([]models.SectionOption, error) {
 	var options []models.SectionOption
 	rows, err := r.db.Query(ctx,
-		`SELECT section_type.title, section_type.search_type
+		`SELECT section_type.title, section_type.search_type, section_type.id
 		FROM section_type
 		WHERE section_type.id NOT IN
   		  (SELECT section_type_item.section_type_id
@@ -603,7 +603,7 @@ func (r *UserRepository) GetUserSectionOptions(ctx context.Context, user_id stri
 
 	for rows.Next() {
 		var option models.SectionOption
-		if err := rows.Scan(&option.SectionTitle, &option.SearchType); err != nil {
+		if err := rows.Scan(&option.SectionTitle, &option.SearchType, &option.SectionId); err != nil {
 			return nil, err
 		}
 		options = append(options, option)

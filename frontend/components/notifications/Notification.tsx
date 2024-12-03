@@ -1,8 +1,17 @@
-import { View, Text, TouchableOpacity } from "react-native";
-import { StyleSheet, Image, useAnimatedValue, Animated } from "react-native";
 import React, { useEffect } from "react";
+
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  useAnimatedValue,
+  Animated,
+} from "react-native";
 import FollowNotification from "./FollowNotification";
 import ReadDot from "./ReadDot";
+import { toReadableTime } from "@/utils/utils";
 
 export default function Notification({
   notification,
@@ -10,26 +19,6 @@ export default function Notification({
   notification: CustomNotification;
 }) {
   const fadeAnim = useAnimatedValue(9); // Initial value for opacity: 0
-
-  const toReadableTime = (time: Date) => {
-    let diffms = new Date().getTime() - time.getTime();
-    let minuteDiff = Math.floor(diffms / 60000);
-    if (minuteDiff < 1) {
-      return "now";
-    }
-    if (minuteDiff < 60) {
-      return minuteDiff + "m";
-    }
-    if (minuteDiff < 1440) {
-      return Math.floor(minuteDiff / 60) + "h";
-    }
-    return (
-      Math.floor(minuteDiff / 1440) +
-      " day" +
-      (Math.floor(minuteDiff / 1440) > 1 ? "s" : "") +
-      " ago"
-    );
-  };
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
