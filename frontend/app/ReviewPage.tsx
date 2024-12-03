@@ -380,7 +380,6 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
               </View>
             </TouchableOpacity>
           </Modal>
-          ;
           {isEditable ? (
             <View>
               <TextInput
@@ -453,7 +452,6 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
                   <Share width={24} height={24} />
                 </View>
               </TouchableOpacity>
-              ;
             </View>
             {review.user_id === userId && (
               <TouchableOpacity
