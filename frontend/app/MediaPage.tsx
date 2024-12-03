@@ -155,7 +155,7 @@ export default function MediaPage() {
               )}
               <View style={styles.socialContainer}>
                 <YourRatings media_id={mediaId} media_type={mediaType} />
-                <FriendRatings count={5} />
+                <FriendRatings media_id={mediaId} media_type={mediaType} />
               </View>
               <View>
                 {reviews?.map((review) => (

@@ -91,15 +91,48 @@ const MediaReviewsPage = () => {
         // Update userScore in mediaStats
         setMediaStats((prevStats) => ({
           ...prevStats,
-          userScore: averageScore,
+          friendScore: averageScore,
         }));
       } catch (error) {
         console.error(error);
       }
     };
 
-    // TODO ALEX: Here you would also fetch the reviews from friends
 
+    const fetchFriendReviews = async () => {
+
+      try {
+        const response = await axios.get(
+          `${BASE_URL}/social/${media_type}/${media_id}`,
+          {
+            params: {
+              userid: user_id,
+            },
+          },
+        );
+
+        const reviews = response.data;
+        setFriendsReviews(reviews);
+
+        // Calculate the average score
+        const totalScore = reviews.reduce(
+          (sum: any, review: { rating: any }) => sum + review.rating,
+          0,
+        ); // Sum of all ratings
+        const averageScore =
+          reviews.length > 0 ? totalScore / reviews.length : 0; // Avoid division by 0
+
+        // Update userScore in mediaStats
+        setMediaStats((prevStats) => ({
+          ...prevStats,
+          userScore: averageScore,
+        }));
+      } catch (error) {
+        console.error(error);
+      }
+
+    }
+    fetchFriendReviews();
     fetchAll();
     fetchMediaCover();
     fetchUserReviews();
@@ -176,7 +209,11 @@ const MediaReviewsPage = () => {
             </View>
           )}
           {selectedFilter === "friend" && (
-            <View></View> // TODO ALEX: Map each fetched review to a ReviewPreview component which will take care of the rest
+            <View>
+              {userReviews.map((review, index) => {
+                return <ReviewPreview key={index} preview={review} />;
+              })}
+            </View>
           )}
           {selectedFilter === "all" && (
             <View>
