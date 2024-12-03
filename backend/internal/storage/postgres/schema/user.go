@@ -659,7 +659,7 @@ func (r *UserRepository) GetConnections(ctx context.Context, id uuid.UUID, limit
 	const followersQuery string = `
 		SELECT u.id, u.username, u.email, u.display_name, u.bio, u.profile_picture, u.linked_account, u.created_at, u.updated_at
 		FROM "user" AS u
-		LEFT JOIN follower AS f on f.followee_id = u.id
+		LEFT JOIN follower AS f on f.follower_id = u.id
 		WHERE f.followee_id = $1
 	    LIMIT $2 OFFSET $3
 	`

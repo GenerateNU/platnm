@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,13 +7,17 @@ import {
   StyleSheet,
   ScrollView,
   Dimensions,
+  FlatList,
+  Modal,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import Icon from "react-native-vector-icons/Feather";
 import Section from "@/components/profile/Section";
 import ProfilePicture from "@/components/profile/ProfilePicture";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuthContext } from "@/components/AuthProvider";
+import axios from "axios";
+import { set } from "react-native-reanimated";
 
 export default function ProfilePage() {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -26,19 +30,63 @@ export default function ProfilePage() {
   const { userProfile, handleActivityPress, handleSharePress, sections } =
     useProfile(userId);
   const [following, setFollowing] = useState(false);
+  const [followingList, setFollowingList] = useState<User[]>([]);
+  const [followerList, setFollowerList] = useState<User[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalData, setModalData] = useState<User[]>([]);
+  const [modalTitle, setModalTitle] = useState("");
 
-  const handleFollowToggle = () => {
+  const handleFollowToggle = async () => {
     // Toggle the following state
-    setFollowing(!following);
-
-    // Optionally, trigger API call to update follow state in the backend
-    fetch('/users/follow', { method: 'POST', body: JSON.stringify({ userId }) })
-      .then(response => response.json())
-      .catch(error => console.error('Error updating follow state:', error));
+    const response = await axios.post(`${BASE_URL}/users/follow`, {
+      follower_id: loggedInUser,
+      following_id: userId,
+    });
+    await fetchFollowing();
   };
-  
+
+  const fetchFollowing = async () => {
+    const response = await axios.get(`${BASE_URL}/users/${userId}/connections`);
+    const followerList = response.data.followers;
+    const followingList = response.data.followees;
+    setFollowerList(followerList);
+    setFollowingList(followingList);
+    setFollowing(false);
+    for (const f of followerList) {
+      if (f.user_id === loggedInUser) {
+        setFollowing(true);
+      }
+    }
+  }
+
+  useFocusEffect(
+    useCallback( () => {
+      fetchFollowing();
+    }, [userId]),
+  );
+
+  const openModal = (list: User[], title: string) => {
+    setModalData(list);
+    setModalTitle(title);
+    setModalVisible(true);
+  };
+
+  const navigateToProfile = (user: User) => {
+    // Navigate to the selected user's profile
+    console.log(`Navigating to user ${user.user_id}`);
+    const pathName =
+    user.user_id === loggedInUser ? "/(tabs)/profile" : "/(tabs)/user";
+    router.push({
+      pathname: pathName,
+      params: {
+        userId: user.user_id,
+      },
+    });
+  };
+
   return (
     userProfile && (
+      <>
       <ScrollView style={styles.container}>
         <View style={styles.header}>
           <View style={styles.topIconsContainer}>
@@ -66,14 +114,20 @@ export default function ProfilePage() {
             <Text style={styles.username}>@{userProfile.username}</Text>
           </View>
           <View style={styles.stats}>
-            <View style={styles.statItemContainer}>
-              <Text style={styles.statNumber}>{userProfile.followers}</Text>
-              <Text style={styles.statLabel}>Followers</Text>
-            </View>
-            <View style={styles.statItemContainer}>
-              <Text style={styles.statNumber}>{userProfile.followed}</Text>
-              <Text style={styles.statLabel}>Following</Text>
-            </View>
+          <TouchableOpacity
+                onPress={() => openModal(followerList, "Followers")}
+                style={styles.statItemContainer}
+              >
+                <Text style={styles.statNumber}>{followerList.length}</Text>
+                <Text style={styles.statLabel}>Followers</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => openModal(followingList, "Following")}
+                style={styles.statItemContainer}
+              >
+                <Text style={styles.statNumber}>{followingList.length}</Text>
+                <Text style={styles.statLabel}>Following</Text>
+              </TouchableOpacity>
             <View style={styles.statItemContainer}>
               <Text style={styles.statNumber}>{userProfile.score}</Text>
               <Text style={styles.statLabel}>Platinum</Text>
@@ -82,7 +136,7 @@ export default function ProfilePage() {
           <TouchableOpacity onPress={handleFollowToggle}>
             <View style={styles.followButton}>
               <Text style={styles.followButtonText}>
-                {following ? 'Following' : 'Follow'}
+                {following ? "Following" : "Follow"}
               </Text>
             </View>
           </TouchableOpacity>
@@ -105,6 +159,46 @@ export default function ProfilePage() {
             </View>
           ))}
       </ScrollView>
+      {/* Modal */}
+      <Modal visible={modalVisible} animationType="slide">
+      <View style={styles.modalContainer}>
+        <Text style={styles.modalTitle}>{modalTitle}</Text>
+        <FlatList
+          data={modalData}
+          keyExtractor={(item) => item.user_id}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              onPress={() => {
+                setModalVisible(false);
+                navigateToProfile(item);
+              }}
+              style={styles.userItem}
+            >
+              {item.profile_picture ? (
+                <Image
+                  source={{ uri: item.profile_picture }}
+                  style={styles.profileImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View style={styles.placeholderImage} />
+              )}
+              <View style={styles.userInfoContainer}>
+                <Text style={styles.displayName}>{item.display_name}</Text>
+                <Text style={styles.userName}>{item.username}</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+        />
+        <TouchableOpacity
+          onPress={() => setModalVisible(false)}
+          style={styles.closeButton}
+        >
+          <Text style={styles.closeButtonText}>Close</Text>
+        </TouchableOpacity>
+      </View>
+    </Modal>
+    </>
     )
   );
 }
@@ -195,15 +289,66 @@ const styles = StyleSheet.create({
     color: "#666",
   },
   followButton: {
-    backgroundColor: '#d3d3d3', // Grey background
+    backgroundColor: "#000", // Grey background
     borderRadius: 20, // Rounded corners
     paddingVertical: 10,
     paddingHorizontal: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   followButtonText: {
-    color: '#000', // Black text
-    fontWeight: 'bold',
+    color: "#000", // Black text
+    fontWeight: "bold",
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "#fff",
+    padding: 20,
+    marginTop: 50,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  userItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+  },
+  userName: {
+    marginLeft: 10,
+    fontSize: 16,
+  },
+  displayName: {
+    fontWeight: "bold",
+    marginLeft: 10,
+    fontSize: 16,
+  },
+  profileImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+  placeholderImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "#ccc", // Light grey color
+  },
+  closeButton: {
+    marginTop: 20,
+    backgroundColor: "#d3d3d3",
+    padding: 10,
+    alignItems: "center",
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  closeButtonText: {
+    fontWeight: "bold",
+  },
+  userInfoContainer: {
+    flex: 1,
+    flexDirection: "column",
   },
 });

@@ -395,6 +395,7 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 			&review.MediaID,
 			&review.MediaType,
 			&review.Rating,
+			&review.Title,
 			&review.Comment,
 			&review.CreatedAt,
 			&review.UpdatedAt,
