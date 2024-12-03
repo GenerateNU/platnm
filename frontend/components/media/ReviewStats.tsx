@@ -4,7 +4,7 @@ import RatingSvg from "./RatingSvg";
 
 type ReviewStatsProps = {
   rating: number;
-  reviews: Review[];
+  reviews: Preview[];
 };
 
 const ReviewStats = ({ rating, reviews }: ReviewStatsProps) => {
