@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { StyleSheet, View, ScrollView } from "react-native";
 import SearchBar from "@/components/search/SearchBar";
 import SearchResults from "@/components/search/SearchResults";
@@ -7,6 +7,9 @@ import TopSongs from "@/components/search/TopSongs";
 import TopReviews from "@/components/search/TopReviews";
 import Profiles from "@/components/search/Profiles";
 import axios from "axios";
+import GenreBox from "@/components/search/GenreBox";
+import Genres from "@/components/search/Genres";
+import Filter from "@/components/search/Filter";
 
 const SearchPage: React.FC = () => {
   const [searchResults, setSearchResults] = useState<{
@@ -23,6 +26,8 @@ const SearchPage: React.FC = () => {
   const [initialSongs, setInitialSongs] = useState<MediaResponse[]>([]);
   const [initialAlbums, setInitialAlbums] = useState<MediaResponse[]>([]);
   const [initialReviews, setInitialReviews] = useState<Preview[]>([]);
+  const filterOptions = ["Global", "Genres"];
+  const [selectedFilter, setSelectedFilter] = useState<FilterOption>("Global");
 
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -74,6 +79,10 @@ const SearchPage: React.FC = () => {
     }
   };
 
+  const handleFilterChange = (filter: FilterOption) => {
+    setSelectedFilter(filter);
+  };
+
   return (
     <View style={styles.container}>
       <SearchBar onSearch={handleSearch} />
@@ -89,6 +98,12 @@ const SearchPage: React.FC = () => {
           />
         ) : (
           <View>
+            <Filter
+              currentFilter={"Global"}
+              filterOptions={filterOptions}
+              onFilterChange={handleFilterChange}
+            />
+            <Genres />
             <TopSongs songs={initialSongs} />
             <TopAlbums albums={initialAlbums} />
             <TopReviews reviews={initialReviews} />
