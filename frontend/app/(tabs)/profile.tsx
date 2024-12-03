@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   ScrollView,
   Dimensions,
   TextInput,
+  FlatList,
+  Modal,
 } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
 import Section from "@/components/profile/Section";
@@ -15,6 +17,8 @@ import SelectSection from "@/components/profile/SelectSection";
 import ProfilePicture from "@/components/profile/ProfilePicture";
 import { useAuthContext } from "@/components/AuthProvider";
 import { useProfile } from "@/hooks/useProfile";
+import axios from "axios";
+import { router, useFocusEffect } from "expo-router";
 
 export default function ProfileScreen() {
   const userId = useAuthContext().userId;
@@ -39,6 +43,45 @@ export default function ProfileScreen() {
     handleAddSection,
     handleSelect,
   } = useProfile(userId);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalData, setModalData] = useState<User[]>([]);
+  const [modalTitle, setModalTitle] = useState("");
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
+  const [followingList, setFollowingList] = useState<User[]>([]);
+  const [followerList, setFollowerList] = useState<User[]>([]);
+
+  const openModal = (list: User[], title: string) => {
+    setModalData(list);
+    setModalTitle(title);
+    setModalVisible(true);
+  };
+
+  const fetchFollowing = async () => {
+    const response = await axios.get(`${BASE_URL}/users/${userId}/connections`);
+    const followerList = response.data.followers;
+    const followingList = response.data.followees;
+    setFollowerList(followerList);
+    setFollowingList(followingList);
+  }
+
+  useFocusEffect(
+    useCallback( () => {
+      fetchFollowing();
+    }, [userId]),
+  );
+
+  const navigateToProfile = (user: User) => {
+    // Navigate to the selected user's profile
+    const pathName =
+    user.user_id === userId ? "/(tabs)/profile" : "/(tabs)/user";
+    router.push({
+      pathname: pathName,
+      params: {
+        userId: user.user_id,
+      },
+    });
+  };
 
   return (
     userProfile && (
@@ -100,14 +143,20 @@ export default function ProfileScreen() {
               <Text style={styles.username}>@{userProfile.username}</Text>
             </View>
             <View style={styles.stats}>
-              <View style={styles.statItemContainer}>
+            <TouchableOpacity
+                onPress={() => openModal(followerList, "Followers")}
+                style={styles.statItemContainer}
+              >
                 <Text style={styles.statNumber}>{userProfile.followers}</Text>
                 <Text style={styles.statLabel}>Followers</Text>
-              </View>
-              <View style={styles.statItemContainer}>
+                </TouchableOpacity>
+                <TouchableOpacity
+                onPress={() => openModal(followingList, "Following")}
+                style={styles.statItemContainer}
+              >
                 <Text style={styles.statNumber}>{userProfile.followed}</Text>
                 <Text style={styles.statLabel}>Following</Text>
-              </View>
+                </TouchableOpacity>
               <View style={styles.statItemContainer}>
                 <Text style={styles.statNumber}>{userProfile.score}</Text>
                 <Text style={styles.statLabel}>Platinum</Text>
@@ -172,6 +221,45 @@ export default function ProfileScreen() {
             options={options}
           />
         </ScrollView>
+        {/* Modal */}
+      <Modal visible={modalVisible} animationType="slide">
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>{modalTitle}</Text>
+          <FlatList
+            data={modalData}
+            keyExtractor={(item) => item.user_id}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => {
+                  setModalVisible(false);
+                  navigateToProfile(item);
+                }}
+                style={styles.userItem}
+              >
+                {item.profile_picture ? (
+                  <Image
+                    source={{ uri: item.profile_picture }}
+                    style={styles.profileImage}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={styles.placeholderImage} />
+                )}
+                <View style={styles.userInfoContainer}>
+                  <Text style={styles.displayName}>{item.display_name}</Text>
+                  <Text style={styles.userName}>{item.username}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+          />
+          <TouchableOpacity
+            onPress={() => setModalVisible(false)}
+            style={styles.closeButton}
+          >
+            <Text style={styles.closeButtonText}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
       </View>
     )
   );
@@ -340,5 +428,56 @@ const styles = StyleSheet.create({
     color: "#000",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "#fff",
+    padding: 20,
+    marginTop: 50,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  userItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+  },
+  userName: {
+    marginLeft: 10,
+    fontSize: 16,
+  },
+  displayName: {
+    fontWeight: "bold",
+    marginLeft: 10,
+    fontSize: 16,
+  },
+  profileImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+  placeholderImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "#d3d3d3", // Light grey color
+  },
+  closeButton: {
+    marginTop: 20,
+    backgroundColor: "#d3d3d3",
+    padding: 10,
+    alignItems: "center",
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  closeButtonText: {
+    fontWeight: "bold",
+  },
+  userInfoContainer: {
+    flex: 1,
+    flexDirection: "column",
   },
 });

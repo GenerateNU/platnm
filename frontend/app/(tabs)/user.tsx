@@ -50,7 +50,6 @@ export default function ProfilePage() {
     const followerList = response.data.followers;
     const followingList = response.data.followees;
     setFollowerList(followerList);
-    console.log(followerList);
     setFollowingList(followingList);
     setFollowing(false);
     for (const f of followerList) {
@@ -74,7 +73,6 @@ export default function ProfilePage() {
 
   const navigateToProfile = (user: User) => {
     // Navigate to the selected user's profile
-    console.log(`Navigating to user ${user.user_id}`);
     const pathName =
     user.user_id === loggedInUser ? "/(tabs)/profile" : "/(tabs)/user";
     router.push({
