@@ -37,7 +37,7 @@ const SectionResults: React.FC<SectionResultsProps> = () => {
         .get(`${BASE_URL}/media/artist/ `)
         .then((response) => {
           const artists: SectionItem[] = response.data.map((item: Artist) => ({
-            id: item.id,
+            id: sectionId,
             title: item.name,
             cover_photo: item.photo,
             media_type: "artist",
@@ -51,7 +51,7 @@ const SectionResults: React.FC<SectionResultsProps> = () => {
         .then((response) => {
           const medias: SectionItem[] = response.data.map(
             (item: MediaResponse) => ({
-              id: item.media.id,
+              id: sectionId,
               title: item.media.title,
               cover_photo: item.media.cover,
               media_type: item.media.media_type,
@@ -78,7 +78,7 @@ const SectionResults: React.FC<SectionResultsProps> = () => {
         ]);
         const artists: SectionItem[] = mediaResponse.data.map(
           (item: Artist) => ({
-            id: item.id,
+            id: sectionId,
             title: item.name,
             cover_photo: item.photo,
             media_type: "artist",
@@ -99,8 +99,6 @@ const SectionResults: React.FC<SectionResultsProps> = () => {
         console.log("mediaResponse", mediaResponse.data);
       }
       setIsSearchActive(true);
-      console.log("searchResults", searchResults);
-      console.log("mediaResults", mediaResults);
     } catch (error) {
       console.error("Search error:", error);
       setSearchResults([]);

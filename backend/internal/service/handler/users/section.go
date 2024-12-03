@@ -30,7 +30,7 @@ func (h *Handler) CreateSection(c *fiber.Ctx) error {
 	section, err := h.userRepository.CreateSection(c.Context(), body.SectionType)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to unfollow user",
+			"error": "Failed to create section",
 		})
 	}
 	return c.Status(fiber.StatusOK).JSON(section)
