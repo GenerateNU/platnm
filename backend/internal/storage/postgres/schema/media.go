@@ -172,7 +172,7 @@ func (r *MediaRepository) GetAlbumById(ctx context.Context, id string) (*models.
 func (r *MediaRepository) GetTrackById(ctx context.Context, id string) (*models.Track, error) {
 	var track models.Track
 	err := r.QueryRow(ctx, `
-		SELECT t.id, t.album_id, t.title, t.duration_seconds, t.spotify_id, art.name, art.photo 
+		SELECT t.id, t.album_id, t.title, t.duration_seconds, t.spotify_id, art.name, art.photo
 		FROM track t
 		JOIN track_artist ta on t.id = ta.track_id
 		JOIN artist art on ta.artist_id = art.id
@@ -441,7 +441,7 @@ func (r *MediaRepository) GetMediaByName(ctx context.Context, name string, media
 		select * from
 		(
 			select * from track_data
-			union 
+			union
 			select * from album_data
 		) combined;`
 	var rows pgx.Rows
@@ -660,6 +660,45 @@ func (r *MediaRepository) UpdateArtistPhoto(ctx context.Context, spotifyId spoti
 
 	var id int
 	if err := r.QueryRow(ctx, query, photo, spotifyId.String()).Scan(&id); err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
+
+func (r *MediaRepository) GetTracksMissingPreviewUrl(ctx context.Context) ([]spotify.ID, error) {
+	const query string = `
+		SELECT spotify_id FROM track WHERE preview_url IS NULL;
+	`
+
+	rows, err := r.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	spotifyIds, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (spotify.ID, error) {
+		var spotifyId string
+		if err := row.Scan(&spotifyId); err != nil {
+			return "", err
+		}
+
+		return spotify.ID(spotifyId), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return spotifyIds, nil
+}
+
+func (r *MediaRepository) UpdateTrackPreviewUrl(ctx context.Context, spotifyId spotify.ID, previewUrl string) (int, error) {
+	fmt.Printf("spotify id: %s      previewUrl: %s\n", spotifyId, previewUrl)
+	const query string = `
+		UPDATE track SET preview_url = $1 WHERE spotify_id = $2 RETURNING id;
+	`
+
+	var id int
+	if err := r.QueryRow(ctx, query, previewUrl, spotifyId.String()).Scan(&id); err != nil {
 		return 0, err
 	}
 

@@ -178,6 +178,7 @@ func setupRoutes(app *fiber.App, repo *storage.Repository, config config.Config)
 			clientCredRoute.Get("/import/new-releases", h.NewReleases)
 			clientCredRoute.Post("/import/recommendations", h.ImportRecommendations)
 			clientCredRoute.Patch("/import/artist-details", h.GetArtistDetails)
+			clientCredRoute.Patch("/import/track-preview-url", h.UpdatePreviewUrl)
 		})
 
 		r.Route("/", func(authRoute fiber.Router) {

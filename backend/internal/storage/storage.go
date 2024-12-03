@@ -77,6 +77,8 @@ type MediaRepository interface {
 	AddArtistAndTrackArtist(ctx context.Context, artist *models.Artist, trackId int) error
 	GetArtistsMissingPhoto(ctx context.Context) ([]spotify.ID, error)
 	UpdateArtistPhoto(ctx context.Context, spotifyId spotify.ID, photo string) (int, error)
+	GetTracksMissingPreviewUrl(ctx context.Context) ([]spotify.ID, error)
+	UpdateTrackPreviewUrl(ctx context.Context, spotifyId spotify.ID, previewUrl string) (int, error)
 }
 
 type RecommendationRepository interface {
