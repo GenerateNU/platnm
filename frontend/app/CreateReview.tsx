@@ -86,7 +86,6 @@ const CreateReview = () => {
     if (showNudges) {
       setShowNudges(false);
       router.push("/explore");
-      console.log("outside click");
     }
   };
 
@@ -129,6 +128,7 @@ const CreateReview = () => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
+      <HeaderComponent title="Log Song" centered />
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <TouchableWithoutFeedback onPress={handleOutsideClick}>
           <View style={styles.inner}>
@@ -137,7 +137,6 @@ const CreateReview = () => {
               onScrollEndDrag={() => setSliderInteracting(false)}
               contentContainerStyle={styles.scrollview}
             >
-              <HeaderComponent title="Log Song" />
               <SongCard
                 mediaName={mediaName}
                 mediaType={mediaType}
@@ -149,11 +148,11 @@ const CreateReview = () => {
                   style={styles.sliderWrapper}
                   {...panResponder.panHandlers}
                 >
-                  <View style={styles.slider}>
-                    {/* Render your slider here, adjust based on touch */}
-                    <View collapsable={false}>
-                      <RatingSlider onRatingChange={handleRatingChange} />
-                    </View>
+                  <View collapsable={false}>
+                    <RatingSlider
+                      value={rating}
+                      onRatingChange={handleRatingChange}
+                    />
                   </View>
                 </View>
               </GestureDetector>
@@ -178,7 +177,15 @@ const CreateReview = () => {
                 <PublishButton handleClick={handlePublish} />
               </View>
             </ScrollView>
-            {showNudges && <NudgePage />}
+            {showNudges && (
+              <NudgePage
+                media_type={mediaType}
+                media_id={mediaId}
+                title={mediaName}
+                artist_name={artistName}
+                cover={cover}
+              />
+            )}
           </View>
         </TouchableWithoutFeedback>
       </TouchableWithoutFeedback>
@@ -221,9 +228,6 @@ const styles = StyleSheet.create({
   sliderWrapper: {
     marginBottom: 20,
     width: "100%",
-  },
-  slider: {
-    //  flexDirection: "row", // Ensures horizontal scrolling
   },
 });
 

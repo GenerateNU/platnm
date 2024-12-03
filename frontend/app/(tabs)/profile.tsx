@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -8,332 +8,171 @@ import {
   ScrollView,
   Dimensions,
   TextInput,
-  Touchable,
 } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
-import axios from "axios";
 import Section from "@/components/profile/Section";
-import { router, useFocusEffect, useNavigation } from "expo-router";
 import SelectSection from "@/components/profile/SelectSection";
 import ProfilePicture from "@/components/profile/ProfilePicture";
 import { useAuthContext } from "@/components/AuthProvider";
+import { useProfile } from "@/hooks/useProfile";
 
 export default function ProfileScreen() {
-  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-
-  const [userProfile, setUserProfile] = useState<UserProfile>();
-  const [userReviews, setUserReviews] = useState<Review[]>();
-  const { userId } = useAuthContext();
-  const [sections, setSections] = useState<Section[]>([]); //TODO depending on what we do with sections
-
-  const [selectSectionVisible, setSelectSectionVisible] = useState(false);
-  const [selectedOption, setSelectedOption] = useState<SectionOption>();
-  const [options, setOptions] = useState<SectionOption[]>([]);
-
-  const hasNotification = true; // Hardcoding - Get notification status from somewhere else
-
-  const [isEditing, setIsEditing] = useState(false);
-  const [bio, setBio] = useState(userProfile?.bio);
-
-  useFocusEffect(
-    useCallback(() => {
-      if (!userId) {
-        router.push("/(tabs)/login");
-      }
-    }, [userId]),
-  );
-
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const response = await axios.get(
-          `${BASE_URL}/users/profile/id/${userId}`,
-        );
-        const profile = {
-          id: response.data.user_id,
-          username: response.data.username,
-          display_name: response.data.display_name,
-          bio: response.data.bio.String,
-          profile_picture: response.data.profile_picture.String,
-          followers: response.data.followers,
-          followed: response.data.followed,
-          score: response.data.score,
-        };
-        setUserProfile(profile);
-        setBio(response.data.bio.String);
-      } catch (error) {
-        console.error("Error fetching user profile:", error);
-      }
-    };
-
-    const fetchUserReviews = async () => {
-      try {
-        const response = await axios.get(`${BASE_URL}/reviews/user/${userId}`);
-        setUserReviews(response.data);
-      } catch (error) {
-        console.error("Error fetching user reviews:", error);
-      }
-    };
-
-    const fetchUserSections = async () => {
-      try {
-        const response = await axios.get(`${BASE_URL}/users/section/${userId}`);
-        setSections(response.data);
-      } catch (error) {
-        console.error("Error fetching user sections:", error);
-      }
-    };
-
-    const fetchSectionOptions = async () => {
-      try {
-        const response = await axios.get(
-          `${BASE_URL}/users/section/options/${userId}`,
-        );
-        setOptions(response.data);
-      } catch (error) {
-        console.error("Error fetching section options:", error);
-      }
-    };
-    fetchUserProfile();
-    fetchUserReviews();
-    fetchUserSections();
-    fetchSectionOptions();
-  }, [userId]);
-
-  const handleActivityPress = () => {
-    router.push("/Activity");
-  };
-
-  const handleOnQueuePress = () => {
-    router.push("/OnQueue");
-  };
-
-  const handleSettingsPress = () => {
-    router.push("/Settings");
-  };
-
-  const handleSharePress = () => {
-    console.log("Share icon pressed");
-  };
-
-  const handleEditPress = () => {
-    if (isEditing) {
-      axios.patch(`${BASE_URL}/users/bio/${userId}`, { bio });
-    }
-    setIsEditing(!isEditing);
-  };
-
-  const handleSelect = (option: SectionOption) => {
-    setSelectedOption(option);
-    setSelectSectionVisible(false);
-    const newSection = {
-      section_id: option.section_id,
-      title: `${option.title}`,
-      items: [],
-      search_type: option.search_type,
-    };
-    setOptions((prevOptions) =>
-      prevOptions.filter((item) => item.title !== option.title),
-    );
-    setSections([...(sections || []), newSection]);
-  };
-
-  const handleAddSection = () => {
-    setSelectSectionVisible(true);
-  };
-
-  const handleAddItem = (section: Section) => {
-    router.push({
-      pathname: "/SectionResults",
-      params: { type: section.search_type, sectionId: section.section_id },
-    });
-    setSections(
-      sections.map((section) => {
-        if (section.section_id === section.section_id) {
-          return {
-            ...section,
-            items: [...section.items],
-          };
-        }
-        return section;
-      }),
-    );
-  };
-
-  const handleDeleteItem = (sectionId: number, itemId: number) => {
-    setSections((prevSections) =>
-      prevSections.map((section) =>
-        section.section_id === sectionId
-          ? {
-              ...section,
-              items: section.items.filter((item) => item.id !== itemId),
-            }
-          : section,
-      ),
-    );
-
-    axios.delete(`${BASE_URL}/users/section/item`, {
-      data: {
-        user_id: userId,
-        section_type_id: sectionId,
-        section_item_id: itemId,
-      },
-    });
-  };
-
-  const handleDeleteSection = (id: number) => {
-    const sectionToDelete = sections.find(
-      (section) => section.section_id === id,
-    );
-    if (sectionToDelete) {
-      setOptions([
-        ...options,
-        {
-          title: sectionToDelete.title,
-          search_type: sectionToDelete.search_type,
-          section_id: sectionToDelete.section_id,
-        },
-      ]);
-    }
-    setSections(sections.filter((section) => section.section_id !== id));
-    axios.delete(`${BASE_URL}/users/section`, {
-      data: {
-        section_type_id: id,
-        user_id: userId,
-      },
-    });
-  };
+  const userId = useAuthContext().userId;
+  const {
+    userProfile,
+    sections,
+    bio,
+    setBio,
+    isEditing,
+    hasNotification,
+    selectSectionVisible,
+    setSelectSectionVisible,
+    options,
+    handleEditPress,
+    handleActivityPress,
+    handleSettingsPress,
+    handleSharePress,
+    handleOnQueuePress,
+    handleAddItem,
+    handleDeleteSection,
+    handleDeleteItem,
+    handleAddSection,
+    handleSelect,
+  } = useProfile(userId);
 
   return (
     userProfile && (
-      <ScrollView style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          {/* Top icons */}
-          <View style={styles.topIconsContainer}>
-            {/* Activity icon with notification badge */}
-            <TouchableOpacity
-              onPress={handleActivityPress}
-              style={styles.activityIconContainer}
-            >
-              <Icon name="activity" size={24} color="#000" />
-              {hasNotification && <View style={styles.notificationBadge} />}
-            </TouchableOpacity>
-
-            {/* Grouping the settings and share icons on the right */}
-            <View style={styles.rightIconsContainer}>
-              <TouchableOpacity onPress={handleSettingsPress}>
-                <Icon
-                  name="settings"
-                  size={24}
-                  color="#000"
-                  style={styles.rightIcon}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleSharePress}>
-                <Icon
-                  name="share"
-                  size={24}
-                  color="#000"
-                  style={styles.rightIcon}
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-          {/* Profile Picture */}
-          <View style={styles.profileContainer}>
-            <Image
-              source={require("@/assets/images/Profile/record.png")}
-              style={styles.recordImage}
-            />
-            {userProfile.profile_picture ? ( // Check if profilePicture exists
-              <ProfilePicture
-                uri={userProfile.profile_picture}
-                editing={isEditing}
-              />
-            ) : null}
-            {/* Don't render anything if there's no profile picture */}
-            <TouchableOpacity onPress={handleEditPress} style={styles.editIcon}>
-              <Icon name="edit-2" size={20} color="#888" />
-            </TouchableOpacity>
-          </View>
-          {/* Username and Bio */}
-          <Text style={styles.name}>{userProfile.display_name}</Text>
-          <View style={styles.usernameContainer}>
-            <Text style={styles.username}>@{userProfile.username}</Text>
-          </View>
-          <View style={styles.stats}>
-            <View style={styles.statItemContainer}>
-              <Text style={styles.statNumber}>{userProfile.followers}</Text>
-              <Text style={styles.statLabel}>Followers</Text>
-            </View>
-            <View style={styles.statItemContainer}>
-              <Text style={styles.statNumber}>{userProfile.followed}</Text>
-              <Text style={styles.statLabel}>Following</Text>
-            </View>
-            <View style={styles.statItemContainer}>
-              <Text style={styles.statNumber}>{userProfile.score}</Text>
-              <Text style={styles.statLabel}>Platinum</Text>
-            </View>
-          </View>
-
-          {/* Bio */}
-          {isEditing ? (
-            <TextInput
-              value={bio}
-              onChangeText={setBio}
-              style={styles.aboutMeInput}
-              multiline
-            />
-          ) : (
-            <Text style={styles.aboutMe}>
-              {bio == "" ? "About me..." : bio}
-            </Text>
-          )}
-        </View>
-
-        {/* On Queue Button */}
-        <TouchableOpacity
-          style={styles.queueButton}
-          onPress={handleOnQueuePress}
-        >
-          <Text style={styles.queueButtonText}>▶ On Queue</Text>
+      <View style={styles.container}>
+        <TouchableOpacity onPress={handleEditPress} style={styles.editIcon}>
+          <Icon name="edit-2" size={20} color="#888" />
         </TouchableOpacity>
+        <ScrollView style={styles.container}>
+          {/* Header */}
+          <View style={styles.header}>
+            {/* Top icons */}
+            <View style={styles.topIconsContainer}>
+              {/* Activity icon with notification badge */}
+              <TouchableOpacity
+                onPress={handleActivityPress}
+                style={styles.activityIconContainer}
+              >
+                <Icon name="activity" size={24} color="#000" />
+                {hasNotification && <View style={styles.notificationBadge} />}
+              </TouchableOpacity>
 
-        {/* Sections */}
-        {sections &&
-          sections.map((section, index) => (
-            <View key={index}>
-              <Section
-                title={section.title}
-                items={section.items}
-                isEditing={isEditing}
-                onAddItem={() => handleAddItem(section)}
-                onDeleteSection={() => handleDeleteSection(section.section_id)}
-                onDeleteItem={(itemIndex) =>
-                  handleDeleteItem(section.section_id, itemIndex)
-                }
-              />
+              {/* Grouping the settings and share icons on the right */}
+              <View style={styles.rightIconsContainer}>
+                <TouchableOpacity onPress={handleSettingsPress}>
+                  <Icon
+                    name="settings"
+                    size={24}
+                    color="#000"
+                    style={styles.rightIcon}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleSharePress}>
+                  <Icon
+                    name="share"
+                    size={24}
+                    color="#000"
+                    style={styles.rightIcon}
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
-          ))}
-        {/* Button to Add a New Section */}
-        {isEditing && (
+            {/* Profile Picture */}
+            <View style={styles.profileContainer}>
+              <Image
+                source={require("@/assets/images/Profile/record.png")}
+                style={styles.recordImage}
+              />
+              {userProfile.profile_picture ? ( // Check if profilePicture exists
+                <ProfilePicture
+                  uri={userProfile.profile_picture}
+                  editing={isEditing}
+                />
+              ) : null}
+              {/* Don't render anything if there's no profile picture */}
+            </View>
+            {/* Username and Bio */}
+            <Text style={styles.name}>{userProfile.display_name}</Text>
+            <View style={styles.usernameContainer}>
+              <Text style={styles.username}>@{userProfile.username}</Text>
+            </View>
+            <View style={styles.stats}>
+              <View style={styles.statItemContainer}>
+                <Text style={styles.statNumber}>{userProfile.followers}</Text>
+                <Text style={styles.statLabel}>Followers</Text>
+              </View>
+              <View style={styles.statItemContainer}>
+                <Text style={styles.statNumber}>{userProfile.followed}</Text>
+                <Text style={styles.statLabel}>Following</Text>
+              </View>
+              <View style={styles.statItemContainer}>
+                <Text style={styles.statNumber}>{userProfile.score}</Text>
+                <Text style={styles.statLabel}>Platinum</Text>
+              </View>
+            </View>
+            {/* Bio */}
+            {isEditing ? (
+              <TextInput
+                value={bio}
+                onChangeText={setBio}
+                style={styles.aboutMeInput}
+                multiline
+              />
+            ) : (
+              <Text style={styles.aboutMe}>
+                {bio == "" ? "About me..." : bio}
+              </Text>
+            )}
+          </View>
+
+          {/* On Queue Button */}
           <TouchableOpacity
-            onPress={handleAddSection}
-            style={styles.addSectionButton}
+            style={styles.queueButton}
+            onPress={handleOnQueuePress}
           >
-            <Text style={styles.addSectionButtonText}>Add Section</Text>
-            <Icon name="plus-circle" size={24} color="#000" />
+            <Text style={styles.queueButtonText}>▶ On Queue</Text>
           </TouchableOpacity>
-        )}
-        {/* <SelectSection/> */}
-        <SelectSection
-          visible={selectSectionVisible}
-          onClose={() => setSelectSectionVisible(false)}
-          onSelect={handleSelect}
-          options={options}
-        />
-      </ScrollView>
+
+          {/* Sections */}
+          {sections &&
+            sections.map((section, index) => (
+              <View key={index}>
+                <Section
+                  title={section.title}
+                  items={section.items}
+                  isEditing={isEditing}
+                  onAddItem={() => handleAddItem(section)}
+                  onDeleteSection={() =>
+                    handleDeleteSection(section.section_id)
+                  }
+                  onDeleteItem={(itemIndex) =>
+                    handleDeleteItem(section.section_id, itemIndex)
+                  }
+                />
+              </View>
+            ))}
+          {/* Button to Add a New Section */}
+          {isEditing && (
+            <TouchableOpacity
+              onPress={handleAddSection}
+              style={styles.addSectionButton}
+            >
+              <Text style={styles.addSectionButtonText}>Add Section</Text>
+              <Icon name="plus-circle" size={24} color="#000" />
+            </TouchableOpacity>
+          )}
+          {/* <SelectSection/> */}
+          <SelectSection
+            visible={selectSectionVisible}
+            onClose={() => setSelectSectionVisible(false)}
+            onSelect={handleSelect}
+            options={options}
+          />
+        </ScrollView>
+      </View>
     )
   );
 }
@@ -344,7 +183,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingHorizontal: 15,
+    paddingHorizontal: 16,
+    minHeight: Dimensions.get("window").height - 100,
   },
   header: {
     alignItems: "center",
@@ -390,11 +230,12 @@ const styles = StyleSheet.create({
   },
 
   editIcon: {
+    zIndex: 10,
     position: "absolute",
-    right: -25,
-    bottom: 20,
-    backgroundColor: "transparent",
-    padding: 4,
+    backgroundColor: "#f0f0f0",
+    padding: 20,
+    right: 24,
+    bottom: 24,
     borderRadius: 50,
   },
   editText: {

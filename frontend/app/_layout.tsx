@@ -12,6 +12,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { LogBox } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { View } from "react-native";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -38,33 +39,20 @@ export default function RootLayout() {
     <AuthProvider>
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <GestureHandlerRootView>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="onboarding/signup"
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="CreateReview"
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="PreviewReview"
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen name="MediaPage" options={{ headerShown: false }} />
-            <Stack.Screen name="Settings" options={{ headerShown: false }} />
-            <Stack.Screen name="Activity" options={{ headerShown: false }} />
-            <Stack.Screen name="OnQueue" options={{ headerShown: false }} />
-            <Stack.Screen name="ReviewPage" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="SectionResults"
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="Recommendations"
-              options={{ headerShown: false }}
-            />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="onboarding/signup" />
+            <Stack.Screen name="CreateReview" />
+            <Stack.Screen name="PreviewReview" />
+            <Stack.Screen name="MediaReviewsPage" />
+            <Stack.Screen name="MediaPage" />
+            <Stack.Screen name="Settings" />
+            <Stack.Screen name="Activity" />
+            <Stack.Screen name="OnQueue" />
+            <Stack.Screen name="ReviewPage" />
+            <Stack.Screen name="SectionResults" />
+            <Stack.Screen name="Recommendations" />
+            <Stack.Screen name="Notifications" />
             <Stack.Screen name="+not-found" />
           </Stack>
         </GestureHandlerRootView>

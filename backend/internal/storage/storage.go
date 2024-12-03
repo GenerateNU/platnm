@@ -3,8 +3,10 @@ package storage
 import (
 	"context"
 	"platnm/internal/models"
+	"platnm/internal/storage/postgres/schema"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/zmb3/spotify/v2"
 )
 
@@ -22,6 +24,7 @@ type UserRepository interface {
 	UpdateUserProfilePicture(ctx context.Context, user uuid.UUID, pfp string) error
 	GetUserFeed(ctx context.Context, id uuid.UUID) ([]*models.Preview, error)
 	UpdateUserOnboard(ctx context.Context, email string, enthusiasm string) (string, error)
+	GetUserFollowing(ctx context.Context, id uuid.UUID) ([]*models.Follower, error)
 	CreateSection(ctx context.Context, sectiontype models.SectionType) (models.SectionType, error)
 	CreateSectionItem(ctx context.Context, sectionitem models.SectionItem, user string, sectiontype string) (models.SectionItem, error)
 	UpdateSectionItem(ctx context.Context, sectionitem models.SectionItem) error
@@ -29,8 +32,9 @@ type UserRepository interface {
 	DeleteSection(ctx context.Context, section_type_item models.SectionTypeItem) error
 	GetUserSections(ctx context.Context, id string) ([]models.UserSection, error)
 	GetUserSectionOptions(ctx context.Context, id string) ([]models.SectionOption, error)
-
+	GetConnections(ctx context.Context, id uuid.UUID, limit int, offset int) (models.Connections, error)
 	GetProfileByName(ctx context.Context, name string) ([]*models.Profile, error)
+	GetNotifications(ctx context.Context, id string) ([]*models.Notification, error)
 	// GetProfileByUser(ctx context.Context, userName string) (*models.Profile, error)
 }
 
@@ -102,6 +106,7 @@ type PlaylistRepository interface {
 
 // Repository storage of all repositories.
 type Repository struct {
+	db             *pgxpool.Pool
 	User           UserRepository
 	Review         ReviewRepository
 	UserReviewVote VoteRepository
@@ -109,4 +114,22 @@ type Repository struct {
 	Recommendation RecommendationRepository
 	UserAuth       UserAuthRepository
 	Playlist       PlaylistRepository
+}
+
+func NewRepository(db *pgxpool.Pool) *Repository {
+	return &Repository{
+		db:             db,
+		User:           schema.NewUserRepository(db),
+		Review:         schema.NewReviewRepository(db),
+		UserReviewVote: schema.NewVoteRepository(db),
+		Media:          schema.NewMediaRepository(db),
+		Recommendation: schema.NewRecommendationRepository(db),
+		UserAuth:       schema.NewUserAuthRepository(db),
+		Playlist:       schema.NewPlaylistRepository(db),
+	}
+}
+
+func (r *Repository) Close() error {
+	r.db.Close()
+	return nil
 }

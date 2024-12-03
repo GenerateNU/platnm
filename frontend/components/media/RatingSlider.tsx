@@ -3,16 +3,11 @@ import { StyleSheet, View } from "react-native";
 import { RadialSlider } from "react-native-radial-slider";
 
 type RatingSliderProps = {
+  value: number;
   onRatingChange: (value: number) => void;
 };
 
-const RatingSlider = ({ onRatingChange }: RatingSliderProps) => {
-  const [value, setValue] = useState(0);
-
-  const handleRating = (value: number) => {
-    setValue(value);
-    onRatingChange(value);
-  };
+const RatingSlider = ({ value, onRatingChange }: RatingSliderProps) => {
   return (
     <View style={styles.container}>
       <View collapsable={false}>
@@ -20,7 +15,7 @@ const RatingSlider = ({ onRatingChange }: RatingSliderProps) => {
           value={value}
           min={0}
           max={10}
-          onChange={handleRating}
+          onComplete={onRatingChange}
           unit={""}
           subTitle={""}
           isHideLines={true}

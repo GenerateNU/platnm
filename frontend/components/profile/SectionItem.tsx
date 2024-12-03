@@ -20,7 +20,6 @@ const SectionItem: React.FC<SectionItemProps> = ({
   const placeholderImage =
     "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png";
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-
   const { userId } = useAuthContext();
   const sectionId = id;
 

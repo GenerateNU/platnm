@@ -1,28 +1,36 @@
 import React from "react";
 import { router } from "expo-router";
-import { View, Text, StyleSheet, Image, ImageBackground } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  ImageBackground,
+  Dimensions,
+} from "react-native";
 import { Button, IconButton } from "react-native-paper";
 import { LinearGradient } from "expo-linear-gradient";
 
 type MediaCardProps = {
   media: Media;
+  full?: boolean;
 };
 
 function isTrack(media: Media): media is Track {
   return (media as Track).album_id !== undefined;
 }
 
-const MediaCard = ({ media }: MediaCardProps) => {
+const MediaCard = ({ media, full = false }: MediaCardProps) => {
   return (
     <View style={styles.container}>
       <ImageBackground
-        style={styles.imageBackground}
+        style={full ? styles.fullBackground : styles.imageBackground}
         source={{ uri: media.cover }}
       >
         <LinearGradient
           // Background Linear Gradient
-          colors={["rgba(0,0,0,0.6)", "rgba(242, 128, 55, 0.6)"]}
-          style={styles.background}
+          colors={["rgba(0,0,0,0.6)", `rgba(242, 128, 55, ${full ? 1 : 0.6})`]}
+          style={full ? styles.fullBackground : styles.background}
         >
           <View style={styles.contentContainer}>
             <View>
@@ -60,6 +68,25 @@ const MediaCard = ({ media }: MediaCardProps) => {
                 <Text style={styles.albumText}>{media.album_title}</Text>
               )}
             </View>
+            {full && (
+              <View style={styles.noReviewsContainer}>
+                <Text
+                  style={{
+                    color: "white",
+                    fontSize: 24,
+                    fontWeight: "bold",
+                  }}
+                >
+                  You've got taste!
+                </Text>
+                <Text style={styles.emptyText}>
+                  We dont have any reviews for this {media.media_type} yet.
+                </Text>
+                <Text style={styles.emptyText}>
+                  Be the first to leave a rating
+                </Text>
+              </View>
+            )}
             <View style={styles.addReviewContainer}>
               <Button
                 onPress={() =>
@@ -67,7 +94,7 @@ const MediaCard = ({ media }: MediaCardProps) => {
                     pathname: "/CreateReview",
                     params: {
                       mediaName: media.title,
-                      mediaType: media.media_type,
+                      mediaType: isTrack(media) ? "track" : "album",
                       mediaId: media.id,
                       cover: media.cover,
                       artistName: media.artist_name,
@@ -92,14 +119,34 @@ export default MediaCard;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "black",
+  },
+  noReviewsContainer: {
+    flex: 1,
+    margin: "auto",
+    marginTop: 128,
+    width: "100%",
+  },
+  emptyText: {
+    fontSize: 18,
+    color: "white",
+    marginTop: 12,
+    width: "80%",
   },
   imageBackground: {
     width: "100%",
-    height: 300,
+    top: 32,
+    marginTop: -32,
+  },
+  fullBackground: {
+    width: "100%",
+    height: Dimensions.get("window").height,
     opacity: 0.9,
+    backgroundColor: "black",
+    paddingBottom: 24,
   },
   background: {
-    height: 300,
+    height: 350,
   },
   contentContainer: {
     flex: 1,
@@ -142,5 +189,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#000000",
     borderRadius: 8,
     padding: 8,
+    opacity: 1,
+    marginBottom: 16,
   },
 });

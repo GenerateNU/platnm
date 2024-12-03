@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import Downvote from "@/assets/images/ReviewPreview/downvote.svg";
 import Upvote from "@/assets/images/ReviewPreview/upvote.svg";
 import axios from "axios";
+import { useAuthContext } from "./AuthProvider";
 const MusicDisk = require("../assets/images/music-disk.png");
 
 interface CommentProps {
@@ -12,7 +13,7 @@ interface CommentProps {
 
 const CommentComponent: React.FC<CommentProps> = ({ comment }) => {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-  const userId = "2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e"; // Hardcoding - Get userId from navigation
+  const { userId } = useAuthContext();
 
   const [upVote, setupVote] = useState<Boolean>();
   const [downVote, setdownVote] = useState<Boolean>();
@@ -156,7 +157,7 @@ const CommentComponent: React.FC<CommentProps> = ({ comment }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#FAFAFA",
+    backgroundColor: "#FFF",
     padding: 20,
     width: "100%",
     alignSelf: "center",

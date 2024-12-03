@@ -141,13 +141,14 @@ func (h *Handler) handleSearchResults(client *spotify.Client, ctx context.Contex
 			}(artist)
 		}
 	}
+  
 
-	if result.Albums != nil && result.Albums.Albums != nil {
+	if (result.Albums) != nil {
 		for _, album := range result.Albums.Albums {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				albumId, err := h.handleSearchAlbum(ctx, &wg, album, errCh)
+				albumId, err := h.handleSearchAlbum(ctx, &wg, &album, errCh)
 				if err != nil {
 					return // error should've been reported in handleSearchAlbum. don't proceed to handleSearchAlbumTracks
 				}
@@ -156,7 +157,7 @@ func (h *Handler) handleSearchResults(client *spotify.Client, ctx context.Contex
 		}
 	}
 
-	if result.Tracks != nil && result.Tracks.Tracks != nil {
+	if (result.Tracks) != nil {
 		for _, track := range result.Tracks.Tracks {
 			wg.Add(1)
 			go func() {
@@ -183,7 +184,7 @@ func (h *Handler) handleSearchResults(client *spotify.Client, ctx context.Contex
 	return nil
 }
 
-func (h *Handler) handleSearchAlbum(ctx context.Context, wg *sync.WaitGroup, album spotify.SimpleAlbum, errCh chan<- error) (int, error) {
+func (h *Handler) handleSearchAlbum(ctx context.Context, wg *sync.WaitGroup, album *spotify.SimpleAlbum, errCh chan<- error) (int, error) {
 	addedAlbum, err := h.mediaRepository.AddAlbum(ctx, &models.Album{
 		MediaType:   models.AlbumMedia,
 		SpotifyID:   album.ID.String(),

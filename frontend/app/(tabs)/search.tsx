@@ -55,15 +55,15 @@ const SearchPage: React.FC = () => {
     try {
       const [songsResponse, albumsResponse, profilesResponse] =
         await Promise.all([
-          axios.get(`${BASE_URL}/media/${query}`),
-          axios.get(`${BASE_URL}/media/${query}`),
+          axios.get(`${BASE_URL}/media/${query}?media_type=track`),
+          axios.get(`${BASE_URL}/media/${query}?media_type=album`),
           axios.get(`${BASE_URL}/users/profile/name/${query}`),
         ]);
 
       setSearchResults({
-        songs: songsResponse.data,
-        albums: albumsResponse.data,
-        profiles: profilesResponse.data,
+        songs: songsResponse.data ?? [],
+        albums: albumsResponse.data ?? [],
+        profiles: profilesResponse.data ?? [],
       });
       setIsSearchActive(true);
     } catch (error) {
@@ -75,25 +75,27 @@ const SearchPage: React.FC = () => {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <SearchBar onSearch={handleSearch} />
 
-      {isSearchActive ? (
-        <SearchResults
-          songs={searchResults.songs}
-          albums={searchResults.albums}
-          isLoading={isLoading}
-          profiles={searchResults.profiles}
-          filter={"all"}
-        />
-      ) : (
-        <View>
-          <TopSongs songs={initialSongs} />
-          <TopAlbums albums={initialAlbums} />
-          <TopReviews reviews={initialReviews} />
-        </View>
-      )}
-    </ScrollView>
+      <ScrollView>
+        {isSearchActive ? (
+          <SearchResults
+            songs={searchResults.songs}
+            albums={searchResults.albums}
+            isLoading={isLoading}
+            profiles={searchResults.profiles}
+            filter={"all"}
+          />
+        ) : (
+          <View>
+            <TopSongs songs={initialSongs} />
+            <TopAlbums albums={initialAlbums} />
+            <TopReviews reviews={initialReviews} />
+          </View>
+        )}
+      </ScrollView>
+    </View>
   );
 };
 

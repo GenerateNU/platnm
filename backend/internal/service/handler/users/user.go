@@ -3,6 +3,7 @@ package users
 import (
 	"platnm/internal/config"
 	"platnm/internal/errs"
+	"platnm/internal/models"
 	"platnm/internal/service/session"
 	"platnm/internal/storage"
 
@@ -109,6 +110,20 @@ func (h *Handler) CalculateScore(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(score)
 }
 
+func (h *Handler) GetNotifications(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	notifications, err := h.userRepository.GetNotifications(c.Context(), id)
+	if err != nil {
+		return err
+	}
+	if notifications == nil {
+		return c.Status(fiber.StatusOK).JSON([]*models.Notification{})
+	}
+	return c.Status(fiber.StatusOK).JSON(notifications)
+
+}
+
 func (h *Handler) GetUserProfile(c *fiber.Ctx) error {
 	id := c.Params("id")
 
@@ -166,7 +181,6 @@ func (h *Handler) UpdateUserBio(c *fiber.Ctx) error {
 
 	exists, err := h.userRepository.UserExists(c.Context(), id)
 	if err != nil {
-		print(err.Error())
 		return err
 	}
 
@@ -229,4 +243,22 @@ func (h *Handler) GetUserFeed(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(feed)
+}
+
+func (h *Handler) GetUserFollowing(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	userUUID, err := uuid.Parse(id)
+	if err != nil {
+		return err
+	}
+
+	following, err := h.userRepository.GetUserFollowing(c.Context(), userUUID)
+	if err != nil {
+		// TODO: Catch user does not exist error.
+		// TODO: Make GetUserFollowing(ctx, uuid) throw user DNE error.
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(following)
 }

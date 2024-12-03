@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   TextInput,
   Modal,
+  KeyboardAvoidingView,
 } from "react-native";
 import Rating0 from "@/assets/images/Ratings/Radial-0.svg";
 import Rating1 from "@/assets/images/Ratings/Radial-1.svg";
@@ -28,6 +29,8 @@ import Downvote from "@/assets/images/ReviewPreview/downvote.svg";
 import Upvote from "@/assets/images/ReviewPreview/upvote.svg";
 import Comment from "@/assets/images/ReviewPreview/comment.svg";
 import Share from "@/assets/images/ReviewPreview/share.svg";
+import Upload from "@/assets/images/Icons/Upload.svg";
+import { useAuthContext } from "@/components/AuthProvider";
 
 interface ReviewPageProps {
   route: {
@@ -46,7 +49,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
   const [review, setReview] = useState<Preview>();
   const [comments, setComments] = useState<UserComment[]>();
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-  const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
+  const { userId } = useAuthContext();
   const MusicDisk = require("../assets/images/music-disk.png");
 
   const [currentVote, setCurrentVote] = useState<boolean>(false); // does a vote currently exist?
@@ -418,26 +421,34 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
             ) : (
               <Text style={styles.noReviewsText}>No comments found.</Text>
             )}
+            <View style={{ paddingVertical: 40 }} />
           </View>
         </View>
       </ScrollView>
 
       {/* Fixed TextBox for Comment */}
-      <View style={styles.commentBoxContainer}>
+
+      <KeyboardAvoidingView
+        style={styles.commentBoxContainer}
+        keyboardVerticalOffset={32}
+        behavior="padding"
+        enabled
+      >
         <TextInput
           style={styles.commentInput}
           value={newComment}
           onChangeText={setNewComment}
           placeholder="Add a comment..."
           multiline
-        />
-        <TouchableOpacity
-          style={styles.submitButton}
-          onPress={handleCommentSubmit}
-        >
-          <Text style={styles.submitButtonText}>Submit</Text>
+        ></TextInput>
+        <TouchableOpacity style={{}} onPress={handleCommentSubmit}>
+          <Upload
+            width={16}
+            height={16}
+            style={{ marginLeft: 10, marginRight: 10 }}
+          />
         </TouchableOpacity>
-      </View>
+      </KeyboardAvoidingView>
     </View>
   ) : (
     <View style={styles.container}>
@@ -621,7 +632,7 @@ const styles = StyleSheet.create({
   },
   commentBoxContainer: {
     position: "absolute",
-    bottom: 0,
+    bottom: 50,
     left: 0,
     right: 0,
     backgroundColor: "#fff",
@@ -634,18 +645,12 @@ const styles = StyleSheet.create({
   },
   commentInput: {
     flex: 1,
-    height: 40,
-    borderColor: "#ccc",
-    borderWidth: 1,
+    flexDirection: "row",
+    height: 50,
     borderRadius: 5,
-    paddingHorizontal: 10,
-  },
-  submitButton: {
-    backgroundColor: "#D3D3D3",
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 5,
-    marginLeft: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: "#EFF1F5",
   },
   submitButtonText: {
     color: "#333",

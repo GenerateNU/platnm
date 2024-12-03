@@ -5,7 +5,6 @@ import (
 	"log"
 	"platnm/internal/config"
 	"platnm/internal/storage"
-	"platnm/internal/storage/postgres/schema"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -39,13 +38,5 @@ func ConnectDatabase(config config.DB) *pgxpool.Pool {
 func NewRepository(config config.DB) *storage.Repository {
 	db := ConnectDatabase(config)
 
-	return &storage.Repository{
-		User:           schema.NewUserRepository(db),
-		Review:         schema.NewReviewRepository(db),
-		UserReviewVote: schema.NewVoteRepository(db),
-		Media:          schema.NewMediaRepository(db),
-		Recommendation: schema.NewRecommendationRepository(db),
-		UserAuth:       schema.NewUserAuthRepository(db),
-		Playlist:       schema.NewPlaylistRepository(db),
-	}
+	return storage.NewRepository(db)
 }

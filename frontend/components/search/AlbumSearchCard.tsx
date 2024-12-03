@@ -72,6 +72,7 @@ const styles = StyleSheet.create({
     flexDirection: "row", // Set horizontal layout to align rank and cover side-by-side
     alignItems: "center", // Align items vertically centered
     position: "relative",
+    width: 140,
   },
   rank: {
     color: "#000",
