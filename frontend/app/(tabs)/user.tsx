@@ -32,11 +32,11 @@ export default function ProfilePage() {
     setFollowing(!following);
 
     // Optionally, trigger API call to update follow state in the backend
-    fetch('/users/follow', { method: 'POST', body: JSON.stringify({ userId }) })
-      .then(response => response.json())
-      .catch(error => console.error('Error updating follow state:', error));
+    fetch("/users/follow", { method: "POST", body: JSON.stringify({ userId }) })
+      .then((response) => response.json())
+      .catch((error) => console.error("Error updating follow state:", error));
   };
-  
+
   return (
     userProfile && (
       <ScrollView style={styles.container}>
@@ -82,7 +82,7 @@ export default function ProfilePage() {
           <TouchableOpacity onPress={handleFollowToggle}>
             <View style={styles.followButton}>
               <Text style={styles.followButtonText}>
-                {following ? 'Following' : 'Follow'}
+                {following ? "Following" : "Follow"}
               </Text>
             </View>
           </TouchableOpacity>
@@ -195,15 +195,15 @@ const styles = StyleSheet.create({
     color: "#666",
   },
   followButton: {
-    backgroundColor: '#d3d3d3', // Grey background
+    backgroundColor: "#d3d3d3", // Grey background
     borderRadius: 20, // Rounded corners
     paddingVertical: 10,
     paddingHorizontal: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   followButtonText: {
-    color: '#000', // Black text
-    fontWeight: 'bold',
+    color: "#000", // Black text
+    fontWeight: "bold",
   },
 });
