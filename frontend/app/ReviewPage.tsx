@@ -286,7 +286,9 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
                     source={{ uri: review.profile_picture }}
                   />
                   <View style={styles.textContainer}>
-                    <Text style={styles.displayName}>{review.display_name}</Text>
+                    <Text style={styles.displayName}>
+                      {review.display_name}
+                    </Text>
                     <Text style={styles.username}>@{review.username}</Text>
                   </View>
                 </TouchableOpacity>

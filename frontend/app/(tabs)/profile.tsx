@@ -63,10 +63,10 @@ export default function ProfileScreen() {
     const followingList = response.data.followees;
     setFollowerList(followerList);
     setFollowingList(followingList);
-  }
+  };
 
   useFocusEffect(
-    useCallback( () => {
+    useCallback(() => {
       fetchFollowing();
     }, [userId]),
   );
@@ -74,7 +74,7 @@ export default function ProfileScreen() {
   const navigateToProfile = (user: User) => {
     // Navigate to the selected user's profile
     const pathName =
-    user.user_id === userId ? "/(tabs)/profile" : "/(tabs)/user";
+      user.user_id === userId ? "/(tabs)/profile" : "/(tabs)/user";
     router.push({
       pathname: pathName,
       params: {
@@ -143,20 +143,20 @@ export default function ProfileScreen() {
               <Text style={styles.username}>@{userProfile.username}</Text>
             </View>
             <View style={styles.stats}>
-            <TouchableOpacity
+              <TouchableOpacity
                 onPress={() => openModal(followerList, "Followers")}
                 style={styles.statItemContainer}
               >
                 <Text style={styles.statNumber}>{userProfile.followers}</Text>
                 <Text style={styles.statLabel}>Followers</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+              </TouchableOpacity>
+              <TouchableOpacity
                 onPress={() => openModal(followingList, "Following")}
                 style={styles.statItemContainer}
               >
                 <Text style={styles.statNumber}>{userProfile.followed}</Text>
                 <Text style={styles.statLabel}>Following</Text>
-                </TouchableOpacity>
+              </TouchableOpacity>
               <View style={styles.statItemContainer}>
                 <Text style={styles.statNumber}>{userProfile.score}</Text>
                 <Text style={styles.statLabel}>Platinum</Text>
@@ -222,44 +222,44 @@ export default function ProfileScreen() {
           />
         </ScrollView>
         {/* Modal */}
-      <Modal visible={modalVisible} animationType="slide">
-        <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>{modalTitle}</Text>
-          <FlatList
-            data={modalData}
-            keyExtractor={(item) => item.user_id}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                onPress={() => {
-                  setModalVisible(false);
-                  navigateToProfile(item);
-                }}
-                style={styles.userItem}
-              >
-                {item.profile_picture ? (
-                  <Image
-                    source={{ uri: item.profile_picture }}
-                    style={styles.profileImage}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View style={styles.placeholderImage} />
-                )}
-                <View style={styles.userInfoContainer}>
-                  <Text style={styles.displayName}>{item.display_name}</Text>
-                  <Text style={styles.userName}>{item.username}</Text>
-                </View>
-              </TouchableOpacity>
-            )}
-          />
-          <TouchableOpacity
-            onPress={() => setModalVisible(false)}
-            style={styles.closeButton}
-          >
-            <Text style={styles.closeButtonText}>Close</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
+        <Modal visible={modalVisible} animationType="slide">
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>{modalTitle}</Text>
+            <FlatList
+              data={modalData}
+              keyExtractor={(item) => item.user_id}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  onPress={() => {
+                    setModalVisible(false);
+                    navigateToProfile(item);
+                  }}
+                  style={styles.userItem}
+                >
+                  {item.profile_picture ? (
+                    <Image
+                      source={{ uri: item.profile_picture }}
+                      style={styles.profileImage}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View style={styles.placeholderImage} />
+                  )}
+                  <View style={styles.userInfoContainer}>
+                    <Text style={styles.displayName}>{item.display_name}</Text>
+                    <Text style={styles.userName}>{item.username}</Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+            />
+            <TouchableOpacity
+              onPress={() => setModalVisible(false)}
+              style={styles.closeButton}
+            >
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
       </View>
     )
   );

@@ -57,10 +57,10 @@ export default function ProfilePage() {
         setFollowing(true);
       }
     }
-  }
+  };
 
   useFocusEffect(
-    useCallback( () => {
+    useCallback(() => {
       fetchFollowing();
     }, [userId]),
   );
@@ -74,7 +74,7 @@ export default function ProfilePage() {
   const navigateToProfile = (user: User) => {
     // Navigate to the selected user's profile
     const pathName =
-    user.user_id === loggedInUser ? "/(tabs)/profile" : "/(tabs)/user";
+      user.user_id === loggedInUser ? "/(tabs)/profile" : "/(tabs)/user";
     router.push({
       pathname: pathName,
       params: {
@@ -86,34 +86,37 @@ export default function ProfilePage() {
   return (
     userProfile && (
       <>
-      <ScrollView style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.topIconsContainer}>
-            <TouchableOpacity
-              onPress={handleActivityPress}
-              style={styles.activityIconContainer}
-            >
-              <Icon name="activity" size={24} color="#000" />
-            </TouchableOpacity>
+        <ScrollView style={styles.container}>
+          <View style={styles.header}>
+            <View style={styles.topIconsContainer}>
+              <TouchableOpacity
+                onPress={handleActivityPress}
+                style={styles.activityIconContainer}
+              >
+                <Icon name="activity" size={24} color="#000" />
+              </TouchableOpacity>
 
-            <TouchableOpacity onPress={handleSharePress}>
-              <Icon name="share" size={24} color="#000" />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.profileContainer}>
-            <Image
-              source={require("@/assets/images/Profile/record.png")}
-              style={styles.recordImage}
-            />
-            <ProfilePicture uri={userProfile.profile_picture} editing={false} />
-          </View>
+              <TouchableOpacity onPress={handleSharePress}>
+                <Icon name="share" size={24} color="#000" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.profileContainer}>
+              <Image
+                source={require("@/assets/images/Profile/record.png")}
+                style={styles.recordImage}
+              />
+              <ProfilePicture
+                uri={userProfile.profile_picture}
+                editing={false}
+              />
+            </View>
 
-          <Text style={styles.name}>{userProfile.display_name}</Text>
-          <View style={styles.usernameContainer}>
-            <Text style={styles.username}>@{userProfile.username}</Text>
-          </View>
-          <View style={styles.stats}>
-          <TouchableOpacity
+            <Text style={styles.name}>{userProfile.display_name}</Text>
+            <View style={styles.usernameContainer}>
+              <Text style={styles.username}>@{userProfile.username}</Text>
+            </View>
+            <View style={styles.stats}>
+              <TouchableOpacity
                 onPress={() => openModal(followerList, "Followers")}
                 style={styles.statItemContainer}
               >
@@ -127,77 +130,77 @@ export default function ProfilePage() {
                 <Text style={styles.statNumber}>{followingList.length}</Text>
                 <Text style={styles.statLabel}>Following</Text>
               </TouchableOpacity>
-            <View style={styles.statItemContainer}>
-              <Text style={styles.statNumber}>{userProfile.score}</Text>
-              <Text style={styles.statLabel}>Platinum</Text>
+              <View style={styles.statItemContainer}>
+                <Text style={styles.statNumber}>{userProfile.score}</Text>
+                <Text style={styles.statLabel}>Platinum</Text>
+              </View>
             </View>
-          </View>
-          <TouchableOpacity onPress={handleFollowToggle}>
-            <View style={styles.followButton}>
-              <Text style={styles.followButtonText}>
-                {following ? "Following" : "Follow"}
-              </Text>
-            </View>
-          </TouchableOpacity>
-
-          <Text style={styles.aboutMe}>{userProfile.bio}</Text>
-        </View>
-
-        {/* Sections */}
-        {sections &&
-          sections.map((section, index) => (
-            <View key={index}>
-              <Section
-                title={section.title}
-                items={section.items}
-                isEditing={false}
-                onAddItem={() => console.log("Add item")}
-                onDeleteSection={() => console.log("delete section")}
-                onDeleteItem={(itemIndex) => console.log("delete item")}
-              />
-            </View>
-          ))}
-      </ScrollView>
-      {/* Modal */}
-      <Modal visible={modalVisible} animationType="slide">
-      <View style={styles.modalContainer}>
-        <Text style={styles.modalTitle}>{modalTitle}</Text>
-        <FlatList
-          data={modalData}
-          keyExtractor={(item) => item.user_id}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() => {
-                setModalVisible(false);
-                navigateToProfile(item);
-              }}
-              style={styles.userItem}
-            >
-              {item.profile_picture ? (
-                <Image
-                  source={{ uri: item.profile_picture }}
-                  style={styles.profileImage}
-                  resizeMode="cover"
-                />
-              ) : (
-                <View style={styles.placeholderImage} />
-              )}
-              <View style={styles.userInfoContainer}>
-                <Text style={styles.displayName}>{item.display_name}</Text>
-                <Text style={styles.userName}>{item.username}</Text>
+            <TouchableOpacity onPress={handleFollowToggle}>
+              <View style={styles.followButton}>
+                <Text style={styles.followButtonText}>
+                  {following ? "Following" : "Follow"}
+                </Text>
               </View>
             </TouchableOpacity>
-          )}
-        />
-        <TouchableOpacity
-          onPress={() => setModalVisible(false)}
-          style={styles.closeButton}
-        >
-          <Text style={styles.closeButtonText}>Close</Text>
-        </TouchableOpacity>
-      </View>
-    </Modal>
-    </>
+
+            <Text style={styles.aboutMe}>{userProfile.bio}</Text>
+          </View>
+
+          {/* Sections */}
+          {sections &&
+            sections.map((section, index) => (
+              <View key={index}>
+                <Section
+                  title={section.title}
+                  items={section.items}
+                  isEditing={false}
+                  onAddItem={() => console.log("Add item")}
+                  onDeleteSection={() => console.log("delete section")}
+                  onDeleteItem={(itemIndex) => console.log("delete item")}
+                />
+              </View>
+            ))}
+        </ScrollView>
+        {/* Modal */}
+        <Modal visible={modalVisible} animationType="slide">
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>{modalTitle}</Text>
+            <FlatList
+              data={modalData}
+              keyExtractor={(item) => item.user_id}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  onPress={() => {
+                    setModalVisible(false);
+                    navigateToProfile(item);
+                  }}
+                  style={styles.userItem}
+                >
+                  {item.profile_picture ? (
+                    <Image
+                      source={{ uri: item.profile_picture }}
+                      style={styles.profileImage}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View style={styles.placeholderImage} />
+                  )}
+                  <View style={styles.userInfoContainer}>
+                    <Text style={styles.displayName}>{item.display_name}</Text>
+                    <Text style={styles.userName}>{item.username}</Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+            />
+            <TouchableOpacity
+              onPress={() => setModalVisible(false)}
+              style={styles.closeButton}
+            >
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
+      </>
     )
   );
 }
