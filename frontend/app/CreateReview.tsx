@@ -12,14 +12,13 @@ import {
 import axios from "axios";
 import { useLocalSearchParams } from "expo-router";
 import HeaderComponent from "@/components/HeaderComponent";
-import DraftButton from "@/components/DraftButton";
-import PublishButton from "@/components/PublishButton";
-import { usePublishReview } from "@/hooks/usePublishReview";
 import TagSelector from "@/components/media/TagSelector";
 import Divider from "@/components/Divider";
-import NudgePage from "@/components/NudgePage";
-import MediaCard from "@/components/media/MediaCard";
+import NudgePage from "@/components/media/NudgePage";
+import RateFlowButton from "@/components/media/RateFlowButton";
 import { useAuthContext } from "@/components/AuthProvider";
+import MediaCollapsed from "@/components/media/MediaCollapsed";
+import { usePublishReview } from "@/hooks/usePublishReview";
 
 const CreateReview = () => {
   const { mediaType, mediaId, rating } = useLocalSearchParams<{
@@ -79,56 +78,57 @@ const CreateReview = () => {
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={styles.keyboardAvoidingView}
-            keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0} // Adjust this value as needed
           >
             <HeaderComponent title="Log Song" centered />
-            <View style={styles.inner}>
-              <ScrollView keyboardShouldPersistTaps="handled">
-                <MediaCard
-                  media={media}
-                  showTopBar={false}
-                  showRateButton={false}
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={styles.inner}
+            >
+              <MediaCollapsed media={media} />
+              <View style={styles.scrollview}>
+                <TextInput
+                  style={styles.titleInput}
+                  multiline={true}
+                  placeholderTextColor="#434343"
+                  placeholder="Add a title..."
+                  value={title}
+                  onChangeText={setTitle}
                 />
-                <View style={styles.scrollview}>
-                  <View>
-                    <TextInput
-                      style={styles.titleInput}
-                      multiline={true}
-                      placeholderTextColor="#434343"
-                      placeholder="Add a title..."
-                      value={title}
-                      onChangeText={setTitle}
-                    />
-                  </View>
-                  <TextInput
-                    style={styles.textInput}
-                    multiline={true}
-                    placeholderTextColor="#434343"
-                    placeholder="What do you want to talk about?"
-                    value={comment}
-                    onChangeText={setComment}
+                <TextInput
+                  style={styles.textInput}
+                  multiline={true}
+                  placeholderTextColor="#434343"
+                  placeholder="What do you want to talk about?"
+                  value={comment}
+                  onChangeText={setComment}
+                />
+                <Divider />
+                <TagSelector
+                  tags={selectedTags}
+                  handleTagSelect={handleTagSelect}
+                />
+                <View style={styles.buttonContainer}>
+                  <RateFlowButton
+                    text="Drafts"
+                    primary={false}
+                    handleClick={() => handleSubmit(true)}
                   />
-                  <Divider />
-                  <TagSelector
-                    tags={selectedTags}
-                    handleTagSelect={handleTagSelect}
+                  <RateFlowButton
+                    text="Publish"
+                    iconName="arrow-up"
+                    handleClick={() => handleSubmit(false)}
                   />
-                  <View style={styles.buttonContainer}>
-                    <DraftButton handleClick={() => handleSubmit(true)} />
-                    <PublishButton handleClick={() => handleSubmit(false)} />
-                  </View>
                 </View>
-              </ScrollView>
-              {showNudges && (
-                <NudgePage
-                  media_type={mediaType}
-                  media_id={mediaId}
-                  title={media.title}
-                  artist_name={media.artist_name}
-                  cover={media.cover}
-                />
-              )}
-            </View>
+              </View>
+            </ScrollView>
+            {showNudges && (
+              <NudgePage
+                media_type={mediaType}
+                media_id={mediaId}
+                title={media.title}
+                cover={media.cover}
+              />
+            )}
           </KeyboardAvoidingView>
         </View>
       </TouchableWithoutFeedback>
@@ -149,6 +149,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingTop: 24,
     paddingHorizontal: 16,
+    justifyContent: "space-between",
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -166,13 +167,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   textInput: {
-    height: 80,
+    height: 150,
     backgroundColor: "#ffffff",
     fontFamily: "Roboto",
     color: "#434343",
     fontSize: 16,
     textAlignVertical: "top",
-    justifyContent: "flex-end",
   },
 });
 

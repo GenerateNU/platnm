@@ -1,37 +1,103 @@
+import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
-import { ScrollView, View, Text, Image, StyleSheet } from "react-native";
+import { View, Text, Image, StyleSheet, ImageBackground } from "react-native";
 
 type trackCollapsedProps = {
-  track: Track;
+  media: Media;
 };
 
-const MediaCard = ({ track }: trackCollapsedProps) => {
+function isTrack(media: Media): media is Track {
+  return (media as Track).album_id !== undefined;
+}
+
+const MediaCollapsed = ({ media }: trackCollapsedProps) => {
   return (
-    <View style={styles.container}>
-      <Image source={{ uri: track.cover }} style={styles.image} />
-      <>
-        <Text style={styles.songNameText}>{track.title}</Text>
-        {/* <Text>{album.}</Text> */}
-      </>
-    </View>
+    <ImageBackground
+      style={styles.imageBackground}
+      source={{ uri: media.cover }}
+    >
+      <LinearGradient
+        colors={["rgba(0,0,0,0.6)", `rgba(242, 128, 55, ${0.6})`]}
+        style={styles.background}
+      >
+        <View style={styles.contentContainer}>
+          <View style={styles.artist}>
+            <Image style={styles.image} source={{ uri: media.artist_photo }} />
+            <Text style={styles.artistText}>{media.artist_name}</Text>
+          </View>
+          <Text style={styles.primaryMediaText}>{media.title}</Text>
+          {isTrack(media) && (
+            <Text style={styles.albumText}>{media.album_title}</Text>
+          )}
+        </View>
+      </LinearGradient>
+    </ImageBackground>
   );
 };
 
-export default MediaCard;
+export default MediaCollapsed;
 
 const styles = StyleSheet.create({
-  container: {
+  noReviewsContainer: {
+    flex: 1,
+    margin: "auto",
+    marginTop: 128,
+    width: "100%",
+  },
+  emptyText: {
+    fontSize: 18,
+    color: "white",
+    marginTop: 12,
+    width: "80%",
+  },
+  imageBackground: {
+    width: "100%",
+  },
+  background: {
+    height: 150,
+  },
+  contentContainer: {
+    flex: 1,
+    justifyContent: "space-between",
+    marginHorizontal: 16,
+    marginTop: 28,
+    marginBottom: 12,
+  },
+  iconContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  artist: {
+    flexDirection: "row",
     alignItems: "center",
-    flexDirection: "column",
-    gap: 2,
+  },
+  artistText: {
+    color: "white",
+    marginLeft: 5,
   },
   image: {
-    width: 110,
-    height: 110,
-    // marginBottom: 8,
+    width: 50,
+    height: 50,
+    marginBottom: 8,
+    opacity: 0.6,
+    borderRadius: 25,
   },
-  songNameText: {
+  primaryMediaText: {
     fontSize: 20,
     fontWeight: "bold",
+    color: "white",
+  },
+  albumText: {
+    marginTop: 4,
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "white",
+  },
+  addReviewContainer: {
+    backgroundColor: "#000000",
+    borderRadius: 8,
+    padding: 8,
+    opacity: 1,
+    marginBottom: 16,
   },
 });

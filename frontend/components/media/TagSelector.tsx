@@ -23,7 +23,7 @@ export type TagSelectorProps = {
 
 const TagSelector = ({ handleTagSelect, tags }: TagSelectorProps) => {
   return (
-    <View>
+    <View style={styles.container}>
       <Text style={styles.text}>Tags</Text>
       <View style={styles.tags}>
         {TAGS.map((tag) => (
@@ -42,6 +42,9 @@ const TagSelector = ({ handleTagSelect, tags }: TagSelectorProps) => {
 export default TagSelector;
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   text: {
     marginVertical: 10,
     fontSize: 16,

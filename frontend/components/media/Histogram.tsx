@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native";
+import React, { View, Text, StyleSheet } from "react-native";
 import {
   VictoryAxis,
   VictoryBar,
