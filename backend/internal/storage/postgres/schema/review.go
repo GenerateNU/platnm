@@ -231,6 +231,7 @@ func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int
 }
 
 func (r *ReviewRepository) CreateComment(ctx context.Context, comment *models.Comment) (*models.Comment, error) {
+
 	query := `
     INSERT INTO comment (text, review_id, user_id, created_at)
     VALUES ($1, $2, $3, NOW())
@@ -243,8 +244,28 @@ func (r *ReviewRepository) CreateComment(ctx context.Context, comment *models.Co
 			return nil, errs.NotFound("user", "id", comment.UserID)
 		} else if errs.IsForeignKeyViolation(err, commentReviewFKeyConstraint) {
 			return nil, errs.NotFound("review", "id", comment.UserID)
-		}
+		} 
+		fmt.Println(err)
 
+		return nil, err
+	}
+
+	// make a notification for this comment that just got created
+	// receiver_id: the person that is receiving the notification, which is the reviewer of comment.ReviewID
+	// tagged_entity_id: the comment that was created
+	// type: 'create_comment'
+	// tagged_entity_type: 'comment'
+	// thumbnail_url: cover of the media of the review that received a comment
+	// tagged_entity_name: content of the comment
+
+	review, _ := r.GetReviewByID(ctx, strconv.Itoa(comment.ReviewID))
+
+	_, err := r.Exec(ctx, `
+		INSERT INTO notifications (receiver_id, tagged_entity_id, type, tagged_entity_type, thumbnail_url, tagged_entity_name)
+		VALUES ($1, $2, 'comment', 'comment', $3, $4)
+	`, review.UserID, strconv.Itoa(comment.ID), review.MediaCover, comment.Text)
+
+	if err != nil {
 		return nil, err
 	}
 
@@ -903,6 +924,7 @@ func (r *ReviewRepository) GetReviewByID(ctx context.Context, id string) (*model
 }
 
 func (r *ReviewRepository) UserVote(ctx context.Context, userID string, postID string, upvote bool, postType string) error {
+
 	rows, err := r.Query(ctx, `
 		WITH deleted_vote AS (
     -- Delete the existing vote if it exists for the given user, post, and type
@@ -911,24 +933,25 @@ func (r *ReviewRepository) UserVote(ctx context.Context, userID string, postID s
       AND post_id = $1
       AND post_type = $2
     RETURNING *
-),
-post_check AS (
-    -- Check if the post exists in the review or comment table
-    SELECT id
-    FROM review
-    WHERE id = $1 AND $2 = 'review'
-    UNION ALL
-    SELECT id
-    FROM comment
-    WHERE id = $1 AND $2 = 'comment'
-)
--- Insert the new vote only if it's a different vote or there was no vote before
-INSERT INTO user_vote (user_id, post_id, post_type, upvote)
-SELECT $4, id, $2, $3
-FROM post_check
-WHERE NOT EXISTS (SELECT 1 FROM deleted_vote) OR $3 <> (SELECT upvote FROM user_vote WHERE user_id = $4 AND post_id = $1 AND post_type = $2 LIMIT 1);
+	),
+	post_check AS (
+		-- Check if the post exists in the review or comment table
+		SELECT id
+		FROM review
+		WHERE id = $1 AND $2 = 'review'
+		UNION ALL
+		SELECT id
+		FROM comment
+		WHERE id = $1 AND $2 = 'comment'
+	)
+	-- Insert the new vote only if it's a different vote or there was no vote before
+	INSERT INTO user_vote (user_id, post_id, post_type, upvote)
+	SELECT $4, id, $2, $3
+	FROM post_check
+	WHERE NOT EXISTS (SELECT 1 FROM deleted_vote) OR $3 <> (SELECT upvote FROM user_vote WHERE user_id = $4 AND post_id = $1 AND post_type = $2 LIMIT 1);
 
-`, postID, postType, upvote, userID)
+	`, postID, postType, upvote, userID)
+
 	if err != nil {
 		return err
 	}
@@ -936,6 +959,45 @@ WHERE NOT EXISTS (SELECT 1 FROM deleted_vote) OR $3 <> (SELECT upvote FROM user_
 
 	if err := rows.Err(); err != nil {
 		return err
+	}
+
+	if postType == "review" {
+
+		// check if the review has more than 10 upvotes and if so notify the person that made the review
+		review, _ := r.GetReviewByID(ctx, postID)
+
+		if review.ReviewStat.Upvotes >= 10 { // if we have more 10 upvotes on the review now
+
+			_, err = r.Exec(ctx, `
+			INSERT INTO notifications (receiver_id, tagged_entity_id, type, tagged_entity_type, thumbnail_url, tagged_entity_name)
+			VALUES ($1, $2, 'upvote', 'review', $3, $4)`,
+				review.UserID, postID, review.MediaCover, review.Comment)
+
+			if err != nil {
+				return err
+			}
+
+		}
+
+	} else if postType == "comment" {
+
+		comment, _ := r.GetCommentByCommentID(ctx, postID)
+
+		if comment.Upvotes >= 10 { // if we have more 10 upvotes on the comment now
+
+			_, err = r.Exec(ctx, `
+			INSERT INTO notifications (receiver_id, tagged_entity_id, type, tagged_entity_type, thumbnail_url, tagged_entity_name)
+			VALUES ($1, $2, 'upvote', 'comment', $3, $4)`,
+				comment.UserID, postID, comment.MediaCover, comment.Comment)
+
+			if err != nil {
+				return err
+			}
+
+		}
+
+	} else {
+		return fmt.Errorf("post type not valid")
 	}
 
 	return nil

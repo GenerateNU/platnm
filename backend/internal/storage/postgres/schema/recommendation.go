@@ -6,6 +6,7 @@ import (
 	"errors"
 	"platnm/internal/errs"
 	"platnm/internal/models"
+	"strconv"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -47,6 +48,15 @@ func (r *RecommendationRepository) CreateRecommendation(ctx context.Context, rec
 			return nil, errs.NotFound("recommendee", "id", recommendation.RecommendeeId)
 		}
 
+		return nil, err
+	}
+
+	_, err := r.Exec(ctx, `
+	INSERT INTO notifications (receiver_id, tagged_entity_id, type, tagged_entity_type, thumbnail_url, tagged_entity_name)
+	VALUES ($1, $2, 'recommendation', 'review', $3, $4)`,
+		recommendation.RecommendeeId, strconv.Itoa(recommendation.ID), recommendation.Cover, recommendation.Title)
+
+	if err != nil {
 		return nil, err
 	}
 
@@ -155,6 +165,16 @@ func (r *RecommendationRepository) UpdateRecommendation(ctx context.Context, rec
 	if err != nil {
 		return err
 	}
+
+	_, err = r.Exec(ctx, `
+	INSERT INTO notifications (receiver_id, tagged_entity_id, type, tagged_entity_type, thumbnail_url, tagged_entity_name)
+	VALUES ($1, $2, 'recommendation', 'review', $3, $4)`,
+		recommendation.RecommenderId, strconv.Itoa(recommendation.ID), recommendation.Cover, recommendation.Title)
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 
 }
