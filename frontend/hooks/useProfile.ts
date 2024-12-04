@@ -33,15 +33,15 @@ export function useProfile(userId: string) {
           user_id: response.data.user_id,
           username: response.data.username,
           display_name: response.data.display_name,
-          bio: response.data.bio.String,
-          profile_picture: response.data.profile_picture.String,
+          bio: response.data.bio,
+          profile_picture: response.data.profile_picture,
           followers: response.data.followers,
           followed: response.data.followed,
           score: response.data.score,
         };
 
         setUserProfile(profile);
-        setBio(response.data.bio.String);
+        setBio(response.data.bio);
       } catch (error) {
         console.error("Error fetching user profile:", error);
       }
