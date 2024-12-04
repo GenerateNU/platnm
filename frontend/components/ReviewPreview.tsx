@@ -310,7 +310,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
                 ))}
               </View>
             )}
-            <Text style={styles.title}>{preview.title}</Text>
+            {preview.title && <Text style={styles.title}>{preview.title}</Text>}
             {isEditable ? (
               <View>
                 <TextInput
@@ -566,7 +566,6 @@ const styles = StyleSheet.create({
     color: "#333",
     textAlign: "left",
     marginVertical: 8,
-    marginTop: -15,
   },
   readMore: {
     fontSize: 14,
