@@ -35,6 +35,7 @@ const CreateReview = () => {
 
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showNudges, setShowNudges] = useState(false);
+  const [showHeader, setShowHeader] = useState(true);
 
   const { publishReview } = usePublishReview();
 
@@ -75,16 +76,16 @@ const CreateReview = () => {
     media && (
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
+          <HeaderComponent title="Log Song" centered />
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={styles.keyboardAvoidingView}
           >
-            <HeaderComponent title="Log Song" centered />
             <ScrollView
               keyboardShouldPersistTaps="handled"
               contentContainerStyle={styles.inner}
             >
-              <MediaCollapsed media={media} />
+              {showHeader && <MediaCollapsed media={media} />}
               <View style={styles.scrollview}>
                 <TextInput
                   style={styles.titleInput}
@@ -101,7 +102,10 @@ const CreateReview = () => {
                   placeholder="What do you want to talk about?"
                   value={comment}
                   onChangeText={setComment}
+                  onFocus={() => setShowHeader(false)}
+                  onBlur={() => setShowHeader(true)}
                 />
+
                 <Divider />
                 <TagSelector
                   tags={selectedTags}
@@ -167,7 +171,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   textInput: {
-    height: 150,
+    minHeight: 150,
+    maxHeight: 250,
+    paddingBottom: 10,
     backgroundColor: "#ffffff",
     fontFamily: "Roboto",
     color: "#434343",
