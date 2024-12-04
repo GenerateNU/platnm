@@ -175,7 +175,7 @@ export default function MediaPage() {
                   )}
                 </TouchableOpacity>
               </View>
-              
+
               {ratingDistributions && ratingDistributions.length > 0 && (
                 <Histogram distribution={ratingDistributions} />
               )}
