@@ -2,16 +2,16 @@ import React from "react";
 import { router } from "expo-router";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 
-interface AlbumSearchCardProps {
+interface SearchCardProps {
   id: number;
-  rank?: number;
+  rank: number;
   artist_name: string;
   album_name: string;
   cover: string;
   type?: string;
 }
 
-const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({
+const SearchCard: React.FC<SearchCardProps> = ({
   id,
   rank,
   artist_name,
@@ -112,4 +112,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AlbumSearchCard;
+export default SearchCard;

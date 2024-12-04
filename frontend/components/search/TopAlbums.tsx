@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import AlbumSearchCard from "@/components/search/AlbumSearchCard";
+import SearchCard from "@/components/search/AlbumSearchCard";
 import { ScrollView } from "react-native";
 
 type AlbumCardProps = {
@@ -18,7 +18,7 @@ const TopAlbums = ({ albums }: AlbumCardProps) => {
         showsHorizontalScrollIndicator={false}
       >
         {albums?.map((album, index) => (
-          <AlbumSearchCard
+          <SearchCard
             type={"album"}
             key={album.media.id}
             id={album.media.id}

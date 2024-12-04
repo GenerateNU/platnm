@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import SongChip from "@/components/search/SongChip";
-import AlbumSearchCard from "@/components/search/AlbumSearchCard";
+import SearchCard from "@/components/search/AlbumSearchCard";
 import ProfileChip from "@/components/search/ProfileChip";
 import Filter from "@/components/search/Filter";
 import AntDesign from "@expo/vector-icons/AntDesign";
@@ -113,7 +113,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                 >
                   {songs?.map((song, idx) => (
                     <View style={{ width: "48%", marginBottom: 16 }}>
-                      <AlbumSearchCard
+                      <SearchCard
                         rank={idx + 1}
                         type={song.media_type}
                         key={idx}
@@ -169,13 +169,13 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                   justifyContent: "space-between",
                 }}
               >
-                {songs.length === 0 ? (
+                {albums.length === 0 ? (
                   <Text style={styles.noResults}>No albums found</Text>
                 ) : (
                   (selectedFilter === "all" ? albums.slice(0, 2) : albums)?.map(
                     (album, idx) => (
                       <View style={styles.albumsList}>
-                        <AlbumSearchCard
+                        <SearchCard
                           rank={idx + 1}
                           type={"album"}
                           key={idx}
