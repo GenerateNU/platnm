@@ -12,17 +12,17 @@ import {
   TextInput,
 } from "react-native";
 
-import Rating0 from "@/assets/images/Ratings/Radial-0.svg";
-import Rating1 from "@/assets/images/Ratings/Radial-1.svg";
-import Rating2 from "@/assets/images/Ratings/Radial-2.svg";
-import Rating3 from "@/assets/images/Ratings/Radial-3.svg";
-import Rating4 from "@/assets/images/Ratings/Radial-4.svg";
-import Rating5 from "@/assets/images/Ratings/Radial-5.svg";
-import Rating6 from "@/assets/images/Ratings/Radial-6.svg";
-import Rating7 from "@/assets/images/Ratings/Radial-7.svg";
-import Rating8 from "@/assets/images/Ratings/Radial-8.svg";
-import Rating9 from "@/assets/images/Ratings/Radial-9.svg";
-import Rating10 from "@/assets/images/Ratings/Radial-10.svg";
+import Rating0 from "@/assets/images/Ratings/Property0.svg";
+import Rating1 from "@/assets/images/Ratings/Property1.svg";
+import Rating2 from "@/assets/images/Ratings/Property2.svg";
+import Rating3 from "@/assets/images/Ratings/Property3.svg";
+import Rating4 from "@/assets/images/Ratings/Property4.svg";
+import Rating5 from "@/assets/images/Ratings/Property5.svg";
+import Rating6 from "@/assets/images/Ratings/Property6.svg";
+import Rating7 from "@/assets/images/Ratings/Property7.svg";
+import Rating8 from "@/assets/images/Ratings/Property8.svg";
+import Rating9 from "@/assets/images/Ratings/Property9.svg";
+import Rating10 from "@/assets/images/Ratings/Property10.svg";
 
 import Downvote from "@/assets/images/ReviewPreview/downvote.svg";
 import Upvote from "@/assets/images/ReviewPreview/upvote.svg";
@@ -293,23 +293,24 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
                 getRatingImage(preview.rating as keyof typeof ratingImages),
                 {
                   style: styles.ratingImage,
+                  width: 70, // Adjust size as needed
+                  height: 70,
                 },
               )}
             </View>
           </View>
 
-          {preview.tags && preview.tags.length > 0 && (
-            <View style={styles.tagsContainer}>
-              {preview.tags.map((tag, index) => (
-                <View key={index} style={styles.tag}>
-                  <Text style={styles.tagText}>{tag}</Text>
-                </View>
-              ))}
-            </View>
-          )}
-
           <TouchableOpacity onPress={handlePreviewPress}>
-            <Text style={styles.title}>{preview.title}</Text>
+            {preview.tags && preview.tags.length > 0 && (
+              <View style={styles.tagsContainer}>
+                {preview.tags.map((tag, index) => (
+                  <View key={index} style={styles.tag}>
+                    <Text style={styles.tagText}>{tag}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+            {preview.title && <Text style={styles.title}>{preview.title}</Text>}
             {isEditable ? (
               <View>
                 <TextInput
@@ -462,6 +463,8 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     overflow: "scroll",
     boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.2)",
+    borderColor: "#ddd",
+    borderWidth: 0.5,
   },
   voteButton: {
     flexDirection: "row",
@@ -535,15 +538,18 @@ const styles = StyleSheet.create({
     marginTop: 5,
     width: 175,
     textAlign: "left",
+    marginBottom: 5,
   },
   artistName: {
     fontSize: 13,
     color: "#666",
     textAlign: "left",
+    marginBottom: 15,
   },
   ratingContainer: {
     justifyContent: "flex-start",
     alignItems: "flex-start",
+    marginBottom: -15,
   },
   mediaContainer: {
     flexDirection: "row",
@@ -552,6 +558,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: 700,
+    marginTop: 10,
   },
   commentText: {
     fontSize: 14,
@@ -566,11 +573,11 @@ const styles = StyleSheet.create({
   tagsContainer: {
     flexDirection: "row",
     flexWrap: "wrap", // Allows wrapping to a new line
-    marginVertical: 8,
+    marginTop: 8,
     gap: 8, // Space between tags
   },
   tag: {
-    backgroundColor: "rgba(242, 128, 55, 0.65)",
+    backgroundColor: "#FDE1D5",
     paddingVertical: 5,
     paddingHorizontal: 12,
     borderRadius: 20,
@@ -600,9 +607,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   ratingImage: {
-    width: 30, // Smaller size
-    height: 30, // Match smaller size
+    width: 50,
+    height: 50,
     marginRight: 30, // Adjust horizontal placement
+    marginBottom: -20,
   },
   modalOverlay: {
     flex: 1,

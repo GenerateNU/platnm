@@ -1,8 +1,6 @@
 import React from "react";
-import { useState } from "react";
-
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
-import AlbumSearchCard from "@/components/search/AlbumSearchCard";
+import { View, Text, StyleSheet } from "react-native";
+import SearchCard from "@/components/search/AlbumSearchCard";
 import { ScrollView } from "react-native";
 
 type AlbumCardProps = {
@@ -10,9 +8,6 @@ type AlbumCardProps = {
 };
 
 const TopAlbums = ({ albums }: AlbumCardProps) => {
-  const image =
-    "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png";
-
   return (
     <View>
       <Text style={styles.title}>Top Albums</Text>
@@ -23,11 +18,12 @@ const TopAlbums = ({ albums }: AlbumCardProps) => {
         showsHorizontalScrollIndicator={false}
       >
         {albums?.map((album, index) => (
-          <AlbumSearchCard
+          <SearchCard
+            type={"album"}
             key={album.media.id}
             id={album.media.id}
             rank={index + 1}
-            artist_name={album.media.artist_name} // hardcoded
+            artist_name={album.media.artist_name}
             album_name={album.media.title}
             cover={album.media.cover}
           />

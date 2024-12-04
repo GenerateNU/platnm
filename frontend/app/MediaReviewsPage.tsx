@@ -22,12 +22,16 @@ const MediaReviewsPage = () => {
   const [allReviews, setAllReviews] = useState<Preview[]>([]);
   const [mediaStats, setMediaStats] = useState<{
     userScore: number;
+    userRatings: number;
     friendScore: number;
+    friendRatings: number;
     avgScore: Number;
     totalRatings: number;
   }>({
     userScore: 0,
+    userRatings: 0,
     friendScore: 0,
+    friendRatings: 0,
     avgScore: 0,
     totalRatings: 0,
   });
@@ -40,17 +44,16 @@ const MediaReviewsPage = () => {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        console.log(`${BASE_URL}/reviews/${media_type}/${media_id}`);
         const response = await axios.get(
           `${BASE_URL}/reviews/${media_type}/${media_id}`,
         );
         setAllReviews(response.data.reviews);
-        setMediaStats({
-          userScore: 4.2,
-          friendScore: mediaStats.friendScore,
+
+        setMediaStats((prev) => ({
+          ...prev,
           avgScore: response.data.avgRating || 0,
           totalRatings: response.data.totalCount || 0,
-        });
+        }));
       } catch (error) {
         console.error(error);
       }
@@ -81,17 +84,17 @@ const MediaReviewsPage = () => {
         setUserReviews(reviews);
 
         // Calculate the average score
-        const totalScore = reviews.reduce(
+        const totalScore = response.data.reduce(
           (sum: any, review: { rating: any }) => sum + review.rating,
           0,
         ); // Sum of all ratings
         const averageScore =
           reviews.length > 0 ? totalScore / reviews.length : 0; // Avoid division by 0
-
         // Update userScore in mediaStats
-        setMediaStats((prevStats) => ({
-          ...prevStats,
+        setMediaStats((prev) => ({
+          ...prev,
           userScore: averageScore,
+          userRatings: reviews.length,
         }));
       } catch (error) {
         console.error(error);
@@ -156,10 +159,30 @@ const MediaReviewsPage = () => {
                 <Text style={styles.scoreLabel}>Avg Rating</Text>
               </View>
             )}
-            <Text style={styles.totalRatings}>
-              {formatLargeNumber(mediaStats.totalRatings)}
-            </Text>
-            <Text style={styles.totalRatingsText}>Total Ratings</Text>
+            {selectedFilter === "you" && (
+              <>
+                <Text style={styles.totalRatings}>
+                  {formatLargeNumber(mediaStats.userRatings)}
+                </Text>
+                <Text style={styles.totalRatingsText}>Your Ratings</Text>
+              </>
+            )}
+            {selectedFilter === "friend" && (
+              <>
+                <Text style={styles.totalRatings}>
+                  {formatLargeNumber(mediaStats.friendRatings)}
+                </Text>
+                <Text style={styles.totalRatingsText}>Friends Ratings</Text>
+              </>
+            )}
+            {selectedFilter === "all" && (
+              <>
+                <Text style={styles.totalRatings}>
+                  {formatLargeNumber(mediaStats.totalRatings)}
+                </Text>
+                <Text style={styles.totalRatingsText}>Total Ratings</Text>
+              </>
+            )}
           </View>
         </View>
         <Filter
@@ -169,17 +192,17 @@ const MediaReviewsPage = () => {
         />
         <View>
           {selectedFilter === "you" && (
-            <View>
+            <View style={styles.reviews}>
               {userReviews.map((review, index) => {
                 return <ReviewPreview key={index} preview={review} />;
               })}
             </View>
           )}
           {selectedFilter === "friend" && (
-            <View></View> // TODO ALEX: Map each fetched review to a ReviewPreview component which will take care of the rest
+            <View style={styles.reviews}></View> // TODO ALEX: Map each fetched review to a ReviewPreview component which will take care of the rest
           )}
           {selectedFilter === "all" && (
-            <View>
+            <View style={styles.reviews}>
               {allReviews.map((review, index) => {
                 return <ReviewPreview key={index} preview={review} />;
               })}
@@ -261,6 +284,10 @@ const styles = StyleSheet.create({
   },
   reviewsContainer: {
     backgroundColor: "#fff",
+  },
+  reviews: {
+    width: "90%",
+    alignSelf: "center",
   },
 });
 
