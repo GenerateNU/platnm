@@ -186,7 +186,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                           cover={album.cover}
                         />
                       </View>
-                    )
+                    ),
                   )
                 )}
               </View>

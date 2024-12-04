@@ -45,7 +45,7 @@ const MediaReviewsPage = () => {
     const fetchAll = async () => {
       try {
         const response = await axios.get(
-          `${BASE_URL}/reviews/${media_type}/${media_id}`
+          `${BASE_URL}/reviews/${media_type}/${media_id}`,
         );
         setAllReviews(response.data.reviews);
 
@@ -77,7 +77,7 @@ const MediaReviewsPage = () => {
             params: {
               media_type: media_type,
             },
-          }
+          },
         );
 
         const reviews = response.data;
@@ -86,7 +86,7 @@ const MediaReviewsPage = () => {
         // Calculate the average score
         const totalScore = response.data.reduce(
           (sum: any, review: { rating: any }) => sum + review.rating,
-          0
+          0,
         ); // Sum of all ratings
         const averageScore =
           reviews.length > 0 ? totalScore / reviews.length : 0; // Avoid division by 0
