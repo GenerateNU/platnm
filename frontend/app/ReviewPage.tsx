@@ -280,14 +280,18 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
           <View style={styles.topSection}>
             <View style={styles.topContainer}>
               <View style={styles.leftSection}>
-                <Image
-                  style={styles.profilePicture}
-                  source={{ uri: review.profile_picture }}
-                />
-                <View style={styles.textContainer}>
-                  <Text style={styles.displayName}>{review.display_name}</Text>
-                  <Text style={styles.username}>@{review.username}</Text>
-                </View>
+                <TouchableOpacity onPress={handleUserPress}>
+                  <Image
+                    style={styles.profilePicture}
+                    source={{ uri: review.profile_picture }}
+                  />
+                  <View style={styles.textContainer}>
+                    <Text style={styles.displayName}>
+                      {review.display_name}
+                    </Text>
+                    <Text style={styles.username}>@{review.username}</Text>
+                  </View>
+                </TouchableOpacity>
               </View>
             </View>
             <TouchableOpacity onPress={handleMediaPress} style={styles.vinyl}>
