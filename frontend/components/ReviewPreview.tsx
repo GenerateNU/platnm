@@ -301,7 +301,16 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
           </View>
 
           <TouchableOpacity onPress={handlePreviewPress}>
-            <Text style={styles.title}>{preview.title}</Text>
+            {preview.tags && preview.tags.length > 0 && (
+              <View style={styles.tagsContainer}>
+                {preview.tags.map((tag, index) => (
+                  <View key={index} style={styles.tag}>
+                    <Text style={styles.tagText}>{tag}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+            {preview.title && <Text style={styles.title}>{preview.title}</Text>}
             {isEditable ? (
               <View>
                 <TextInput
@@ -333,16 +342,6 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
                   {showFullComment ? "Show less" : "Read more"}
                 </Text>
               </TouchableOpacity>
-            )}
-
-            {preview.tags && preview.tags.length > 0 && (
-              <View style={styles.tagsContainer}>
-                {preview.tags.map((tag, index) => (
-                  <View key={index} style={styles.tag}>
-                    <Text style={styles.tagText}>{tag}</Text>
-                  </View>
-                ))}
-              </View>
             )}
           </TouchableOpacity>
         </View>
@@ -539,11 +538,13 @@ const styles = StyleSheet.create({
     marginTop: 5,
     width: 175,
     textAlign: "left",
+    marginBottom: 5,
   },
   artistName: {
     fontSize: 13,
     color: "#666",
     textAlign: "left",
+    marginBottom: 15,
   },
   ratingContainer: {
     justifyContent: "flex-start",
@@ -557,6 +558,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: 700,
+    marginTop: 10,
   },
   commentText: {
     fontSize: 14,
@@ -571,11 +573,11 @@ const styles = StyleSheet.create({
   tagsContainer: {
     flexDirection: "row",
     flexWrap: "wrap", // Allows wrapping to a new line
-    marginVertical: 8,
+    marginTop: 8,
     gap: 8, // Space between tags
   },
   tag: {
-    backgroundColor: "rgba(242, 128, 55, 0.65)",
+    backgroundColor: "#FDE1D5",
     paddingVertical: 5,
     paddingHorizontal: 12,
     borderRadius: 20,

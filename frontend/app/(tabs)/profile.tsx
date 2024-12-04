@@ -96,7 +96,7 @@ export default function ProfileScreen() {
             <View style={styles.topIconsContainer}>
               {/* Activity icon with notification badge */}
               <TouchableOpacity
-                onPress={handleActivityPress}
+                onPress={() => handleActivityPress(userId)}
                 style={styles.activityIconContainer}
               >
                 <Icon name="activity" size={24} color="#000" />
