@@ -334,7 +334,8 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 	LEFT JOIN tag tag ON rt.tag_id = tag.id
 	WHERE f.follower_id = $1
 	GROUP BY r.id, r.user_id, u.username, u.display_name, u.profile_picture, r.media_type, r.media_id, r.rating, r.comment, r.created_at, r.updated_at, media_cover, media_title, media_artist
-	ORDER BY r.updated_at DESC;`
+	ORDER BY r.updated_at DESC
+	LIMIT 30;`
 
 	// Execute the query
 	rows, err := r.db.Query(ctx, query, id)
@@ -407,8 +408,8 @@ func (r *UserRepository) GetUserFeed(ctx context.Context, id uuid.UUID) ([]*mode
 func (r *UserRepository) GetUserFollowing(ctx context.Context, id uuid.UUID) ([]*models.Follower, error) {
 	query := `SELECT id, username, email, display_name, bio, profile_picture, linked_account, created_at, updated_at
 	FROM "user" u
-	JOIN follower f ON u.id = f.follower_id
-	WHERE f.followee_id = $1`
+	JOIN follower f ON u.id = f.followee_id
+	WHERE f.follower_id = $1`
 
 	// Execute the query
 	rows, err := r.db.Query(ctx, query, id)
@@ -659,7 +660,7 @@ func (r *UserRepository) GetConnections(ctx context.Context, id uuid.UUID, limit
 	const followersQuery string = `
 		SELECT u.id, u.username, u.email, u.display_name, u.bio, u.profile_picture, u.linked_account, u.created_at, u.updated_at
 		FROM "user" AS u
-		LEFT JOIN follower AS f on f.followee_id = u.id
+		LEFT JOIN follower AS f on f.follower_id = u.id
 		WHERE f.followee_id = $1
 	    LIMIT $2 OFFSET $3
 	`
