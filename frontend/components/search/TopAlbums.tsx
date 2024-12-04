@@ -19,7 +19,7 @@ const TopAlbums = ({ albums }: AlbumCardProps) => {
       >
         {albums?.map((album, index) => (
           <AlbumSearchCard
-            type = {"album"}
+            type={"album"}
             key={album.media.id}
             id={album.media.id}
             rank={index + 1}

@@ -21,7 +21,7 @@ const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({
 }) => {
   const placeholderImage =
     "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png";
-    return (
+  return (
     <TouchableOpacity
       style={styles.cardContainer}
       onPress={() =>
@@ -56,7 +56,11 @@ const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({
 
       <Text style={styles.albumName}>{album_name}</Text>
       <Text style={styles.artistName}>{artist_name}</Text>
-      {type && <Text style={styles.type}>{type === "album" ? "Album" : type === "Song" ? "Song": ""}</Text>}
+      {type && (
+        <Text style={styles.type}>
+          {type === "album" ? "Album" : type === "Song" ? "Song" : ""}
+        </Text>
+      )}
     </TouchableOpacity>
   );
 };
@@ -70,7 +74,7 @@ const styles = StyleSheet.create({
     marginLeft: 24,
     fontStyle: "italic",
   },
-  
+
   cardContainer: {
     alignItems: "flex-start",
     marginRight: 25,
@@ -88,11 +92,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     lineHeight: 20,
-    marginRight: 6, 
+    marginRight: 6,
     marginTop: -85,
   },
   coverContainer: {
-    zIndex: 2, 
+    zIndex: 2,
   },
   recordContainer: {
     position: "absolute",

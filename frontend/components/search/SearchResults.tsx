@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { StyleSheet, View, Text, ScrollView, Dimensions, TouchableOpacity } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Text,
+  ScrollView,
+  Dimensions,
+  TouchableOpacity,
+} from "react-native";
 import SongChip from "@/components/search/SongChip";
 import AlbumSearchCard from "@/components/search/AlbumSearchCard";
 import ProfileChip from "@/components/search/ProfileChip";
@@ -7,7 +14,6 @@ import Filter from "@/components/search/Filter";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import SongCard from "@/components/SongCard";
 import { takeWhile } from "lodash";
-
 
 interface SearchResultsProps {
   songs: Media[];
@@ -60,24 +66,24 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                 <Text style={styles.title}>Profiles</Text>
               )}
               <View style={styles.profileContainer}>
-                {profiles == null || profiles.length === 0  ? (
+                {profiles == null || profiles.length === 0 ? (
                   <Text style={styles.noResults}>No profiles found</Text>
                 ) : selectedFilter === "all" ? (
-                  console.log(profiles[0]),
+                  (console.log(profiles[0]),
                   profiles
                     .slice(0, 2)
                     .map((profile, idx) => (
                       <ProfileChip
-                        key = {idx}
+                        key={idx}
                         display_name={profile.display_name}
                         profile_picture={profile.profile_picture}
                         id={profile.id}
                       />
-                    ))
+                    )))
                 ) : (
                   profiles.map((profile, idx) => (
                     <ProfileChip
-                      key = {idx}
+                      key={idx}
                       display_name={profile.display_name}
                       profile_picture={profile.profile_picture}
                       id={profile.id}
@@ -99,7 +105,9 @@ const SearchResults: React.FC<SearchResultsProps> = ({
               ) : (
                 <Text style={styles.title}>Songs</Text>
               )}
-              {songs.length === 0 ? ( <Text style={styles.noResults}>No songs found</Text>): selectedFilter === "songs" ? (
+              {songs.length === 0 ? (
+                <Text style={styles.noResults}>No songs found</Text>
+              ) : selectedFilter === "songs" ? (
                 <View
                   style={{
                     flexDirection: "row",
@@ -109,12 +117,10 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                   }}
                 >
                   {songs?.map((song, idx) => (
-                    <View
-                      style={{ width: "48%", marginBottom: 16 }}
-                    >
-                     <AlbumSearchCard
-                        type ={"Song"}
-                        key = {idx}
+                    <View style={{ width: "48%", marginBottom: 16 }}>
+                      <AlbumSearchCard
+                        type={"Song"}
+                        key={idx}
                         id={song.id}
                         artist_name={song.artist_name}
                         album_name={song.title}
@@ -135,7 +141,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                       {songs?.slice(0, 9).map((song, idx) => (
                         <View style={styles.gridItem}>
                           <SongChip
-                            key = {idx}
+                            key={idx}
                             id={song.id}
                             title={song.title}
                             artist_name={song.artist_name}
@@ -146,8 +152,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                     </View>
                   </View>
                 </ScrollView>
-              )}            
-
+              )}
             </View>
           )}
           {(selectedFilter === "all" || selectedFilter === "albums") && (
@@ -169,18 +174,22 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                   paddingHorizontal: 16,
                 }}
               >
-                {songs.length === 0 ? ( <Text style={styles.noResults}>No albums found</Text>): (selectedFilter === "all" ? albums.slice(0, 2) : albums)?.map(
-                  (album, idx) => (
-                    <View style={styles.albumsList} >
-                      <AlbumSearchCard
-                        type = {"album"}
-                       key = {idx}
-                        id={album.id}
-                        artist_name={album.artist_name}
-                        album_name={album.title}
-                        cover={album.cover}
-                      />
-                    </View>
+                {songs.length === 0 ? (
+                  <Text style={styles.noResults}>No albums found</Text>
+                ) : (
+                  (selectedFilter === "all" ? albums.slice(0, 2) : albums)?.map(
+                    (album, idx) => (
+                      <View style={styles.albumsList}>
+                        <AlbumSearchCard
+                          type={"album"}
+                          key={idx}
+                          id={album.id}
+                          artist_name={album.artist_name}
+                          album_name={album.title}
+                          cover={album.cover}
+                        />
+                      </View>
+                    ),
                   )
                 )}
               </View>
