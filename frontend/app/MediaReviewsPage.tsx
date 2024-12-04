@@ -6,6 +6,8 @@ import HeaderComponent from "@/components/HeaderComponent";
 import ReviewPreview from "@/components/ReviewPreview";
 import Filter from "@/components/search/Filter";
 import Vinyl from "@/assets/images/media-vinyl.svg";
+import ReviewSkeleton from "@/components/skeletons/ReviewSkeleton";
+import SkeletonLoader from "expo-skeleton-loader";
 
 const MediaReviewsPage = () => {
   const { media_id, user_id, media_type, filter } = useLocalSearchParams<{
@@ -35,6 +37,7 @@ const MediaReviewsPage = () => {
     totalRatings: 0,
   });
   const [mediaCover, setMediaCover] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const filterOptions = ["you", "friend", "all"];
 
@@ -136,10 +139,18 @@ const MediaReviewsPage = () => {
         console.error(error);
       }
     };
-    fetchFriendReviews();
-    fetchAll();
-    fetchMediaCover();
-    fetchUserReviews();
+
+    const fetchEverything = async () => {
+      await Promise.all([
+        fetchFriendReviews(),
+        fetchUserReviews(),
+        fetchAll(),
+        fetchMediaCover(),
+      ]);
+      setIsLoading(false);
+    };
+
+    fetchEverything();
   }, []);
 
   const handleFilterChange = (filter: FilterOption) => {
@@ -221,31 +232,33 @@ const MediaReviewsPage = () => {
         filterOptions={filterOptions}
         onFilterChange={handleFilterChange}
       />
-      <View>
-        {selectedFilter === "you" && (
-          <View style={styles.reviews}>
-            {userReviews &&
-              userReviews.map((review, index) => {
-                return <ReviewPreview key={index} preview={review} />;
-              })}
-          </View>
+      <View style={styles.reviews}>
+        {isLoading && (
+          <SkeletonLoader
+            duration={1000}
+            boneColor="#f0f0f0"
+            highlightColor="#fff"
+          >
+            <ReviewSkeleton />
+            <ReviewSkeleton />
+            <ReviewSkeleton />
+          </SkeletonLoader>
         )}
-        {selectedFilter === "friend" && (
-          <View style={styles.reviews}>
-            {friendsReviews &&
-              friendsReviews.map((review, index) => {
-                return <ReviewPreview key={index} preview={review} />;
-              })}
-          </View>
-        )}
-        {selectedFilter === "all" && (
-          <View style={styles.reviews}>
-            {allReviews &&
-              allReviews.map((review, index) => {
-                return <ReviewPreview key={index} preview={review} />;
-              })}
-          </View>
-        )}
+        {selectedFilter === "you" &&
+          userReviews &&
+          userReviews.map((review, index) => {
+            return <ReviewPreview key={index} preview={review} />;
+          })}
+        {selectedFilter === "friend" &&
+          friendsReviews &&
+          friendsReviews.map((review, index) => {
+            return <ReviewPreview key={index} preview={review} />;
+          })}
+        {selectedFilter === "all" &&
+          allReviews &&
+          allReviews.map((review, index) => {
+            return <ReviewPreview key={index} preview={review} />;
+          })}
       </View>
     </ScrollView>
   );

@@ -85,7 +85,7 @@ export default function ProfileScreen() {
 
   return (
     userProfile && (
-      <View style={styles.container}>
+      <View>
         <TouchableOpacity onPress={handleEditPress} style={styles.editIcon}>
           <Icon name="edit-2" size={20} color="#888" />
         </TouchableOpacity>
@@ -271,8 +271,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingHorizontal: 16,
-    minHeight: Dimensions.get("window").height - 100,
+    paddingHorizontal: 24,
+    minHeight: Dimensions.get("window").height - 80,
   },
   header: {
     alignItems: "center",
