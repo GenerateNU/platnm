@@ -82,19 +82,21 @@ const MediaReviewsPage = () => {
         const reviews = response.data;
         setUserReviews(reviews);
 
-        // Calculate the average score
-        const totalScore = response.data.reduce(
-          (sum: any, review: { rating: any }) => sum + review.rating,
-          0
-        ); // Sum of all ratings
-        const averageScore =
-          reviews.length > 0 ? totalScore / reviews.length : 0; // Avoid division by 0
-        // Update userScore in mediaStats
-        setMediaStats((prev) => ({
-          ...prev,
-          userScore: averageScore,
-          userRatings: reviews.length,
-        }));
+        if (reviews) {
+          // Calculate the average score
+          const totalScore = reviews.reduce(
+            (sum: any, review: { rating: any }) => sum + review.rating,
+            0
+          ); // Sum of all ratings
+          const averageScore =
+            reviews.length > 0 ? totalScore / reviews.length : 0; // Avoid division by 0
+          // Update userScore in mediaStats
+          setMediaStats((prev) => ({
+            ...prev,
+            userScore: averageScore,
+            userRatings: reviews.length,
+          }));
+        }
       } catch (error) {
         console.error(error);
       }
@@ -152,103 +154,100 @@ const MediaReviewsPage = () => {
   };
 
   return (
-    <View>
-      <ScrollView style={{ backgroundColor: "#FFF" }}>
-        <HeaderComponent title="" />
-        <View style={styles.headerContainer}>
-          <View style={styles.vinylContainer}>
-            <Vinyl style={styles.vinyl} />
-            {mediaCover && (
-              <Image
-                source={{ uri: mediaCover }}
-                style={styles.mediaCover}
-                resizeMode="cover"
-              />
-            )}
-          </View>
-          <View style={styles.statsContainer}>
-            {selectedFilter === "you" && (
-              <View style={styles.scoreContainer}>
-                <Text style={styles.score}>
-                  {mediaStats.userScore.toFixed(1)}
-                </Text>
-                <Text style={styles.scoreLabel}>Your Avg Rating</Text>
-              </View>
-            )}
-            {selectedFilter === "friend" && (
-              <View style={styles.scoreContainer}>
-                <Text style={styles.score}>
-                  {mediaStats.friendScore.toFixed(1)}
-                </Text>
-                <Text style={styles.scoreLabel}>Friend Rating</Text>
-              </View>
-            )}
-            {selectedFilter === "all" && (
-              <View style={styles.scoreContainer}>
-                <Text style={styles.score}>
-                  {mediaStats.avgScore.toFixed(1)}
-                </Text>
-                <Text style={styles.scoreLabel}>Avg Rating</Text>
-              </View>
-            )}
-            {selectedFilter === "you" && (
-              <>
-                <Text style={styles.totalRatings}>
-                  {formatLargeNumber(mediaStats.userRatings)}
-                </Text>
-                <Text style={styles.totalRatingsText}>Your Ratings</Text>
-              </>
-            )}
-            {selectedFilter === "friend" && (
-              <>
-                <Text style={styles.totalRatings}>
-                  {formatLargeNumber(mediaStats.friendRatings)}
-                </Text>
-                <Text style={styles.totalRatingsText}>Friends Ratings</Text>
-              </>
-            )}
-            {selectedFilter === "all" && (
-              <>
-                <Text style={styles.totalRatings}>
-                  {formatLargeNumber(mediaStats.totalRatings)}
-                </Text>
-                <Text style={styles.totalRatingsText}>Total Ratings</Text>
-              </>
-            )}
-          </View>
+    <ScrollView style={{ backgroundColor: "#FFF" }}>
+      <HeaderComponent title="" />
+      <View style={styles.headerContainer}>
+        <View style={styles.vinylContainer}>
+          <Vinyl style={styles.vinyl} />
+          {mediaCover && (
+            <Image
+              source={{ uri: mediaCover }}
+              style={styles.mediaCover}
+              resizeMode="cover"
+            />
+          )}
         </View>
-        <Filter
-          currentFilter={selectedFilter}
-          filterOptions={filterOptions}
-          onFilterChange={handleFilterChange}
-        />
-        <View>
+        <View style={styles.statsContainer}>
           {selectedFilter === "you" && (
-            <View style={styles.reviews}>
-              {userReviews.map((review, index) => {
-                return <ReviewPreview key={index} preview={review} />;
-              })}
+            <View style={styles.scoreContainer}>
+              <Text style={styles.score}>
+                {mediaStats.userScore.toFixed(1)}
+              </Text>
+              <Text style={styles.scoreLabel}>Your Avg Rating</Text>
             </View>
           )}
           {selectedFilter === "friend" && (
-            <View>
-              {friendsReviews &&
-                friendsReviews.length > 0 &&
-                friendsReviews.map((review, index) => {
-                  return <ReviewPreview key={index} preview={review} />;
-                })}
+            <View style={styles.scoreContainer}>
+              <Text style={styles.score}>
+                {mediaStats.friendScore.toFixed(1)}
+              </Text>
+              <Text style={styles.scoreLabel}>Friend Rating</Text>
             </View>
           )}
           {selectedFilter === "all" && (
-            <View style={styles.reviews}>
-              {allReviews.map((review, index) => {
-                return <ReviewPreview key={index} preview={review} />;
-              })}
+            <View style={styles.scoreContainer}>
+              <Text style={styles.score}>{mediaStats.avgScore.toFixed(1)}</Text>
+              <Text style={styles.scoreLabel}>Avg Rating</Text>
             </View>
           )}
+          {selectedFilter === "you" && (
+            <>
+              <Text style={styles.totalRatings}>
+                {formatLargeNumber(mediaStats.userRatings)}
+              </Text>
+              <Text style={styles.totalRatingsText}>Your Ratings</Text>
+            </>
+          )}
+          {selectedFilter === "friend" && (
+            <>
+              <Text style={styles.totalRatings}>
+                {formatLargeNumber(mediaStats.friendRatings)}
+              </Text>
+              <Text style={styles.totalRatingsText}>Friends Ratings</Text>
+            </>
+          )}
+          {selectedFilter === "all" && (
+            <>
+              <Text style={styles.totalRatings}>
+                {formatLargeNumber(mediaStats.totalRatings)}
+              </Text>
+              <Text style={styles.totalRatingsText}>Total Ratings</Text>
+            </>
+          )}
         </View>
-      </ScrollView>
-    </View>
+      </View>
+      <Filter
+        currentFilter={selectedFilter}
+        filterOptions={filterOptions}
+        onFilterChange={handleFilterChange}
+      />
+      <View>
+        {selectedFilter === "you" && (
+          <View style={styles.reviews}>
+            {userReviews &&
+              userReviews.map((review, index) => {
+                return <ReviewPreview key={index} preview={review} />;
+              })}
+          </View>
+        )}
+        {selectedFilter === "friend" && (
+          <View style={styles.reviews}>
+            {friendsReviews &&
+              friendsReviews.map((review, index) => {
+                return <ReviewPreview key={index} preview={review} />;
+              })}
+          </View>
+        )}
+        {selectedFilter === "all" && (
+          <View style={styles.reviews}>
+            {allReviews &&
+              allReviews.map((review, index) => {
+                return <ReviewPreview key={index} preview={review} />;
+              })}
+          </View>
+        )}
+      </View>
+    </ScrollView>
   );
 };
 
