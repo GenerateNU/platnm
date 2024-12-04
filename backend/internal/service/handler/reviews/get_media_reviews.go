@@ -3,6 +3,7 @@ package reviews
 import (
 	"fmt"
 	"platnm/internal/models"
+	"sort"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -38,6 +39,51 @@ func (h *Handler) GetReviewsByMediaId(c *fiber.Ctx, mediaType string) error {
 		AvgRating:  rating,
 		TotalCount: len(reviews),
 		Reviews:    paginatedReview,
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response)
+}
+
+func (h *Handler) GetTopReviewsByMediaId(c *fiber.Ctx, mediaType string) error {
+	var id = c.Params("id")
+
+	// Even though we are paginating the reviews we need to get all the reviews in order to calculate average rating
+	// Fetch the review based on ID and media type
+	reviews, err := h.reviewRepository.GetReviewsByMediaID(c.Context(), id, mediaType)
+	if err != nil {
+		// If error, log it and return 500
+		fmt.Println(err.Error(), "from transactions err ")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Unable to retrieve reviews",
+		})
+	}
+
+	var scores []float64
+
+	for _, r := range reviews {
+		rating := float64(r.Rating)
+		scores = append(scores, rating)
+	}
+
+	var rating = getAve(scores)
+
+	// Calculate upvote-downvote scores for sorting
+	sort.Slice(reviews, func(i, j int) bool {
+		scoreI := reviews[i].ReviewStat.Upvotes
+		scoreJ := reviews[j].ReviewStat.Upvotes
+		return scoreI > scoreJ // Sort descending by score
+	})
+
+	// Take the top 10 reviews
+	topReviews := reviews
+	// if len(reviews) > 5 {
+	// 	topReviews = reviews[:5]
+	// }
+
+	response := Response{
+		AvgRating:  rating,
+		TotalCount: len(reviews),
+		Reviews:    topReviews,
 	}
 
 	return c.Status(fiber.StatusOK).JSON(response)

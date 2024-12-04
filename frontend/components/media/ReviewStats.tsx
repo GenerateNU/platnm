@@ -4,14 +4,14 @@ import RatingSvg from "./RatingSvg";
 
 type ReviewStatsProps = {
   rating: number;
-  reviews: Preview[];
+  count: number;
 };
 
-const ReviewStats = ({ rating, reviews }: ReviewStatsProps) => {
+const ReviewStats = ({ rating, count }: ReviewStatsProps) => {
   return (
     <View style={styles.container}>
       <View style={styles.statContainer}>
-        <Text style={styles.statText}>{reviews.length}</Text>
+        <Text style={styles.statText}>{count}</Text>
         <Text>Total ratings</Text>
       </View>
       <View style={styles.statContainer}>
