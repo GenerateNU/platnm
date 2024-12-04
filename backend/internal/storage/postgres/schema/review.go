@@ -414,7 +414,7 @@ func (r *ReviewRepository) GetUserReviewsOfMedia(ctx context.Context, media_type
 
 func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error) {
 
-	rows, err := r.Query(ctx, "SELECT * FROM review WHERE user_id = $1 ORDER BY updated_at DESC", id)
+	rows, err := r.Query(ctx, "SELECT id, user_id, media_id, media_type, rating, title, comment, created_at, updated_at, draft FROM review WHERE user_id = $1 ORDER BY updated_at DESC", id)
 
 	if !rows.Next() {
 		return []*models.Review{}, nil
