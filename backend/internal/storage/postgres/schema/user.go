@@ -252,16 +252,25 @@ func (r *UserRepository) GetProfileByName(ctx context.Context, name string) ([]*
 
 	for profileRows.Next() {
 		var profile models.Profile
+		var profilePicture, bio sql.NullString
 		if err := profileRows.Scan(
 			&profile.UserID,
 			&profile.Username,
 			&profile.DisplayName,
-			&profile.ProfilePicture,
-			&profile.Bio,
+			&profilePicture,
+			&bio,
 			&profile.Followers,
 			&profile.Followed,
 		); err != nil {
 			return nil, err
+		}
+
+		if profilePicture.Valid {
+			profile.ProfilePicture = &profilePicture.String
+		}
+
+		if bio.Valid {
+			profile.Bio = &bio.String
 		}
 
 		userUUID, err := uuid.Parse(profile.UserID)
