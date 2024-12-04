@@ -92,31 +92,23 @@ const MediaReviewsPage = () => {
         const averageScore =
           reviews.length > 0 ? totalScore / reviews.length : 0; // Avoid division by 0
         // Update userScore in mediaStats
-<<<<<<< HEAD
-        setMediaStats((prevStats) => ({
-          ...prevStats,
-          friendScore: averageScore,
-=======
         setMediaStats((prev) => ({
           ...prev,
           userScore: averageScore,
           userRatings: reviews.length,
->>>>>>> e0337957225e2f562083ca3e106fcf9fcc42395d
         }));
       } catch (error) {
         console.error(error);
       }
     };
 
-
     const fetchFriendReviews = async () => {
-
       try {
         const response = await axios.get(
-          `${BASE_URL}/reviews/social/${media_type}/${media_id}`,
+          `${BASE_URL}/reviews/media/${media_id}/${user_id}/following`,
           {
             params: {
-              userid: user_id,
+              media_type: media_type,
             },
           },
         );
@@ -140,8 +132,7 @@ const MediaReviewsPage = () => {
       } catch (error) {
         console.error(error);
       }
-
-    }
+    };
     fetchFriendReviews();
     fetchAll();
     fetchMediaCover();
@@ -239,15 +230,13 @@ const MediaReviewsPage = () => {
             </View>
           )}
           {selectedFilter === "friend" && (
-<<<<<<< HEAD
             <View>
-              {friendsReviews && friendsReviews.length > 0 && friendsReviews.map((review, index) => {
-                return <ReviewPreview key={index} preview={review} />;
-              })}
+              {friendsReviews &&
+                friendsReviews.length > 0 &&
+                friendsReviews.map((review, index) => {
+                  return <ReviewPreview key={index} preview={review} />;
+                })}
             </View>
-=======
-            <View style={styles.reviews}></View> // TODO ALEX: Map each fetched review to a ReviewPreview component which will take care of the rest
->>>>>>> e0337957225e2f562083ca3e106fcf9fcc42395d
           )}
           {selectedFilter === "all" && (
             <View style={styles.reviews}>
@@ -261,7 +250,6 @@ const MediaReviewsPage = () => {
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {

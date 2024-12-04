@@ -6,31 +6,27 @@ import ArrowRight from "@/assets/images/Media/arrowRight.svg";
 import axios from "axios";
 import { useAuthContext } from "../AuthProvider";
 
-
-
 type FriendRatingsProps = {
   media_id: string;
-  media_type: string,
+  media_type: string;
 };
 
-
-
-const FriendRatings = ({  media_id, media_type }: FriendRatingsProps) => {
+const FriendRatings = ({ media_id, media_type }: FriendRatingsProps) => {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const [friendsReviews, setFriendsReviews] = useState<Preview[]>([]);
   const { userId } = useAuthContext();
 
   useEffect(() => {
     axios
-    .get(`${BASE_URL}/reviews/social/${media_type}/${media_id}`, {
-      data: {
-        userid: userId,
-      },
-    })
-    .then((response) => setFriendsReviews(response.data))
-    .catch((error) => console.error(error));
-}, []);
-   
+      .get(`${BASE_URL}/reviews/social/${media_type}/${media_id}`, {
+        data: {
+          userid: userId,
+        },
+      })
+      .then((response) => setFriendsReviews(response.data))
+      .catch((error) => console.error(error));
+  }, []);
+
   return (
     <TouchableOpacity
       style={styles.container}
@@ -45,11 +41,13 @@ const FriendRatings = ({  media_id, media_type }: FriendRatingsProps) => {
           },
         })
       }
-  >
+    >
       <View style={styles.textContainer}>
         <Text style={styles.text}>Reviewed by</Text>
         <View style={styles.countBubble}>
-          <Text style={styles.countText}>{friendsReviews?.length ?? 0}x friends</Text>
+          <Text style={styles.countText}>
+            {friendsReviews?.length ?? 0}x friends
+          </Text>
         </View>
       </View>
       <ArrowRight />
