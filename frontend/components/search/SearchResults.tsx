@@ -20,8 +20,6 @@ interface SearchResultsProps {
   filter: "all" | "songs" | "albums" | "profile";
 }
 
-type FilterOption = "all" | "songs" | "albums" | "profile";
-
 const SearchResults: React.FC<SearchResultsProps> = ({
   songs,
   albums,
@@ -36,6 +34,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     return <Text style={styles.noResults}>No results found</Text>;
   }
 
+  const filterOptions: FilterOption[] = ["all", "songs", "albums", "profile"];
   const [selectedFilter, setSelectedFilter] = useState<FilterOption>("all");
 
   const handleFilterChange = (filter: FilterOption) => {
@@ -46,7 +45,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     <View style={styles.container}>
       <Filter
         currentFilter={selectedFilter}
-        filterOptions={["all", "songs", "albums", "profile"]}
+        filterOptions={filterOptions}
         onFilterChange={handleFilterChange}
       />
       <View style={styles.resultGrid}>
@@ -56,7 +55,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
               {selectedFilter === "all" ? (
                 <TouchableOpacity onPress={() => setSelectedFilter("profile")}>
                   <Text style={styles.title}>
-                    Profiles <AntDesign name="right" size={24} color="black" />
+                    Profiles <AntDesign name="right" size={18} color="black" />
                   </Text>
                 </TouchableOpacity>
               ) : (
@@ -96,7 +95,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
               {selectedFilter === "all" ? (
                 <TouchableOpacity onPress={() => setSelectedFilter("songs")}>
                   <Text style={styles.title}>
-                    Songs <AntDesign name="right" size={24} color="black" />
+                    Songs <AntDesign name="right" size={18} color="black" />
                   </Text>
                 </TouchableOpacity>
               ) : (
@@ -110,13 +109,13 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                     flexDirection: "row",
                     flexWrap: "wrap",
                     justifyContent: "space-between",
-                    paddingHorizontal: 16,
                   }}
                 >
                   {songs?.map((song, idx) => (
                     <View style={{ width: "48%", marginBottom: 16 }}>
                       <AlbumSearchCard
-                        type={"Song"}
+                        rank={idx + 1}
+                        type={song.media_type}
                         key={idx}
                         id={song.id}
                         artist_name={song.artist_name}
@@ -131,13 +130,13 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                   <View
                     style={{
                       flexDirection: "row",
-                      paddingHorizontal: 16,
                     }}
                   >
                     <View style={styles.gridContainer}>
                       {songs?.slice(0, 9).map((song, idx) => (
                         <View style={styles.gridItem}>
                           <SongChip
+                            rank={idx + 1}
                             key={idx}
                             id={song.id}
                             title={song.title}
@@ -157,7 +156,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
               {selectedFilter === "all" ? (
                 <TouchableOpacity onPress={() => setSelectedFilter("albums")}>
                   <Text style={styles.title}>
-                    Albums <AntDesign name="right" size={24} color="black" />
+                    Albums <AntDesign name="right" size={18} color="black" />
                   </Text>
                 </TouchableOpacity>
               ) : (
@@ -168,7 +167,6 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                   flexDirection: "row",
                   flexWrap: "wrap",
                   justifyContent: "space-between",
-                  paddingHorizontal: 16,
                 }}
               >
                 {songs.length === 0 ? (
@@ -178,6 +176,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                     (album, idx) => (
                       <View style={styles.albumsList}>
                         <AlbumSearchCard
+                          rank={idx + 1}
                           type={"album"}
                           key={idx}
                           id={album.id}
@@ -207,39 +206,16 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    padding: 16,
+    paddingVertical: 16,
   },
   container: {
     flex: 1,
-    paddingHorizontal: 16,
-  },
-  headerContainer: {
-    marginTop: 10,
-    marginBottom: 20,
-    fontSize: 16,
-    textAlign: "center",
-    fontWeight: "600",
-    color: "#000000",
-  },
-  section: {
-    marginTop: 20,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    marginBottom: 10,
-    color: "#434343",
+    paddingHorizontal: 24,
   },
   loadingText: {
     textAlign: "center",
     marginTop: 20,
     color: "#666666",
-  },
-  twoColumnList: {
-    flex: 1,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
   },
   resultGrid: {
     flexDirection: "row",
@@ -251,12 +227,8 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   albumsList: {
-    width: "48%",
+    width: "50%",
     marginBottom: 16,
-    paddingHorizontal: 4,
-  },
-  wrapper: {
-    width: "100%",
   },
   gridContainer: {
     flexDirection: "row",
@@ -269,7 +241,7 @@ const styles = StyleSheet.create({
   },
   noResults: {
     textAlign: "center",
-    marginTop: 20,
+    marginTop: 6,
     color: "#666666",
   },
 });

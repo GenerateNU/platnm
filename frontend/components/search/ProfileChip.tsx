@@ -34,9 +34,7 @@ const ProfileChip: React.FC<ProfileChipProps> = ({
           style={styles.recordImage}
         />
         <View style={styles.profileImageContainer}>
-          console.log(profile_picture)
           <Image
-            // source={{ uri: profile_picture }}
             source={{ uri: profile_picture }}
             style={styles.profileImage}
             resizeMode="cover"

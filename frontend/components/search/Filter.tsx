@@ -15,7 +15,7 @@ const Filter: React.FC<FilterProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.buttonsRow}>
-        {filterOptions.map((filter) => (
+        {filterOptions.map((filter: FilterOption) => (
           <TouchableOpacity
             key={filter}
             onPress={() => onFilterChange(filter)}

@@ -28,17 +28,14 @@ const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({
         router.push({
           pathname: "/MediaPage",
           params: {
-            mediaType: type === "Song" ? "track" : "album",
+            mediaType: type,
             mediaId: id,
           },
         })
       }
     >
       <View style={styles.albumContainer}>
-        {/* Rank */}
-        <Text style={styles.rank}>{rank !== undefined ? `${rank}. ` : ""}</Text>
-
-        {/* Album Cover */}
+        <Text style={styles.rank}>{rank ? `${rank}. ` : ""}</Text>
         <View style={styles.coverContainer}>
           <Image
             source={{ uri: cover || placeholderImage }}
@@ -56,25 +53,11 @@ const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({
 
       <Text style={styles.albumName}>{album_name}</Text>
       <Text style={styles.artistName}>{artist_name}</Text>
-      {type && (
-        <Text style={styles.type}>
-          {type === "album" ? "Album" : type === "Song" ? "Song" : ""}
-        </Text>
-      )}
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  type: {
-    fontSize: 15,
-    color: "#9E9E9E",
-    marginTop: 2,
-    textAlign: "left",
-    marginLeft: 24,
-    fontStyle: "italic",
-  },
-
   cardContainer: {
     alignItems: "flex-start",
     marginRight: 25,
