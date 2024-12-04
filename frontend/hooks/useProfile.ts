@@ -28,6 +28,7 @@ export function useProfile(userId: string) {
         const response = await axios.get(
           `${BASE_URL}/users/profile/id/${userId}`,
         );
+        console.log("Profile:", response.data);
         const profile = {
           user_id: response.data.user_id,
           username: response.data.username,
@@ -38,6 +39,7 @@ export function useProfile(userId: string) {
           followed: response.data.followed,
           score: response.data.score,
         };
+
         setUserProfile(profile);
         setBio(response.data.bio.String);
       } catch (error) {
