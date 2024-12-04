@@ -1,13 +1,11 @@
-import React from "react";
-import { useState, useEffect } from "react";
-import { View, ScrollView, Image, Text } from "react-native";
-import ReviewPreview from "@/components/ReviewPreview";
-import Filter from "@/components/search/Filter";
+import React, { useState, useEffect } from "react";
+import { View, ScrollView, Image, Text, StyleSheet } from "react-native";
 import axios from "axios";
 import { useLocalSearchParams } from "expo-router";
 import HeaderComponent from "@/components/HeaderComponent";
+import ReviewPreview from "@/components/ReviewPreview";
+import Filter from "@/components/search/Filter";
 import Vinyl from "@/assets/images/media-vinyl.svg";
-import { StyleSheet } from "react-native";
 
 const MediaReviewsPage = () => {
   const { media_id, user_id, media_type, filter } = useLocalSearchParams<{
@@ -46,7 +44,7 @@ const MediaReviewsPage = () => {
     const fetchAll = async () => {
       try {
         const response = await axios.get(
-          `${BASE_URL}/reviews/${media_type}/${media_id}`,
+          `${BASE_URL}/reviews/${media_type}/${media_id}`
         );
         setAllReviews(response.data.reviews);
 
@@ -78,7 +76,7 @@ const MediaReviewsPage = () => {
             params: {
               media_type: media_type,
             },
-          },
+          }
         );
 
         const reviews = response.data;
@@ -87,7 +85,7 @@ const MediaReviewsPage = () => {
         // Calculate the average score
         const totalScore = response.data.reduce(
           (sum: any, review: { rating: any }) => sum + review.rating,
-          0,
+          0
         ); // Sum of all ratings
         const averageScore =
           reviews.length > 0 ? totalScore / reviews.length : 0; // Avoid division by 0
@@ -110,7 +108,7 @@ const MediaReviewsPage = () => {
             params: {
               media_type: media_type,
             },
-          },
+          }
         );
 
         const reviews = response.data;
@@ -120,7 +118,7 @@ const MediaReviewsPage = () => {
           // Calculate the average score
           const totalScore = reviews.reduce(
             (sum: any, review: { rating: any }) => sum + review.rating,
-            0,
+            0
           ); // Sum of all ratings
           const averageScore =
             reviews.length > 0 ? totalScore / reviews.length : 0; // Avoid division by 0
