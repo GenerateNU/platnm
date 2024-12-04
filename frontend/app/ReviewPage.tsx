@@ -1,4 +1,5 @@
 import HeaderComponent from "@/components/HeaderComponent";
+import CommentComponent from "@/components/CommentComponent";
 import axios from "axios";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -13,17 +14,17 @@ import {
   Modal,
   KeyboardAvoidingView,
 } from "react-native";
-import Rating0 from "@/assets/images/Ratings/Radial-0.svg";
-import Rating1 from "@/assets/images/Ratings/Radial-1.svg";
-import Rating2 from "@/assets/images/Ratings/Radial-2.svg";
-import Rating3 from "@/assets/images/Ratings/Radial-3.svg";
-import Rating4 from "@/assets/images/Ratings/Radial-4.svg";
-import Rating5 from "@/assets/images/Ratings/Radial-5.svg";
-import Rating6 from "@/assets/images/Ratings/Radial-6.svg";
-import Rating7 from "@/assets/images/Ratings/Radial-7.svg";
-import Rating8 from "@/assets/images/Ratings/Radial-8.svg";
-import Rating9 from "@/assets/images/Ratings/Radial-9.svg";
-import Rating10 from "@/assets/images/Ratings/Radial-10.svg";
+import Rating0 from "@/assets/images/Ratings/Property0.svg";
+import Rating1 from "@/assets/images/Ratings/Property1.svg";
+import Rating2 from "@/assets/images/Ratings/Property2.svg";
+import Rating3 from "@/assets/images/Ratings/Property3.svg";
+import Rating4 from "@/assets/images/Ratings/Property4.svg";
+import Rating5 from "@/assets/images/Ratings/Property5.svg";
+import Rating6 from "@/assets/images/Ratings/Property6.svg";
+import Rating7 from "@/assets/images/Ratings/Property7.svg";
+import Rating8 from "@/assets/images/Ratings/Property8.svg";
+import Rating9 from "@/assets/images/Ratings/Property9.svg";
+import Rating10 from "@/assets/images/Ratings/Property10.svg";
 import Downvote from "@/assets/images/ReviewPreview/downvote.svg";
 import Upvote from "@/assets/images/ReviewPreview/upvote.svg";
 import Comment from "@/assets/images/ReviewPreview/comment.svg";
@@ -35,16 +36,18 @@ interface ReviewPageProps {
   route: {
     params: {
       review_id: string;
+      user_id: string;
     };
   };
 }
 
 const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
-  const { review_id } = useLocalSearchParams<{
+  const { review_id, user_id } = useLocalSearchParams<{
     review_id: string;
+    user_id: string;
   }>();
   const [review, setReview] = useState<Preview>();
-  const [comments, setComments] = useState<Comment[]>();
+  const [comments, setComments] = useState<UserComment[]>();
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const { userId } = useAuthContext();
   const MusicDisk = require("../assets/images/music-disk.png");
@@ -62,17 +65,17 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
   const [showPopup, setShowPopup] = useState(false);
 
   const ratingImages = {
-    0: require("../assets/images/Ratings/0Rating.png"),
-    1: require("../assets/images/Ratings/1Rating.png"),
-    2: require("../assets/images/Ratings/2Rating.png"),
-    3: require("../assets/images/Ratings/3Rating.png"),
-    4: require("../assets/images/Ratings/4Rating.png"),
-    5: require("../assets/images/Ratings/5Rating.png"),
-    6: require("../assets/images/Ratings/6Rating.png"),
-    7: require("../assets/images/Ratings/7Rating.png"),
-    8: require("../assets/images/Ratings/8Rating.png"),
-    9: require("../assets/images/Ratings/9Rating.png"),
-    10: require("../assets/images/Ratings/10Rating.png"),
+    0: Rating0,
+    1: Rating1,
+    2: Rating2,
+    3: Rating3,
+    4: Rating4,
+    5: Rating5,
+    6: Rating6,
+    7: Rating7,
+    8: Rating8,
+    9: Rating9,
+    10: Rating10,
   };
 
   const [sharePopupVisible, setSharePopupVisible] = useState(false);
@@ -88,38 +91,165 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
   const getRatingImage = (rating: keyof typeof ratingImages) => {
     return ratingImages[rating]; // Access the image from the preloaded images object
   };
+
+  const handleVotePress = async (newVoteValue: boolean) => {
+    if (currentVote) {
+      // if there is already a vote value, we have to delete or swap it
+      if (currentVoteValue && newVoteValue) {
+        // if there is an upvote and the user clicks upvote again
+        setCurrentVote(false); // cancel out the vote
+        setUpvoteCount(upvoteCount - 1);
+      } else if (!currentVoteValue && !newVoteValue) {
+        // if there is a downvote and the user clicks downvote again
+        setCurrentVote(false); // cancel out the vote
+        setDownvoteCount(downvoteCount - 1);
+      } else if (currentVoteValue && !newVoteValue) {
+        // if there is an upvote and the user clicks downvote
+        setCurrentVoteValue(false);
+        setUpvoteCount(upvoteCount - 1);
+        setDownvoteCount(downvoteCount + 1);
+      } else if (!currentVoteValue && newVoteValue) {
+        // if there is a downvote and the user clicks upvote
+        setCurrentVoteValue(true);
+        setUpvoteCount(upvoteCount + 1);
+        setDownvoteCount(downvoteCount - 1);
+      }
+    } else {
+      setCurrentVote(true);
+      setCurrentVoteValue(newVoteValue);
+      if (newVoteValue) {
+        setUpvoteCount(upvoteCount + 1);
+      } else {
+        setDownvoteCount(downvoteCount + 1);
+      }
+    }
+
+    try {
+      await axios.post(`${BASE_URL}/reviews/vote`, {
+        user_id: userId,
+        post_id: review_id,
+        upvote: newVoteValue,
+      });
+    } catch (error) {
+      console.error("Error downvoting comment:", error);
+    }
+  };
+
+  const handleCommentPress = () => {
+    console.log("comment icon pressed");
+  };
+
+  const handleCommentSubmit = async () => {
+    if (!newComment.trim()) return; // Do not submit if the comment is empty
+    setCommentCount(commentCount + 1);
+
+    try {
+      await axios.post(
+        `${BASE_URL}/reviews/comment`,
+        {
+          user_id: userId,
+          review_id: parseInt(review_id, 10),
+          text: newComment,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+      setNewComment(""); // Clear the input after submitting
+      // Fetch updated comments after submitting
+      fetchComments();
+    } catch (error) {
+      console.error("Error submitting comment:", error);
+    }
+  };
+
+  const handleEditSave = async () => {
+    try {
+      const requestBody = {
+        user_id: userId, // User ID to validate ownership
+        comment: editedComment, // The updated comment
+      };
+
+      await axios.patch(`${BASE_URL}/reviews/${review_id}`, requestBody);
+      setIsEditable(false);
+      setReview((prev) => (prev ? { ...prev, comment: editedComment } : prev));
+    } catch (error) {
+      console.error("Error saving edited review:", error);
+    }
+  };
+
+  const handleMenuOption = (option: string) => {
+    setShowPopup(false);
+    if (option === "edit") {
+      setIsEditable(true);
+      setEditedComment(review?.comment || "");
+    } else if (option === "delete") {
+      // Add delete functionality
+    } else if (option === "manageComments") {
+      // Add manage comments functionality
+    } else if (option === "share") {
+      // Add share functionality
+    }
+  };
+
   // Fetch the review data using the review_id
   useEffect(() => {
     const fetchReview = async () => {
-      console.log("fetchReviews");
-
-      console.log("review_id", review_id);
       try {
         const response = await axios.get(`${BASE_URL}/reviews/${review_id}`);
-        console.log("response", response.data);
-        setReview(response.data);
+        const review = response.data;
+        setReview(review);
+        if (review) {
+          setUpvoteCount(review.review_stat.upvotes);
+          setDownvoteCount(review.review_stat.downvotes);
+          setCommentCount(review.review_stat.comment_count);
+        }
       } catch (error) {
         console.error("Error fetching review:", error);
       }
     };
 
-    const fetchComments = async () => {
-      console.log("fetchReviews");
-      console.log("review_id", review_id);
-      try {
-        const response = await axios.get(
-          `${BASE_URL}/reviews/comments/${review_id}`,
-        );
-        console.log("response", response.data);
-        setComments(response.data);
-      } catch (error) {
-        console.error("Error fetching comments:", error);
-      }
-    };
-
     fetchReview();
     fetchComments();
-  }, []);
+  }, [review_id, userId, user_id, newComment]);
+
+  const fetchComments = async () => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/reviews/comments/${review_id}`,
+      );
+      setComments(response.data);
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchVote = async () => {
+      try {
+        if (review) {
+          setUpvoteCount(review.review_stat.upvotes);
+          setDownvoteCount(review.review_stat.downvotes);
+          setCommentCount(review.review_stat.comment_count);
+        }
+        const response = await axios.get(
+          `${BASE_URL}/reviews/vote/${userId}/${review_id}`,
+        );
+        if (response.data) {
+          setCurrentVote(true);
+          const { upvote } = response.data; // Assuming the API returns { user_id, post_id, upvote }
+          setCurrentVoteValue(upvote);
+        } else {
+          setCurrentVote(false);
+        }
+      } catch (error) {
+        console.error("Error fetching vote:", error);
+      }
+    };
+    fetchVote();
+  }, [review_id, userId, newComment]);
 
   const handleUserPress = () => {
     // Navigate to the UserPage when the user is clicked
@@ -339,10 +469,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
           <View style={styles.comments}>
             {comments && comments.length > 0 ? (
               comments.map((comment, index) => {
-                return (
-                  //<Comment key={index} comment={comment} />
-                  null
-                );
+                return <CommentComponent key={index} comment={comment} />;
               })
             ) : (
               <Text style={styles.noReviewsText}>No comments found.</Text>
@@ -351,7 +478,9 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
           </View>
         </View>
       </ScrollView>
+
       {/* Fixed TextBox for Comment */}
+
       <KeyboardAvoidingView
         style={styles.commentBoxContainer}
         keyboardVerticalOffset={32}
@@ -384,17 +513,22 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: "#fff",
+    marginTop: 20,
+    paddingBottom: 80, // Add padding at the bottom equal to the height of the bottom tab bar
   },
   reviewContainer: {
-    alignItems: "center",
+    alignItems: "flex-start",
+    paddingLeft: 20,
+    paddingBottom: 30,
   },
   coverImage: {
     width: 200,
     height: 200,
     borderRadius: 10,
     marginBottom: 20,
+    overflow: "scroll",
+  },
   voteButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -425,12 +559,23 @@ const styles = StyleSheet.create({
     width: "95%",
   },
   artistName: {
-    fontSize: 18,
+    fontSize: 16,
     color: "#888",
   },
   comment: {
     fontSize: 16,
-    marginVertical: 10,
+  },
+
+  noReviewsText: {
+    textAlign: "center",
+    color: "#888",
+    marginVertical: 20,
+  },
+  comments: {
+    width: "100%",
+    marginTop: 20,
+    marginBottom: 50,
+    marginLeft: -20,
   },
   rating: {
     width: "100%",
@@ -568,10 +713,42 @@ const styles = StyleSheet.create({
     color: "#333",
     fontWeight: "bold",
   },
-  noReviewsText: {
-    textAlign: "center",
-    color: "#888",
-    marginVertical: 20,
+  menuButton: { padding: 10, marginRight: 10 },
+  menuText: { fontSize: 24, marginLeft: 10 },
+  editInput: {
+    borderColor: "#ddd",
+    borderWidth: 1,
+    margin: 10,
+    padding: 10,
+    marginRight: 25,
+  },
+  saveButton: {
+    backgroundColor: "#ddd",
+    padding: 10,
+    borderRadius: 10,
+    margin: 10,
+    width: 60,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
+    justifyContent: "center", // Center the modal vertically
+    alignItems: "center", // Center the modal horizontally
+  },
+  popupContainer: {
+    backgroundColor: "#fff", // Modal background
+    borderRadius: 10,
+    padding: 20,
+    width: "80%", // Adjust width as needed
+    alignItems: "center",
+    zIndex: 1000, // Ensure the modal is on top
+  },
+  popupOption: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+    width: "100%",
+    alignItems: "center",
   },
   sharePopupContainer: {
     width: "80%",
