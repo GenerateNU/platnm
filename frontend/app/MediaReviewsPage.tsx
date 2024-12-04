@@ -192,17 +192,17 @@ const MediaReviewsPage = () => {
         />
         <View>
           {selectedFilter === "you" && (
-            <View>
+            <View style={styles.reviews}>
               {userReviews.map((review, index) => {
                 return <ReviewPreview key={index} preview={review} />;
               })}
             </View>
           )}
           {selectedFilter === "friend" && (
-            <View></View> // TODO ALEX: Map each fetched review to a ReviewPreview component which will take care of the rest
+            <View style={styles.reviews}></View> // TODO ALEX: Map each fetched review to a ReviewPreview component which will take care of the rest
           )}
           {selectedFilter === "all" && (
-            <View>
+            <View style={styles.reviews}>
               {allReviews.map((review, index) => {
                 return <ReviewPreview key={index} preview={review} />;
               })}
@@ -284,6 +284,10 @@ const styles = StyleSheet.create({
   },
   reviewsContainer: {
     backgroundColor: "#fff",
+  },
+  reviews: {
+    width: "90%",
+    alignSelf: "center",
   },
 });
 
