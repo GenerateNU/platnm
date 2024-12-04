@@ -4,16 +4,14 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
   ScrollView,
   SafeAreaView,
 } from "react-native";
-import Icon from "react-native-vector-icons/Ionicons";
 import { router, useLocalSearchParams } from "expo-router";
 import axios from "axios";
-import ReviewCard from "@/components/ReviewCard";
 import { useAuthContext } from "@/components/AuthProvider";
 import ReviewPreview from "@/components/ReviewPreview";
+import Icon from "react-native-vector-icons/Ionicons";
 
 const Activity = () => {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;

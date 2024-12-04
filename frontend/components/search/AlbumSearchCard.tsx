@@ -26,7 +26,7 @@ const SearchCard: React.FC<SearchCardProps> = ({
       style={styles.cardContainer}
       onPress={() =>
         router.push({
-          pathname: "/MediaPage",
+          pathname: "/(tabs)/MediaPage",
           params: {
             mediaType: type,
             mediaId: id,

@@ -14,7 +14,6 @@ interface NudgePageProps {
   media_type: string;
   media_id: string;
   title: string;
-  artist_name: string;
   cover: string;
 }
 
@@ -22,13 +21,12 @@ const NudgePage: React.FC<NudgePageProps> = ({
   media_type,
   media_id,
   title,
-  artist_name,
   cover,
 }) => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
 
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-  const { userId, username } = useAuthContext(); // Assuming you have username in AuthProvider
+  const { userId } = useAuthContext();
 
   useEffect(() => {
     const fetchFollowing = async () => {
@@ -56,7 +54,7 @@ const NudgePage: React.FC<NudgePageProps> = ({
 
   const routeToMediaPage = () => {
     router.push({
-      pathname: "/MediaPage",
+      pathname: "/(tabs)/MediaPage",
       params: { mediaId: media_id, mediaType: media_type },
     });
   };
@@ -73,7 +71,6 @@ const NudgePage: React.FC<NudgePageProps> = ({
       };
 
       await axios.post(`${BASE_URL}/recommendation`, payload);
-      routeToMediaPage();
     } catch (error) {
       console.error("Error creating recommendation:", error);
     }
@@ -108,7 +105,7 @@ const NudgePage: React.FC<NudgePageProps> = ({
         </View>
       </View>
       <Text style={styles.text} onPress={routeToMediaPage}>
-        Skip
+        Done
       </Text>
     </View>
   );

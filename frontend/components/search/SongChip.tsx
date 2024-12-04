@@ -22,7 +22,7 @@ const SongChip: React.FC<SongChipProps> = ({
       style={[styles.container, !rank && styles.noRankContainer]}
       onPress={() =>
         router.push({
-          pathname: "/MediaPage",
+          pathname: "/(tabs)/MediaPage",
           params: {
             mediaType: "track",
             mediaId: id,
