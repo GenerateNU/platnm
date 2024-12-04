@@ -15,11 +15,13 @@ import ReviewPreview from "@/components/ReviewPreview";
 import { ThemedText } from "@/components/ThemedText";
 
 import Icon from "react-native-vector-icons/Feather";
+import SkeletonLoader from "expo-skeleton-loader";
 const logo = require("@/assets/images/icon.png");
 
 export default function HomeScreen() {
   const [feedReviews, setFeedReviews] = useState<Preview[]>();
   const { userId } = useAuthContext();
+  const [isLoading, setIsLoading] = useState(true);
   const hasNotification = true; // Hardcoding - Get notification status from somewhere else
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -27,6 +29,7 @@ export default function HomeScreen() {
     try {
       const response = await axios.get(`${BASE_URL}/users/feed/${userId}`);
       setFeedReviews(response.data);
+      setIsLoading(false);
     } catch (error) {
       console.error("Error fetching feed reviews:", error);
     }
@@ -84,6 +87,18 @@ export default function HomeScreen() {
           </View>
         </View>
         <View>
+          {isLoading && (
+            <SkeletonLoader
+              duration={500}
+              boneColor="#f0f0f0"
+              highlightColor="#fff"
+              style={loadingContainer}
+            >
+              <SkeletonLoader.Item style={loadingReview} />
+              <SkeletonLoader.Item style={loadingReview} />
+              <SkeletonLoader.Item style={loadingReview} />
+            </SkeletonLoader>
+          )}
           {feedReviews && feedReviews.length > 0 ? (
             feedReviews.map((review, index) => {
               return <ReviewPreview key={index} preview={review} />;
@@ -97,13 +112,24 @@ export default function HomeScreen() {
   );
 }
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
+
+const loadingReview = {
+  width: width - 20,
+  height: 200,
+  marginTop: 25,
+  borderRadius: 16,
+};
+
+const loadingContainer = {
+  paddingHorizontal: 20,
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingHorizontal: 15,
+    paddingHorizontal: 16,
   },
   header: {
     alignItems: "center",
@@ -113,7 +139,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    width: SCREEN_WIDTH,
+    width: width,
     paddingHorizontal: 20,
     paddingTop: 20,
     marginRight: 20,

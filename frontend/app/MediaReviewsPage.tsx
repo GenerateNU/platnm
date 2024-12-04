@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, Image, Text, StyleSheet } from "react-native";
+import {
+  View,
+  ScrollView,
+  Image,
+  Text,
+  StyleSheet,
+  Dimensions,
+} from "react-native";
 import axios from "axios";
 import { useLocalSearchParams } from "expo-router";
 import HeaderComponent from "@/components/HeaderComponent";
 import ReviewPreview from "@/components/ReviewPreview";
 import Filter from "@/components/search/Filter";
 import Vinyl from "@/assets/images/media-vinyl.svg";
+import SkeletonLoader from "expo-skeleton-loader";
 
 const MediaReviewsPage = () => {
   const { media_id, user_id, media_type, filter } = useLocalSearchParams<{
@@ -35,6 +43,7 @@ const MediaReviewsPage = () => {
     totalRatings: 0,
   });
   const [mediaCover, setMediaCover] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const filterOptions = ["you", "friend", "all"];
 
@@ -136,10 +145,18 @@ const MediaReviewsPage = () => {
         console.error(error);
       }
     };
-    fetchFriendReviews();
-    fetchAll();
-    fetchMediaCover();
-    fetchUserReviews();
+
+    const fetchEverything = async () => {
+      await Promise.all([
+        fetchFriendReviews(),
+        fetchUserReviews(),
+        fetchAll(),
+        fetchMediaCover(),
+      ]);
+      setIsLoading(false);
+    };
+
+    fetchEverything();
   }, []);
 
   const handleFilterChange = (filter: FilterOption) => {
@@ -221,34 +238,45 @@ const MediaReviewsPage = () => {
         filterOptions={filterOptions}
         onFilterChange={handleFilterChange}
       />
-      <View>
-        {selectedFilter === "you" && (
-          <View style={styles.reviews}>
-            {userReviews &&
-              userReviews.map((review, index) => {
-                return <ReviewPreview key={index} preview={review} />;
-              })}
-          </View>
+      <View style={styles.reviews}>
+        {isLoading && (
+          <SkeletonLoader
+            duration={1000}
+            boneColor="#f0f0f0"
+            highlightColor="#fff"
+          >
+            <SkeletonLoader.Item style={loadingReview} />
+            <SkeletonLoader.Item style={loadingReview} />
+            <SkeletonLoader.Item style={loadingReview} />
+          </SkeletonLoader>
         )}
-        {selectedFilter === "friend" && (
-          <View style={styles.reviews}>
-            {friendsReviews &&
-              friendsReviews.map((review, index) => {
-                return <ReviewPreview key={index} preview={review} />;
-              })}
-          </View>
-        )}
-        {selectedFilter === "all" && (
-          <View style={styles.reviews}>
-            {allReviews &&
-              allReviews.map((review, index) => {
-                return <ReviewPreview key={index} preview={review} />;
-              })}
-          </View>
-        )}
+        {selectedFilter === "you" &&
+          userReviews &&
+          userReviews.map((review, index) => {
+            return <ReviewPreview key={index} preview={review} />;
+          })}
+        {selectedFilter === "friend" &&
+          friendsReviews &&
+          friendsReviews.map((review, index) => {
+            return <ReviewPreview key={index} preview={review} />;
+          })}
+        {selectedFilter === "all" &&
+          allReviews &&
+          allReviews.map((review, index) => {
+            return <ReviewPreview key={index} preview={review} />;
+          })}
       </View>
     </ScrollView>
   );
+};
+
+const { width } = Dimensions.get("window");
+
+const loadingReview = {
+  width: width - 32,
+  height: 200,
+  marginTop: 25,
+  borderRadius: 16,
 };
 
 const styles = StyleSheet.create({
