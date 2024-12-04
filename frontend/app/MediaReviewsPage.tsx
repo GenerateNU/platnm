@@ -7,6 +7,7 @@ import axios from "axios";
 import { useLocalSearchParams } from "expo-router";
 import HeaderComponent from "@/components/HeaderComponent";
 import Vinyl from "@/assets/images/media-vinyl.svg";
+import { StyleSheet } from "react-native";
 
 const MediaReviewsPage = () => {
   const { media_id, user_id, media_type, filter } = useLocalSearchParams<{
@@ -103,7 +104,7 @@ const MediaReviewsPage = () => {
 
       try {
         const response = await axios.get(
-          `${BASE_URL}/social/${media_type}/${media_id}`,
+          `${BASE_URL}/reviews/social/${media_type}/${media_id}`,
           {
             params: {
               userid: user_id,
@@ -210,7 +211,7 @@ const MediaReviewsPage = () => {
           )}
           {selectedFilter === "friend" && (
             <View>
-              {userReviews.map((review, index) => {
+              {friendsReviews && friendsReviews.length > 0 && friendsReviews.map((review, index) => {
                 return <ReviewPreview key={index} preview={review} />;
               })}
             </View>
@@ -228,7 +229,6 @@ const MediaReviewsPage = () => {
   );
 };
 
-import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
   container: {

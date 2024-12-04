@@ -22,8 +22,8 @@ const FriendRatings = ({  media_id, media_type }: FriendRatingsProps) => {
 
   useEffect(() => {
     axios
-    .get(`${BASE_URL}/social/${media_type}/${media_id}`, {
-      params: {
+    .get(`${BASE_URL}/reviews/social/${media_type}/${media_id}`, {
+      data: {
         userid: userId,
       },
     })
