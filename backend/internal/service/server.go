@@ -99,6 +99,8 @@ func setupRoutes(app *fiber.App, repo *storage.Repository, config config.Config)
 		// Get Reviews by ID which can be used to populate a preview
 		r.Get("/:id", reviewHandler.GetReviewByID)
 		r.Get("/media/:mediaId/:userID", reviewHandler.GetUserReviewsOfMedia)
+		r.Get("/media/:mediaId/:userID/following", reviewHandler.GetUserFollowingReviewsOfMedia)
+
 		r.Get("/user/:id", reviewHandler.GetReviewsByUserID)
 		r.Post("/vote", func(c *fiber.Ctx) error {
 			return reviewHandler.UserVote(c, "review")
