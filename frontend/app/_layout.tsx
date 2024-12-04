@@ -33,7 +33,7 @@ export default function RootLayout() {
   }
 
   // UNCOMMENT IF DEMOING SO THAT EMBARRASSING LOGS DONT APPEAR
-  LogBox.ignoreAllLogs();
+  // LogBox.ignoreAllLogs();
   return (
     <AuthProvider>
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
