@@ -16,7 +16,6 @@ import { ThemedText } from "@/components/ThemedText";
 
 import Icon from "react-native-vector-icons/Feather";
 import SkeletonLoader from "expo-skeleton-loader";
-import ReviewSkeleton from "@/components/skeletons/ReviewSkeleton";
 const logo = require("@/assets/images/icon.png");
 
 export default function HomeScreen() {
@@ -90,13 +89,14 @@ export default function HomeScreen() {
         <View>
           {isLoading && (
             <SkeletonLoader
-              duration={1000}
+              duration={500}
               boneColor="#f0f0f0"
               highlightColor="#fff"
+              style={loadingContainer}
             >
-              <ReviewSkeleton />
-              <ReviewSkeleton />
-              <ReviewSkeleton />
+              <SkeletonLoader.Item style={loadingReview} />
+              <SkeletonLoader.Item style={loadingReview} />
+              <SkeletonLoader.Item style={loadingReview} />
             </SkeletonLoader>
           )}
           {feedReviews && feedReviews.length > 0 ? (
@@ -112,7 +112,18 @@ export default function HomeScreen() {
   );
 }
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
+
+const loadingReview = {
+  width: width - 20,
+  height: 200,
+  marginTop: 25,
+  borderRadius: 16,
+};
+
+const loadingContainer = {
+  paddingHorizontal: 20,
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -128,7 +139,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    width: SCREEN_WIDTH,
+    width: width,
     paddingHorizontal: 20,
     paddingTop: 20,
     marginRight: 20,
