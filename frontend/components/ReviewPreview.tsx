@@ -465,7 +465,7 @@ const styles = StyleSheet.create({
     overflow: "scroll",
     boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.2)",
     borderColor: "#ddd",
-    borderWidth: .5,
+    borderWidth: 0.5,
   },
   voteButton: {
     flexDirection: "row",
