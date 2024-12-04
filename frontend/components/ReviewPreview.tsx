@@ -559,7 +559,6 @@ const styles = StyleSheet.create({
   title: {
     fontWeight: 700,
     marginTop: 10,
-    marginBottom: 20,
   },
   commentText: {
     fontSize: 14,
