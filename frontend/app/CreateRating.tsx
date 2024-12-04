@@ -49,7 +49,7 @@ const CreateRating = () => {
 
   const routeToMediaPage = () => {
     router.push({
-      pathname: "/MediaPage",
+      pathname: "/(tabs)/MediaPage",
       params: { mediaId: mediaId, mediaType: mediaType },
     });
   };

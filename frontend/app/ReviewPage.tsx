@@ -267,7 +267,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
     // Navigate to the MediaPage
     console.log("Media pressed");
     router.push({
-      pathname: "/MediaPage",
+      pathname: "/(tabs)/MediaPage",
       params: { mediaId: review?.media_id, mediaType: review?.media_type },
     });
   };

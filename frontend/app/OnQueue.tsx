@@ -52,7 +52,7 @@ const OnQueue = () => {
 
   const goToSongPage = (id: string) => {
     router.push({
-      pathname: "/MediaPage",
+      pathname: "/(tabs)/MediaPage",
       params: {
         mediaType: "track",
         mediaId: id,

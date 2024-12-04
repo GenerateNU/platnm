@@ -54,7 +54,7 @@ const NudgePage: React.FC<NudgePageProps> = ({
 
   const routeToMediaPage = () => {
     router.push({
-      pathname: "/MediaPage",
+      pathname: "/(tabs)/MediaPage",
       params: { mediaId: media_id, mediaType: media_type },
     });
   };

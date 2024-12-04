@@ -184,6 +184,7 @@ export default function MediaPage() {
                 <FriendRatings media_id={mediaId} media_type={mediaType} />
               </View>
               <View>
+                <Text style={styles.titleText}>Top Reviews</Text>
                 {reviews?.slice(0, 5).map((review) => (
                   <ReviewPreview
                     key={review.review_id}
@@ -226,9 +227,14 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     gap: 8,
   },
+  titleText: {
+    fontSize: 20,
+    fontWeight: "700",
+    fontStyle: "normal",
+    marginTop: 10,
+  },
   bodyContainer: {
-    marginTop: 16,
-    paddingTop: 32,
+    paddingTop: 16,
     paddingHorizontal: 16,
     borderRadius: 16,
     backgroundColor: "#fff",

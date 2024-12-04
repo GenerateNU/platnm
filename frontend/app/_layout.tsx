@@ -33,7 +33,7 @@ export default function RootLayout() {
   }
 
   // UNCOMMENT IF DEMOING SO THAT EMBARRASSING LOGS DONT APPEAR
-  // LogBox.ignoreAllLogs();
+  LogBox.ignoreAllLogs();
   return (
     <AuthProvider>
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
@@ -44,7 +44,6 @@ export default function RootLayout() {
             <Stack.Screen name="CreateRating" />
             <Stack.Screen name="CreateReview" />
             <Stack.Screen name="MediaReviewsPage" />
-            <Stack.Screen name="MediaPage" />
             <Stack.Screen name="Settings" />
             <Stack.Screen name="Activity" />
             <Stack.Screen name="OnQueue" />
