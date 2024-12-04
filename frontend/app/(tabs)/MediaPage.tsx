@@ -37,11 +37,12 @@ export default function MediaPage() {
 
   useEffect(() => {
     setReviewsLoading(true);
+    setMedia(undefined);
     axios
       .get(`${BASE_URL}/media/${mediaType}/${mediaId}`)
       .then((response) => setMedia(response.data))
       .catch((error) => console.error(error));
-  }, []);
+  }, [mediaId]);
 
   // calculating the rating distribution from the reviews that we already have
   useEffect(() => {
@@ -55,7 +56,7 @@ export default function MediaPage() {
       reviews.forEach((review) => {
         distributionMap.set(
           review.rating,
-          (distributionMap.get(review.rating) || 0) + 1,
+          (distributionMap.get(review.rating) || 0) + 1
         );
       });
 
@@ -64,7 +65,7 @@ export default function MediaPage() {
         ([rating, count]) => ({
           rating,
           count,
-        }),
+        })
       ).sort((a, b) => a.rating - b.rating);
 
       setRatingDistributions(distributionArray);
@@ -86,7 +87,7 @@ export default function MediaPage() {
           })
           .catch((error) => console.error(error));
       }
-    }, [media]),
+    }, [media])
   );
 
   if (media) {
