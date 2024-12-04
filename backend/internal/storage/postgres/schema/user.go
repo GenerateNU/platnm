@@ -217,24 +217,18 @@ func (r *UserRepository) UpdateUserOnboard(ctx context.Context, email string, en
 
 func (r *UserRepository) GetUserProfile(ctx context.Context, id uuid.UUID) (*models.Profile, error) {
 	profile := &models.Profile{}
-	query := `SELECT u.id, u.username, u.display_name, COUNT(DISTINCT followers.follower_id) AS follower_count, COUNT(DISTINCT followed.followee_id) AS followed_count, u.bio, u.profile_picture
+	query := `SELECT u.id, u.username, u.display_name, COUNT(DISTINCT followers.follower_id) AS follower_count, COUNT(DISTINCT followed.followee_id) AS followed_count, u.bio, u.profile_picture, u.platnm
 		FROM "user" u
 		LEFT JOIN follower followers ON followers.followee_id = u.id
 		LEFT JOIN follower followed ON followed.follower_id = u.id
 		WHERE u.id = $1
 		GROUP BY u.id, u.username, u.display_name, u.bio, u.profile_picture;`
 
-	err := r.db.QueryRow(ctx, query, id).Scan(&profile.UserID, &profile.Username, &profile.DisplayName, &profile.Followers, &profile.Followed, &profile.Bio, &profile.ProfilePicture)
+	err := r.db.QueryRow(ctx, query, id).Scan(&profile.UserID, &profile.Username, &profile.DisplayName, &profile.Followers, &profile.Followed, &profile.Bio, &profile.ProfilePicture, &profile.Score)
 	if err != nil {
 		print(err.Error(), "unable to find profile")
 		return nil, err
 	}
-
-	score, err := r.CalculateScore(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	profile.Score = score
 
 	return profile, nil
 }

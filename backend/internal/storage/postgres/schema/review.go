@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"platnm/internal/constants"
 	"platnm/internal/errs"
 	"platnm/internal/models"
 	"strconv"
@@ -98,6 +99,11 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 		if _, err := r.Exec(ctx, reviewTagQuery, review.ID, tagID); err != nil {
 			return nil, err
 		}
+	}
+
+	_, err := r.Exec(ctx, `UPDATE "user" SET platnm = platnm + $1 WHERE id = $2`, constants.Rating, review.UserID)
+	if err != nil {
+		return nil, err
 	}
 
 	return review, nil
@@ -1005,6 +1011,11 @@ func (r *ReviewRepository) UserVote(ctx context.Context, userID string, postID s
 		// check if the review has more than 10 upvotes and if so notify the person that made the review
 		review, _ := r.GetReviewByID(ctx, postID)
 
+		_, err = r.Exec(ctx, `UPDATE "user" SET platnm = platnm + $1 WHERE id = $2`, constants.RecommendationLike, review.UserID)
+		if err != nil {
+			return err
+		}
+
 		if review.ReviewStat.Upvotes >= 10 { // if we have more 10 upvotes on the review now
 
 			_, err = r.Exec(ctx, `
@@ -1015,12 +1026,16 @@ func (r *ReviewRepository) UserVote(ctx context.Context, userID string, postID s
 			if err != nil {
 				return err
 			}
-
 		}
 
 	} else if postType == "comment" {
 
 		comment, _ := r.GetCommentByCommentID(ctx, postID)
+
+		_, err = r.Exec(ctx, `UPDATE "user" SET platnm = platnm + $1 WHERE id = $2`, constants.PostReaction, comment.UserID)
+		if err != nil {
+			return err
+		}
 
 		if comment.Upvotes >= 10 { // if we have more 10 upvotes on the comment now
 
