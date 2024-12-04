@@ -27,6 +27,7 @@ import Rating10 from "@/assets/images/Ratings/Radial-10.svg";
 import Downvote from "@/assets/images/ReviewPreview/downvote.svg";
 import Upvote from "@/assets/images/ReviewPreview/upvote.svg";
 import Comment from "@/assets/images/ReviewPreview/comment.svg";
+import { useAuthContext } from "./AuthProvider";
 
 const MusicDisk = require("../assets/images/music-disk.png");
 const ThreeDotsMenu = require("../assets/images/three_dots_menu.png");
@@ -67,9 +68,9 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
 
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
-  const user_Id = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
+  const { userId } = useAuthContext();
 
-  const isOwner = user_Id === preview.user_id;
+  const isOwner = userId === preview.user_id;
   const [menuVisible, setMenuVisible] = useState(false);
 
   const handleMenuToggle = () => setMenuVisible(!menuVisible);
@@ -112,7 +113,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
 
     try {
       await axios.post(`${BASE_URL}/reviews/vote`, {
-        user_id: user_Id,
+        user_id: userId,
         post_id: String(preview.review_id),
         upvote: true,
       });
@@ -140,7 +141,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
 
     try {
       await axios.post(`${BASE_URL}/reviews/vote`, {
-        user_id: user_Id,
+        user_id: userId,
         post_id: String(preview.review_id),
         upvote: false,
       });
@@ -153,7 +154,7 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
   const handleEditSave = async () => {
     try {
       const requestBody = {
-        user_id: user_Id, // User ID to validate ownership
+        user_id: userId, // User ID to validate ownership
         comment: editedComment, // The updated comment
       };
 
@@ -170,30 +171,10 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
 
   useFocusEffect(
     useCallback(() => {
-      const fetchReview = async () => {
-        try {
-          const response = await axios.get(
-            `${BASE_URL}/reviews/${preview.review_id}`,
-          );
-          if (response.data) {
-            setUpvoteCount(response.data.review_stat.upvotes);
-            setDownvoteCount(response.data.review_stat.downvotes);
-          }
-        } catch (error) {
-          console.error("Error fetching review:", error);
-        }
-      };
-
-      fetchReview();
-    }, []),
-  );
-
-  useFocusEffect(
-    useCallback(() => {
       const fetchVote = async () => {
         try {
           const response = await axios.get(
-            `${BASE_URL}/reviews/vote/${user_Id}/${preview.review_id}`,
+            `${BASE_URL}/reviews/vote/${userId}/${preview.review_id}`,
           );
           if (response.data) {
             const { upvote } = response.data;
@@ -222,7 +203,10 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
         }
       };
 
-      fetchVote();
+      if (userId) {
+        fetchVote();
+      }
+
       fetchReview();
     }, []),
   );
@@ -239,205 +223,231 @@ const ReviewPreview: React.FC<PreviewProps> = ({ preview }) => {
     // Navigate to the ReviewPage when the preview is clicked
     router.push({
       pathname: "/ReviewPage",
-      params: { review_id: preview.review_id, userId: user_Id },
+      params: { review_id: preview.review_id, userId: userId },
+    });
+  };
+
+  const handleUserPress = () => {
+    // Navigate to the UserPage when the user is clicked
+    const pathName =
+      preview.user_id === userId ? "/(tabs)/profile" : "/(tabs)/user";
+    router.push({
+      pathname: pathName,
+      params: {
+        userId: preview.user_id,
+      },
+    });
+  };
+
+  const handleMediaPress = () => {
+    // Navigate to the MediaPage
+    console.log("Media pressed");
+    router.push({
+      pathname: "/MediaPage",
+      params: { mediaId: preview.media_id, mediaType: preview.media_type },
     });
   };
 
   return (
-    <View style={styles.card}>
-      <View style={styles.vinyl}>
-        <Image source={MusicDisk} style={styles.musicDisk} />
-        {preview.media_cover && (
-          <Image
-            source={{ uri: preview.media_cover }}
-            style={styles.mediaCover}
-            resizeMode="cover"
-          />
-        )}
-      </View>
-
-      <View style={styles.container}>
-        <View style={styles.topContainer}>
-          <View style={styles.leftSection}>
-            <Image
-              style={styles.profilePicture}
-              source={{ uri: preview.profile_picture }}
-            />
-            <View style={styles.textContainer}>
-              <Text style={styles.displayName}>{preview.display_name}</Text>
-              <Text style={styles.username}>@{preview.username}</Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.mediaContainer}>
-          <View style={styles.ratingContainer}>
-            <Text style={styles.songName}>{preview.media_title}</Text>
-            <Text style={styles.artistName}>{preview.media_artist}</Text>
-          </View>
-
-          <View>
-            {React.createElement(
-              getRatingImage(preview.rating as keyof typeof ratingImages),
-              {
-                style: styles.ratingImage,
-              },
+    <TouchableOpacity onPress={handlePreviewPress}>
+      <View style={styles.card}>
+        <TouchableOpacity onPress={handleMediaPress} style={styles.vinyl}>
+          <View style={styles.vinyl}>
+            <Image source={MusicDisk} style={styles.musicDisk} />
+            {preview.media_cover && (
+              <Image
+                source={{ uri: preview.media_cover }}
+                style={styles.mediaCover}
+                resizeMode="cover"
+              />
             )}
           </View>
-        </View>
-      </View>
-
-      {preview.tags && preview.tags.length > 0 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.tagsContainer}
-        >
-          {preview.tags.map((tag, index) => (
-            <View key={index} style={styles.tag}>
-              <Text style={styles.tagText}>{tag}</Text>
-            </View>
-          ))}
-        </ScrollView>
-      )}
-
-      <TouchableOpacity onPress={handlePreviewPress}>
-        {isEditable ? (
-          <View>
-            <TextInput
-              style={styles.editInput}
-              value={editedComment}
-              onChangeText={setEditedComment}
-              multiline
-            />
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={handleEditSave}
-            >
-              <Text>Save</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <Text style={styles.commentText}>
-            {reviewText && reviewText.length > 100
-              ? showFullComment
-                ? reviewText
-                : `${reviewText.slice(0, 100)}...`
-              : reviewText}
-          </Text>
-        )}
-
-        {reviewText && reviewText.length > 100 && (
-          <TouchableOpacity onPress={handleViewMorePress}>
-            <Text style={styles.readMore}>
-              {showFullComment ? "Show less" : "Read more"}
-            </Text>
-          </TouchableOpacity>
-        )}
-      </TouchableOpacity>
-
-      <View style={styles.actionsContainer}>
-        <View style={styles.voteContainer}>
-          <TouchableOpacity
-            onPress={() => handleUpvotePress()}
-            style={styles.voteButton}
-          >
-            <Upvote
-              width={24}
-              height={24}
-              fill={currentVote && currentVoteValue ? "#F28037" : "#555"}
-              style={{
-                color: currentVote && currentVoteValue ? "#F28037" : "#555",
-              }}
-            />
-            <Text>{upvoteCount}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => handleDownvotePress()}
-            style={styles.voteButton}
-          >
-            <Downvote
-              width={24}
-              height={24}
-              fill={currentVote && !currentVoteValue ? "#F28037" : "#555"}
-              style={{
-                color: currentVote && !currentVoteValue ? "#F28037" : "#555",
-              }}
-            />
-            <Text>{downvoteCount}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleCommentPress}
-            style={styles.voteButton}
-          >
-            <Comment width={24} height={24} />
-          </TouchableOpacity>
-          <Text>{preview.review_stat.comment_count}</Text>
-        </View>
-        <TouchableOpacity onPress={handleMenuToggle}>
-          <Image source={ThreeDotsMenu} style={styles.voteIcon} />
         </TouchableOpacity>
 
-        {/* Modal for menu */}
-        <Modal
-          visible={menuVisible}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => setMenuVisible(false)}
-        >
-          <TouchableOpacity
-            style={styles.modalOverlay}
-            onPress={() => setMenuVisible(false)}
-          >
-            <View style={styles.menuContainer}>
-              {isOwner ? (
-                <>
-                  <TouchableOpacity
-                    onPress={() => handleMenuOption("share")}
-                    style={styles.menuItem}
-                  >
-                    <Text style={styles.menuText}>Share</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => handleMenuOption("edit")}
-                    style={styles.menuItem}
-                  >
-                    <Text style={styles.menuText}>Edit</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => handleMenuOption("delete")}
-                    style={styles.menuItem}
-                  >
-                    <Text style={styles.menuText}>Delete</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => handleMenuOption("manage comments")}
-                    style={styles.menuItem}
-                  >
-                    <Text style={styles.menuText}>Manage Comments</Text>
-                  </TouchableOpacity>
-                </>
-              ) : (
-                <>
-                  <TouchableOpacity
-                    onPress={() => handleMenuOption("share")}
-                    style={styles.menuItem}
-                  >
-                    <Text style={styles.menuText}>Share</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => handleMenuOption("report")}
-                    style={styles.menuItem}
-                  >
-                    <Text style={styles.menuText}>Report</Text>
-                  </TouchableOpacity>
-                </>
-              )}
+        <View style={styles.container}>
+          <TouchableOpacity onPress={handleUserPress}>
+            <View style={styles.topContainer}>
+              <View style={styles.leftSection}>
+                <Image
+                  style={styles.profilePicture}
+                  source={{ uri: preview.profile_picture }}
+                />
+                <View style={styles.textContainer}>
+                  <Text style={styles.displayName}>{preview.display_name}</Text>
+                  <Text style={styles.username}>@{preview.username}</Text>
+                </View>
+              </View>
             </View>
           </TouchableOpacity>
-        </Modal>
+
+          <View style={styles.mediaContainer}>
+            <View style={styles.ratingContainer}>
+              <TouchableOpacity onPress={handleMediaPress}>
+                <Text style={styles.songName}>{preview.media_title}</Text>
+                <Text style={styles.artistName}>{preview.media_artist}</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View>
+              {React.createElement(
+                getRatingImage(preview.rating as keyof typeof ratingImages),
+                {
+                  style: styles.ratingImage,
+                },
+              )}
+            </View>
+          </View>
+
+          {preview.tags && preview.tags.length > 0 && (
+            <View style={styles.tagsContainer}>
+              {preview.tags.map((tag, index) => (
+                <View key={index} style={styles.tag}>
+                  <Text style={styles.tagText}>{tag}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          <TouchableOpacity onPress={handlePreviewPress}>
+            <Text style={styles.title}>{preview.title}</Text>
+            {isEditable ? (
+              <View>
+                <TextInput
+                  style={styles.editInput}
+                  value={editedComment}
+                  onChangeText={setEditedComment}
+                  multiline
+                />
+                <TouchableOpacity
+                  style={styles.saveButton}
+                  onPress={handleEditSave}
+                >
+                  <Text>Save</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <Text style={styles.commentText}>
+                {reviewText && reviewText.length > 100
+                  ? showFullComment
+                    ? reviewText
+                    : `${reviewText.slice(0, 100)}...`
+                  : reviewText}
+              </Text>
+            )}
+
+            {reviewText && reviewText.length > 100 && (
+              <TouchableOpacity onPress={handleViewMorePress}>
+                <Text style={styles.readMore}>
+                  {showFullComment ? "Show less" : "Read more"}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.actionsContainer}>
+          <View style={styles.voteContainer}>
+            <TouchableOpacity
+              onPress={() => handleUpvotePress()}
+              style={styles.voteButton}
+            >
+              <Upvote
+                width={24}
+                height={24}
+                fill={currentVote && currentVoteValue ? "#F28037" : "#555"}
+                style={{
+                  color: currentVote && currentVoteValue ? "#F28037" : "#555",
+                }}
+              />
+              <Text>{upvoteCount}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handleDownvotePress()}
+              style={styles.voteButton}
+            >
+              <Downvote
+                width={24}
+                height={24}
+                fill={currentVote && !currentVoteValue ? "#F28037" : "#555"}
+                style={{
+                  color: currentVote && !currentVoteValue ? "#F28037" : "#555",
+                }}
+              />
+              <Text>{downvoteCount}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleCommentPress}
+              style={styles.voteButton}
+            >
+              <Comment width={24} height={24} />
+            </TouchableOpacity>
+            <Text>{preview.review_stat.comment_count}</Text>
+          </View>
+          <TouchableOpacity onPress={handleMenuToggle}>
+            <Image source={ThreeDotsMenu} style={styles.voteIcon} />
+          </TouchableOpacity>
+
+          {/* Modal for menu */}
+          <Modal
+            visible={menuVisible}
+            transparent={true}
+            animationType="fade"
+            onRequestClose={() => setMenuVisible(false)}
+          >
+            <TouchableOpacity
+              style={styles.modalOverlay}
+              onPress={() => setMenuVisible(false)}
+            >
+              <View style={styles.menuContainer}>
+                {isOwner ? (
+                  <>
+                    <TouchableOpacity
+                      onPress={() => handleMenuOption("share")}
+                      style={styles.menuItem}
+                    >
+                      <Text style={styles.menuText}>Share</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => handleMenuOption("edit")}
+                      style={styles.menuItem}
+                    >
+                      <Text style={styles.menuText}>Edit</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => handleMenuOption("delete")}
+                      style={styles.menuItem}
+                    >
+                      <Text style={styles.menuText}>Delete</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => handleMenuOption("manage comments")}
+                      style={styles.menuItem}
+                    >
+                      <Text style={styles.menuText}>Manage Comments</Text>
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <>
+                    <TouchableOpacity
+                      onPress={() => handleMenuOption("share")}
+                      style={styles.menuItem}
+                    >
+                      <Text style={styles.menuText}>Share</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => handleMenuOption("report")}
+                      style={styles.menuItem}
+                    >
+                      <Text style={styles.menuText}>Report</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+              </View>
+            </TouchableOpacity>
+          </Modal>
+        </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -463,6 +473,8 @@ const styles = StyleSheet.create({
     top: 0,
     right: 0,
     alignItems: "center",
+    paddingLeft: 100,
+    paddingBottom: 100,
   },
   musicDisk: {
     position: "absolute",
@@ -484,6 +496,7 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     alignItems: "flex-start",
+    marginLeft: 8,
   },
   topContainer: {
     flexDirection: "row",
@@ -522,13 +535,11 @@ const styles = StyleSheet.create({
     marginTop: 5,
     width: 175,
     textAlign: "left",
-    marginLeft: 5,
   },
   artistName: {
     fontSize: 13,
     color: "#666",
     textAlign: "left",
-    marginLeft: 5,
   },
   ratingContainer: {
     justifyContent: "flex-start",
@@ -539,12 +550,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
+  title: {
+    fontWeight: 700,
+  },
   commentText: {
     fontSize: 14,
     color: "#333",
     textAlign: "left",
     marginVertical: 8,
-    marginLeft: 5,
   },
   readMore: {
     fontSize: 14,
@@ -552,18 +565,17 @@ const styles = StyleSheet.create({
   },
   tagsContainer: {
     flexDirection: "row",
-    marginBottom: 10,
-    paddingHorizontal: 5,
+    flexWrap: "wrap", // Allows wrapping to a new line
+    marginVertical: 8,
+    gap: 8, // Space between tags
   },
   tag: {
     backgroundColor: "rgba(242, 128, 55, 0.65)",
     paddingVertical: 5,
     paddingHorizontal: 12,
     borderRadius: 20,
-    marginHorizontal: 5,
     borderWidth: 1,
     borderColor: "#C0C0C0",
-    marginLeft: 2,
   },
   tagText: {
     color: "#333",

@@ -62,7 +62,7 @@ const Section: React.FC<SectionProps> = ({
             >
               <View style={{ position: "relative" }}>
                 <Image
-                  source={addItemImage}
+                  source={{ uri: item.cover_photo }}
                   style={{ width: 100, height: 100, borderRadius: 10 }}
                 />
                 {isEditing && (

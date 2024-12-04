@@ -1,3 +1,4 @@
+import React, { useCallback, useState } from "react";
 import {
   StyleSheet,
   View,
@@ -5,21 +6,22 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
+  Image,
 } from "react-native";
-
-import { ThemedText } from "@/components/ThemedText";
-import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
-import ReviewPreview from "@/components/ReviewPreview";
-import Icon from "react-native-vector-icons/Feather";
 import { router, useFocusEffect } from "expo-router";
+import { useAuthContext } from "@/components/AuthProvider";
+import ReviewPreview from "@/components/ReviewPreview";
+import { ThemedText } from "@/components/ThemedText";
+
+import Icon from "react-native-vector-icons/Feather";
+const logo = require("@/assets/images/icon.png");
 
 export default function HomeScreen() {
-  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-
   const [feedReviews, setFeedReviews] = useState<Preview[]>();
-  const userId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"; // Hardcoding - Get userId from navigation
+  const { userId } = useAuthContext();
   const hasNotification = true; // Hardcoding - Get notification status from somewhere else
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
   const fetchFeedReviews = async () => {
     try {
@@ -30,41 +32,30 @@ export default function HomeScreen() {
     }
   };
 
-  useEffect(() => {
-    fetchFeedReviews();
-  }, []);
-
   useFocusEffect(
     useCallback(() => {
-      // Refetch reviews whenever the screen is focused
-      fetchFeedReviews();
-    }, []),
+      if (userId) fetchFeedReviews();
+    }, [userId]),
   );
 
   const handleNotifPress = () => {
-    console.log("Notif icon pressed");
-    // Add activity icon press handling logic here
+    router.push("/Notifications");
   };
 
-  const handleMusicPress = () => {
-    console.log("music icon pressed");
-    router.push("/Recommendations");
-  };
-
+  const handleMusicPress = () => router.push("/Recommendations");
   return (
     <ScrollView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
-        {/* Top icons */}
         <View style={styles.topIconsContainer}>
-          {/* Activity icon with notification badge */}
-          <Text style={[styles.titleContainer, styles.titleText]}>
-            <ThemedText type="title" style={styles.titleText}>
-              Platnm
-            </ThemedText>
+          <Text style={styles.titleContainer}>
+            <Image source={logo} style={styles.reactLogo} />
+            <View style={styles.title}>
+              <ThemedText type="title" style={styles.titleText}>
+                Platnm
+              </ThemedText>
+            </View>
           </Text>
 
-          {/* Grouping the settings and share icons on the right */}
           <View style={styles.rightIconsContainer}>
             <TouchableOpacity
               onPress={handleNotifPress}
@@ -158,16 +149,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: "absolute",
+    marginTop: 5,
+    width: 42,
+    height: 45,
   },
   noReviewsText: {
     textAlign: "center",
     color: "#888",
     marginVertical: 20,
+  },
+  title: {
+    paddingBottom: 8,
+    paddingLeft: 8,
   },
   titleText: {
     color: "#F28037",

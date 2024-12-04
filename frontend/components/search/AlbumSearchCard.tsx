@@ -78,9 +78,10 @@ const styles = StyleSheet.create({
     width: 140,
   },
   albumContainer: {
-    flexDirection: "row", 
-      alignItems: "flex-start",    position: "relative",
-    justifyContent: "flex-start"
+    flexDirection: "row", // Set horizontal layout to align rank and cover side-by-side
+    alignItems: "center", // Align items vertically centered
+    position: "relative",
+    width: 140,
   },
   rank: {
     color: "#000",

@@ -15,17 +15,23 @@ import {
 import axios from "axios";
 import { useAuthContext } from "@/components/AuthProvider";
 import { router } from "expo-router";
+import { access } from "fs";
 
 export default function Login() {
-  const { sessionToken, updateAccessToken, updateSession, updateUserId } =
-    useAuthContext();
+  const {
+    sessionToken,
+    accessToken,
+    updateAccessToken,
+    updateSession,
+    updateUserId,
+    updateUsername,
+  } = useAuthContext();
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
   const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     throw new Error("Missing Supabase URL or anon key");
   }
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -43,10 +49,11 @@ export default function Login() {
           Alert.alert("Error", res.data.error);
           return;
         }
-        updateAccessToken(res.data.token);
+        updateAccessToken(res.data.access_token);
         const sessionHeader = res.headers["x-session"];
         updateSession(sessionHeader);
         updateUserId(res.data.user.id);
+        updateUsername(res.data.user.username); //TODO: Change according depending on how username is added to backend response
         router.push("/(tabs)/profile");
       })
       .catch((error) => {
@@ -57,7 +64,7 @@ export default function Login() {
   };
 
   const forgotUsernamePassword = () => {
-    console.log("Forgot username or password");
+    router.push("../ForgotPassword");
   };
 
   const handleSignUpPress = () => {
@@ -117,7 +124,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     padding: 20,
-    backgroundColor: "#fff", // Dark theme background
+    backgroundColor: "#fff",
   },
   title: {
     fontSize: 22,

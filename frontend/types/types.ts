@@ -13,6 +13,21 @@ interface Album {
   artist_photo: string;
 }
 
+enum NotificationType {
+  Follow = "follow",
+}
+
+type CustomNotification = {
+  id: number;
+  tagged_entity_name: string;
+  tagged_entity_type: string;
+  tagged_entity_id: string;
+  thumbnail: string;
+  created_at: string;
+  read: boolean;
+  type: NotificationType;
+};
+
 interface Track {
   media: MediaType;
   id: number;
@@ -25,6 +40,13 @@ interface Track {
   media_type: string;
   artist_name: string;
   artist_photo: string;
+}
+
+interface Artist {
+  id: number;
+  name: string;
+  photo: string;
+  bio: string;
 }
 
 type Media = Album | Track;
@@ -44,7 +66,7 @@ type Review = {
 };
 
 type User = {
-  id: string;
+  user_id: string;
   username: string;
   display_name: string;
   bio: string;
@@ -55,7 +77,7 @@ type User = {
 };
 
 type UserProfile = {
-  id: string;
+  user_id: string;
   username: string;
   display_name: string;
   bio: string;
@@ -76,10 +98,11 @@ interface SectionItem {
   id: number;
   title: string;
   media_type: string;
-  cover: string;
+  cover_photo: string;
 }
 
 type SectionOption = {
+  section_id: number;
   title: string;
   search_type: string;
 };
@@ -99,6 +122,7 @@ type Preview = {
   media_type: MediaType;
   media_id: number;
   rating: number;
+  title?: string;
   comment?: string;
   created_at: Date;
   updated_at: Date;
@@ -133,3 +157,29 @@ type RatingDistribution = {
 };
 
 type FilterOption = string;
+
+type RecommendationResponse = {
+  id: number;
+  media_type: string;
+  media_id: string;
+  recommender_id: string;
+  recommender_name: string;
+  recommendee_id: string;
+  created_at: string;
+  reaction: boolean;
+  artist_name: string;
+  title: string;
+  recommender_picture: string;
+  cover: string;
+};
+
+type PublishReviewRequest = {
+  user_id: string;
+  media_type: string;
+  media_id: number;
+  title?: string;
+  comment?: string;
+  rating: number;
+  tags: string[];
+  draft: boolean;
+};

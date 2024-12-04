@@ -63,7 +63,7 @@ const SearchPage: React.FC = () => {
       setSearchResults({
         songs: songsResponse.data ?? [],
         albums: albumsResponse.data ?? [],
-        profiles: profilesResponse.data,
+        profiles: profilesResponse.data ?? [],
       });
       setIsSearchActive(true);
     } catch (error) {
@@ -75,26 +75,26 @@ const SearchPage: React.FC = () => {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <SearchBar onSearch={handleSearch} />
-
-      {isSearchActive ? (
-        console.log(searchResults.profiles),
-        <SearchResults
-          songs={searchResults.songs}
-          albums={searchResults.albums}
-          isLoading={isLoading}
-          profiles={searchResults.profiles}
-          filter={"all"}
-        />
-      ) : (
-        <View>
-          <TopSongs songs={initialSongs} />
-          <TopAlbums albums={initialAlbums} />
-          <TopReviews reviews={initialReviews} />
-        </View>
-      )}
-    </ScrollView>
+      <ScrollView>
+        {isSearchActive ? (
+          <SearchResults
+            songs={searchResults.songs}
+            albums={searchResults.albums}
+            isLoading={isLoading}
+            profiles={searchResults.profiles}
+            filter={"all"}
+          />
+        ) : (
+          <View>
+            <TopSongs songs={initialSongs} />
+            <TopAlbums albums={initialAlbums} />
+            <TopReviews reviews={initialReviews} />
+          </View>
+        )}
+      </ScrollView>
+    </View>
   );
 };
 

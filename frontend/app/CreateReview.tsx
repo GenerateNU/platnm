@@ -1,6 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
-import { router, useLocalSearchParams } from "expo-router";
-
+import React, { useState, useEffect } from "react";
 import {
   View,
   TextInput,
@@ -10,45 +8,36 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
-  PanResponder,
 } from "react-native";
-
-import DateInputRating from "@/components/DateInputRating";
-import SongCard from "@/components/SongCard";
+import axios from "axios";
+import { useLocalSearchParams } from "expo-router";
 import HeaderComponent from "@/components/HeaderComponent";
 import DraftButton from "@/components/DraftButton";
 import PublishButton from "@/components/PublishButton";
-import RatingSlider from "@/components/media/RatingSlider";
 import { usePublishReview } from "@/hooks/usePublishReview";
 import TagSelector from "@/components/media/TagSelector";
 import Divider from "@/components/Divider";
 import NudgePage from "@/components/NudgePage";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import { Button } from "react-native-paper";
-import { runOnJS } from "react-native-reanimated";
+import MediaCard from "@/components/media/MediaCard";
+import { useAuthContext } from "@/components/AuthProvider";
 
 const CreateReview = () => {
-  const { mediaName, mediaType, mediaId, cover, artistName } =
-    useLocalSearchParams<{
-      mediaName: string;
-      mediaType: string;
-      mediaId: string;
-      cover: string;
-      artistName: string;
-    }>();
+  const { mediaType, mediaId, rating } = useLocalSearchParams<{
+    mediaType: string;
+    mediaId: string;
+    rating: string;
+  }>();
+  const userId = useAuthContext().userId;
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
-  const [rating, setRating] = useState(1);
-  const [review, setReview] = useState("");
-  const [sliderInteracting, setSliderInteracting] = useState(false);
+  const [media, setMedia] = useState<Media>();
+  const [title, setTitle] = useState("");
+  const [comment, setComment] = useState("");
+
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-
   const [showNudges, setShowNudges] = useState(false);
 
   const { publishReview } = usePublishReview();
-
-  const handleRatingChange = (newRating: number) => {
-    setRating(newRating);
-  };
 
   const handleTagSelect = (tag: string) => {
     if (selectedTags.includes(tag)) {
@@ -59,130 +48,91 @@ const CreateReview = () => {
     }
   };
 
-  const handleDraftSubmit = () => {
-    publishReview(
-      mediaType,
-      parseInt(mediaId),
-      review,
-      rating,
-      selectedTags,
-      true,
-    );
-  };
-
-  const handlePublish = () => {
-    publishReview(
-      mediaType,
-      parseInt(mediaId),
-      review,
-      rating,
-      selectedTags,
-      false,
-    );
-    setShowNudges(true);
-  };
-
-  const handleOutsideClick = () => {
-    if (showNudges) {
-      setShowNudges(false);
-      router.push("/explore");
-      console.log("outside click");
+  const handleSubmit = (draft: boolean) => {
+    const request = {
+      user_id: userId,
+      media_type: mediaType,
+      media_id: parseInt(mediaId),
+      rating: parseInt(rating),
+      tags: selectedTags,
+      title,
+      comment,
+      draft,
+    };
+    publishReview(request);
+    if (!draft) {
+      setShowNudges(true);
     }
   };
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true, // Start responder on touch
-      onMoveShouldSetPanResponder: (e, gestureState) => {
-        // Allow horizontal gestures only
-        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy); // Ignore vertical movement
-      },
-      onPanResponderMove: (e, gestureState) => {
-        // Handle the slider movement here
-        handleRatingChange(gestureState.moveX); // Update the rating based on horizontal movement
-      },
-      onPanResponderRelease: (e, gestureState) => {
-        // Optionally, handle when the user releases the slider
-      },
-    }),
-  ).current;
-
-  const handleScrollBegin = () => {
-    console.log("handleScrollBegin");
-  };
-  const tap = Gesture.Tap()
-    .onBegin(() => {
-      runOnJS(setSliderInteracting)(true);
-    })
-    .onTouchesUp(() => {
-      runOnJS(setSliderInteracting)(false);
-    })
-    .onEnd(() => {
-      runOnJS(setSliderInteracting)(false);
-    })
-    .onTouchesCancelled(() => {
-      runOnJS(setSliderInteracting)(false);
-    });
+  useEffect(() => {
+    axios
+      .get(`${BASE_URL}/media/${mediaType}/${mediaId}`)
+      .then((response) => setMedia(response.data))
+      .catch((error) => console.error(error));
+  }, []);
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
-    >
+    media && (
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <TouchableWithoutFeedback onPress={handleOutsideClick}>
-          <View style={styles.inner}>
-            <ScrollView
-              scrollEnabled={!sliderInteracting}
-              onScrollEndDrag={() => setSliderInteracting(false)}
-              contentContainerStyle={styles.scrollview}
-            >
-              <HeaderComponent title="Log Song" />
-              <SongCard
-                mediaName={mediaName}
-                mediaType={mediaType}
-                cover={cover}
-                artistName={artistName}
-              />
-              <GestureDetector gesture={tap}>
-                <View
-                  style={styles.sliderWrapper}
-                  {...panResponder.panHandlers}
-                >
-                  <View style={styles.slider}>
-                    {/* Render your slider here, adjust based on touch */}
-                    <View collapsable={false}>
-                      <RatingSlider onRatingChange={handleRatingChange} />
-                    </View>
+        <View style={styles.container}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.keyboardAvoidingView}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0} // Adjust this value as needed
+          >
+            <HeaderComponent title="Log Song" centered />
+            <View style={styles.inner}>
+              <ScrollView keyboardShouldPersistTaps="handled">
+                <MediaCard
+                  media={media}
+                  showTopBar={false}
+                  showRateButton={false}
+                />
+                <View style={styles.scrollview}>
+                  <View>
+                    <TextInput
+                      style={styles.titleInput}
+                      multiline={true}
+                      placeholderTextColor="#434343"
+                      placeholder="Add a title..."
+                      value={title}
+                      onChangeText={setTitle}
+                    />
+                  </View>
+                  <TextInput
+                    style={styles.textInput}
+                    multiline={true}
+                    placeholderTextColor="#434343"
+                    placeholder="What do you want to talk about?"
+                    value={comment}
+                    onChangeText={setComment}
+                  />
+                  <Divider />
+                  <TagSelector
+                    tags={selectedTags}
+                    handleTagSelect={handleTagSelect}
+                  />
+                  <View style={styles.buttonContainer}>
+                    <DraftButton handleClick={() => handleSubmit(true)} />
+                    <PublishButton handleClick={() => handleSubmit(false)} />
                   </View>
                 </View>
-              </GestureDetector>
-              <DateInputRating />
-              <Divider />
-              <TextInput
-                style={styles.textInput}
-                multiline={true}
-                placeholderTextColor="#434343"
-                placeholder="Provide your thoughts..."
-                value={review}
-                onChangeText={setReview}
-              />
-              <Divider />
-
-              <TagSelector
-                tags={selectedTags}
-                handleTagSelect={handleTagSelect}
-              />
-              <View style={styles.buttonContainer}>
-                <DraftButton handleClick={() => handleDraftSubmit()} />
-                <PublishButton handleClick={handlePublish} />
-              </View>
-            </ScrollView>
-            {showNudges && <NudgePage />}
-          </View>
-        </TouchableWithoutFeedback>
+              </ScrollView>
+              {showNudges && (
+                <NudgePage
+                  media_type={mediaType}
+                  media_id={mediaId}
+                  title={media.title}
+                  artist_name={media.artist_name}
+                  cover={media.cover}
+                />
+              )}
+            </View>
+          </KeyboardAvoidingView>
+        </View>
       </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+    )
   );
 };
 
@@ -197,8 +147,8 @@ const styles = StyleSheet.create({
   },
   scrollview: {
     flexGrow: 1,
-    paddingHorizontal: 24,
     paddingTop: 24,
+    paddingHorizontal: 16,
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -209,6 +159,12 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
     paddingTop: 15,
   },
+  titleInput: {
+    backgroundColor: "#ffffff",
+    color: "#434343",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
   textInput: {
     height: 80,
     backgroundColor: "#ffffff",
@@ -217,13 +173,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlignVertical: "top",
     justifyContent: "flex-end",
-  },
-  sliderWrapper: {
-    marginBottom: 20,
-    width: "100%",
-  },
-  slider: {
-    //  flexDirection: "row", // Ensures horizontal scrolling
   },
 });
 

@@ -31,7 +31,7 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const [username, setUsername] = useState("");
   const [accessToken, setAccessToken] = useState("");
   const [sessionToken, setSessionToken] = useState("sessionStartsLikeThis");
-  const [userId, setUserId] = useState("");
+  const [userId, setUserId] = useState("3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f"); // HARDCODED - John Doe
 
   const updateAccessToken = (token: string) => {
     setAccessToken(token);

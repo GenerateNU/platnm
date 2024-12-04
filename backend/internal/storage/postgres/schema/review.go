@@ -62,13 +62,13 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 		FROM album
 		WHERE id = $2 AND $3 = 'album'
 	)
-	INSERT INTO review (user_id, media_id, media_type, rating, comment, draft)
-	SELECT $1, $2, $3::media_type, $4, $5, $6
+	INSERT INTO review (user_id, media_id, media_type, rating, title, comment, draft)
+	SELECT $1, $2, $3::media_type, $4, $5, $6, $7
 	FROM media_check
 	RETURNING id, created_at, updated_at;
 	`
 
-	if err := r.QueryRow(ctx, query, review.UserID, review.MediaID, review.MediaType, review.Rating, review.Comment, review.Draft).Scan(&review.ID, &review.CreatedAt, &review.UpdatedAt); err != nil {
+	if err := r.QueryRow(ctx, query, review.UserID, review.MediaID, review.MediaType, review.Rating, review.Title, review.Comment, review.Draft).Scan(&review.ID, &review.CreatedAt, &review.UpdatedAt); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, errs.NotFound(string(review.MediaType), "id", review.MediaID)
 		} else if errs.IsUniqueViolation(err, uniqueUserMediaConstraint) {
@@ -83,8 +83,6 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 	// Fetch or create tag IDs and add them to the review_tags table
 	for _, label := range review.Tags {
 		var tagID int
-
-		// Check if the tag already exists
 		tagQuery := `SELECT id FROM tag WHERE name = $1`
 		err := r.QueryRow(ctx, tagQuery, label).Scan(&tagID)
 
@@ -108,7 +106,6 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int, offset int) ([]*models.Preview, error) {
 
 	// shoutout to ally for this legendary query, and like 90% of this code
-
 	query := `
 	SELECT 
 		r.id, 
@@ -118,7 +115,8 @@ func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int
 		u.profile_picture,
 		r.media_type, 
 		r.media_id, 
-		r.rating, 
+		r.rating,
+		r.title, 
 		r.comment,
 		r.created_at, 
 		r.updated_at,
@@ -171,7 +169,7 @@ func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int
 	// Scan results into the feedPosts slice
 	for rows.Next() {
 		var preview models.Preview
-		var comment sql.NullString // Use sql.NullString for nullable strings
+		var title, comment sql.NullString // Use sql.NullString for nullable strings
 		err := rows.Scan(
 			&preview.ReviewID,
 			&preview.UserID,
@@ -181,7 +179,8 @@ func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int
 			&preview.MediaType,
 			&preview.MediaID,
 			&preview.Rating,
-			&comment, // Scan into comment first
+			&title,
+			&comment,
 			&preview.CreatedAt,
 			&preview.UpdatedAt,
 			&preview.MediaCover,
@@ -194,11 +193,17 @@ func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int
 			return nil, err
 		}
 
-		// Assign comment to feedPost.Comment, handling null case
+		// Assign string values if not null
 		if comment.Valid {
 			preview.Comment = &comment.String // Point to the string if valid
 		} else {
 			preview.Comment = nil // Set to nil if null
+		}
+
+		if title.Valid {
+			preview.Title = &title.String // Point to the string if valid
+		} else {
+			preview.Title = nil // Set to nil if null
 		}
 
 		// Ensure tags is an empty array if null
@@ -231,6 +236,7 @@ func (r *ReviewRepository) GetReviewsByPopularity(ctx context.Context, limit int
 }
 
 func (r *ReviewRepository) CreateComment(ctx context.Context, comment *models.Comment) (*models.Comment, error) {
+
 	query := `
     INSERT INTO comment (text, review_id, user_id, created_at)
     VALUES ($1, $2, $3, NOW())
@@ -244,7 +250,27 @@ func (r *ReviewRepository) CreateComment(ctx context.Context, comment *models.Co
 		} else if errs.IsForeignKeyViolation(err, commentReviewFKeyConstraint) {
 			return nil, errs.NotFound("review", "id", comment.UserID)
 		}
+		fmt.Println(err)
 
+		return nil, err
+	}
+
+	// make a notification for this comment that just got created
+	// receiver_id: the person that is receiving the notification, which is the reviewer of comment.ReviewID
+	// tagged_entity_id: the comment that was created
+	// type: 'create_comment'
+	// tagged_entity_type: 'comment'
+	// thumbnail_url: cover of the media of the review that received a comment
+	// tagged_entity_name: content of the comment
+
+	review, _ := r.GetReviewByID(ctx, strconv.Itoa(comment.ReviewID))
+
+	_, err := r.Exec(ctx, `
+		INSERT INTO notifications (receiver_id, tagged_entity_id, type, tagged_entity_type, thumbnail_url, tagged_entity_name)
+		VALUES ($1, $2, 'comment', 'comment', $3, $4)
+	`, review.UserID, strconv.Itoa(comment.ID), review.MediaCover, comment.Text)
+
+	if err != nil {
 		return nil, err
 	}
 
@@ -263,7 +289,8 @@ func (r *ReviewRepository) GetUserReviewsOfMedia(ctx context.Context, media_type
 		u.profile_picture,
 		r.media_type, 
 		r.media_id, 
-		r.rating, 
+		r.rating,
+		r.title, 
 		r.comment,
 		r.created_at, 
 		r.updated_at,
@@ -313,7 +340,7 @@ func (r *ReviewRepository) GetUserReviewsOfMedia(ctx context.Context, media_type
 	// Scan results into the feedPosts slice
 	for rows.Next() {
 		var preview models.Preview
-		var comment sql.NullString // Use sql.NullString for nullable strings
+		var title, comment sql.NullString // Use sql.NullString for nullable strings
 		err := rows.Scan(
 			&preview.ReviewID,
 			&preview.UserID,
@@ -323,7 +350,8 @@ func (r *ReviewRepository) GetUserReviewsOfMedia(ctx context.Context, media_type
 			&preview.MediaType,
 			&preview.MediaID,
 			&preview.Rating,
-			&comment, // Scan into comment first
+			&title,
+			&comment,
 			&preview.CreatedAt,
 			&preview.UpdatedAt,
 			&preview.MediaCover,
@@ -341,6 +369,12 @@ func (r *ReviewRepository) GetUserReviewsOfMedia(ctx context.Context, media_type
 			preview.Comment = &comment.String // Point to the string if valid
 		} else {
 			preview.Comment = nil // Set to nil if null
+		}
+
+		if title.Valid {
+			preview.Title = &title.String // Point to the string if valid
+		} else {
+			preview.Title = nil // Set to nil if null
 		}
 
 		// Ensure tags is an empty array if null
@@ -374,7 +408,7 @@ func (r *ReviewRepository) GetUserReviewsOfMedia(ctx context.Context, media_type
 
 func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error) {
 
-	rows, err := r.Query(ctx, "SELECT * FROM review WHERE user_id = $1 ORDER BY updated_at DESC", id)
+	rows, err := r.Query(ctx, "SELECT id, user_id, media_id, media_type, rating, title, comment, created_at, updated_at, draft FROM review WHERE user_id = $1 ORDER BY updated_at DESC", id)
 
 	if !rows.Next() {
 		return []*models.Review{}, nil
@@ -389,12 +423,15 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 	var reviews []*models.Review
 	for rows.Next() {
 		var review models.Review
+		var title sql.NullString
+
 		if err := rows.Scan(
 			&review.ID,
 			&review.UserID,
 			&review.MediaID,
 			&review.MediaType,
 			&review.Rating,
+			&title,
 			&review.Comment,
 			&review.CreatedAt,
 			&review.UpdatedAt,
@@ -402,6 +439,13 @@ func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([
 		); err != nil {
 			return nil, err
 		}
+
+		if title.Valid {
+			review.Title = &title.String // Point to the string if valid
+		} else {
+			review.Title = nil // Set to nil if null
+		}
+
 		reviews = append(reviews, &review)
 	}
 
@@ -423,6 +467,7 @@ func (r *ReviewRepository) GetUserReviewOfTrack(ctx context.Context, mediaId str
 		&review.MediaID,
 		&review.MediaType,
 		&review.Rating,
+		&review.Title,
 		&review.Comment,
 		&review.CreatedAt,
 		&review.UpdatedAt,
@@ -467,12 +512,12 @@ func (r *ReviewRepository) GetExistingReview(ctx context.Context, id string) (*m
 	var review models.Review
 
 	row := r.QueryRow(ctx, `
-		SELECT id, user_id, media_type, media_id, rating, comment, created_at, updated_at, draft
+		SELECT id, user_id, media_type, media_id, rating, title, comment, created_at, updated_at, draft
 		FROM review 
 		WHERE id = $1`, id)
 
 	// Scan the row into the review object
-	err := row.Scan(&review.ID, &review.UserID, &review.MediaType, &review.MediaID, &review.Rating, &review.Comment, &review.CreatedAt, &review.UpdatedAt, &review.Draft)
+	err := row.Scan(&review.ID, &review.UserID, &review.MediaType, &review.MediaID, &review.Rating, &review.Title, &review.Comment, &review.CreatedAt, &review.UpdatedAt, &review.Draft)
 	if err != nil {
 		// If no rows were found, return nil, no error
 		if err == sql.ErrNoRows {
@@ -500,49 +545,130 @@ func (r *ReviewRepository) ReviewBelongsToUser(ctx context.Context, reviewID str
 	return false, nil
 }
 
-func (r *ReviewRepository) GetReviewsByMediaID(ctx context.Context, id string, mediaType string) ([]*models.Review, error) {
-
-	rows, err := r.Query(ctx, `
-	SELECT r.id, r.user_id, r.media_id, r.media_type, r.rating, r.comment, r.created_at, r.updated_at, u.display_name, u.username, u.profile_picture
+func (r *ReviewRepository) GetReviewsByMediaID(ctx context.Context, id string, mediaType string) ([]*models.Preview, error) {
+	query := `
+	SELECT 
+		r.id, 
+		r.user_id, 
+		u.username,
+		u.display_name,
+		u.profile_picture,
+		r.media_type, 
+		r.media_id, 
+		r.rating, 
+		r.title,
+		r.comment,
+		r.created_at, 
+		r.updated_at,
+		COALESCE(a.cover, t.cover) AS media_cover, 
+		COALESCE(a.title, t.title) AS media_title, 
+		COALESCE(a.artists, t.artists) AS media_artist,
+		ARRAY_AGG(tag.name) FILTER (WHERE tag.name IS NOT NULL) AS tags
 	FROM review r
-	JOIN "user" u ON r.user_id = u.id
-	WHERE media_id = $1 and media_type = $2 
-	ORDER BY updated_at DESC`, id, mediaType)
+	INNER JOIN "user" u ON u.id = r.user_id
+	LEFT JOIN (
+		SELECT t.title, t.id, STRING_AGG(ar.name, ', ') AS artists, cover
+		FROM track t
+		JOIN track_artist ta on t.id = ta.track_id
+		JOIN artist ar ON ta.artist_id = ar.id
+		JOIN album a on t.album_id = a.id
+		GROUP BY t.id, cover, t.title
+	) t ON r.media_type = 'track' AND r.media_id = t.id
+	LEFT JOIN (
+		SELECT a.id, a.title, STRING_AGG(ar.name, ', ') AS artists, cover
+		FROM album a
+		JOIN album_artist aa on a.id = aa.album_id
+		JOIN artist ar ON aa.artist_id = ar.id
+		GROUP BY a.id, cover, a.title
+	) a ON r.media_type = 'album' AND r.media_id = a.id
+	LEFT JOIN review_tag rt ON r.id = rt.review_id
+	LEFT JOIN tag tag ON rt.tag_id = tag.id
+	LEFT JOIN (
+		SELECT post_id as review_id, COUNT(*) AS vote_count
+		FROM user_vote
+		WHERE post_type = 'review'
+		GROUP BY post_id
+	) v ON r.id = v.review_id
+	WHERE r.media_id = $1 AND r.media_type = $2
+	GROUP BY r.id, r.user_id, u.username, u.display_name, u.profile_picture, r.media_type, r.media_id, r.rating, r.comment, r.created_at, r.updated_at, media_cover, media_title, media_artist, v.vote_count
+	`
+
+	rows, err := r.Query(ctx, query, id, mediaType)
 
 	if err != nil {
-		return []*models.Review{}, err
+		fmt.Println(err)
+		return nil, err
 	}
-
 	defer rows.Close()
 
-	var reviews []*models.Review
-	for rows.Next() {
-		var review models.Review
+	var previews []*models.Preview
 
-		if err := rows.Scan(
-			&review.ID,
-			&review.UserID,
-			&review.MediaID,
-			&review.MediaType,
-			&review.Rating,
-			&review.Comment,
-			&review.CreatedAt,
-			&review.UpdatedAt,
-			&review.DisplayName,
-			&review.Username,
-			&review.ProfilePicture,
-		); err != nil {
+	// Scan results into the feedPosts slice
+	for rows.Next() {
+		var preview models.Preview
+		var title, comment sql.NullString // Use sql.NullString for nullable strings
+		err := rows.Scan(
+			&preview.ReviewID,
+			&preview.UserID,
+			&preview.Username,
+			&preview.DisplayName,
+			&preview.ProfilePicture,
+			&preview.MediaType,
+			&preview.MediaID,
+			&preview.Rating,
+			&title,
+			&comment,
+			&preview.CreatedAt,
+			&preview.UpdatedAt,
+			&preview.MediaCover,
+			&preview.MediaTitle,
+			&preview.MediaArtist,
+			&preview.Tags,
+		)
+		if err != nil {
+			fmt.Println(err)
 			return nil, err
 		}
-		reviews = append(reviews, &review)
+
+		// Assign comment to feedPost.Comment, handling null case
+		if comment.Valid {
+			preview.Comment = &comment.String // Point to the string if valid
+		} else {
+			preview.Comment = nil // Set to nil if null
+		}
+
+		if title.Valid {
+			preview.Title = &title.String // Point to the string if valid
+		} else {
+			preview.Title = nil // Set to nil if null
+		}
+
+		// Ensure tags is an empty array if null
+		if preview.Tags == nil {
+			preview.Tags = []string{}
+		}
+
+		// Fetch review statistics for the current review
+		reviewStat, err := r.GetReviewStats(ctx, strconv.Itoa(preview.ReviewID))
+		if err != nil {
+			return nil, err
+		}
+
+		// If reviewStat is not nil, populate the corresponding fields in FeedPost
+		if reviewStat != nil {
+			preview.ReviewStat = *reviewStat
+		}
+
+		// Append the populated FeedPost to the feedPosts slice
+		previews = append(previews, &preview)
 	}
 
 	if err := rows.Err(); err != nil {
 		print(err.Error(), "from transactions err ")
-		return []*models.Review{}, err
+		return []*models.Preview{}, err
 	}
 
-	return reviews, nil
+	return previews, nil
 }
 
 func (r *ReviewRepository) GetTags(ctx context.Context) ([]string, error) {
@@ -749,7 +875,8 @@ func (r *ReviewRepository) GetReviewByID(ctx context.Context, id string) (*model
     u.profile_picture,
 		r.media_type, 
 		r.media_id, 
-		r.rating, 
+		r.rating,
+		r.title, 
 		r.comment,
 		r.created_at, 
 		r.updated_at,
@@ -779,7 +906,7 @@ func (r *ReviewRepository) GetReviewByID(ctx context.Context, id string) (*model
 	WHERE r.id = $1
 	GROUP BY r.id, r.user_id, u.username, u.display_name, u.profile_picture, r.media_type, r.media_id, r.rating, r.comment, r.created_at, r.updated_at, media_cover, media_title, media_artist;`
 
-	var comment sql.NullString // Use sql.NullString for nullable strings
+	var title, comment sql.NullString // Use sql.NullString for nullable strings
 
 	err := r.QueryRow(ctx, query, id).Scan(&preview.ReviewID,
 		&preview.UserID,
@@ -789,7 +916,8 @@ func (r *ReviewRepository) GetReviewByID(ctx context.Context, id string) (*model
 		&preview.MediaType,
 		&preview.MediaID,
 		&preview.Rating,
-		&comment, // Scan into comment first
+		&title,
+		&comment,
 		&preview.CreatedAt,
 		&preview.UpdatedAt,
 		&preview.MediaCover,
@@ -807,6 +935,12 @@ func (r *ReviewRepository) GetReviewByID(ctx context.Context, id string) (*model
 		preview.Comment = &comment.String // Point to the string if valid
 	} else {
 		preview.Comment = nil // Set to nil if null
+	}
+
+	if title.Valid {
+		preview.Title = &title.String // Point to the string if valid
+	} else {
+		preview.Title = nil // Set to nil if null
 	}
 
 	// Ensure tags is an empty array if null
@@ -829,6 +963,7 @@ func (r *ReviewRepository) GetReviewByID(ctx context.Context, id string) (*model
 }
 
 func (r *ReviewRepository) UserVote(ctx context.Context, userID string, postID string, upvote bool, postType string) error {
+
 	rows, err := r.Query(ctx, `
 		WITH deleted_vote AS (
     -- Delete the existing vote if it exists for the given user, post, and type
@@ -837,24 +972,25 @@ func (r *ReviewRepository) UserVote(ctx context.Context, userID string, postID s
       AND post_id = $1
       AND post_type = $2
     RETURNING *
-),
-post_check AS (
-    -- Check if the post exists in the review or comment table
-    SELECT id
-    FROM review
-    WHERE id = $1 AND $2 = 'review'
-    UNION ALL
-    SELECT id
-    FROM comment
-    WHERE id = $1 AND $2 = 'comment'
-)
--- Insert the new vote only if it's a different vote or there was no vote before
-INSERT INTO user_vote (user_id, post_id, post_type, upvote)
-SELECT $4, id, $2, $3
-FROM post_check
-WHERE NOT EXISTS (SELECT 1 FROM deleted_vote) OR $3 <> (SELECT upvote FROM user_vote WHERE user_id = $4 AND post_id = $1 AND post_type = $2 LIMIT 1);
+	),
+	post_check AS (
+		-- Check if the post exists in the review or comment table
+		SELECT id
+		FROM review
+		WHERE id = $1 AND $2 = 'review'
+		UNION ALL
+		SELECT id
+		FROM comment
+		WHERE id = $1 AND $2 = 'comment'
+	)
+	-- Insert the new vote only if it's a different vote or there was no vote before
+	INSERT INTO user_vote (user_id, post_id, post_type, upvote)
+	SELECT $4, id, $2, $3
+	FROM post_check
+	WHERE NOT EXISTS (SELECT 1 FROM deleted_vote) OR $3 <> (SELECT upvote FROM user_vote WHERE user_id = $4 AND post_id = $1 AND post_type = $2 LIMIT 1);
 
-`, postID, postType, upvote, userID)
+	`, postID, postType, upvote, userID)
+
 	if err != nil {
 		return err
 	}
@@ -864,7 +1000,107 @@ WHERE NOT EXISTS (SELECT 1 FROM deleted_vote) OR $3 <> (SELECT upvote FROM user_
 		return err
 	}
 
+	if postType == "review" {
+
+		// check if the review has more than 10 upvotes and if so notify the person that made the review
+		review, _ := r.GetReviewByID(ctx, postID)
+
+		if review.ReviewStat.Upvotes >= 10 { // if we have more 10 upvotes on the review now
+
+			_, err = r.Exec(ctx, `
+			INSERT INTO notifications (receiver_id, tagged_entity_id, type, tagged_entity_type, thumbnail_url, tagged_entity_name)
+			VALUES ($1, $2, 'upvote', 'review', $3, $4)`,
+				review.UserID, postID, review.MediaCover, review.Comment)
+
+			if err != nil {
+				return err
+			}
+
+		}
+
+	} else if postType == "comment" {
+
+		comment, _ := r.GetCommentByCommentID(ctx, postID)
+
+		if comment.Upvotes >= 10 { // if we have more 10 upvotes on the comment now
+
+			_, err = r.Exec(ctx, `
+			INSERT INTO notifications (receiver_id, tagged_entity_id, type, tagged_entity_type, thumbnail_url, tagged_entity_name)
+			VALUES ($1, $2, 'upvote', 'comment', $3, $4)`,
+				comment.UserID, postID, comment.MediaCover, comment.Comment)
+
+			if err != nil {
+				return err
+			}
+
+		}
+
+	} else {
+		return fmt.Errorf("post type not valid")
+	}
+
 	return nil
+}
+
+func (r *ReviewRepository) GetCommentByCommentID(ctx context.Context, commentID string) (*models.UserFullComment, error) {
+	var comment models.UserFullComment
+
+	query := `
+		SELECT c.id, text, review_id, c.user_id, username, display_name, profile_picture, c.created_at, COALESCE(upvotes, 0) AS upvotes, 
+	COALESCE(downvotes, 0) AS downvotes, COALESCE(a.cover, t.cover) AS media_cover, 
+		COALESCE(a.title, t.title) AS media_title, 
+		COALESCE(a.artists, t.artists) AS media_artist
+		FROM "comment" c
+		JOIN "user" u ON c.user_id = u.id
+		LEFT JOIN (
+			SELECT 
+					post_id,
+					SUM(CASE WHEN upvote = TRUE THEN 1 ELSE 0 END) AS upvotes,
+					SUM(CASE WHEN upvote = FALSE THEN 1 ELSE 0 END) AS downvotes
+			FROM 
+					user_vote
+			WHERE post_type = 'comment'
+			GROUP BY 
+					post_id
+	) vote_counts ON c.id = vote_counts.post_id
+	 LEFT JOIN review r ON c.review_id = r.id
+	 LEFT JOIN (
+    SELECT t.title, t.id, STRING_AGG(ar.name, ', ') AS artists, cover
+		FROM track t
+    JOIN track_artist ta on t.id = ta.track_id
+		JOIN artist ar ON ta.artist_id = ar.id
+    JOIN album a on t.album_id = a.id
+		GROUP BY t.id, cover, t.title
+    ) t ON r.media_type = 'track' AND r.media_id = t.id
+  LEFT JOIN (
+    SELECT a.id, a.title, STRING_AGG(ar.name, ', ') AS artists, cover
+		FROM album a
+    JOIN album_artist aa on a.id = aa.album_id
+		JOIN artist ar ON aa.artist_id = ar.id
+		GROUP BY a.id, cover, a.title
+  ) a ON r.media_type = 'album' AND r.media_id = a.id
+	 WHERE c.id = $1`
+
+	err := r.QueryRow(ctx, query, commentID).Scan(&comment.CommentID,
+		&comment.Comment,
+		&comment.ReviewID,
+		&comment.UserID,
+		&comment.Username,
+		&comment.DisplayName,
+		&comment.ProfilePicture,
+		&comment.CreatedAt,
+		&comment.Upvotes,
+		&comment.Downvotes,
+		&comment.MediaCover,
+		&comment.MediaTitle,
+		&comment.MediaArtists)
+
+	if err != nil {
+		print(err.Error(), "from transactions err ")
+		return nil, err
+	}
+
+	return &comment, nil
 }
 
 func NewReviewRepository(db *pgxpool.Pool) *ReviewRepository {
