@@ -273,7 +273,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
   };
 
   return review ? (
-    <View style={styles.container}>
+    <View style={styles.page}>
       <HeaderComponent title="Review" />
       <ScrollView style={styles.container}>
         <View style={styles.reviewContainer}>
@@ -511,11 +511,15 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
+  page: {
+    flex: 1,
+    backgroundColor: "#fff",
+    paddingBottom: 80, // Add padding at the bottom equal to the height of the bottom tab bar
+  },
   container: {
     flex: 1,
     backgroundColor: "#fff",
     marginTop: 20,
-    paddingBottom: 80, // Add padding at the bottom equal to the height of the bottom tab bar
   },
   reviewContainer: {
     alignItems: "flex-start",
@@ -556,7 +560,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#000", // Adjust color as needed
     flexWrap: "wrap",
-    width: "95%",
+    width: "100%",
   },
   artistName: {
     fontSize: 16,
