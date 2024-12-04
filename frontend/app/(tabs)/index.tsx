@@ -182,13 +182,4 @@ const styles = StyleSheet.create({
     fontSize: 24, // Adjust font size if needed
     fontWeight: "bold",
   },
-  loadingReview: {
-    width: 335,
-    height: 200,
-    marginTop: 25,
-    borderRadius: 16,
-    boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.2)",
-    borderColor: "#ddd",
-    borderWidth: 0.5,
-  },
 });
