@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"platnm/internal/constants"
 	"platnm/internal/errs"
 	"platnm/internal/models"
 	"strconv"
@@ -171,6 +172,11 @@ func (r *RecommendationRepository) UpdateRecommendation(ctx context.Context, rec
 	VALUES ($1, $2, 'recommendation', 'review', $3, $4)`,
 		recommendation.RecommenderId, strconv.Itoa(recommendation.ID), recommendation.Cover, recommendation.Title)
 
+	if err != nil {
+		return err
+	}
+
+	_, err = r.Exec(ctx, `UPDATE "user" SET platnm = platnm + $1 WHERE id = $2`, constants.RecommendationLike, recommendation.RecommenderId)
 	if err != nil {
 		return err
 	}

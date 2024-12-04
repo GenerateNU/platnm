@@ -35,7 +35,6 @@ type UserRepository interface {
 	GetConnections(ctx context.Context, id uuid.UUID, limit int, offset int) (models.Connections, error)
 	GetProfileByName(ctx context.Context, name string) ([]*models.Profile, error)
 	GetNotifications(ctx context.Context, id string) ([]*models.Notification, error)
-	// GetProfileByUser(ctx context.Context, userName string) (*models.Profile, error)
 }
 
 type ReviewRepository interface {

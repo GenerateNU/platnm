@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"platnm/internal/constants"
 	"platnm/internal/errs"
 	"platnm/internal/models"
 	"strconv"
@@ -98,6 +99,11 @@ func (r *ReviewRepository) CreateReview(ctx context.Context, review *models.Revi
 		if _, err := r.Exec(ctx, reviewTagQuery, review.ID, tagID); err != nil {
 			return nil, err
 		}
+	}
+
+	_, err := r.Exec(ctx, `UPDATE "user" SET platnm = platnm + $1 WHERE id = $2`, constants.Rating, review.UserID)
+	if err != nil {
+		return nil, err
 	}
 
 	return review, nil
@@ -535,54 +541,131 @@ func (r *ReviewRepository) GetUserFollowingReviewsOfMedia(ctx context.Context, m
 
 }
 
-func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error) {
+func (r *ReviewRepository) GetReviewsByUserID(ctx context.Context, userId string) ([]*models.Preview, error) {
 
-	rows, err := r.Query(ctx, "SELECT id, user_id, media_id, media_type, rating, title, comment, created_at, updated_at, draft FROM review WHERE user_id = $1 ORDER BY updated_at DESC", id)
+	query := `
+	SELECT 
+		r.id, 
+		r.user_id, 
+		u.username,
+		u.display_name,
+		u.profile_picture,
+		r.media_type, 
+		r.media_id, 
+		r.rating,
+		r.title, 
+		r.comment,
+		r.created_at, 
+		r.updated_at,
+		COALESCE(a.cover, t.cover) AS media_cover, 
+		COALESCE(a.title, t.title) AS media_title, 
+		COALESCE(a.artists, t.artists) AS media_artist,
+		ARRAY_AGG(tag.name) FILTER (WHERE tag.name IS NOT NULL) AS tags
+	FROM review r
+	INNER JOIN "user" u ON u.id = r.user_id
+	LEFT JOIN (
+		SELECT t.title, t.id, STRING_AGG(ar.name, ', ') AS artists, cover
+		FROM track t
+		JOIN track_artist ta on t.id = ta.track_id
+		JOIN artist ar ON ta.artist_id = ar.id
+		JOIN album a on t.album_id = a.id
+		GROUP BY t.id, cover, t.title
+	) t ON r.media_type = 'track' AND r.media_id = t.id
+	LEFT JOIN (
+		SELECT a.id, a.title, STRING_AGG(ar.name, ', ') AS artists, cover
+		FROM album a
+		JOIN album_artist aa on a.id = aa.album_id
+		JOIN artist ar ON aa.artist_id = ar.id
+		GROUP BY a.id, cover, a.title
+	) a ON r.media_type = 'album' AND r.media_id = a.id
+	LEFT JOIN review_tag rt ON r.id = rt.review_id
+	LEFT JOIN tag tag ON rt.tag_id = tag.id
+	LEFT JOIN (
+		SELECT post_id as review_id, COUNT(*) AS vote_count
+		FROM user_vote
+		WHERE post_type = 'review'
+		GROUP BY post_id
+	) v ON r.id = v.review_id
+	WHERE r.user_id = $1
+	GROUP BY r.id, r.user_id, u.username, u.display_name, u.profile_picture, r.media_type, r.media_id, r.rating, r.comment, r.created_at, r.updated_at, media_cover, media_title, media_artist, v.vote_count
+	`
 
-	if !rows.Next() {
-		return []*models.Review{}, nil
-	}
+	rows, err := r.Query(ctx, query, userId)
 
 	if err != nil {
-		return []*models.Review{}, err
+		fmt.Println(err)
+		return nil, err
 	}
-
 	defer rows.Close()
 
-	var reviews []*models.Review
-	for rows.Next() {
-		var review models.Review
-		var title sql.NullString
+	var previews []*models.Preview
 
-		if err := rows.Scan(
-			&review.ID,
-			&review.UserID,
-			&review.MediaID,
-			&review.MediaType,
-			&review.Rating,
+	// Scan results into the feedPosts slice
+	for rows.Next() {
+		var preview models.Preview
+		var title, comment sql.NullString // Use sql.NullString for nullable strings
+		err := rows.Scan(
+			&preview.ReviewID,
+			&preview.UserID,
+			&preview.Username,
+			&preview.DisplayName,
+			&preview.ProfilePicture,
+			&preview.MediaType,
+			&preview.MediaID,
+			&preview.Rating,
 			&title,
-			&review.Comment,
-			&review.CreatedAt,
-			&review.UpdatedAt,
-			&review.Draft,
-		); err != nil {
+			&comment,
+			&preview.CreatedAt,
+			&preview.UpdatedAt,
+			&preview.MediaCover,
+			&preview.MediaTitle,
+			&preview.MediaArtist,
+			&preview.Tags,
+		)
+		if err != nil {
+			fmt.Println(err)
 			return nil, err
 		}
 
-		if title.Valid {
-			review.Title = &title.String // Point to the string if valid
+		// Assign comment to feedPost.Comment, handling null case
+		if comment.Valid {
+			preview.Comment = &comment.String // Point to the string if valid
 		} else {
-			review.Title = nil // Set to nil if null
+			preview.Comment = nil // Set to nil if null
 		}
 
-		reviews = append(reviews, &review)
+		if title.Valid {
+			preview.Title = &title.String // Point to the string if valid
+		} else {
+			preview.Title = nil // Set to nil if null
+		}
+
+		// Ensure tags is an empty array if null
+		if preview.Tags == nil {
+			preview.Tags = []string{}
+		}
+
+		// Fetch review statistics for the current review
+		reviewStat, err := r.GetReviewStats(ctx, strconv.Itoa(preview.ReviewID))
+		if err != nil {
+			return nil, err
+		}
+
+		// If reviewStat is not nil, populate the corresponding fields in FeedPost
+		if reviewStat != nil {
+			preview.ReviewStat = *reviewStat
+		}
+
+		// Append the populated FeedPost to the feedPosts slice
+		previews = append(previews, &preview)
 	}
 
+	// Check for errors after looping through rows
 	if err := rows.Err(); err != nil {
-		return []*models.Review{}, err
+		return nil, err
 	}
 
-	return reviews, nil
+	return previews, nil
 }
 
 func (r *ReviewRepository) GetUserReviewOfTrack(ctx context.Context, mediaId string, userId string) (*models.Review, error) {
@@ -1134,6 +1217,11 @@ func (r *ReviewRepository) UserVote(ctx context.Context, userID string, postID s
 		// check if the review has more than 10 upvotes and if so notify the person that made the review
 		review, _ := r.GetReviewByID(ctx, postID)
 
+		_, err = r.Exec(ctx, `UPDATE "user" SET platnm = platnm + $1 WHERE id = $2`, constants.RecommendationLike, review.UserID)
+		if err != nil {
+			return err
+		}
+
 		if review.ReviewStat.Upvotes >= 10 { // if we have more 10 upvotes on the review now
 
 			_, err = r.Exec(ctx, `
@@ -1144,12 +1232,16 @@ func (r *ReviewRepository) UserVote(ctx context.Context, userID string, postID s
 			if err != nil {
 				return err
 			}
-
 		}
 
 	} else if postType == "comment" {
 
 		comment, _ := r.GetCommentByCommentID(ctx, postID)
+
+		_, err = r.Exec(ctx, `UPDATE "user" SET platnm = platnm + $1 WHERE id = $2`, constants.PostReaction, comment.UserID)
+		if err != nil {
+			return err
+		}
 
 		if comment.Upvotes >= 10 { // if we have more 10 upvotes on the comment now
 
