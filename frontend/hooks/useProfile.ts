@@ -82,8 +82,11 @@ export function useProfile(userId: string) {
     }
   }, [userId]);
 
-  const handleActivityPress = () => {
-    router.push("/Activity");
+  const handleActivityPress = (userId: string) => {
+    router.push({
+      pathname: "/Activity",
+      params: { userId: userId },
+    });
   };
 
   const handleOnQueuePress = () => {
