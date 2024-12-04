@@ -110,6 +110,12 @@ func setupRoutes(app *fiber.App, repo *storage.Repository, config config.Config)
 		r.Get("/track/:id", func(c *fiber.Ctx) error {
 			return reviewHandler.GetReviewsByMediaId(c, "track")
 		})
+		r.Get("/album/top/:id", func(c *fiber.Ctx) error {
+			return reviewHandler.GetTopReviewsByMediaId(c, "album")
+		})
+		r.Get("/track/top/:id", func(c *fiber.Ctx) error {
+			return reviewHandler.GetTopReviewsByMediaId(c, "track")
+		})
 		r.Get("/track/:userId/:mediaId", func(c *fiber.Ctx) error {
 			return reviewHandler.GetUserReviewOfTrack(c)
 		})
