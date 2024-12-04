@@ -615,7 +615,7 @@ func (r *ReviewRepository) GetExistingReview(ctx context.Context, id string) (*m
 }
 
 func (r *ReviewRepository) ReviewBelongsToUser(ctx context.Context, reviewID string, userID string) (bool, error) {
-	rows, err := r.Query(ctx, `SELECT id, user_id, media_type, media_id, rating, title, comment, created_at, updated_at, draft FROM review WHERE id = $1 and user_id = $2`, reviewID, userID)
+	rows, err := r.Query(ctx, `SELECT * FROM review WHERE id = $1 and user_id = $2`, reviewID, userID)
 	if err != nil {
 		return false, err
 	}

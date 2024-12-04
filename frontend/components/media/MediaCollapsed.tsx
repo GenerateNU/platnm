@@ -17,7 +17,7 @@ const MediaCollapsed = ({ media }: trackCollapsedProps) => {
       source={{ uri: media.cover }}
     >
       <LinearGradient
-        colors={["rgba(0,0,0,0.6)", `rgba(242, 128, 55, ${0.6})`]}
+        colors={["rgba(0,0,0,0.6)", "rgba(242, 128, 55, 0.6)"]}
         style={styles.background}
       >
         <View style={styles.contentContainer}>
@@ -38,18 +38,6 @@ const MediaCollapsed = ({ media }: trackCollapsedProps) => {
 export default MediaCollapsed;
 
 const styles = StyleSheet.create({
-  noReviewsContainer: {
-    flex: 1,
-    margin: "auto",
-    marginTop: 128,
-    width: "100%",
-  },
-  emptyText: {
-    fontSize: 18,
-    color: "white",
-    marginTop: 12,
-    width: "80%",
-  },
   imageBackground: {
     width: "100%",
   },
@@ -62,10 +50,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 28,
     marginBottom: 12,
-  },
-  iconContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
   },
   artist: {
     flexDirection: "row",
@@ -92,12 +76,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: "white",
-  },
-  addReviewContainer: {
-    backgroundColor: "#000000",
-    borderRadius: 8,
-    padding: 8,
-    opacity: 1,
-    marginBottom: 16,
   },
 });

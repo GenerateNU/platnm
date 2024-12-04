@@ -26,7 +26,7 @@ const NudgePage: React.FC<NudgePageProps> = ({
   const [profiles, setProfiles] = useState<Profile[]>([]);
 
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-  const { userId } = useAuthContext(); // Assuming you have username in AuthProvider
+  const { userId } = useAuthContext();
 
   useEffect(() => {
     const fetchFollowing = async () => {
