@@ -30,7 +30,6 @@ func (r *PlaylistRepository) CreatePlaylist(ctx context.Context, playlist models
 		return err
 	}
 	return nil
-
 }
 
 func (r *PlaylistRepository) AddToUserOnQueue(ctx context.Context, id string, track models.Track) error {
