@@ -1,16 +1,16 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
-import Rating0 from "@/assets/images/Ratings/Radial-0.svg";
-import Rating1 from "@/assets/images/Ratings/Radial-1.svg";
-import Rating2 from "@/assets/images/Ratings/Radial-2.svg";
-import Rating3 from "@/assets/images/Ratings/Radial-3.svg";
-import Rating4 from "@/assets/images/Ratings/Radial-4.svg";
-import Rating5 from "@/assets/images/Ratings/Radial-5.svg";
-import Rating6 from "@/assets/images/Ratings/Radial-6.svg";
-import Rating7 from "@/assets/images/Ratings/Radial-7.svg";
-import Rating8 from "@/assets/images/Ratings/Radial-8.svg";
-import Rating9 from "@/assets/images/Ratings/Radial-9.svg";
-import Rating10 from "@/assets/images/Ratings/Radial-10.svg";
+import Rating0 from "@/assets/images/Ratings/Property0.svg";
+import Rating1 from "@/assets/images/Ratings/Property1.svg";
+import Rating2 from "@/assets/images/Ratings/Property2.svg";
+import Rating3 from "@/assets/images/Ratings/Property3.svg";
+import Rating4 from "@/assets/images/Ratings/Property4.svg";
+import Rating5 from "@/assets/images/Ratings/Property5.svg";
+import Rating6 from "@/assets/images/Ratings/Property6.svg";
+import Rating7 from "@/assets/images/Ratings/Property7.svg";
+import Rating8 from "@/assets/images/Ratings/Property8.svg";
+import Rating9 from "@/assets/images/Ratings/Property9.svg";
+import Rating10 from "@/assets/images/Ratings/Property10.svg";
 
 type RatingSvgProps = {
   rating: number;
