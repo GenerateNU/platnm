@@ -85,7 +85,7 @@ export default function ProfileScreen() {
 
   return (
     userProfile && (
-      <View>
+      <View style={styles.page}>
         <TouchableOpacity onPress={handleEditPress} style={styles.editIcon}>
           <Icon name="edit-2" size={20} color="#888" />
         </TouchableOpacity>
@@ -268,11 +268,13 @@ export default function ProfileScreen() {
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
-  container: {
+  page: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingHorizontal: 24,
     minHeight: Dimensions.get("window").height - 80,
+  },
+  container: {
+    paddingHorizontal: 24,
   },
   header: {
     alignItems: "center",
@@ -388,7 +390,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     borderRadius: 20,
     alignSelf: "center",
-    marginVertical: 20,
+    marginBottom: 20,
   },
   queueButtonText: {
     color: "#fff",
