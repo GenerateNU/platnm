@@ -34,7 +34,7 @@ const SearchPage: React.FC = () => {
       .catch((error) => console.error(error));
 
     axios
-      .get(`${BASE_URL}/media?sort=review&type=track`)
+      .get(`${BASE_URL}/media?sort=review&type=track&limit=13`)
       .then((response) => setInitialSongs(response.data))
       .catch((error) => console.error(error));
 

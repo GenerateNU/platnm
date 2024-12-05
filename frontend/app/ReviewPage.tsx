@@ -560,6 +560,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#000", // Adjust color as needed
     flexWrap: "wrap",
+    marginTop: 12,
+    textAlign: "left",
     width: "100%",
   },
   artistName: {
@@ -585,7 +587,7 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "center",
     alignItems: "center",
-    marginVertical: -20,
+    marginTop: 8,
     paddingRight: 20, // Add this to account for the left padding of reviewContainer
   },
 

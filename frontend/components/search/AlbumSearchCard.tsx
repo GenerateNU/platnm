@@ -59,10 +59,8 @@ const SearchCard: React.FC<SearchCardProps> = ({
 
 const styles = StyleSheet.create({
   cardContainer: {
-    alignItems: "flex-start",
-    marginRight: 25,
     marginBottom: 16,
-    width: 140,
+    width: 160,
   },
   albumContainer: {
     flexDirection: "row", // Set horizontal layout to align rank and cover side-by-side
