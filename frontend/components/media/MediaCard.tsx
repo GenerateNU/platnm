@@ -9,8 +9,10 @@ import {
   Dimensions,
   TouchableWithoutFeedback,
 } from "react-native";
+import axios from "axios";
 import { Button, IconButton } from "react-native-paper";
 import { LinearGradient } from "expo-linear-gradient";
+import { useAuthContext } from "../AuthProvider";
 
 type MediaCardProps = {
   media: Media;
@@ -29,6 +31,14 @@ const MediaCard = ({
   showTopBar = true,
   showRateButton = true,
 }: MediaCardProps) => {
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+  const { userId } = useAuthContext();
+  const addToOnQueue = async () => {
+    await axios.post(`${BASE_URL}/playlist/on_queue/${userId}`, {
+      ...media,
+    });
+  };
+
   return (
     <TouchableWithoutFeedback>
       <View style={styles.container}>
@@ -60,12 +70,14 @@ const MediaCard = ({
                         size={24}
                         onPress={() => console.log("More options pressed")}
                       />
-                      <IconButton
-                        icon="bookmark-outline"
-                        iconColor="white"
-                        size={24}
-                        onPress={() => console.log("More options pressed")}
-                      />
+                      {media?.media_type === "track" && (
+                        <IconButton
+                          icon="bookmark-outline"
+                          iconColor="white"
+                          size={24}
+                          onPress={() => addToOnQueue()}
+                        />
+                      )}
                     </View>
                   </View>
                 )}
