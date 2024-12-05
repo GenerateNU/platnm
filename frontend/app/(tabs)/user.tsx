@@ -90,7 +90,7 @@ export default function ProfilePage() {
           <View style={styles.header}>
             <View style={styles.topIconsContainer}>
               <TouchableOpacity
-                onPress={handleActivityPress}
+                onPress={() => handleActivityPress(userId)}
                 style={styles.activityIconContainer}
               >
                 <Icon name="activity" size={24} color="#000" />
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingHorizontal: 15,
+    paddingHorizontal: 24,
   },
   header: {
     alignItems: "center",

@@ -15,11 +15,14 @@ const Filter: React.FC<FilterProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.buttonsRow}>
-        {filterOptions.map((filter) => (
+        {filterOptions.map((filter: FilterOption) => (
           <TouchableOpacity
             key={filter}
             onPress={() => onFilterChange(filter)}
-            style={[styles.button]}
+            style={[
+              styles.button,
+              currentFilter === filter && styles.selectedButton,
+            ]}
           >
             <Text
               style={[
@@ -57,7 +60,12 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   selectedButtonText: {
-    color: "orange",
+    color: "#F28037",
+  },
+  selectedButton: {
+    borderBottomWidth: 2, // Underline for selected button
+    borderBottomColor: "#F28037", // Underline color
+    marginBottom: -8,
   },
   underline: {
     width: "100%",

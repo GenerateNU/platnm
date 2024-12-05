@@ -54,32 +54,27 @@ const Section: React.FC<SectionProps> = ({
       </View>
 
       <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <View style={styles.container}>
           {items.map((item, index) => (
-            <View
-              key={index}
-              style={{ marginHorizontal: 10, alignItems: "center" }}
-            >
-              <View style={{ position: "relative" }}>
-                <Image
-                  source={{ uri: item.cover_photo }}
-                  style={{ width: 100, height: 100, borderRadius: 10 }}
-                />
-                {isEditing && (
-                  <TouchableOpacity
-                    onPress={() => onDeleteItem(item.id)}
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      right: 0,
-                      backgroundColor: "#D9D9D9",
-                      borderRadius: 100,
-                    }}
-                  >
-                    <Text style={{ fontSize: 16 }}>✖</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
+            <View key={index} style={styles.itemCard}>
+              <Image
+                source={{ uri: item.cover_photo }}
+                style={{ width: 100, height: 100, borderRadius: 10 }}
+              />
+              {isEditing && (
+                <TouchableOpacity
+                  onPress={() => onDeleteItem(item.id)}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    right: 0,
+                    backgroundColor: "#D9D9D9",
+                    borderRadius: 100,
+                  }}
+                >
+                  <Text style={{ fontSize: 16 }}>✖</Text>
+                </TouchableOpacity>
+              )}
               <Text style={{ marginTop: 5, textAlign: "center" }}>
                 {item.title}
               </Text>
@@ -96,7 +91,7 @@ export default Section;
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    alignItems: "center",
+    gap: 16,
   },
   plusIcon: {
     position: "absolute",
@@ -120,7 +115,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   section: {
-    marginHorizontal: 20,
+    marginHorizontal: 0,
     marginBottom: 20,
   },
   sectionHeader: {
@@ -137,13 +132,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  item: {
-    width: "30%",
-    aspectRatio: 1,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
+  itemCard: {
+    width: 100,
   },
   itemTitle: {
     marginTop: 10,

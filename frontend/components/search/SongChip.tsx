@@ -7,7 +7,7 @@ interface SongChipProps {
   title: string;
   artist_name: string;
   cover: string;
-  rank?: number;
+  rank: number;
 }
 
 const SongChip: React.FC<SongChipProps> = ({
@@ -22,7 +22,7 @@ const SongChip: React.FC<SongChipProps> = ({
       style={[styles.container, !rank && styles.noRankContainer]}
       onPress={() =>
         router.push({
-          pathname: "/MediaPage",
+          pathname: "/(tabs)/MediaPage",
           params: {
             mediaType: "track",
             mediaId: id,
@@ -30,7 +30,7 @@ const SongChip: React.FC<SongChipProps> = ({
         })
       }
     >
-      {rank !== undefined && <Text style={styles.rank}>{rank}.</Text>}
+      {rank && <Text style={styles.rank}>{`${rank}. `}</Text>}
       <Image style={styles.cover} source={{ uri: cover }} />
       <View style={[styles.textContainer, !rank && styles.noRankTextContainer]}>
         <Text style={styles.title} numberOfLines={1}>
@@ -61,8 +61,8 @@ const styles = StyleSheet.create({
     width: 20,
   },
   cover: {
-    width: 40,
-    height: 40,
+    width: 32,
+    height: 32,
     borderRadius: 4,
     backgroundColor: "#e0e0e0",
   },
@@ -74,6 +74,7 @@ const styles = StyleSheet.create({
   noRankTextContainer: {
     marginLeft: 8,
   },
+
   title: {
     fontSize: 13,
     color: "#000000",

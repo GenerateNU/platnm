@@ -2,42 +2,40 @@ import React from "react";
 import { router } from "expo-router";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 
-interface AlbumSearchCardProps {
+interface SearchCardProps {
   id: number;
   rank: number;
   artist_name: string;
   album_name: string;
   cover: string;
+  type?: string;
 }
 
-const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({
+const SearchCard: React.FC<SearchCardProps> = ({
   id,
   rank,
   artist_name,
   album_name,
   cover,
+  type,
 }) => {
   const placeholderImage =
     "https://upload.wikimedia.org/wikipedia/en/thumb/d/d5/Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png/220px-Taylor_Swift_-_1989_%28Taylor%27s_Version%29.png";
-
   return (
     <TouchableOpacity
       style={styles.cardContainer}
       onPress={() =>
         router.push({
-          pathname: "/MediaPage",
+          pathname: "/(tabs)/MediaPage",
           params: {
-            mediaType: "album",
+            mediaType: type,
             mediaId: id,
           },
         })
       }
     >
       <View style={styles.albumContainer}>
-        {/* Rank */}
-        <Text style={styles.rank}>{rank}.</Text>
-
-        {/* Album Cover */}
+        <Text style={styles.rank}>{rank ? `${rank}. ` : ""}</Text>
         <View style={styles.coverContainer}>
           <Image
             source={{ uri: cover || placeholderImage }}
@@ -45,7 +43,6 @@ const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({
           />
         </View>
 
-        {/* Record Image */}
         <View style={styles.recordContainer}>
           <Image
             source={require("@/assets/images/Profile/record.png")}
@@ -54,7 +51,6 @@ const AlbumSearchCard: React.FC<AlbumSearchCardProps> = ({
         </View>
       </View>
 
-      {/* Album and Artist Name */}
       <Text style={styles.albumName}>{album_name}</Text>
       <Text style={styles.artistName}>{artist_name}</Text>
     </TouchableOpacity>
@@ -77,14 +73,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     lineHeight: 20,
-    marginRight: 6, // Spacing between rank and cover image
+    marginRight: 6,
     marginTop: -85,
   },
   coverContainer: {
-    zIndex: 2, // Ensure cover is on top
+    zIndex: 2,
   },
   recordContainer: {
-    position: "absolute", // Position record on top of cover
+    position: "absolute",
     bottom: 5,
     left: "50%",
     transform: [{ translateX: 0 }],
@@ -114,4 +110,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AlbumSearchCard;
+export default SearchCard;

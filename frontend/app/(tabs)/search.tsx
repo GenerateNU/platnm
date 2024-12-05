@@ -77,7 +77,6 @@ const SearchPage: React.FC = () => {
   return (
     <View style={styles.container}>
       <SearchBar onSearch={handleSearch} />
-
       <ScrollView>
         {isSearchActive ? (
           <SearchResults

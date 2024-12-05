@@ -6,7 +6,6 @@ type SongCardProp = {
 };
 
 const TopSongs = ({ songs }: SongCardProp) => {
-  // Take only the first 9 songs
   const topNineSongs = songs?.slice(0, 9);
 
   return (
@@ -38,13 +37,12 @@ const styles = StyleSheet.create({
   gridContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    paddingHorizontal: 20,
-    width: 500, // Fixed width
+    paddingHorizontal: 16,
+    width: 500,
   },
   gridItem: {
     width: "33.33%",
     marginBottom: 16,
-    fontWeight: "light",
   },
   title: {
     fontSize: 20,
@@ -52,6 +50,7 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     paddingTop: 32,
     fontWeight: "bold",
+    padding: 16,
   },
 });
 

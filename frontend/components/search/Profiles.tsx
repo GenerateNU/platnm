@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import ProfileChip from "@/components/search/ProfileChip";
 
 type ProfileChipProps = {
@@ -8,6 +8,7 @@ type ProfileChipProps = {
 
 const Profiles = ({ profiles }: ProfileChipProps) => {
   const limitedProfiles = profiles?.slice(0, 2);
+
   return (
     <View>
       <Text style={styles.title}>Profiles</Text>
@@ -15,10 +16,10 @@ const Profiles = ({ profiles }: ProfileChipProps) => {
       <View style={styles.profileRow}>
         {limitedProfiles?.map((profile) => (
           <ProfileChip
+            key={profile.id}
             profile_picture={profile.profile_picture}
             id={profile.id}
             display_name={profile.display_name}
-            key={profile.id}
           />
         ))}
       </View>

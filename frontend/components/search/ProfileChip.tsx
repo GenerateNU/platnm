@@ -29,23 +29,16 @@ const ProfileChip: React.FC<ProfileChipProps> = ({
       }
     >
       <View style={styles.profileContainer}>
-        {/* Record image background */}
         <Image
           source={require("@/assets/images/Profile/record.png")}
           style={styles.recordImage}
         />
-
-        {/* Profile picture overlaid in the center */}
         <View style={styles.profileImageContainer}>
-          {profile_picture ? (
-            <Image
-              source={{ uri: profile_picture }}
-              style={styles.profileImage}
-              resizeMode="cover"
-            />
-          ) : (
-            <View style={[styles.profileImage, { backgroundColor: "#333" }]} />
-          )}
+          <Image
+            source={{ uri: profile_picture }}
+            style={styles.profileImage}
+            resizeMode="cover"
+          />
         </View>
 
         <Text style={styles.nameText}>{display_name}</Text>

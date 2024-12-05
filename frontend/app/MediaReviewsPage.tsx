@@ -1,12 +1,19 @@
-import React from "react";
-import { useState, useEffect } from "react";
-import { View, ScrollView, Image, Text } from "react-native";
-import ReviewPreview from "@/components/ReviewPreview";
-import Filter from "@/components/search/Filter";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  ScrollView,
+  Image,
+  Text,
+  StyleSheet,
+  Dimensions,
+} from "react-native";
 import axios from "axios";
 import { useLocalSearchParams } from "expo-router";
 import HeaderComponent from "@/components/HeaderComponent";
+import ReviewPreview from "@/components/ReviewPreview";
+import Filter from "@/components/search/Filter";
 import Vinyl from "@/assets/images/media-vinyl.svg";
+import SkeletonLoader from "expo-skeleton-loader";
 
 const MediaReviewsPage = () => {
   const { media_id, user_id, media_type, filter } = useLocalSearchParams<{
@@ -22,16 +29,21 @@ const MediaReviewsPage = () => {
   const [allReviews, setAllReviews] = useState<Preview[]>([]);
   const [mediaStats, setMediaStats] = useState<{
     userScore: number;
+    userRatings: number;
     friendScore: number;
+    friendRatings: number;
     avgScore: Number;
     totalRatings: number;
   }>({
     userScore: 0,
+    userRatings: 0,
     friendScore: 0,
+    friendRatings: 0,
     avgScore: 0,
     totalRatings: 0,
   });
   const [mediaCover, setMediaCover] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const filterOptions = ["you", "friend", "all"];
 
@@ -40,17 +52,16 @@ const MediaReviewsPage = () => {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        console.log(`${BASE_URL}/reviews/${media_type}/${media_id}`);
         const response = await axios.get(
           `${BASE_URL}/reviews/${media_type}/${media_id}`,
         );
         setAllReviews(response.data.reviews);
-        setMediaStats({
-          userScore: 4.2,
-          friendScore: mediaStats.friendScore,
+
+        setMediaStats((prev) => ({
+          ...prev,
           avgScore: response.data.avgRating || 0,
           totalRatings: response.data.totalCount || 0,
-        });
+        }));
       } catch (error) {
         console.error(error);
       }
@@ -80,29 +91,72 @@ const MediaReviewsPage = () => {
         const reviews = response.data;
         setUserReviews(reviews);
 
-        // Calculate the average score
-        const totalScore = reviews.reduce(
-          (sum: any, review: { rating: any }) => sum + review.rating,
-          0,
-        ); // Sum of all ratings
-        const averageScore =
-          reviews.length > 0 ? totalScore / reviews.length : 0; // Avoid division by 0
-
-        // Update userScore in mediaStats
-        setMediaStats((prevStats) => ({
-          ...prevStats,
-          userScore: averageScore,
-        }));
+        if (reviews) {
+          // Calculate the average score
+          const totalScore = reviews.reduce(
+            (sum: any, review: { rating: any }) => sum + review.rating,
+            0,
+          ); // Sum of all ratings
+          const averageScore =
+            reviews.length > 0 ? totalScore / reviews.length : 0; // Avoid division by 0
+          // Update userScore in mediaStats
+          setMediaStats((prev) => ({
+            ...prev,
+            userScore: averageScore,
+            userRatings: reviews.length,
+          }));
+        }
       } catch (error) {
         console.error(error);
       }
     };
 
-    // TODO ALEX: Here you would also fetch the reviews from friends
+    const fetchFriendReviews = async () => {
+      try {
+        const response = await axios.get(
+          `${BASE_URL}/reviews/media/${media_id}/${user_id}/following`,
+          {
+            params: {
+              media_type: media_type,
+            },
+          },
+        );
 
-    fetchAll();
-    fetchMediaCover();
-    fetchUserReviews();
+        const reviews = response.data;
+        if (reviews) {
+          setFriendsReviews(reviews);
+
+          // Calculate the average score
+          const totalScore = reviews.reduce(
+            (sum: any, review: { rating: any }) => sum + review.rating,
+            0,
+          ); // Sum of all ratings
+          const averageScore =
+            reviews.length > 0 ? totalScore / reviews.length : 0; // Avoid division by 0
+
+          // Update userScore in mediaStats
+          setMediaStats((prev) => ({
+            ...prev,
+            friendScore: averageScore,
+            friendRatings: reviews.length,
+          }));
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    const fetchEverything = async () => {
+      await Promise.all([
+        fetchFriendReviews(),
+        fetchUserReviews(),
+        fetchAll(),
+        fetchMediaCover(),
+      ]);
+      setIsLoading(false);
+    };
+
+    fetchEverything();
   }, []);
 
   const handleFilterChange = (filter: FilterOption) => {
@@ -117,81 +171,113 @@ const MediaReviewsPage = () => {
   };
 
   return (
-    <View>
-      <ScrollView style={{ backgroundColor: "#FFF" }}>
-        <HeaderComponent title="" />
-        <View style={styles.headerContainer}>
-          <View style={styles.vinylContainer}>
-            <Vinyl style={styles.vinyl} />
-            {mediaCover && (
-              <Image
-                source={{ uri: mediaCover }}
-                style={styles.mediaCover}
-                resizeMode="cover"
-              />
-            )}
-          </View>
-          <View style={styles.statsContainer}>
-            {selectedFilter === "you" && (
-              <View style={styles.scoreContainer}>
-                <Text style={styles.score}>
-                  {mediaStats.userScore.toFixed(1)}
-                </Text>
-                <Text style={styles.scoreLabel}>Your Avg Rating</Text>
-              </View>
-            )}
-            {selectedFilter === "friend" && (
-              <View style={styles.scoreContainer}>
-                <Text style={styles.score}>
-                  {mediaStats.friendScore.toFixed(1)}
-                </Text>
-                <Text style={styles.scoreLabel}>Friend Rating</Text>
-              </View>
-            )}
-            {selectedFilter === "all" && (
-              <View style={styles.scoreContainer}>
-                <Text style={styles.score}>
-                  {mediaStats.avgScore.toFixed(1)}
-                </Text>
-                <Text style={styles.scoreLabel}>Avg Rating</Text>
-              </View>
-            )}
-            <Text style={styles.totalRatings}>
-              {formatLargeNumber(mediaStats.totalRatings)}
-            </Text>
-            <Text style={styles.totalRatingsText}>Total Ratings</Text>
-          </View>
+    <ScrollView style={{ backgroundColor: "#FFF" }}>
+      <HeaderComponent title="" />
+      <View style={styles.headerContainer}>
+        <View style={styles.vinylContainer}>
+          <Vinyl style={styles.vinyl} />
+          {mediaCover && (
+            <Image
+              source={{ uri: mediaCover }}
+              style={styles.mediaCover}
+              resizeMode="cover"
+            />
+          )}
         </View>
-        <Filter
-          currentFilter={selectedFilter}
-          filterOptions={filterOptions}
-          onFilterChange={handleFilterChange}
-        />
-        <View>
+        <View style={styles.statsContainer}>
           {selectedFilter === "you" && (
-            <View>
-              {userReviews.map((review, index) => {
-                return <ReviewPreview key={index} preview={review} />;
-              })}
+            <View style={styles.scoreContainer}>
+              <Text style={styles.score}>
+                {mediaStats.userScore.toFixed(1)}
+              </Text>
+              <Text style={styles.scoreLabel}>Your Avg Rating</Text>
             </View>
           )}
           {selectedFilter === "friend" && (
-            <View></View> // TODO ALEX: Map each fetched review to a ReviewPreview component which will take care of the rest
-          )}
-          {selectedFilter === "all" && (
-            <View>
-              {allReviews.map((review, index) => {
-                return <ReviewPreview key={index} preview={review} />;
-              })}
+            <View style={styles.scoreContainer}>
+              <Text style={styles.score}>
+                {mediaStats.friendScore.toFixed(1)}
+              </Text>
+              <Text style={styles.scoreLabel}>Friend Avg Rating</Text>
             </View>
           )}
+          {selectedFilter === "all" && (
+            <View style={styles.scoreContainer}>
+              <Text style={styles.score}>{mediaStats.avgScore.toFixed(1)}</Text>
+              <Text style={styles.scoreLabel}>Avg Rating</Text>
+            </View>
+          )}
+          {selectedFilter === "you" && (
+            <>
+              <Text style={styles.totalRatings}>
+                {formatLargeNumber(mediaStats.userRatings)}
+              </Text>
+              <Text style={styles.totalRatingsText}>Your Ratings</Text>
+            </>
+          )}
+          {selectedFilter === "friend" && (
+            <>
+              <Text style={styles.totalRatings}>
+                {formatLargeNumber(mediaStats.friendRatings)}
+              </Text>
+              <Text style={styles.totalRatingsText}>Friends Ratings</Text>
+            </>
+          )}
+          {selectedFilter === "all" && (
+            <>
+              <Text style={styles.totalRatings}>
+                {formatLargeNumber(mediaStats.totalRatings)}
+              </Text>
+              <Text style={styles.totalRatingsText}>Total Ratings</Text>
+            </>
+          )}
         </View>
-      </ScrollView>
-    </View>
+      </View>
+      <Filter
+        currentFilter={selectedFilter}
+        filterOptions={filterOptions}
+        onFilterChange={handleFilterChange}
+      />
+      <View style={styles.reviews}>
+        {isLoading && (
+          <SkeletonLoader
+            duration={1000}
+            boneColor="#f0f0f0"
+            highlightColor="#fff"
+          >
+            <SkeletonLoader.Item style={loadingReview} />
+            <SkeletonLoader.Item style={loadingReview} />
+            <SkeletonLoader.Item style={loadingReview} />
+          </SkeletonLoader>
+        )}
+        {selectedFilter === "you" &&
+          userReviews &&
+          userReviews.map((review, index) => {
+            return <ReviewPreview key={index} preview={review} />;
+          })}
+        {selectedFilter === "friend" &&
+          friendsReviews &&
+          friendsReviews.map((review, index) => {
+            return <ReviewPreview key={index} preview={review} />;
+          })}
+        {selectedFilter === "all" &&
+          allReviews &&
+          allReviews.map((review, index) => {
+            return <ReviewPreview key={index} preview={review} />;
+          })}
+      </View>
+    </ScrollView>
   );
 };
 
-import { StyleSheet } from "react-native";
+const { width } = Dimensions.get("window");
+
+const loadingReview = {
+  width: width - 32,
+  height: 200,
+  marginTop: 25,
+  borderRadius: 16,
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -261,6 +347,10 @@ const styles = StyleSheet.create({
   },
   reviewsContainer: {
     backgroundColor: "#fff",
+  },
+  reviews: {
+    width: "90%",
+    alignSelf: "center",
   },
 });
 

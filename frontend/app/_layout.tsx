@@ -43,9 +43,7 @@ export default function RootLayout() {
             <Stack.Screen name="onboarding/signup" />
             <Stack.Screen name="CreateRating" />
             <Stack.Screen name="CreateReview" />
-            <Stack.Screen name="PreviewReview" />
             <Stack.Screen name="MediaReviewsPage" />
-            <Stack.Screen name="MediaPage" />
             <Stack.Screen name="Settings" />
             <Stack.Screen name="Activity" />
             <Stack.Screen name="OnQueue" />

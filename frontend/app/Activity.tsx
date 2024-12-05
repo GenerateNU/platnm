@@ -4,20 +4,22 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
   ScrollView,
   SafeAreaView,
 } from "react-native";
-import Icon from "react-native-vector-icons/Ionicons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import axios from "axios";
-import ReviewCard from "@/components/ReviewCard";
 import { useAuthContext } from "@/components/AuthProvider";
+import ReviewPreview from "@/components/ReviewPreview";
+import Icon from "react-native-vector-icons/Ionicons";
 
 const Activity = () => {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-  const [userReviews, setUserReviews] = useState<Review[]>();
-  const { userId } = useAuthContext();
+  const [userReviews, setUserReviews] = useState<Preview[]>();
+  const loggedInUser = useAuthContext().userId;
+  const { userId } = useLocalSearchParams<{
+    userId: string;
+  }>();
 
   const handleDraftPress = () => {
     console.log("Draft Button pressed");
@@ -27,7 +29,7 @@ const Activity = () => {
   useEffect(() => {
     const fetchUserReviews = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/reviews/${userId}`);
+        const response = await axios.get(`${BASE_URL}/reviews/user/${userId}`);
         setUserReviews(response.data);
       } catch (error) {
         console.error("Error fetching user reviews:", error);
@@ -53,20 +55,16 @@ const Activity = () => {
       </SafeAreaView>
 
       {/* Draft Button */}
-      <TouchableOpacity style={styles.draftButton} onPress={handleDraftPress}>
-        <Text style={styles.draftButtonText}>Drafts</Text>
-      </TouchableOpacity>
+      {loggedInUser === userId && (
+        <TouchableOpacity style={styles.draftButton} onPress={handleDraftPress}>
+          <Text style={styles.draftButtonText}>Drafts</Text>
+        </TouchableOpacity>
+      )}
 
       {/* User Reviews Section */}
       {userReviews && userReviews.length > 0 ? (
         userReviews.map((review, index) => {
-          return (
-            <ReviewCard
-              key={index}
-              rating={review.rating}
-              comment={review.comment}
-            />
-          );
+          return <ReviewPreview key={index} preview={review} />;
         })
       ) : (
         <Text style={styles.noReviewsText}>No reviews found.</Text>

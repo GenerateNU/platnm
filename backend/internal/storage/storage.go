@@ -35,12 +35,12 @@ type UserRepository interface {
 	GetConnections(ctx context.Context, id uuid.UUID, limit int, offset int) (models.Connections, error)
 	GetProfileByName(ctx context.Context, name string) ([]*models.Profile, error)
 	GetNotifications(ctx context.Context, id string) ([]*models.Notification, error)
-	// GetProfileByUser(ctx context.Context, userName string) (*models.Profile, error)
 }
 
 type ReviewRepository interface {
 	GetUserReviewsOfMedia(ctx context.Context, media_type string, mediaID string, userID string) ([]*models.Preview, error)
-	GetReviewsByUserID(ctx context.Context, id string) ([]*models.Review, error)
+	GetUserFollowingReviewsOfMedia(ctx context.Context, media_type string, mediaID string, userID string) ([]*models.Preview, error)
+	GetReviewsByUserID(ctx context.Context, id string) ([]*models.Preview, error)
 	CreateReview(ctx context.Context, review *models.Review) (*models.Review, error)
 	ReviewExists(ctx context.Context, id string) (bool, error)
 	UpdateReview(ctx context.Context, update *models.Review) (*models.Review, error)

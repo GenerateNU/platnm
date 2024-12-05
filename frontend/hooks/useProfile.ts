@@ -28,18 +28,9 @@ export function useProfile(userId: string) {
         const response = await axios.get(
           `${BASE_URL}/users/profile/id/${userId}`,
         );
-        const profile = {
-          user_id: response.data.user_id,
-          username: response.data.username,
-          display_name: response.data.display_name,
-          bio: response.data.bio.String,
-          profile_picture: response.data.profile_picture.String,
-          followers: response.data.followers,
-          followed: response.data.followed,
-          score: response.data.score,
-        };
-        setUserProfile(profile);
-        setBio(response.data.bio.String);
+
+        setUserProfile(response.data);
+        setBio(response.data.bio);
       } catch (error) {
         console.error("Error fetching user profile:", error);
       }
@@ -82,8 +73,11 @@ export function useProfile(userId: string) {
     }
   }, [userId]);
 
-  const handleActivityPress = () => {
-    router.push("/Activity");
+  const handleActivityPress = (userId: string) => {
+    router.push({
+      pathname: "/Activity",
+      params: { userId: userId },
+    });
   };
 
   const handleOnQueuePress = () => {

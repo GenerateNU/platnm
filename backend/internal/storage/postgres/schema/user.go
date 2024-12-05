@@ -217,24 +217,18 @@ func (r *UserRepository) UpdateUserOnboard(ctx context.Context, email string, en
 
 func (r *UserRepository) GetUserProfile(ctx context.Context, id uuid.UUID) (*models.Profile, error) {
 	profile := &models.Profile{}
-	query := `SELECT u.id, u.username, u.display_name, COUNT(DISTINCT followers.follower_id) AS follower_count, COUNT(DISTINCT followed.followee_id) AS followed_count, u.bio, u.profile_picture
+	query := `SELECT u.id, u.username, u.display_name, COUNT(DISTINCT followers.follower_id) AS follower_count, COUNT(DISTINCT followed.followee_id) AS followed_count, u.bio, u.profile_picture, u.platnm
 		FROM "user" u
 		LEFT JOIN follower followers ON followers.followee_id = u.id
 		LEFT JOIN follower followed ON followed.follower_id = u.id
 		WHERE u.id = $1
 		GROUP BY u.id, u.username, u.display_name, u.bio, u.profile_picture;`
 
-	err := r.db.QueryRow(ctx, query, id).Scan(&profile.UserID, &profile.Username, &profile.DisplayName, &profile.Followers, &profile.Followed, &profile.Bio, &profile.ProfilePicture)
+	err := r.db.QueryRow(ctx, query, id).Scan(&profile.UserID, &profile.Username, &profile.DisplayName, &profile.Followers, &profile.Followed, &profile.Bio, &profile.ProfilePicture, &profile.Score)
 	if err != nil {
 		print(err.Error(), "unable to find profile")
 		return nil, err
 	}
-
-	score, err := r.CalculateScore(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	profile.Score = score
 
 	return profile, nil
 }
@@ -258,16 +252,25 @@ func (r *UserRepository) GetProfileByName(ctx context.Context, name string) ([]*
 
 	for profileRows.Next() {
 		var profile models.Profile
+		var profilePicture, bio sql.NullString
 		if err := profileRows.Scan(
 			&profile.UserID,
 			&profile.Username,
 			&profile.DisplayName,
-			&profile.ProfilePicture,
-			&profile.Bio,
+			&profilePicture,
+			&bio,
 			&profile.Followers,
 			&profile.Followed,
 		); err != nil {
 			return nil, err
+		}
+
+		if profilePicture.Valid {
+			profile.ProfilePicture = &profilePicture.String
+		}
+
+		if bio.Valid {
+			profile.Bio = &bio.String
 		}
 
 		userUUID, err := uuid.Parse(profile.UserID)

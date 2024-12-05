@@ -4,12 +4,11 @@ import { router, useLocalSearchParams } from "expo-router";
 import axios from "axios";
 
 import HeaderComponent from "@/components/HeaderComponent";
-import DraftButton from "@/components/DraftButton";
-import PublishButton from "@/components/PublishButton";
 import RatingSlider from "@/components/media/RatingSlider";
 import MediaCard from "@/components/media/MediaCard";
-import { usePublishReview } from "@/hooks/usePublishReview";
+import RateFlowButton from "@/components/media/RateFlowButton";
 import { useAuthContext } from "@/components/AuthProvider";
+import { usePublishReview } from "@/hooks/usePublishReview";
 
 const CreateRating = () => {
   const { mediaType, mediaId } = useLocalSearchParams<{
@@ -17,7 +16,6 @@ const CreateRating = () => {
     mediaId: string;
   }>();
   const userId = useAuthContext().userId;
-
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
   const [media, setMedia] = useState<Media>();
@@ -29,16 +27,17 @@ const CreateRating = () => {
     setRating(newRating);
   };
 
-  const handleDraftSubmit = () => {
+  const handleRatingSubmit = async () => {
     const request = {
       user_id: userId,
       media_type: mediaType,
       media_id: parseInt(mediaId),
       rating: rating,
       tags: [],
-      draft: true,
+      draft: false,
     };
-    publishReview(request);
+    await publishReview(request);
+    routeToMediaPage();
   };
 
   useEffect(() => {
@@ -48,6 +47,13 @@ const CreateRating = () => {
       .catch((error) => console.error(error));
   }, []);
 
+  const routeToMediaPage = () => {
+    router.push({
+      pathname: "/(tabs)/MediaPage",
+      params: { mediaId: mediaId, mediaType: mediaType },
+    });
+  };
+
   return (
     media && (
       <View style={styles.container}>
@@ -56,8 +62,14 @@ const CreateRating = () => {
         <View style={styles.inner}>
           <RatingSlider value={rating} onRatingChange={handleRatingChange} />
           <View style={styles.buttonContainer}>
-            <DraftButton handleClick={() => handleDraftSubmit()} />
-            <PublishButton
+            <RateFlowButton
+              text="Share Rating"
+              primary={false}
+              handleClick={handleRatingSubmit}
+            />
+            <RateFlowButton
+              text="Review"
+              iconName="arrow-up"
               handleClick={() =>
                 router.push({
                   pathname: "/CreateReview",
@@ -91,21 +103,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingBottom: 30,
     paddingTop: 15,
-  },
-  titleInput: {
-    backgroundColor: "#ffffff",
-    color: "#434343",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  textInput: {
-    height: 80,
-    backgroundColor: "#ffffff",
-    fontFamily: "Roboto",
-    color: "#434343",
-    fontSize: 16,
-    textAlignVertical: "top",
-    justifyContent: "flex-end",
+    paddingHorizontal: 20,
   },
 });
 

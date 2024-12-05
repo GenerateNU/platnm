@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { StyleSheet, ScrollView, View, Text } from "react-native";
-import { useFocusEffect, useLocalSearchParams } from "expo-router";
+import {
+  StyleSheet,
+  ScrollView,
+  View,
+  Text,
+  TouchableOpacity,
+} from "react-native";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import axios from "axios";
 import Histogram from "@/components/media/Histogram";
 import YourRatings from "@/components/media/YourRatings";
@@ -10,15 +16,18 @@ import ReviewStats from "@/components/media/ReviewStats";
 import ReviewPreview from "@/components/ReviewPreview";
 
 import SkeletonLoader from "expo-skeleton-loader";
+import { useAuthContext } from "@/components/AuthProvider";
 
 export default function MediaPage() {
   const [media, setMedia] = useState<Media>();
   const [reviews, setReviews] = useState<Preview[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState<boolean>(true);
   const [avgRating, setAvgRating] = useState<number | null>(null);
+  const [totalCount, setTotalCount] = useState<number>(0);
   const [ratingDistributions, setRatingDistributions] = useState<
     RatingDistribution[]
   >([]);
+  const { userId } = useAuthContext();
 
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const { mediaId, mediaType } = useLocalSearchParams<{
@@ -28,11 +37,12 @@ export default function MediaPage() {
 
   useEffect(() => {
     setReviewsLoading(true);
+    setMedia(undefined);
     axios
       .get(`${BASE_URL}/media/${mediaType}/${mediaId}`)
       .then((response) => setMedia(response.data))
       .catch((error) => console.error(error));
-  }, []);
+  }, [mediaId]);
 
   // calculating the rating distribution from the reviews that we already have
   useEffect(() => {
@@ -68,11 +78,12 @@ export default function MediaPage() {
     useCallback(() => {
       if (media) {
         axios
-          .get(`${BASE_URL}/reviews/${mediaType}/${mediaId}`)
+          .get(`${BASE_URL}/reviews/${mediaType}/top/${mediaId}`)
           .then((response) => {
             setReviews(response.data.reviews);
             setReviewsLoading(false);
             setAvgRating(Math.round(response.data.avgRating) || null);
+            setTotalCount(response.data.totalCount);
           })
           .catch((error) => console.error(error));
       }
@@ -146,19 +157,36 @@ export default function MediaPage() {
           ) : (
             <View style={styles.bodyContainer}>
               <View style={styles.titleContainer}>
-                {avgRating && (
-                  <ReviewStats rating={avgRating} reviews={reviews} />
-                )}
+                <TouchableOpacity
+                  style={styles.titleContainer}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/MediaReviewsPage",
+                      params: {
+                        media_id: mediaId,
+                        user_id: userId,
+                        media_type: mediaType,
+                        filter: "all",
+                      },
+                    })
+                  }
+                >
+                  {avgRating && (
+                    <ReviewStats rating={avgRating} count={totalCount} />
+                  )}
+                </TouchableOpacity>
               </View>
+
               {ratingDistributions && ratingDistributions.length > 0 && (
                 <Histogram distribution={ratingDistributions} />
               )}
               <View style={styles.socialContainer}>
                 <YourRatings media_id={mediaId} media_type={mediaType} />
-                <FriendRatings count={5} />
+                <FriendRatings media_id={mediaId} media_type={mediaType} />
               </View>
               <View>
-                {reviews?.map((review) => (
+                <Text style={styles.titleText}>Top Reviews</Text>
+                {reviews?.slice(0, 5).map((review) => (
                   <ReviewPreview
                     key={review.review_id}
                     preview={{
@@ -167,7 +195,7 @@ export default function MediaPage() {
                       created_at: new Date(review.created_at),
                       updated_at: new Date(review.updated_at),
                       media_title: media.title,
-                      tags: ["Excitement"],
+                      tags: review.tags,
                       media_artist: media.artist_name,
                       media_cover: media.cover,
                     }}
@@ -200,9 +228,14 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     gap: 8,
   },
+  titleText: {
+    fontSize: 20,
+    fontWeight: "700",
+    fontStyle: "normal",
+    marginTop: 10,
+  },
   bodyContainer: {
-    marginTop: 16,
-    paddingTop: 32,
+    paddingTop: 16,
     paddingHorizontal: 16,
     borderRadius: 16,
     backgroundColor: "#fff",

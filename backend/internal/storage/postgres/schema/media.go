@@ -567,7 +567,6 @@ func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset i
 				FROM review
 				GROUP BY media_id, media_type
 				ORDER BY review_count DESC
-				LIMIT $1 OFFSET $2
 			)
 			SELECT
 				m.media_type,
@@ -596,7 +595,8 @@ func (r *MediaRepository) GetMediaByReviews(ctx context.Context, limit, offset i
 				GROUP BY a.id, cover, a.title
 		) a ON (m.media_type = 'album' AND m.media_id = a.id)
         WHERE ($3::media_type IS NULL OR (m.media_type = $3::media_type))
-		ORDER BY m.review_count DESC;
+		ORDER BY m.review_count DESC
+		LIMIT $1 OFFSET $2;
 	`
 	var rows pgx.Rows
 	var err error
