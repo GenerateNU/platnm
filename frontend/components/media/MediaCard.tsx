@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     height: Dimensions.get("window").height,
     opacity: 0.9,
     backgroundColor: "black",
-    paddingBottom: 24,
+    paddingBottom: 72,
   },
   background: {
     height: 350,
