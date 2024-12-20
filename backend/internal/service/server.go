@@ -64,17 +64,20 @@ func setupRoutes(app *fiber.App, repo *storage.Repository, config config.Config)
 
 	userHandler := users.NewHandler(repo.User, repo.Playlist, config.Supabase, sessionStore)
 	app.Route("/users", func(r fiber.Router) {
+		// retrieving users
 		r.Get("/", userHandler.GetUsers)
-		r.Get("/:id/connections", userHandler.GetConnections)
 		r.Get("/:id", userHandler.GetUserById)
 		r.Get("/profile/id/:id", userHandler.GetUserProfile)
+		r.Get("/profile/name/:name", userHandler.GetProfileByName)
+
+		// following and retrieving follows
 		r.Post("/follow", userHandler.FollowUnfollowUser)
-		r.Get("/score/:id", userHandler.CalculateScore)
+		r.Get("/:id/connections", userHandler.GetConnections)
+
+		// creating and managing user profiles
 		r.Post("/", userHandler.CreateUser)
 		r.Patch("/bio/:id", userHandler.UpdateUserBio)
 		r.Put("/enthusiasm", userHandler.UpdateUserOnboard)
-		r.Get("/feed/:id", userHandler.GetUserFeed)
-		r.Get("following/:id", userHandler.GetUserFollowing)
 		r.Patch("/pfp/:id", userHandler.UpdateUserProfilePicture)
 		r.Post("/section", userHandler.CreateSection)
 		r.Post("/section/item/:userId/:sectionId", userHandler.CreateSectionItem)
@@ -83,29 +86,24 @@ func setupRoutes(app *fiber.App, repo *storage.Repository, config config.Config)
 		r.Delete("/section", userHandler.DeleteSection)
 		r.Get("/section/:id", userHandler.GetUserSections)
 		r.Get("/section/options/:id", userHandler.GetUserSectionOptions)
-		r.Get("/profile/name/:name", userHandler.GetProfileByName)
+		r.Get("/feed/:id", userHandler.GetUserFeed)
+		r.Get("/following/:id", userHandler.GetUserFollowing)
 		r.Get("/notifications/:id", userHandler.GetNotifications)
 	})
 
 	app.Route("/reviews", func(r fiber.Router) {
 		reviewHandler := reviews.NewHandler(repo.Review, repo.User, repo.UserReviewVote)
+		// creating and updating reviews
 		r.Post("/", reviewHandler.CreateReview)
+		r.Patch("/:id", reviewHandler.UpdateReviewByReviewID)
+
+		// retrieving reviews
 		r.Get("/popular", reviewHandler.GetReviewsByPopularity)
 		r.Get("/tags", reviewHandler.GetTags)
-		r.Get("/vote/:userID/:postID", func(c *fiber.Ctx) error {
-			return reviewHandler.GetUserVote(c, "review")
-		})
-
-		// Get Reviews by ID which can be used to populate a preview
 		r.Get("/:id", reviewHandler.GetReviewByID)
 		r.Get("/media/:mediaId/:userID", reviewHandler.GetUserReviewsOfMedia)
 		r.Get("/media/:mediaId/:userID/following", reviewHandler.GetUserFollowingReviewsOfMedia)
-
 		r.Get("/user/:id", reviewHandler.GetReviewsByUserID)
-		r.Post("/vote", func(c *fiber.Ctx) error {
-			return reviewHandler.UserVote(c, "review")
-		})
-		r.Patch("/:id", reviewHandler.UpdateReviewByReviewID)
 		r.Get("/album/:id", func(c *fiber.Ctx) error {
 			return reviewHandler.GetReviewsByMediaId(c, "album")
 		})
@@ -118,9 +116,9 @@ func setupRoutes(app *fiber.App, repo *storage.Repository, config config.Config)
 		r.Get("/track/top/:id", func(c *fiber.Ctx) error {
 			return reviewHandler.GetTopReviewsByMediaId(c, "track")
 		})
-		r.Get("/track/:userId/:mediaId", func(c *fiber.Ctx) error {
-			return reviewHandler.GetUserReviewOfTrack(c)
-		})
+		r.Get("/track/:userId/:mediaId", reviewHandler.GetUserReviewOfTrack)
+
+		// review comment functionality
 		r.Post("/comment", reviewHandler.CreateComment)
 		r.Post("/comment/vote", func(c *fiber.Ctx) error {
 			return reviewHandler.UserVote(c, "comment")
@@ -128,13 +126,15 @@ func setupRoutes(app *fiber.App, repo *storage.Repository, config config.Config)
 		r.Get("/comment/vote/:userID/:postID", func(c *fiber.Ctx) error {
 			return reviewHandler.GetUserVote(c, "comment")
 		})
-		r.Get("/social/song/:songid", func(c *fiber.Ctx) error {
-			return reviewHandler.GetSocialReviews(c, "track")
-		})
-		r.Get("/social/album/:albumid", func(c *fiber.Ctx) error {
-			return reviewHandler.GetSocialReviews(c, "album")
-		})
 		r.Get("/comments/:reviewid", reviewHandler.GetComments)
+
+		// voting on a review
+		r.Get("/vote/:userID/:postID", func(c *fiber.Ctx) error {
+			return reviewHandler.GetUserVote(c, "review")
+		})
+		r.Post("/vote", func(c *fiber.Ctx) error {
+			return reviewHandler.UserVote(c, "review")
+		})
 	})
 
 	app.Route("/comments", func(r fiber.Router) {
