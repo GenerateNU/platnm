@@ -18,7 +18,6 @@ type UserRepository interface {
 	FollowExists(ctx context.Context, follower uuid.UUID, following uuid.UUID) (bool, error)
 	Follow(ctx context.Context, follower uuid.UUID, following uuid.UUID) (bool, error)
 	UnFollow(ctx context.Context, follower uuid.UUID, following uuid.UUID) (bool, error)
-	CalculateScore(ctx context.Context, id uuid.UUID) (int, error)
 	CreateUser(ctx context.Context, user models.User) (models.User, error)
 	UpdateUserBio(ctx context.Context, user uuid.UUID, bio string) error
 	UpdateUserProfilePicture(ctx context.Context, user uuid.UUID, pfp string) error
@@ -51,7 +50,6 @@ type ReviewRepository interface {
 	CommentExists(ctx context.Context, id string) (bool, error)
 	GetUserReviewOfTrack(ctx context.Context, id string, id2 string) (*models.Review, error)
 	GetTags(ctx context.Context) ([]string, error)
-	GetSocialReviews(ctx context.Context, media_type string, mediaID string, userID string) ([]models.FriendReview, int, error)
 	GetCommentsByReviewID(ctx context.Context, id string) ([]*models.UserComment, error)
 	GetReviewByID(ctx context.Context, id string) (*models.Preview, error)
 	GetReviewsByPopularity(ctx context.Context, limit int, offset int) ([]*models.Preview, error)

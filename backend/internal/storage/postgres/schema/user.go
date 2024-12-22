@@ -125,41 +125,6 @@ func (r *UserRepository) UnFollow(ctx context.Context, follower uuid.UUID, follo
 	return true, nil
 }
 
-func (r *UserRepository) CalculateScore(ctx context.Context, id uuid.UUID) (int, error) {
-
-	// Coalesce returns first non-null value in the set of arguments, so if SUM returns null, 0 is defaulted to.
-	// urv, rec, and u are aliases to user_review_vote, recommendation, and user tables.
-	query := `
-    SELECT
-        COALESCE((
-            SELECT
-                SUM(CASE WHEN urv.upvote = TRUE THEN 1 ELSE -1 END)
-            FROM
-                user_vote urv
-            WHERE
-                urv.user_id = $1
-        ), 0) +
-        COALESCE((
-            SELECT
-                SUM(CASE WHEN rec.reaction = TRUE THEN 1 ELSE 0 END)
-            FROM
-                recommendation rec
-            WHERE
-                rec.recommender_id = $1
-        ), 0) AS score
-`
-
-	var score int
-	err := r.db.QueryRow(ctx, query, id).Scan(&score)
-
-	if err != nil {
-		print(err.Error(), "from transactions err ")
-		return 0, err
-	}
-
-	return score, nil
-}
-
 func (r *UserRepository) CreateUser(ctx context.Context, user models.User) (models.User, error) {
 	if err := r.db.QueryRow(ctx, `INSERT INTO "user" (id, username, display_name, email, profile_picture) VALUES ($1, $2, $3, $4, 'https://www.pngitem.com/pimgs/m/146-1468843_profile-icon-orange-png-transparent-png.png') RETURNING id`, user.ID, user.Username, user.DisplayName, user.Email).Scan(&user.ID); err != nil {
 		return models.User{}, err
@@ -234,7 +199,7 @@ func (r *UserRepository) GetUserProfile(ctx context.Context, id uuid.UUID) (*mod
 }
 
 func (r *UserRepository) GetProfileByName(ctx context.Context, name string) ([]*models.Profile, error) {
-	query := `SELECT u.id, u.username, u.display_name, profile_picture, bio, COUNT(DISTINCT followers.follower_id) AS follower_count, COUNT(DISTINCT followed.followee_id) AS followed_count
+	query := `SELECT u.id, u.username, u.display_name, profile_picture, bio, platnm, COUNT(DISTINCT followers.follower_id) AS follower_count, COUNT(DISTINCT followed.followee_id) AS followed_count
 		FROM "user" u
 		LEFT JOIN follower followers ON followers.followee_id = u.id
 		LEFT JOIN follower followed ON followed.follower_id = u.id
@@ -259,6 +224,7 @@ func (r *UserRepository) GetProfileByName(ctx context.Context, name string) ([]*
 			&profile.DisplayName,
 			&profilePicture,
 			&bio,
+			&profile.Score,
 			&profile.Followers,
 			&profile.Followed,
 		); err != nil {
@@ -273,15 +239,6 @@ func (r *UserRepository) GetProfileByName(ctx context.Context, name string) ([]*
 			profile.Bio = &bio.String
 		}
 
-		userUUID, err := uuid.Parse(profile.UserID)
-		if err != nil {
-			return nil, err
-		}
-		score, err := r.CalculateScore(ctx, userUUID)
-		if err != nil {
-			return nil, err
-		}
-		profile.Score = score
 		profiles = append(profiles, &profile)
 	}
 	return profiles, nil
